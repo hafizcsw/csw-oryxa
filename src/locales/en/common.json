@@ -13254,5 +13254,95 @@
       "actionExecuted": "{{action}} executed",
       "actionFailed": "Action failed"
     }
+  },
+  "decision": {
+    "academic_truth_title": "Academic Truth",
+    "academic_truth_subtitle": "Verified academic facts & subject analysis",
+    "field": {
+      "education_level": "Education Level",
+      "credential": "Credential",
+      "institution": "Institution",
+      "gpa": "GPA",
+      "graduation_year": "Graduation Year",
+      "study_status": "Study Status",
+      "country_of_education": "Country of Education",
+      "credential_type": "Credential Type"
+    },
+    "subjects_discovered": "Subjects Discovered",
+    "no_subjects_yet": "No subject rows extracted yet",
+    "panel_title": "Decision Analysis",
+    "panel_subtitle": "Completeness, eligibility, fit & competitiveness",
+    "completeness": "Completeness",
+    "eligibility": "Eligibility",
+    "fit": "Fit",
+    "competitiveness": "Competitiveness",
+    "blockers_title": "Blockers",
+    "language_gaps": "Language Gaps",
+    "missing_items": "Missing Items",
+    "candidate_domains": "Candidate Domains",
+    "countries": "Countries",
+    "universities": "Universities",
+    "programs": "Programs",
+    "counts_not_available": "Program counts not yet available from data lane",
+    "missing": {
+      "name": "Full name missing",
+      "citizenship": "Citizenship missing",
+      "education_level": "Education level missing",
+      "gpa": "GPA missing",
+      "institution": "Institution missing",
+      "english_test": "English test type missing",
+      "english_score": "English score missing",
+      "target_degree": "Target degree not set",
+      "gpa_for_requirement": "GPA needed for requirement check",
+      "subject": "Required subject missing",
+      "portfolio": "Portfolio required"
+    },
+    "eligibility": {
+      "gpa_below": "GPA below minimum",
+      "gpa_meets": "GPA meets requirement",
+      "language_meets": "Language meets requirement"
+    },
+    "fit": {
+      "has_education": "Has education background",
+      "has_subjects": "Has subject records",
+      "has_major": "Has major preference",
+      "has_language": "Has language score",
+      "diverse_subjects": "Diverse subject portfolio"
+    },
+    "comp": {
+      "high_gpa": "High GPA (3.5+)",
+      "good_gpa": "Good GPA (3.0+)",
+      "high_language": "Strong language score",
+      "adequate_language": "Adequate language score",
+      "stem_ready": "STEM readiness"
+    },
+    "blockers": {
+      "file_incomplete": "Student file is incomplete",
+      "gpa_below": "GPA below minimum requirement",
+      "language_test_missing": "Language test not provided",
+      "language_score_below": "Language score below minimum",
+      "subject_grade_below": "Subject grade below requirement",
+      "credential_mismatch": "Credential type not accepted"
+    },
+    "domain": {
+      "has_biology": "Has Biology",
+      "missing_biology": "Missing Biology",
+      "has_chemistry": "Has Chemistry",
+      "missing_chemistry": "Missing Chemistry",
+      "has_math": "Has Mathematics",
+      "missing_math": "Missing Mathematics",
+      "has_physics": "Has Physics",
+      "missing_physics": "Missing Physics",
+      "language_sufficient": "Language sufficient",
+      "language_insufficient": "Language insufficient",
+      "high_gpa": "High GPA",
+      "gpa_below_competitive": "GPA below competitive level",
+      "gpa_sufficient": "GPA sufficient",
+      "has_credential": "Has academic credential",
+      "has_cs_background": "Has CS background",
+      "has_science_background": "Has science subjects",
+      "no_science_subjects": "No science subjects",
+      "has_business_background": "Has business background"
+    }
   }
 }
