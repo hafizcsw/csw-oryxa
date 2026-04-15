@@ -49,13 +49,11 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       {/* 1. File Quality */}
       {fileQuality && (
         <section>
-          <h2 className="text-base font-semibold text-foreground mb-4">{t('portal.studyFile.quality')}</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 space-y-4">
-              <FileQualityCard result={fileQuality} />
+          <h2 className="text-base font-semibold text-foreground mb-3">{t('portal.studyFile.quality')}</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <FileQualityCard result={fileQuality} />
+            <div className="space-y-3">
               <FileQualityGate gates={fileQuality.gates} />
-            </div>
-            <div className="lg:col-span-2">
               <FileQualityGapList
                 blockingGaps={fileQuality.blocking_gaps}
                 improvementGaps={fileQuality.improvement_gaps}
