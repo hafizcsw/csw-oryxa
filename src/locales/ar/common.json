@@ -12598,6 +12598,8 @@
     "universities": "الجامعات",
     "programs": "البرامج",
     "counts_not_available": "أعداد البرامج غير متاحة بعد من مسار البيانات",
+    "requirements_loaded": "متطلبات محمّلة",
+    "no_requirements": "لم يتم تحميل متطلبات برنامج",
     "missing": {
       "name": "الاسم الكامل مفقود",
       "citizenship": "الجنسية مفقودة",

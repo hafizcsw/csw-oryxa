@@ -12562,6 +12562,8 @@
     "universities": "Universities",
     "programs": "Programs",
     "counts_not_available": "Program counts not yet available from data lane",
+    "requirements_loaded": "requirements loaded",
+    "no_requirements": "No program requirements loaded",
     "missing": {
       "name": "Full name missing",
       "citizenship": "Citizenship missing",
