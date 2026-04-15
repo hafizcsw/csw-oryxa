@@ -1,33 +1,67 @@
 
 
-## Plan: Widen ORX Analysis Modal & Use Full Space
+# دمج البيانات + الجاهزية + المستندات + جودة الملف في صفحة واحدة متصلة
 
-**Problem**: The modal is locked at `max-w-[440px]` — a narrow column that wastes most of the screen, cramming all information into a tiny strip. On a 1529px viewport, this uses less than 30% of available width.
+## التصميم
 
-### Changes to `src/components/programs/ProgramInsightSheet.tsx`
+صفحة واحدة بعنوان **"ملفي الدراسي"** — بدون تبويبات فرعية — كل الأقسام مرصوصة فوق بعض في scroll واحد:
 
-**1. Widen the modal to use available space**
-- Change `max-w-[440px]` → `max-w-2xl` (672px) — uses ~44% of the viewport, balanced and readable
-- This gives room for proper 2-column layouts inside
+```text
+┌─────────────────────────────────────────────┐
+│  📂 ملفي الدراسي                            │
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │  1. جودة الملف (Score + Gates)      │    │
+│  │     FileQualityCard + Gate + Gaps   │    │
+│  └─────────────────────────────────────┘    │
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │  2. البيانات الشخصية               │    │
+│  │     ProfileTab                      │    │
+│  └─────────────────────────────────────┘    │
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │  3. الجاهزية                        │    │
+│  │     ReadinessTab                    │    │
+│  └─────────────────────────────────────┘    │
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │  4. المستندات                       │    │
+│  │     DocumentsTab                    │    │
+│  └─────────────────────────────────────┘    │
+└─────────────────────────────────────────────┘
+```
 
-**2. Redesign content layout to use the wider space**
-- **Scores section**: Main score on the left, sub-scores grid (`grid-cols-4`) on the right — side by side instead of stacked
-- **Strengths & Weaknesses**: Already 2-column but now with proper breathing room at the wider width
-- **Summary + Future Outlook**: Side by side — summary takes 2/3, outlook takes 1/3
-- **Career Paths**: Horizontal wrap with larger badges now that there's room
+## التغييرات
 
-**3. Fix font sizes — nothing below 11px**
-- Remove all `text-[9px]` and `text-[10px]` instances → minimum `text-[11px]`
-- Sub-score labels: `text-[11px]`, score values: `text-sm` (14px)
-- Section headers: `text-xs` (12px) bold
-- Career badges: `text-[11px]`
+### 1. مكون جديد: `StudyFileTab.tsx`
+- صفحة واحدة متصلة (لا تبويبات فرعية)
+- ترتيب عمودي: FileQuality → Profile → Readiness → Documents
+- كل قسم مفصول بعنوان فرعي (h2) وفاصل بصري
+- يستقبل نفس props من Account.tsx
 
-**4. Better spacing and visual hierarchy**
-- Body padding: `px-5 py-4` instead of `px-4 py-3`
-- Gap between sections: `space-y-4` instead of `space-y-3`
-- Sub-score cards: slightly taller with `py-2.5`
+### 2. AccountSidebar.tsx
+- حذف `profile`, `readiness`, `documents` من `STUDY_ITEMS`
+- إضافة عنصر واحد `study-file` بأيقونة `FolderOpen`
 
-### No changes
-- Data fetching, `handleAskOryxa`, chat handoff logic — all stay as-is
-- No new locale keys
+### 3. AccountMobileNav.tsx
+- نفس التغيير: استبدال الثلاثة بعنصر واحد `study-file`
+
+### 4. Account.tsx
+- حذف `case 'profile'`, `case 'readiness'`, `case 'documents'` المنفصلة
+- إضافة `case 'study-file'` يعرض `StudyFileTab`
+- إعادة توجيه URLs القديمة تلقائياً إلى `?tab=study-file`
+
+### 5. DashboardOverview.tsx
+- حذف قسم File Quality بالكامل (انتقل إلى StudyFileTab)
+
+### 6. TabNavigation.tsx
+- تحديث `STUDY_ORDER`: استبدال `profile`, `readiness`, `documents` بـ `study-file`
+
+### 7. الترجمة
+- إضافة مفتاح `portal.sidebar.myStudyFile` في ملفات الـ 12 لغة
+
+## ما لن يتغير
+- محتوى ProfileTab, ReadinessTab, DocumentsTab الداخلي — يبقى كما هو
+- منطق حساب FileQuality
 
