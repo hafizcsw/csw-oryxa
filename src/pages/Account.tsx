@@ -684,7 +684,7 @@ export default function AccountPage() {
       case 'profile':
         return <ProfileTab profile={profile!} crmProfile={crmProfile} onUpdate={updateCrmProfile} onRefetch={refetchCrm} onTabChange={setActiveTab} />;
       case 'readiness':
-        return <ReadinessTab onTabChange={setActiveTab} />;
+        return <ReadinessTab onTabChange={setActiveTab} crmProfile={crmProfile} documents={studentDocs} />;
       case 'applications':
         return <ApplicationsTab crmProfile={crmProfile} onUpdate={updateCrmProfile} onTabChange={setActiveTab} />;
       case 'case':
