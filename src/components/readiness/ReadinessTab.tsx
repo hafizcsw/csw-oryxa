@@ -9,90 +9,57 @@ import { GapCards } from './GapCards';
 import { DocumentChecklist } from './DocumentChecklist';
 import { AlternativeRoutes } from './AlternativeRoutes';
 import { PrepServiceGrid } from './PrepServiceGrid';
-import { useStudentReadiness } from '@/hooks/useStudentReadiness';
-import { adaptCrmToReadinessProfile } from '@/features/readiness/profileAdapter';
+import { calculateReadiness } from '@/features/readiness/engine';
 import type { ReadinessProfile, RequirementTruthContext } from '@/features/readiness/types';
-import type { StudentPortalProfile } from '@/hooks/useStudentProfile';
-import type { StudentDocument } from '@/hooks/useStudentDocuments';
 
 interface ReadinessTabProps {
   onTabChange?: (tab: string) => void;
-  /** CRM-backed student profile — the ONLY source of truth */
-  crmProfile?: StudentPortalProfile | null;
-  /** CRM-backed student documents */
-  documents?: StudentDocument[];
-  /** Target program/university requirements (from DB truth) */
-  targetRequirements?: RequirementTruthContext;
 }
 
 const STORAGE_KEY = 'csw_readiness_profile';
+const TARGET_KEY = 'csw_readiness_target_requirements';
 
-/**
- * Load supplementary fields that CRM doesn't yet store (test scores, intake preferences).
- * These are ONLY used to supplement CRM data, not replace it.
- */
-function loadSupplementaryProfile(): Partial<ReadinessProfile> {
+function loadProfile(): ReadinessProfile {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // Only return fields CRM doesn't provide
-      return {
-        english_test_type: parsed.english_test_type,
-        english_test_score: parsed.english_test_score,
-        other_test_type: parsed.other_test_type,
-        other_test_score: parsed.other_test_score,
-        intake_semester: parsed.intake_semester,
-        intake_year: parsed.intake_year,
-        subjects_completed: parsed.subjects_completed,
-        scholarship_needed: parsed.scholarship_needed,
-      };
-    }
+    if (saved) return JSON.parse(saved);
   } catch {
     // noop
   }
   return {};
 }
 
-export function ReadinessTab({ onTabChange, crmProfile, documents = [], targetRequirements }: ReadinessTabProps) {
+function loadTargetRequirements(): RequirementTruthContext | undefined {
+  try {
+    const saved = localStorage.getItem(TARGET_KEY);
+    if (!saved) return undefined;
+    const parsed = JSON.parse(saved) as RequirementTruthContext;
+    if (!parsed || !parsed.source_status) return undefined;
+    return parsed;
+  } catch {
+    return undefined;
+  }
+}
+
+export function ReadinessTab({ onTabChange }: ReadinessTabProps) {
   const { t } = useLanguage();
-  const [supplementary, setSupplementary] = useState<Partial<ReadinessProfile>>(loadSupplementaryProfile);
+  const [profile, setProfile] = useState<ReadinessProfile>(loadProfile);
   const [profileOpen, setProfileOpen] = useState(true);
   const [focusedServiceId, setFocusedServiceId] = useState<string | null>(null);
   const prepGridRef = useRef<HTMLDivElement | null>(null);
 
-  // Compose CRM-backed readiness with supplementary inputs
-  const { completeness, eligibility, gates } = useStudentReadiness(
-    crmProfile ?? null,
-    documents,
-    targetRequirements,
-  );
-
-  // Merge CRM-adapted profile with supplementary fields for the form
-  const mergedProfile = useMemo(() => {
-    const crmAdapted = adaptCrmToReadinessProfile(crmProfile ?? null, documents);
-    return { ...crmAdapted, ...supplementary };
-  }, [crmProfile, documents, supplementary]);
+  const targetRequirements = useMemo(loadTargetRequirements, []);
 
   const handleChange = useCallback((updated: ReadinessProfile) => {
-    // Only persist supplementary fields (test scores, intake prefs)
-    const supp: Partial<ReadinessProfile> = {
-      english_test_type: updated.english_test_type,
-      english_test_score: updated.english_test_score,
-      other_test_type: updated.other_test_type,
-      other_test_score: updated.other_test_score,
-      intake_semester: updated.intake_semester,
-      intake_year: updated.intake_year,
-      subjects_completed: updated.subjects_completed,
-      scholarship_needed: updated.scholarship_needed,
-    };
-    setSupplementary(supp);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(supp));
+    setProfile(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   }, []);
 
+  const result = useMemo(() => calculateReadiness(profile, targetRequirements), [profile, targetRequirements]);
+
   const gapCategories = useMemo(
-    () => eligibility.gaps.map(g => g.category),
-    [eligibility.gaps]
+    () => result.gaps.map(g => g.category),
+    [result.gaps]
   );
 
   const handleServiceClick = useCallback((serviceId: string) => {
@@ -100,7 +67,7 @@ export function ReadinessTab({ onTabChange, crmProfile, documents = [], targetRe
     prepGridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
-  const hasData = !!(crmProfile || mergedProfile.english_test_type || mergedProfile.gpa);
+  const hasData = !!(profile.target_country || profile.gpa || profile.english_test_type);
 
   return (
     <div className="space-y-8 max-w-5xl">
@@ -114,7 +81,7 @@ export function ReadinessTab({ onTabChange, crmProfile, documents = [], targetRe
         </div>
       </div>
 
-      {!eligibility.requirement_truth_sufficient && (
+      {!result.requirement_truth_sufficient && (
         <div className="rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground flex items-center gap-2">
           <Info className="h-4 w-4 shrink-0" />
           <span>{t('readiness.target_truth_missing')}</span>
@@ -125,7 +92,7 @@ export function ReadinessTab({ onTabChange, crmProfile, documents = [], targetRe
         <div className="lg:col-span-1 order-2 lg:order-1">
           <div className="lg:sticky lg:top-4 space-y-4">
             {hasData ? (
-              <ReadinessSummaryRail result={eligibility} />
+              <ReadinessSummaryRail result={result} />
             ) : (
               <div className="rounded-2xl border border-border bg-card p-6 text-center space-y-3">
                 <Shield className="h-10 w-10 text-muted-foreground mx-auto" />
@@ -146,27 +113,27 @@ export function ReadinessTab({ onTabChange, crmProfile, documents = [], targetRe
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="p-6 pt-0">
-                  <AdmissionsProfileForm profile={mergedProfile} onChange={handleChange} />
+                  <AdmissionsProfileForm profile={profile} onChange={handleChange} />
                 </div>
               </CollapsibleContent>
             </div>
           </Collapsible>
 
-          {hasData && eligibility.gaps.length > 0 && (
-            <GapCards gaps={eligibility.gaps} onServiceClick={handleServiceClick} />
+          {hasData && result.gaps.length > 0 && (
+            <GapCards gaps={result.gaps} onServiceClick={handleServiceClick} />
           )}
 
           {hasData && (
             <DocumentChecklist
-              items={eligibility.document_checklist}
+              items={result.document_checklist}
               onUpload={() => onTabChange?.('documents')}
             />
           )}
 
           {hasData && (
             <AlternativeRoutes
-              alternatives={eligibility.alternatives}
-              unavailableReasonKey={eligibility.alternative_routes_unavailable_reason_key}
+              alternatives={result.alternatives}
+              unavailableReasonKey={result.alternative_routes_unavailable_reason_key}
             />
           )}
 
