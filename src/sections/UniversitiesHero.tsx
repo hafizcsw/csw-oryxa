@@ -80,11 +80,7 @@ export default function UniversitiesHero({
                   className="group flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
                 >
                   <Sparkles className="w-5 h-5 group-hover:animate-pulse" />
-                  <span>
-                    {language === 'ar' 
-                      ? 'دع الذكاء الاصطناعي يختار الأفضل لك' 
-                      : 'Let AI find the best for you'}
-                  </span>
+                  <span>{t('hero.letOryxa')}</span>
                 </button>
               </div>
             </>
