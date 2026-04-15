@@ -1327,6 +1327,9 @@
       "readiness": "الجاهزية",
       "myStudyFile": "ملفي الدراسي"
     },
+    "studyFile": {
+      "quality": "جودة الملف"
+    },
     "nav": {
       "sections": "الأقسام"
     },
