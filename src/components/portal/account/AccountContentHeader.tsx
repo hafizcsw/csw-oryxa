@@ -9,6 +9,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { buildAvatarDisplayUrl, MAX_AVATAR_BYTES, optimizeAvatarForUpload } from "@/features/avatar/avatarImageUtils";
 import { supabase } from "@/integrations/supabase/client";
 
+interface CanonicalIdentityRead {
+  full_name?: string | null;
+  citizenship?: string | null;
+}
+
 interface AccountContentHeaderProps {
   profile: {
     full_name?: string | null;
@@ -20,10 +25,12 @@ interface AccountContentHeaderProps {
     full_name?: string | null;
     phone?: string | null;
     phone_e164?: string | null;
-    avatar_url?: string | null;  // CRM avatar URL (priority over local)
+    avatar_url?: string | null;
     avatar_updated_at?: string | null;
     updated_at?: string | null;
   } | null;
+  /** Door 1: canonical identity — primary read source when available */
+  canonicalIdentity?: CanonicalIdentityRead | null;
   onEditProfile?: () => void;
   onAvatarUpdate?: (path: string | null) => Promise<boolean>;
 }
@@ -40,6 +47,7 @@ const maskPhone = (phone?: string | null): string => {
 export function AccountContentHeader({
   profile,
   crmProfile,
+  canonicalIdentity,
   onEditProfile,
   onAvatarUpdate
 }: AccountContentHeaderProps) {
@@ -51,7 +59,8 @@ export function AccountContentHeader({
   const [localAvatarOverride, setLocalAvatarOverride] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fullName = crmProfile?.full_name || profile?.full_name || t('portal.header.student');
+  // Door 1: canonical identity is primary read source, fallback to CRM → profile
+  const fullName = canonicalIdentity?.full_name || crmProfile?.full_name || profile?.full_name || t('portal.header.student');
   const phone = crmProfile?.phone_e164 || crmProfile?.phone || profile?.phone;
 
   // ✅ Resolve both full URLs and storage paths safely

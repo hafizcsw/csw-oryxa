@@ -51,6 +51,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         <AccountContentHeader
           profile={profile}
           crmProfile={crmProfile}
+          canonicalIdentity={canonicalFile?.identity ?? null}
           onAvatarUpdate={onAvatarUpdate}
         />
       </div>
