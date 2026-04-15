@@ -104,12 +104,28 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   }, [analysisHook.analyses, academicTruthHook.parseTranscript, profile?.user_id]);
 
   // ═══ Door 4.5: Program Requirements from DB ═══
-  // Use first application university_id if available, otherwise none
-  const firstUniversityId = crmProfile?.university_id ?? null;
+  // Source: shortlist first, then CRM fallback
+  const shortlistCtx = useShortlistRequirementsContext();
+  const reqProgramId = shortlistCtx.programId ?? null;
+  const reqUniversityId = shortlistCtx.universityId ?? crmProfile?.university_id ?? null;
+
   const { requirements, source: reqSource } = useProgramRequirements({
-    universityId: firstUniversityId,
+    programId: reqProgramId,
+    universityId: reqUniversityId,
     targetDegree: canonicalFile?.targeting?.target_degree,
   });
+
+  // Log requirements resolution for runtime proof
+  useEffect(() => {
+    console.log('[Door4.5] Requirements context', {
+      source: shortlistCtx.source,
+      programId: reqProgramId,
+      universityId: reqUniversityId,
+      programName: shortlistCtx.programName,
+      requirementsLoaded: requirements.length,
+      reqSource,
+    });
+  }, [reqProgramId, reqUniversityId, requirements.length, reqSource, shortlistCtx.source, shortlistCtx.programName]);
 
   // ═══ Door 5: Decision Engine ═══
   const decision = useDecisionEngine({
