@@ -173,7 +173,7 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
                 <Brain className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] uppercase tracking-widest text-primary font-semibold">ORX Analysis</p>
+                <p className="text-[10px] uppercase tracking-widest text-primary font-semibold">{t('insight.orxAnalysis')}</p>
                 <SheetTitle className="text-sm font-bold truncate">{programName}</SheetTitle>
               </div>
             </div>
@@ -186,7 +186,7 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
                 <Loader2 className="w-6 h-6 animate-spin text-primary" />
               </div>
-              <p className="text-xs text-muted-foreground">{t('insight.loading') || 'Loading...'}</p>
+              <p className="text-xs text-muted-foreground">{t('insight.loading')}</p>
             </div>
           )}
 
@@ -198,7 +198,7 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
               <p className="text-sm text-destructive">{error}</p>
               <Button size="sm" variant="outline" onClick={fetchCachedData} className="mt-3 gap-2">
                 <RefreshCw className="w-3.5 h-3.5" />
-                {t('insight.retry') || 'Retry'}
+                {t('insight.retry')}
               </Button>
             </div>
           )}
@@ -210,7 +210,7 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
               </div>
               <div>
                 <p className="text-sm font-medium">{t('insight.noData')}</p>
-                <p className="text-xs text-muted-foreground mt-1">{t('insight.noDataDesc') || ''}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('insight.noDataDesc')}</p>
               </div>
               <Button size="sm" onClick={requestGeneration} disabled={!universityId} className="gap-2">
                 <RefreshCw className="w-3.5 h-3.5" />
