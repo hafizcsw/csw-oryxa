@@ -340,9 +340,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
       return;
     }
     
-    if (doc.storage_path) {
-      await deleteDocument(doc.storage_path);
-    }
+    await deleteDocument(doc);
   };
 
   // Refresh handler
