@@ -1,56 +1,48 @@
 
 
-# Upgrade Brain Upload Hub — Progressive Illumination + Better Document Design
+# Upgrade Brain SVG to Realistic Top-View Design
+
+## Problem
+The current brain is drawn with crude geometric segments that look nothing like a real brain. The user wants a design matching the reference image: a **top-down view** of a brain with two hemispheres, visible cerebral folds (gyri/sulci), and a clean line-art style with a subtle glow.
 
 ## What Changes
 
-### 1. Progressive Brain Illumination
-The brain will have **8 segments** (regions/lobes) that light up progressively as files are uploaded:
-- 0 files: Brain is dim/outline only
-- 1 file: One segment glows
-- 2 files: Two segments glow
-- Up to 8 files: Entire brain is fully illuminated
-- Each segment uses animated gradient fills that "breathe" with a soft pulse
-- When a file finishes uploading, its corresponding brain segment transitions from pulsing to solid glow with a flash effect
+### 1. Replace Brain SVG with Realistic Top-Down Brain
+- Replace the 8 crude `BRAIN_SEGMENTS` paths with a proper anatomical top-view brain drawn using detailed Bézier curves
+- **Left hemisphere**: Outer contour + 5-6 internal fold curves (sulci) showing gyri patterns
+- **Right hemisphere**: Mirror of left with its own fold curves
+- Central fissure (longitudinal fissure) dividing the two hemispheres
+- Brain stem hint at the bottom
+- Style: Clean line-art with thin strokes (like the reference image), light purple/lavender fill with subtle gradient, soft glow halo behind
 
-### 2. Better Document Icons
-Replace the basic rectangles with more realistic document icons:
-- Larger size (60×75 instead of 50×62)
-- Rounded page curl in top-right corner with shadow
-- Color-coded header bar at the top (different colors for PDF/image/doc types based on file extension)
-- Clearer text line placeholders with better spacing
-- Larger, more visible status badges (checkmark/spinner/error)
-- File extension label shown as a colored chip at the bottom of the document
+### 2. Progressive Illumination (Preserved but Improved)
+- Instead of 8 crude filled segments, the folds themselves will progressively illuminate
+- Each fold line transitions from dim to glowing as files are added
+- The hemisphere fill opacity increases progressively (0 files = very faint outline, 8 files = fully glowing)
+- Sparkle/glow particles appear around lit areas
 
-### 3. Stronger Animations
-- **Flow paths**: Thicker animated dashed lines with glowing trail effect, not just thin dashes
-- **Data particles**: Multiple particles (3 per active file) flowing in sequence with varying sizes and opacity
-- **Brain pulse rings**: Concentric rings that expand outward from the brain when processing (2-3 rings, staggered timing)
-- **Connection lines**: Curved Bézier paths with animated gradient stroke instead of flat color
-- **Idle state**: Gentle floating/bobbing animation on document icons when not uploading
-- **Completion burst**: Small particle explosion when a file registers successfully
+### 3. Document Icons Matching Reference Image
+- Larger, cleaner documents with visible text lines and dark header blocks (matching the reference)
+- Page curl effect on the document corners
+- Documents positioned on left and right sides (not orbiting)
+- Multiple arrow lines from each document's text blocks pointing toward the brain (like the reference shows specific content sections feeding into the brain)
 
-### 4. Visual Hierarchy
-- Brain center shows a glowing neural network pattern (interconnected dots and lines) instead of simple upload icon
-- The neural network nodes light up progressively matching uploaded file count
-- Warm golden/amber gradient for the brain (matching the reference image) instead of theme primary color
+### 4. Flow Lines Matching Reference
+- Multiple parallel arrow lines from document sections to the brain (not single curved paths)
+- Small dark rectangles on the arrow lines (representing data blocks being transferred, as shown in reference)
+- Clean, straight-to-slightly-curved lines with arrowheads
+- Animated dash-offset to show data flowing
 
 ## Technical Approach
 
-Single file edit: `src/components/documents/CentralUploadHub.tsx`
+**Single file edit**: `src/components/documents/CentralUploadHub.tsx`
 
-- Add `getFileType(filename)` helper to determine doc type for color coding
-- Refactor `BrainScene` SVG:
-  - Define 8 brain segment paths as separate `<path>` elements with individual fill opacity controlled by file count
-  - Add `<radialGradient>` with warm amber tones matching reference image
-  - Add concentric pulse `<circle>` elements with `<animate>` for expansion
-  - Add neural network overlay (small circles + connecting lines) inside brain
-- Refactor `MiniDoc` component:
-  - Increase dimensions, add colored header bar, file type chip
-  - Add floating/bobbing `<animateTransform>` for idle state
-- Enhance flow paths:
-  - Triple particle system per active path
-  - Animated gradient strokes using `<linearGradient>` with `<animate>` on offsets
+- Replace `BRAIN_SEGMENTS` array with detailed SVG paths for a top-down brain view (left/right hemisphere outlines + internal sulci curves)
+- New gradients: soft lavender/purple `radialGradient` for brain fill, matching the reference image's color palette
+- Refactor `MiniDoc` component to match reference: larger white documents with dark header blocks, multiple text line placeholders, page curl
+- Replace curved Bézier flow paths with multiple parallel horizontal arrows from document sections to brain, with small data-block rectangles on them
+- Keep progressive illumination logic but apply to fold lines and fill opacity instead of segments
+- Keep neural network overlay, pulse rings, and particle effects
 
-No new dependencies. Pure SVG animation.
+No new dependencies. Pure SVG.
 
