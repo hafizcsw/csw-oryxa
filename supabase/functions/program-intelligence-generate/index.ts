@@ -184,6 +184,7 @@ Be factual and evidence-based. If you lack data, lower your confidence score.`;
           overall_execution_score: overallExecution,
           evidence: snapshot.orx_evidence || orxScores,
           model_version: "gpt-4o-mini",
+          source_hash: sourceHash,
           is_current: true,
         });
 

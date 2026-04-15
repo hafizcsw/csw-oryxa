@@ -10614,6 +10614,7 @@ export type Database = {
           overall_execution_score: number | null
           practical_intensity: number | null
           program_id: string
+          source_hash: string | null
           tooling_score: number | null
         }
         Insert: {
@@ -10633,6 +10634,7 @@ export type Database = {
           overall_execution_score?: number | null
           practical_intensity?: number | null
           program_id: string
+          source_hash?: string | null
           tooling_score?: number | null
         }
         Update: {
@@ -10652,6 +10654,7 @@ export type Database = {
           overall_execution_score?: number | null
           practical_intensity?: number | null
           program_id?: string
+          source_hash?: string | null
           tooling_score?: number | null
         }
         Relationships: [

@@ -12896,6 +12896,11 @@
     "bestFit": "Best Fit Student",
     "confidence": "Confidence",
     "viewInsight": "ORX Program Analysis",
+    "orxAnalysis": "ORX Analysis",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "noDataDesc": "No intelligence analysis has been generated for this program yet.",
+    "generationFailed": "Generation failed — you may not have permission.",
     "orx": {
       "labs": "Labs",
       "internship": "Internship",
