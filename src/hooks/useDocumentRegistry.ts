@@ -73,11 +73,11 @@ export function useDocumentRegistry({
 
       const result = await uploadAndRegisterFile({
         file,
-        file_kind: record.detected_document_type === 'unknown' || !record.detected_document_type
+        file_kind: record.slot_hint === 'unknown' || !record.slot_hint
           ? 'additional'
-          : record.detected_document_type === 'graduation_certificate'
+          : record.slot_hint === 'graduation_certificate'
             ? 'certificate'
-            : record.detected_document_type,
+            : record.slot_hint,
         description: `Uploaded via upload hub: ${file.name}`,
         onProgress: (stage, percent) => {
           const statusMap: Record<string, DocumentRecord['processing_status']> = {

@@ -50,6 +50,8 @@ export type SourceSurface =
 export interface DocumentRecord {
   /** Local tracking ID — always a local UUID. See crm_file_id for CRM identity. */
   document_id: string;
+  /** CRM file_id returned after confirm — null until registered */
+  crm_file_id: string | null;
   /** Student user ID */
   student_id: string;
   /** Who initiated the upload */
@@ -129,6 +131,7 @@ export function createPendingRecord(
   const now = new Date().toISOString();
   return {
     document_id: crypto.randomUUID(),
+    crm_file_id: null,
     student_id: studentId,
     uploaded_by_role: 'student',
     source_surface: source,
@@ -136,7 +139,7 @@ export function createPendingRecord(
     mime_type: file.type || 'application/octet-stream',
     file_size_bytes: file.size,
     storage_path: null,
-    detected_document_type: slotHint ?? guessSlotFromFileName(file.name),
+    slot_hint: slotHint ?? guessSlotFromFileName(file.name),
     processing_status: 'pending_upload',
     readability_status: 'unknown',
     usefulness_status: 'unknown',

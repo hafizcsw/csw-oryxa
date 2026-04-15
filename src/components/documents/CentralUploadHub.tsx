@@ -182,9 +182,9 @@ export function CentralUploadHub({
                     <span className="text-[10px] text-muted-foreground">
                       {statusLabel(record.processing_status, t)}
                     </span>
-                    {record.detected_document_type && record.detected_document_type !== 'unknown' && (
+                    {record.slot_hint && record.slot_hint !== 'unknown' && (
                       <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded font-mono">
-                        {record.detected_document_type}
+                        {record.slot_hint}
                       </span>
                     )}
                   </div>
