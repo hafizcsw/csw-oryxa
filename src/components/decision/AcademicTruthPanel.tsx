@@ -106,7 +106,7 @@ function SubjectRowCard({ row }: { row: SubjectRow }) {
           <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
       )}
       {row.confidence < 0.7 && (
-        <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" title="Low confidence" />
+        <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
       )}
     </div>
   );
