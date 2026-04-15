@@ -27,7 +27,7 @@ function statusColor(status: CompletionStatus): string {
   }
 }
 
-function countFilled(obj: Record<string, unknown>): { filled: number; total: number } {
+function countFilled(obj: object): { filled: number; total: number } {
   const entries = Object.values(obj);
   const total = entries.length;
   const filled = entries.filter(v => v != null && v !== '' && !(Array.isArray(v) && v.length === 0)).length;
