@@ -46,13 +46,24 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   const { t } = useLanguage();
   const { documents, refetch: refetchDocs } = useStudentDocuments();
 
-  // ═══ Door 3: Document Analysis + Proposals ═══
-  const analysisHook = useDocumentAnalysis({
-    studentId: profile?.user_id ?? null,
-    canonicalFile: null, // Will be set after canonical is built — chicken/egg solved by using base CRM
+  // ═══ Door 1: Base canonical file (CRM truth, no promotions) ═══
+  // This is used by Door 3 analysis for conflict detection against real current truth.
+  const { canonicalFile: baseCanonicalFile } = useCanonicalStudentFile({
+    crmProfile,
+    documents,
+    userId: profile?.user_id ?? null,
+    // No promotedFields here — this is the base truth for comparison
   });
 
-  // ═══ Door 1: Canonical Student File (with Door 3 promoted fields merged) ═══
+  // ═══ Door 3: Document Analysis + Proposals ═══
+  // Receives REAL base canonical file so conflict detection works
+  const analysisHook = useDocumentAnalysis({
+    studentId: profile?.user_id ?? null,
+    canonicalFile: baseCanonicalFile,
+  });
+
+  // ═══ Door 1: Merged canonical file (base + promoted overlay) ═══
+  // This is the final truth shown on all surfaces.
   const { canonicalFile, hasIdentity, hasAcademic, hasLanguage, hasTargeting } = useCanonicalStudentFile({
     crmProfile,
     documents,
