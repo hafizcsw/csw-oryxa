@@ -240,7 +240,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
 
       {/* ═══ Door 4: Academic Truth Panel ═══ */}
       <section>
-        <AcademicTruthPanel academicTruth={academicTruth} />
+        <AcademicTruthPanel academicTruth={academicTruthHook.academicTruth} />
       </section>
 
       {/* ═══ Door 5: Decision Panel ═══ */}
