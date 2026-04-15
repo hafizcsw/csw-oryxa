@@ -63,6 +63,20 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         </section>
       )}
 
+      {/* 1b. Canonical File Summary — visible canonical truth consumer */}
+      {canonicalFile && (
+        <section>
+          <h2 className="text-sm font-semibold text-foreground mb-2">{t('portal.studyFile.summary')}</h2>
+          <CanonicalFileSummary
+            canonicalFile={canonicalFile}
+            hasIdentity={hasIdentity}
+            hasAcademic={hasAcademic}
+            hasLanguage={hasLanguage}
+            hasTargeting={hasTargeting}
+          />
+        </section>
+      )}
+
       <Separator />
 
       {/* 2. Personal Info + Passport side by side */}
