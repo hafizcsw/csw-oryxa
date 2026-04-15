@@ -359,10 +359,11 @@ export function ProgramCard({ p, compact }: { p: ProgramCardData; compact?: bool
           universityId={p.university_id || null}
         >
           <button
-            className="w-7 h-7 rounded-full bg-primary/8 hover:bg-primary/15 flex items-center justify-center transition-all duration-200 hover:scale-110 hover:shadow-[0_0_12px_hsl(var(--primary)/0.3)] group/orx"
+            className="flex items-center gap-1.5 rounded-full bg-primary/8 hover:bg-primary/15 px-3 py-1.5 transition-all duration-200 hover:scale-105 hover:shadow-[0_0_12px_hsl(var(--primary)/0.3)] group/orx"
             title={t("insight.viewInsight")}
           >
-            <Brain className="w-3.5 h-3.5 text-primary/70 group-hover/orx:text-primary transition-colors" />
+            <Brain className="w-4 h-4 text-primary/70 group-hover/orx:text-primary transition-colors" />
+            <span className="text-[11px] font-semibold text-primary/70 group-hover/orx:text-primary transition-colors">ORX</span>
           </button>
         </ProgramInsightSheet>
       </div>
