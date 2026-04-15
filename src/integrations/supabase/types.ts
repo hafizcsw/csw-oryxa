@@ -26807,8 +26807,6 @@ export type Database = {
       seo_cron_status: { Args: never; Returns: Json }
       seo_last_runs: { Args: never; Returns: Json }
       seo_overview_summary: { Args: never; Returns: Json }
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
       sync_osc_job_counters: { Args: { p_job_id: string }; Returns: Json }
       test_crypto_basic: { Args: never; Returns: Json }
       tmp_publish_pending_d4: { Args: never; Returns: number }
