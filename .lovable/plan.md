@@ -1,41 +1,41 @@
 
 
-## Plan: Redesign ORX Analysis Modal — Clean, World-Class UI
+## Plan: Fix ORX Analysis Modal — Proper Layout & Live Feel
 
-**Problem**: The current ORX Analysis modal looks broken — plain styling, awkward spacing, inconsistent score card colors, and lacks visual polish.
+**Problem**: The modal has excessive unused space, cramped/overlapping elements, and feels static/lifeless. The information hierarchy is poor — scores, text, and sections are awkwardly sized.
 
-### Changes
+### Changes to `src/components/programs/ProgramInsightSheet.tsx`
 
-**1. `src/components/programs/ProgramInsightSheet.tsx` — Full redesign**
+**1. Fix layout and spacing**
+- Change `max-w-[420px]` → `max-w-md` (448px) and set `max-h-[85vh]`
+- Replace the single `px-4 py-3` body wrapper with tighter per-section spacing
+- Scores section: increase sub-score card size slightly, use `grid-cols-3` on mobile / `grid-cols-4` on wider, add proper internal padding
+- Remove tiny 8px/9px/10px font sizes — minimum 11px for readability, section headers 12px
 
-- **Header**: Clean minimal header with subtle gradient, ORX logo mark, program name, and an `X` close button. No heavy color blocks.
-- **Score layout**: Replace the current grid with a clean circular/radial design for the main score, surrounded by 8 sub-scores in a compact 4×2 grid with consistent neutral backgrounds and colored score text only.
-- **Score cards**: White/card background with subtle borders. Icon + label + score. No heavy colored backgrounds — only the score number gets color treatment (green ≥7, amber ≥4, red <4).
-- **Main execution score**: Large prominent display at top-right of the signals section — clean pill with the score.
-- **Discipline Future Strength**: Inline row below the grid, subtle border, not a heavy colored block.
-- **Summary section**: Clean card with subtle background, proper text spacing.
-- **Future Outlook**: Minimal inline display with trend icon.
-- **Strengths/Weaknesses**: Two-column layout with clean bullet lists, no heavy colored section headers.
-- **Career paths**: Horizontal badges with clean outline style.
-- **Best fit**: Subtle info card.
-- **"Ask Oryxa" CTA**: Gradient primary button at bottom, full width, with chat icon.
-- **Overall**: `max-w-lg` (narrower, focused), proper `rounded-2xl`, clean shadows, consistent `gap` and `padding`.
+**2. Redesign score visualization**
+- Main score: large centered circular badge at top (48×48 rounded-full with score inside, colored border based on score tier)
+- Sub-scores: clean horizontal rows instead of grid — icon + label on left, score on right, with a subtle progress-bar-like colored accent
+- This eliminates the cramped 4-col grid that wastes vertical space while being unreadable
 
-**2. `src/components/ProgramCard.tsx` — Brain icon trigger refinement**
+**3. Improve section hierarchy**
+- Add subtle section dividers (`border-b border-border/20`) between major sections
+- Strengths/Weaknesses: proper padding, readable 11px text, green/amber left-border accent instead of tiny dots
+- Summary: give it breathing room with `py-3`
+- Career paths: larger badges with proper padding
 
-- Keep the Brain icon button but refine: slightly smaller (w-7 h-7), positioned cleanly at bottom-right of card footer.
-- Add a subtle pulse animation on hover for the icon glow effect.
-- Remove the full-width border-t footer — integrate the Brain icon into the tags/badges row or float it at the card corner.
+**4. Add life/animation**
+- Score numbers: `animate-in fade-in` on load
+- Sections: staggered fade-in using `animation-delay`
+- Main score circle: subtle pulse on first appearance
+- Scrollable body with smooth scroll behavior
 
-### What stays the same
-- Data fetching logic (program_ai_snapshots + program_orx_signals)
-- "Ask Oryxa" chat handoff logic
-- All locale keys (no new hardcoded text)
-- Generate/retry flow for missing data
+**5. Fix "Ask Oryxa" button area**
+- Make it sticky at bottom with a gradient fade overlay above it
+- Full-width gradient button with proper size (`h-10`)
 
-### Design principles
-- Neutral backgrounds, color only for score values
-- Consistent spacing (p-5, gap-4)
-- Typography hierarchy: section headers 12px bold, content 11-12px regular
-- No heavy gradients or colored blocks — subtle borders and shadows only
+### No changes needed
+- Data fetching logic stays the same
+- `handleAskOryxa` logic stays (already working)
+- ProgramCard Brain icon trigger stays as-is
+- No new locale keys (all existing keys reused)
 
