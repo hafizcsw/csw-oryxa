@@ -438,7 +438,9 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
       })()}
 
       {/* Required Documents Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {(showType('photo') || showType('passport') || showType('certificate')) && (
+      <div className={compact ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"}>
+        {showType('photo') && (
         <RequiredDocumentCard
           type="photo"
           document={photoDoc}
@@ -451,7 +453,9 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
           onDownload={() => handleDownloadDocument('photo')}
           onDelete={() => handleDeleteDocument('photo')}
         />
+        )}
 
+        {showType('passport') && (
         <RequiredDocumentCard
           type="passport"
           document={passportDoc}
@@ -468,7 +472,9 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
           onDownload={() => handleDownloadDocument('passport')}
           onDelete={() => handleDeleteDocument('passport')}
         />
+        )}
 
+        {showType('certificate') && (
         <RequiredDocumentCard
           type="certificate"
           document={certificateDoc}
@@ -484,7 +490,9 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
           onDownload={() => handleDownloadDocument('certificate')}
           onDelete={() => handleDeleteDocument('certificate')}
         />
+        )}
       </div>
+      )}
 
       {/* Save Button */}
       {onUpdate && (
