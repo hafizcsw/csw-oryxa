@@ -12560,22 +12560,94 @@
     "intake_upcoming": "قادم"
   },
   "decision": {
-    "deadlines_title": "مواعيد التقديم النهائية",
-    "cost_title": "نظرة عامة على التكاليف",
-    "scholarships_title": "المنح الدراسية المتاحة",
-    "days_left": "يوم متبقي",
-    "status_open": "مفتوح",
-    "status_closing_soon": "يغلق قريباً",
-    "status_closed": "مغلق",
-    "status_upcoming": "قادم",
-    "tuition_yearly": "الرسوم السنوية",
-    "living_monthly": "المعيشة الشهرية",
-    "housing_monthly": "السكن الشهري",
-    "total_yearly": "التكلفة المقدرة / سنة",
-    "scholarship_merit": "على أساس الجدارة",
-    "scholarship_need": "على أساس الحاجة",
-    "scholarship_full": "منحة كاملة",
-    "scholarship_partial": "منحة جزئية"
+    "academic_truth_title": "الحقيقة الأكاديمية",
+    "academic_truth_subtitle": "الحقائق الأكاديمية المثبتة وتحليل المواد",
+    "field": {
+      "education_level": "المستوى التعليمي",
+      "credential": "الشهادة",
+      "institution": "المؤسسة",
+      "gpa": "المعدل",
+      "graduation_year": "سنة التخرج",
+      "study_status": "حالة الدراسة",
+      "country_of_education": "بلد الدراسة",
+      "credential_type": "نوع الشهادة"
+    },
+    "subjects_discovered": "المواد المكتشفة",
+    "no_subjects_yet": "لم تُستخرج مواد بعد",
+    "panel_title": "تحليل القرار",
+    "panel_subtitle": "الاكتمال والأهلية والملاءمة والتنافسية",
+    "completeness": "الاكتمال",
+    "eligibility": {
+      "gpa_below": "المعدل أقل من الحد الأدنى",
+      "gpa_meets": "المعدل يحقق المتطلبات",
+      "language_meets": "اللغة تحقق المتطلبات"
+    },
+    "fit": {
+      "has_education": "لديه خلفية تعليمية",
+      "has_subjects": "لديه سجلات مواد",
+      "has_major": "لديه تفضيل تخصص",
+      "has_language": "لديه درجة لغة",
+      "diverse_subjects": "تنوع في المواد"
+    },
+    "competitiveness": "التنافسية",
+    "blockers_title": "العوائق",
+    "language_gaps": "فجوات اللغة",
+    "missing_items": "العناصر الناقصة",
+    "candidate_domains": "التخصصات المرشحة",
+    "countries": "الدول",
+    "universities": "الجامعات",
+    "programs": "البرامج",
+    "counts_not_available": "أعداد البرامج غير متاحة بعد من مسار البيانات",
+    "missing": {
+      "name": "الاسم الكامل مفقود",
+      "citizenship": "الجنسية مفقودة",
+      "education_level": "المستوى التعليمي مفقود",
+      "gpa": "المعدل مفقود",
+      "institution": "المؤسسة مفقودة",
+      "english_test": "نوع اختبار اللغة مفقود",
+      "english_score": "درجة اللغة مفقودة",
+      "target_degree": "الدرجة المستهدفة غير محددة",
+      "gpa_for_requirement": "المعدل مطلوب للتحقق من المتطلبات",
+      "subject": "مادة مطلوبة مفقودة",
+      "portfolio": "ملف الأعمال مطلوب"
+    },
+    "comp": {
+      "high_gpa": "معدل عالٍ (3.5+)",
+      "good_gpa": "معدل جيد (3.0+)",
+      "high_language": "درجة لغة قوية",
+      "adequate_language": "درجة لغة كافية",
+      "stem_ready": "جاهزية STEM"
+    },
+    "blockers": {
+      "file_incomplete": "ملف الطالب غير مكتمل",
+      "gpa_below": "المعدل أقل من الحد الأدنى المطلوب",
+      "language_test_missing": "اختبار اللغة غير مقدم",
+      "language_score_below": "درجة اللغة أقل من الحد الأدنى",
+      "subject_grade_below": "درجة المادة أقل من المتطلبات",
+      "credential_mismatch": "نوع الشهادة غير مقبول"
+    },
+    "domain": {
+      "has_biology": "لديه أحياء",
+      "missing_biology": "أحياء مفقودة",
+      "has_chemistry": "لديه كيمياء",
+      "missing_chemistry": "كيمياء مفقودة",
+      "has_math": "لديه رياضيات",
+      "missing_math": "رياضيات مفقودة",
+      "has_physics": "لديه فيزياء",
+      "missing_physics": "فيزياء مفقودة",
+      "language_sufficient": "اللغة كافية",
+      "language_insufficient": "اللغة غير كافية",
+      "high_gpa": "معدل عالٍ",
+      "gpa_below_competitive": "المعدل أقل من المستوى التنافسي",
+      "gpa_sufficient": "المعدل كافٍ",
+      "has_credential": "لديه شهادة أكاديمية",
+      "has_cs_background": "لديه خلفية حاسب",
+      "has_science_background": "لديه مواد علمية",
+      "no_science_subjects": "لا مواد علمية",
+      "has_business_background": "لديه خلفية أعمال"
+    },
+    "eligibility_title": "الأهلية",
+    "fit_title": "الملاءمة"
   },
   "pipeline": {
     "title": "مسار جاهزية المتقدمين",
@@ -13289,96 +13361,6 @@
       "factTransitioned": "تم نقل الحقيقة إلى {{status}}",
       "actionExecuted": "تم تنفيذ {{action}}",
       "actionFailed": "فشل الإجراء"
-    }
-  },
-  "decision": {
-    "academic_truth_title": "الحقيقة الأكاديمية",
-    "academic_truth_subtitle": "الحقائق الأكاديمية المثبتة وتحليل المواد",
-    "field": {
-      "education_level": "المستوى التعليمي",
-      "credential": "الشهادة",
-      "institution": "المؤسسة",
-      "gpa": "المعدل",
-      "graduation_year": "سنة التخرج",
-      "study_status": "حالة الدراسة",
-      "country_of_education": "بلد الدراسة",
-      "credential_type": "نوع الشهادة"
-    },
-    "subjects_discovered": "المواد المكتشفة",
-    "no_subjects_yet": "لم تُستخرج مواد بعد",
-    "panel_title": "تحليل القرار",
-    "panel_subtitle": "الاكتمال والأهلية والملاءمة والتنافسية",
-    "completeness": "الاكتمال",
-    "eligibility": "الأهلية",
-    "fit": "الملاءمة",
-    "competitiveness": "التنافسية",
-    "blockers_title": "العوائق",
-    "language_gaps": "فجوات اللغة",
-    "missing_items": "العناصر الناقصة",
-    "candidate_domains": "التخصصات المرشحة",
-    "countries": "الدول",
-    "universities": "الجامعات",
-    "programs": "البرامج",
-    "counts_not_available": "أعداد البرامج غير متاحة بعد من مسار البيانات",
-    "missing": {
-      "name": "الاسم الكامل مفقود",
-      "citizenship": "الجنسية مفقودة",
-      "education_level": "المستوى التعليمي مفقود",
-      "gpa": "المعدل مفقود",
-      "institution": "المؤسسة مفقودة",
-      "english_test": "نوع اختبار اللغة مفقود",
-      "english_score": "درجة اللغة مفقودة",
-      "target_degree": "الدرجة المستهدفة غير محددة",
-      "gpa_for_requirement": "المعدل مطلوب للتحقق من المتطلبات",
-      "subject": "مادة مطلوبة مفقودة",
-      "portfolio": "ملف الأعمال مطلوب"
-    },
-    "eligibility": {
-      "gpa_below": "المعدل أقل من الحد الأدنى",
-      "gpa_meets": "المعدل يحقق المتطلبات",
-      "language_meets": "اللغة تحقق المتطلبات"
-    },
-    "fit": {
-      "has_education": "لديه خلفية تعليمية",
-      "has_subjects": "لديه سجلات مواد",
-      "has_major": "لديه تفضيل تخصص",
-      "has_language": "لديه درجة لغة",
-      "diverse_subjects": "تنوع في المواد"
-    },
-    "comp": {
-      "high_gpa": "معدل عالٍ (3.5+)",
-      "good_gpa": "معدل جيد (3.0+)",
-      "high_language": "درجة لغة قوية",
-      "adequate_language": "درجة لغة كافية",
-      "stem_ready": "جاهزية STEM"
-    },
-    "blockers": {
-      "file_incomplete": "ملف الطالب غير مكتمل",
-      "gpa_below": "المعدل أقل من الحد الأدنى المطلوب",
-      "language_test_missing": "اختبار اللغة غير مقدم",
-      "language_score_below": "درجة اللغة أقل من الحد الأدنى",
-      "subject_grade_below": "درجة المادة أقل من المتطلبات",
-      "credential_mismatch": "نوع الشهادة غير مقبول"
-    },
-    "domain": {
-      "has_biology": "لديه أحياء",
-      "missing_biology": "أحياء مفقودة",
-      "has_chemistry": "لديه كيمياء",
-      "missing_chemistry": "كيمياء مفقودة",
-      "has_math": "لديه رياضيات",
-      "missing_math": "رياضيات مفقودة",
-      "has_physics": "لديه فيزياء",
-      "missing_physics": "فيزياء مفقودة",
-      "language_sufficient": "اللغة كافية",
-      "language_insufficient": "اللغة غير كافية",
-      "high_gpa": "معدل عالٍ",
-      "gpa_below_competitive": "المعدل أقل من المستوى التنافسي",
-      "gpa_sufficient": "المعدل كافٍ",
-      "has_credential": "لديه شهادة أكاديمية",
-      "has_cs_background": "لديه خلفية حاسب",
-      "has_science_background": "لديه مواد علمية",
-      "no_science_subjects": "لا مواد علمية",
-      "has_business_background": "لديه خلفية أعمال"
     }
   }
 }
