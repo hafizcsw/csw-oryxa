@@ -27,6 +27,7 @@ export interface PromotedField {
   fieldKey: string;
   value: string;
   proposalId: string;
+  documentId: string;
   source: 'auto_accepted' | 'manual_accepted';
 }
 
@@ -107,6 +108,7 @@ export function useDocumentAnalysis({
             fieldKey: p.field_key,
             value: p.proposed_value!,
             proposalId: p.proposal_id,
+            documentId: p.document_id,
             source: 'auto_accepted' as const,
           }));
         setPromotedFields(prev => [...prev, ...newPromoted]);
@@ -145,7 +147,8 @@ export function useDocumentAnalysis({
           fieldKey: proposal.field_key,
           value: proposal.proposed_value!,
           proposalId: proposal.proposal_id,
-          source: 'manual_accepted',
+          documentId: proposal.document_id,
+          source: 'manual_accepted' as const,
         }]);
       }
       return prev;
