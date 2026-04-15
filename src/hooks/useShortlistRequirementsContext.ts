@@ -2,7 +2,7 @@
 // useShortlistRequirementsContext — Door 4.5 bridge
 // ═══════════════════════════════════════════════════════════════
 // Resolves programId + universityId for the decision engine.
-// Priority: authenticated DB shortlist → guest localStorage fallback.
+// Priority: portal_shortlist DB → guest localStorage fallback.
 // ═══════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from 'react';
@@ -22,7 +22,8 @@ interface RequirementsContext {
 
 /**
  * Resolves the student's first shortlisted program for requirements loading.
- * Uses authenticated DB shortlist when available, guest localStorage as fallback.
+ * Uses authenticated portal_shortlist DB table when available,
+ * guest localStorage as fallback.
  */
 export function useShortlistRequirementsContext(): RequirementsContext {
   const [programId, setProgramId] = useState<string | null>(null);
@@ -36,25 +37,25 @@ export function useShortlistRequirementsContext(): RequirementsContext {
     let cancelled = false;
 
     async function resolve() {
-      // Try authenticated shortlist first (DB truth)
+      // Try authenticated DB shortlist first (strongest source)
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          const { data, error } = await supabase.rpc('shortlist_list' as any);
-          if (!error && data) {
-            const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-            const items = parsed?.items ?? parsed ?? [];
-            if (Array.isArray(items) && items.length > 0 && items[0]?.program_id) {
-              if (!cancelled) {
-                setProgramId(items[0].program_id);
-                setSource('db_shortlist');
-                console.log('[RequirementsContext] Using DB shortlist', {
-                  programId: items[0].program_id,
-                  totalItems: items.length,
-                });
-              }
-              return;
-            }
+        if (session?.user?.id) {
+          const { data, error } = await supabase
+            .from('portal_shortlist')
+            .select('program_id')
+            .eq('auth_user_id', session.user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (!error && data?.program_id && !cancelled) {
+            setProgramId(data.program_id);
+            setSource('db_shortlist');
+            console.log('[RequirementsContext] ✅ Using DB shortlist (portal_shortlist)', {
+              programId: data.program_id,
+            });
+            return;
           }
         }
       } catch {
@@ -69,6 +70,8 @@ export function useShortlistRequirementsContext(): RequirementsContext {
         setSource(first ? 'guest_shortlist' : 'none');
         if (first) {
           console.log('[RequirementsContext] Using guest shortlist', { programId: first });
+        } else {
+          console.log('[RequirementsContext] No shortlist items found');
         }
       }
     }
@@ -103,7 +106,7 @@ export function useShortlistRequirementsContext(): RequirementsContext {
         if (!cancelled && data) {
           setUniversityId(data.university_id ?? null);
           setProgramName(data.title || data.title_ar || programId);
-          console.log('[RequirementsContext] Resolved program', {
+          console.log('[RequirementsContext] ✅ Resolved program details', {
             programId,
             universityId: data.university_id,
             programName: data.title || data.title_ar,
