@@ -1,14 +1,16 @@
-import { lazy, Suspense, useCallback } from "react";
+import { lazy, Suspense, useCallback, useRef, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
 import { CanonicalFileSummary } from "@/components/student-file/CanonicalFileSummary";
 import { CentralUploadHub } from "@/components/documents/CentralUploadHub";
+import { DocumentAnalysisPanel } from "@/components/documents/DocumentAnalysisPanel";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AccountContentHeader } from "@/components/portal/account/AccountContentHeader";
 import { useCanonicalStudentFile } from "@/hooks/useCanonicalStudentFile";
 import { useStudentDocuments } from "@/hooks/useStudentDocuments";
 import { useDocumentRegistry } from "@/hooks/useDocumentRegistry";
+import { useDocumentAnalysis } from "@/hooks/useDocumentAnalysis";
 import type { FileQualityResult } from "@/features/file-quality/types";
 import type { DocumentTypeFilter } from "./DocumentsTab";
 
@@ -45,6 +47,15 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     userId: profile?.user_id ?? null,
   });
 
+  // ═══ Door 3: Document Analysis + Proposals ═══
+  const analysisHook = useDocumentAnalysis({
+    studentId: profile?.user_id ?? null,
+    canonicalFile,
+  });
+
+  // File map for post-upload analysis (ref to avoid re-renders)
+  const pendingFilesRef = useRef(new Map<string, File>());
+
   // ═══ Door 2: Document Registry + Upload Hub ═══
   const handleBatchComplete = useCallback(() => {
     refetchDocs({ silent: true });
@@ -55,7 +66,31 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     onBatchComplete: handleBatchComplete,
   });
 
+  // Trigger analysis when records become registered
+  const prevRecordsRef = useRef<string[]>([]);
+  useEffect(() => {
+    const registeredIds = registry.records
+      .filter(r => r.processing_status === 'registered')
+      .map(r => r.document_id);
+    
+    const newlyRegistered = registeredIds.filter(id => !prevRecordsRef.current.includes(id));
+    prevRecordsRef.current = registeredIds;
+
+    for (const id of newlyRegistered) {
+      const record = registry.records.find(r => r.document_id === id);
+      if (!record) continue;
+      const file = pendingFilesRef.current.get(record.original_file_name);
+      if (file && !analysisHook.getAnalysis(id)) {
+        analysisHook.analyzeFile(file, id, record.slot_hint);
+        pendingFilesRef.current.delete(record.original_file_name);
+      }
+    }
+  }, [registry.records, analysisHook]);
+
   const handleFilesSelected = useCallback((files: File[]) => {
+    for (const file of files) {
+      pendingFilesRef.current.set(file.name, file);
+    }
     registry.enqueueFiles(files, 'upload_hub');
   }, [registry]);
 
@@ -108,6 +143,20 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           onClearCompleted={registry.clearCompleted}
         />
       </section>
+
+      {/* ═══ Door 3: Document Analysis + Proposals ═══ */}
+      {(analysisHook.analyses.length > 0 || analysisHook.isAnalyzing) && (
+        <section>
+          <h2 className="text-base font-semibold text-foreground mb-3">{t('portal.analysis.title')}</h2>
+          <DocumentAnalysisPanel
+            analyses={analysisHook.analyses}
+            proposals={analysisHook.proposals}
+            isAnalyzing={analysisHook.isAnalyzing}
+            onAcceptProposal={analysisHook.acceptProposal}
+            onRejectProposal={analysisHook.rejectProposal}
+          />
+        </section>
+      )}
 
       <Separator />
 
