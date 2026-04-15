@@ -1353,6 +1353,14 @@
       "status_upload_failed": "Failed",
       "status_cancelled": "Cancelled"
     },
+    "analysis": {
+      "title": "Document Analysis",
+      "documents_analyzed": "Documents analyzed",
+      "accepted": "accepted",
+      "pending": "pending",
+      "rejected": "rejected",
+      "no_fields_extracted": "No fields could be extracted from this document"
+    },
     "nav": {
       "sections": "Sections"
     },
