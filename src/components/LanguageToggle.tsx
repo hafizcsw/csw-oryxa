@@ -69,7 +69,7 @@ export function LanguageToggle() {
           aria-expanded={open}
           type="button"
         >
-          <Globe className="w-3.5 h-3.5 opacity-70" />
+          <span className="text-sm leading-none">{currentLang?.flag}</span>
           <span className="text-xs font-semibold uppercase tracking-wide">
             {currentLang?.code}
           </span>
