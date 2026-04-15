@@ -9,6 +9,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { buildAvatarDisplayUrl, MAX_AVATAR_BYTES, optimizeAvatarForUpload } from "@/features/avatar/avatarImageUtils";
 import { supabase } from "@/integrations/supabase/client";
 
+interface CanonicalIdentityRead {
+  full_name?: string | null;
+  citizenship?: string | null;
+}
+
 interface AccountContentHeaderProps {
   profile: {
     full_name?: string | null;
@@ -20,10 +25,12 @@ interface AccountContentHeaderProps {
     full_name?: string | null;
     phone?: string | null;
     phone_e164?: string | null;
-    avatar_url?: string | null;  // CRM avatar URL (priority over local)
+    avatar_url?: string | null;
     avatar_updated_at?: string | null;
     updated_at?: string | null;
   } | null;
+  /** Door 1: canonical identity — primary read source when available */
+  canonicalIdentity?: CanonicalIdentityRead | null;
   onEditProfile?: () => void;
   onAvatarUpdate?: (path: string | null) => Promise<boolean>;
 }
