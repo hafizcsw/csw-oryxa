@@ -32,7 +32,7 @@ export function TabNavigation({ currentTab, onTabChange }: TabNavigationProps) {
         className="gap-2"
       >
         <ChevronRight className="h-4 w-4" />
-        {prevTab ? t(TAB_KEYS[prevTab]) : t('portal.sidebar.profile')}
+        {prevTab ? t(TAB_KEYS[prevTab]) : t('portal.sidebar.myStudyFile')}
       </Button>
 
       <span className="text-sm text-muted-foreground font-medium">
