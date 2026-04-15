@@ -567,9 +567,6 @@ export function CentralUploadHub({
   const isProcessing = isUploading || records.some(r =>
     r.processing_status === 'uploading' || r.processing_status === 'confirming'
   );
-  const isProcessing = isUploading || records.some(r =>
-    r.processing_status === 'uploading' || r.processing_status === 'confirming'
-  );
 
   return (
     <div className="space-y-3" data-door2-consumer="upload-hub">
