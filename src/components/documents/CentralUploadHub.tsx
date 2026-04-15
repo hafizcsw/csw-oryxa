@@ -290,7 +290,7 @@ function BrainScene({ isActive, isProcessing, isDragOver }: { isActive: boolean;
           </g>
         ) : (
           <g>
-            <circle cx="300" cy="145" r="14" fill="hsl(var(--background))" opacity="0.7" stroke="hsl(var(--primary))" strokeWidth="1" opacity2="0.4" />
+            <circle cx="300" cy="145" r="14" fill="hsl(var(--background))" opacity="0.7" stroke="hsl(var(--primary))" strokeWidth="1" />
             {/* Upload arrow icon */}
             <path d="M300 139 L300 151 M295 143 L300 138 L305 143" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.7" />
           </g>
