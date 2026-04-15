@@ -85,7 +85,7 @@ function mergePromotedFields(
     const provKey = `${block}.${key}`;
     const prov: FieldProvenance = {
       source_type: 'extracted',
-      source_document_id: pf.proposalId,
+      source_document_id: pf.documentId,
       verified_status: pf.source === 'manual_accepted',
       field_state: 'accepted',
       updated_at: new Date().toISOString(),
