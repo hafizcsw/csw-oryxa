@@ -1,0 +1,76 @@
+# HTTP TEST EVIDENCE: Query vs Keyword Test
+# Test ID: phase2_query_keyword_test
+# Generated: 2026-01-27T07:45:00Z
+# Endpoint: portal-programs-search (via RPC direct test)
+
+================================================================================
+TEST OBJECTIVE
+================================================================================
+
+Verify if keyword/query search is supported in HMAC endpoint:
+- query: "medicine" (CRM-style)
+- keyword: "engineering" (alternative)
+
+================================================================================
+REQUEST
+================================================================================
+
+{
+  "request_id": "phase2_query_keyword_test",
+  "display_lang": "ar",
+  "display_currency_code": "USD",
+  "program_filters": {
+    "tuition_basis": "year",
+    "tuition_usd_min": 0,
+    "tuition_usd_max": 50000,
+    "partner_priority": "prefer",
+    "query": "medicine",         // <-- Keyword search attempt
+    "keyword": "engineering"     // <-- Alternative key
+  }
+}
+
+================================================================================
+RESPONSE
+================================================================================
+
+{
+  "ok": false,
+  "request_id": "phase2_query_keyword_test",
+  "error": "MISSING_DATA_FIELDS",
+  "missing_data_fields": [
+    "unsupported_filter.query",
+    "unsupported_filter.keyword"
+  ],
+  "ignored_filters": []
+}
+
+================================================================================
+ANALYSIS
+================================================================================
+
+✅ PASS: Fail-Closed Policy Enforced
+- BOTH "query" and "keyword" are REJECTED
+- Multiple unknown keys are reported together in missing_data_fields
+
+⚠️ CRITICAL CAPABILITY GAP:
+- HMAC endpoint does NOT support keyword/text search
+- CRM Bot cannot search by program name or subject keywords
+- Only structured filters (country, degree, tuition, etc.) are supported
+
+================================================================================
+CONCLUSION
+================================================================================
+
+KEYWORD SEARCH: ❌ NOT SUPPORTED in HMAC endpoint
+
+This means:
+- Bot cannot search "medicine programs in Russia"
+- Bot can ONLY search by structured filters:
+  - country_codes
+  - degree_slugs
+  - discipline_slugs
+  - tuition range
+  - etc.
+
+If keyword search is needed, CRM must use a different endpoint or
+Portal must add keyword support to the RPC.

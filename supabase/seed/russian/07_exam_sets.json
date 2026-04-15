@@ -1,0 +1,824 @@
+[
+  {
+    "exam_set_key": "shared_core_exam_set_01_v1",
+    "course_key": "russian_shared_core_v1",
+    "title": "Shared Core Exam Set 01",
+    "exam_family": "shared_core_exam_set_01",
+    "track_scope": "shared_foundation",
+    "version": "v1",
+    "lesson_scope_keys": [
+      "alphabet_map",
+      "sound_rules",
+      "handwriting_decoding",
+      "greetings",
+      "self_introduction",
+      "personal_information",
+      "numbers_dates_time",
+      "directions_places",
+      "shopping_transport",
+      "university_vocabulary",
+      "classroom_phrases",
+      "instructions_questions",
+      "reading_notices",
+      "forms_labels",
+      "short_academic_texts",
+      "lecture_listening_cues",
+      "note_taking_phrases",
+      "short_written_responses",
+      "noun_gender_number",
+      "case_pattern_awareness",
+      "adjective_agreement_basics",
+      "present_past_future",
+      "motion_verbs_intro",
+      "schedules_deadlines",
+      "checkpoint_01_a",
+      "checkpoint_01_b",
+      "checkpoint_01_review",
+      "checkpoint_02_a",
+      "checkpoint_02_b",
+      "checkpoint_02_review"
+    ],
+    "module_scope_keys": [
+      "foundations_01_script_sounds",
+      "foundations_02_core_interaction",
+      "foundations_03_survival_navigation",
+      "academic_01_classroom_basics",
+      "academic_02_reading_patterns",
+      "academic_03_note_taking_response",
+      "grammar_01_case_awareness",
+      "grammar_02_verbs_motion_time",
+      "checkpoint_01_foundation",
+      "checkpoint_02_academic_entry"
+    ],
+    "total_sections": 4,
+    "total_items": 40,
+    "target_score": 75,
+    "release_stage": "active",
+    "blueprint_json": {
+      "sections": [
+        {
+          "key": "reading",
+          "title": "Reading",
+          "content_blocks": [
+            {
+              "block_key": "exam_reading_prompt_1",
+              "type": "prompt",
+              "title": "Library notice",
+              "content": "Библиотека открыта с 8:30 до 19:00. Студенты сдают книги на стойке №2."
+            },
+            {
+              "block_key": "exam_reading_prompt_2",
+              "type": "prompt",
+              "title": "Schedule line",
+              "content": "Во вторник семинар по истории в 14:10, аудитория 12."
+            }
+          ],
+          "items": [
+            {
+              "item_key": "reading_1",
+              "lesson_key": "reading_notices",
+              "prompt": "What time does the library open?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "8:30",
+                  "08:30"
+                ],
+                "incorrectFeedback": "Review the reading prompt for reading 1."
+              }
+            },
+            {
+              "item_key": "reading_2",
+              "lesson_key": "reading_notices",
+              "prompt": "What time does the library close?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "19:00",
+                  "7:00 pm",
+                  "7 pm"
+                ],
+                "incorrectFeedback": "Review the reading prompt for reading 2."
+              }
+            },
+            {
+              "item_key": "reading_3",
+              "lesson_key": "forms_labels",
+              "prompt": "Which desk is used to return books?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "2",
+                  "стойка 2",
+                  "стойке 2",
+                  "№2"
+                ],
+                "incorrectFeedback": "Review the reading prompt for reading 3."
+              }
+            },
+            {
+              "item_key": "reading_4",
+              "lesson_key": "schedules_deadlines",
+              "prompt": "On which day is the seminar?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "вторник",
+                  "во вторник",
+                  "tuesday"
+                ],
+                "incorrectFeedback": "Review the reading prompt for reading 4."
+              }
+            },
+            {
+              "item_key": "reading_5",
+              "lesson_key": "schedules_deadlines",
+              "prompt": "At what time is the history seminar?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "14:10"
+                ],
+                "incorrectFeedback": "Review the reading prompt for reading 5."
+              }
+            },
+            {
+              "item_key": "reading_6",
+              "lesson_key": "university_vocabulary",
+              "prompt": "In which room is the seminar?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "12",
+                  "аудитория 12"
+                ],
+                "incorrectFeedback": "Review the reading prompt for reading 6."
+              }
+            },
+            {
+              "item_key": "reading_7",
+              "lesson_key": "forms_labels",
+              "prompt": "Write the Russian word for library from the prompt.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "библиотека"
+                ],
+                "incorrectFeedback": "Review the reading prompt for reading 7."
+              }
+            },
+            {
+              "item_key": "reading_8",
+              "lesson_key": "reading_notices",
+              "prompt": "Write the Russian word for students from the prompt.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "студенты"
+                ],
+                "incorrectFeedback": "Review the reading prompt for reading 8."
+              }
+            },
+            {
+              "item_key": "reading_9",
+              "lesson_key": "short_academic_texts",
+              "prompt": "Which subject is named in the schedule line?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "история",
+                  "истории",
+                  "history"
+                ],
+                "incorrectFeedback": "Review the reading prompt for reading 9."
+              }
+            },
+            {
+              "item_key": "reading_10",
+              "lesson_key": "reading_notices",
+              "prompt": "Give one complete Russian sentence summarizing the library notice.",
+              "prompt_type": "written_response",
+              "scoring": {
+                "mode": "concept_match",
+                "maxPoints": 2,
+                "requiredConceptGroups": [
+                  [
+                    "библиотека"
+                  ],
+                  [
+                    "8:30",
+                    "08:30"
+                  ],
+                  [
+                    "19:00"
+                  ],
+                  [
+                    "стойка 2",
+                    "стойке 2",
+                    "№2"
+                  ]
+                ],
+                "incorrectFeedback": "Mention the library, opening/closing times, and desk 2."
+              }
+            },
+            {
+              "item_key": "reading_11",
+              "lesson_key": "forms_labels",
+              "prompt": "What numeral appears in the service desk label?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "2",
+                  "№2"
+                ],
+                "incorrectFeedback": "Review the reading prompt for reading 11."
+              }
+            },
+            {
+              "item_key": "reading_12",
+              "lesson_key": "short_academic_texts",
+              "prompt": "What is one obligation students have according to the notice?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "сдают книги",
+                  "return books",
+                  "bring back books"
+                ],
+                "incorrectFeedback": "Review the reading prompt for reading 12."
+              }
+            }
+          ]
+        },
+        {
+          "key": "language_use",
+          "title": "Language use",
+          "content_blocks": [
+            {
+              "block_key": "exam_language_prompt_1",
+              "type": "prompt",
+              "title": "Core language targets",
+              "content": "Use greetings, self-introduction, origin, time, motion, and classroom phrases accurately."
+            }
+          ],
+          "items": [
+            {
+              "item_key": "language_use_1",
+              "lesson_key": "greetings",
+              "prompt": "Write a formal greeting in Russian.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "здравствуйте"
+                ],
+                "incorrectFeedback": "Review the target language for language_use_1."
+              }
+            },
+            {
+              "item_key": "language_use_2",
+              "lesson_key": "self_introduction",
+              "prompt": "Complete: Меня ... Олег.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "зовут"
+                ],
+                "incorrectFeedback": "Review the target language for language_use_2."
+              }
+            },
+            {
+              "item_key": "language_use_3",
+              "lesson_key": "personal_information",
+              "prompt": "Translate: We are from Russia.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "мы из россии"
+                ],
+                "incorrectFeedback": "Review the target language for language_use_3."
+              }
+            },
+            {
+              "item_key": "language_use_4",
+              "lesson_key": "numbers_dates_time",
+              "prompt": "Write 20 in Russian.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "двадцать"
+                ],
+                "incorrectFeedback": "Review the target language for language_use_4."
+              }
+            },
+            {
+              "item_key": "language_use_5",
+              "lesson_key": "directions_places",
+              "prompt": "Which word means straight ahead?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "прямо"
+                ],
+                "incorrectFeedback": "Review the target language for language_use_5."
+              }
+            },
+            {
+              "item_key": "language_use_6",
+              "lesson_key": "shopping_transport",
+              "prompt": "Translate: ticket.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "билет"
+                ],
+                "incorrectFeedback": "Review the target language for language_use_6."
+              }
+            },
+            {
+              "item_key": "language_use_7",
+              "lesson_key": "classroom_phrases",
+              "prompt": "Translate: Repeat, please.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "повторите пожалуйста",
+                  "повторите, пожалуйста"
+                ],
+                "incorrectFeedback": "Review the target language for language_use_7."
+              }
+            },
+            {
+              "item_key": "language_use_8",
+              "lesson_key": "instructions_questions",
+              "prompt": "Write the Russian question word for where.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "где"
+                ],
+                "incorrectFeedback": "Review the target language for language_use_8."
+              }
+            },
+            {
+              "item_key": "language_use_9",
+              "lesson_key": "noun_gender_number",
+              "prompt": "Give the plural of студент.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "студенты"
+                ],
+                "incorrectFeedback": "Review the target language for language_use_9."
+              }
+            },
+            {
+              "item_key": "language_use_10",
+              "lesson_key": "present_past_future",
+              "prompt": "Write the future auxiliary in Мы ... читать.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "будем"
+                ],
+                "incorrectFeedback": "Review the target language for language_use_10."
+              }
+            },
+            {
+              "item_key": "language_use_11",
+              "lesson_key": "motion_verbs_intro",
+              "prompt": "Translate: I am going to the university.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "я иду в университет"
+                ],
+                "incorrectFeedback": "Review the target language for language_use_11."
+              }
+            },
+            {
+              "item_key": "language_use_12",
+              "lesson_key": "case_pattern_awareness",
+              "prompt": "Write a short Russian sentence saying that the lecture is at the university.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "лекция в университете"
+                ],
+                "incorrectFeedback": "Review the target language for language_use_12."
+              }
+            }
+          ]
+        },
+        {
+          "key": "listening_lite",
+          "title": "Listening lite",
+          "content_blocks": [
+            {
+              "block_key": "exam_listening_prompt_1",
+              "type": "transcript",
+              "title": "Orientation audio transcript",
+              "content": "Доброе утро! Сегодня экзамен по русскому языку начинается в десять тридцать. Сначала идите в аудиторию семь, потом сдайте форму преподавателю Марине Сергеевне."
+            }
+          ],
+          "items": [
+            {
+              "item_key": "listening_lite_1",
+              "lesson_key": "classroom_phrases",
+              "prompt": "What greeting opens the transcript?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "доброе утро"
+                ],
+                "incorrectFeedback": "Review the listening transcript for listening_lite_1."
+              }
+            },
+            {
+              "item_key": "listening_lite_2",
+              "lesson_key": "numbers_dates_time",
+              "prompt": "At what time does the exam begin?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "10:30",
+                  "десять тридцать"
+                ],
+                "incorrectFeedback": "Review the listening transcript for listening_lite_2."
+              }
+            },
+            {
+              "item_key": "listening_lite_3",
+              "lesson_key": "university_vocabulary",
+              "prompt": "Which room should students go to first?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "7",
+                  "семь",
+                  "аудитория семь"
+                ],
+                "incorrectFeedback": "Review the listening transcript for listening_lite_3."
+              }
+            },
+            {
+              "item_key": "listening_lite_4",
+              "lesson_key": "forms_labels",
+              "prompt": "What should students hand in?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "форма",
+                  "form"
+                ],
+                "incorrectFeedback": "Review the listening transcript for listening_lite_4."
+              }
+            },
+            {
+              "item_key": "listening_lite_5",
+              "lesson_key": "personal_information",
+              "prompt": "What is the teacher's first name?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "марина",
+                  "марине"
+                ],
+                "incorrectFeedback": "Review the listening transcript for listening_lite_5."
+              }
+            },
+            {
+              "item_key": "listening_lite_6",
+              "lesson_key": "personal_information",
+              "prompt": "What is the teacher's patronymic?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "сергеевна"
+                ],
+                "incorrectFeedback": "Review the listening transcript for listening_lite_6."
+              }
+            },
+            {
+              "item_key": "listening_lite_7",
+              "lesson_key": "instructions_questions",
+              "prompt": "Which verb tells students to go somewhere first?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "идите"
+                ],
+                "incorrectFeedback": "Review the listening transcript for listening_lite_7."
+              }
+            },
+            {
+              "item_key": "listening_lite_8",
+              "lesson_key": "short_academic_texts",
+              "prompt": "Write one Russian sentence summarizing the instructions.",
+              "prompt_type": "written_response",
+              "scoring": {
+                "mode": "concept_match",
+                "maxPoints": 2,
+                "requiredConceptGroups": [
+                  [
+                    "экзамен"
+                  ],
+                  [
+                    "десять тридцать",
+                    "10:30"
+                  ],
+                  [
+                    "аудитория семь",
+                    "семь"
+                  ],
+                  [
+                    "форма"
+                  ],
+                  [
+                    "марина сергеевна",
+                    "марине сергеевне"
+                  ]
+                ],
+                "incorrectFeedback": "Mention the exam, time, room 7, form submission, and Marina Sergeevna."
+              }
+            }
+          ]
+        },
+        {
+          "key": "written_response",
+          "title": "Written response",
+          "content_blocks": [
+            {
+              "block_key": "exam_written_prompt_1",
+              "type": "prompt",
+              "title": "Task",
+              "content": "Write short academically oriented responses in Russian using basic shared-core structures."
+            }
+          ],
+          "items": [
+            {
+              "item_key": "written_response_1",
+              "lesson_key": "short_written_responses",
+              "prompt": "Introduce yourself in one or two Russian sentences.",
+              "prompt_type": "written_response",
+              "scoring": {
+                "mode": "concept_match",
+                "maxPoints": 2,
+                "requiredConceptGroups": [
+                  [
+                    "меня зовут"
+                  ],
+                  [
+                    "я из"
+                  ]
+                ],
+                "incorrectFeedback": "Include your name and where you are from."
+              }
+            },
+            {
+              "item_key": "written_response_2",
+              "lesson_key": "note_taking_phrases",
+              "prompt": "Write one sentence saying the lecture starts at 9:00.",
+              "prompt_type": "written_response",
+              "scoring": {
+                "mode": "concept_match",
+                "maxPoints": 2,
+                "requiredConceptGroups": [
+                  [
+                    "лекция"
+                  ],
+                  [
+                    "девять",
+                    "9:00",
+                    "09:00"
+                  ],
+                  [
+                    "начинается"
+                  ]
+                ],
+                "incorrectFeedback": "Include lecture, start time, and a start verb."
+              }
+            },
+            {
+              "item_key": "written_response_3",
+              "lesson_key": "schedules_deadlines",
+              "prompt": "Write one sentence saying the seminar is on Tuesday in room 12.",
+              "prompt_type": "written_response",
+              "scoring": {
+                "mode": "concept_match",
+                "maxPoints": 2,
+                "requiredConceptGroups": [
+                  [
+                    "семинар"
+                  ],
+                  [
+                    "вторник",
+                    "во вторник"
+                  ],
+                  [
+                    "12",
+                    "аудитория 12"
+                  ]
+                ],
+                "incorrectFeedback": "Include seminar, Tuesday, and room 12."
+              }
+            },
+            {
+              "item_key": "written_response_4",
+              "lesson_key": "motion_verbs_intro",
+              "prompt": "Write one sentence saying you are going to the library now.",
+              "prompt_type": "written_response",
+              "scoring": {
+                "mode": "concept_match",
+                "maxPoints": 2,
+                "requiredConceptGroups": [
+                  [
+                    "я иду"
+                  ],
+                  [
+                    "библиотека",
+                    "библиотеку"
+                  ],
+                  [
+                    "сейчас",
+                    "now"
+                  ]
+                ],
+                "incorrectFeedback": "Include motion verb, library destination, and now."
+              }
+            },
+            {
+              "item_key": "written_response_5",
+              "lesson_key": "classroom_phrases",
+              "prompt": "Write a polite request asking the teacher to repeat.",
+              "prompt_type": "written_response",
+              "scoring": {
+                "mode": "concept_match",
+                "maxPoints": 2,
+                "requiredConceptGroups": [
+                  [
+                    "повторите"
+                  ],
+                  [
+                    "пожалуйста"
+                  ]
+                ],
+                "incorrectFeedback": "Use повторите and пожалуйста."
+              }
+            },
+            {
+              "item_key": "written_response_6",
+              "lesson_key": "university_vocabulary",
+              "prompt": "Write one sentence saying the student studies at the university.",
+              "prompt_type": "written_response",
+              "scoring": {
+                "mode": "concept_match",
+                "maxPoints": 2,
+                "requiredConceptGroups": [
+                  [
+                    "студент"
+                  ],
+                  [
+                    "учится",
+                    "изучает"
+                  ],
+                  [
+                    "университет",
+                    "университете"
+                  ]
+                ],
+                "incorrectFeedback": "Include student, study verb, and university."
+              }
+            },
+            {
+              "item_key": "written_response_7",
+              "lesson_key": "present_past_future",
+              "prompt": "Write one sentence saying we will read the text tomorrow.",
+              "prompt_type": "written_response",
+              "scoring": {
+                "mode": "concept_match",
+                "maxPoints": 2,
+                "requiredConceptGroups": [
+                  [
+                    "мы"
+                  ],
+                  [
+                    "будем"
+                  ],
+                  [
+                    "читать"
+                  ],
+                  [
+                    "завтра"
+                  ]
+                ],
+                "incorrectFeedback": "Include мы, будем, читать, and завтра."
+              }
+            },
+            {
+              "item_key": "written_response_8",
+              "lesson_key": "checkpoint_01_review",
+              "prompt": "Write one or two sentences summarizing your academic-day plan in Russian.",
+              "prompt_type": "written_response",
+              "scoring": {
+                "mode": "concept_match",
+                "maxPoints": 2,
+                "requiredConceptGroups": [
+                  [
+                    "университет",
+                    "пара",
+                    "лекция",
+                    "семинар"
+                  ],
+                  [
+                    "время",
+                    "часов",
+                    "утро",
+                    "день"
+                  ],
+                  [
+                    "иду",
+                    "начинается",
+                    "учусь",
+                    "читаю"
+                  ]
+                ],
+                "incorrectFeedback": "Include an academic activity, a time reference, and an appropriate verb."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "metadata": {
+      "scoringVersion": "shared_core_answer_key_v1",
+      "passThreshold": 75,
+      "sectionWeights": {
+        "reading": 0.3,
+        "language_use": 0.3,
+        "listening_lite": 0.2,
+        "written_response": 0.2
+      },
+      "feedbackVersion": "shared_core_feedback_v1"
+    }
+  }
+]

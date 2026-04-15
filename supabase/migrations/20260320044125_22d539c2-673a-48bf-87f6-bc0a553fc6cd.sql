@@ -1,0 +1,1 @@
+UPDATE crawl_file_artifacts SET parse_status = 'parsed', updated_at = now() WHERE id = '4a380097-0dce-41ae-a734-47264241624a';

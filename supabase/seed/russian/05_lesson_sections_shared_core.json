@@ -1,0 +1,2642 @@
+[
+  {
+    "lesson_key": "alphabet_map",
+    "section_key": "alphabet_map_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Alphabet map — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.alphabet_map.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "alphabet_map:alphabet_map_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "alphabet_map:alphabet_map_intro"
+  },
+  {
+    "lesson_key": "alphabet_map",
+    "section_key": "alphabet_map_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Alphabet map — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.alphabet_map.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "alphabet_map:alphabet_map_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "alphabet_map:alphabet_map_explanation"
+  },
+  {
+    "lesson_key": "alphabet_map",
+    "section_key": "alphabet_map_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Alphabet map — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.alphabet_map.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "pronunciation_drill",
+      "blockRef": "alphabet_map:alphabet_map_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "pronunciation_drill",
+    "block_ref": "alphabet_map:alphabet_map_drill"
+  },
+  {
+    "lesson_key": "alphabet_map",
+    "section_key": "alphabet_map_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Alphabet map — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.alphabet_map.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "alphabet_map:alphabet_map_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "alphabet_map:alphabet_map_quiz"
+  },
+  {
+    "lesson_key": "sound_rules",
+    "section_key": "sound_rules_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Sound rules — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.sound_rules.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "sound_rules:sound_rules_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "sound_rules:sound_rules_intro"
+  },
+  {
+    "lesson_key": "sound_rules",
+    "section_key": "sound_rules_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Sound rules — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.sound_rules.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "sound_rules:sound_rules_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "sound_rules:sound_rules_explanation"
+  },
+  {
+    "lesson_key": "sound_rules",
+    "section_key": "sound_rules_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Sound rules — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.sound_rules.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "pronunciation_drill",
+      "blockRef": "sound_rules:sound_rules_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "pronunciation_drill",
+    "block_ref": "sound_rules:sound_rules_drill"
+  },
+  {
+    "lesson_key": "sound_rules",
+    "section_key": "sound_rules_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Sound rules — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.sound_rules.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "sound_rules:sound_rules_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "sound_rules:sound_rules_quiz"
+  },
+  {
+    "lesson_key": "handwriting_decoding",
+    "section_key": "handwriting_decoding_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Handwriting decoding — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.handwriting_decoding.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "handwriting_decoding:handwriting_decoding_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "handwriting_decoding:handwriting_decoding_intro"
+  },
+  {
+    "lesson_key": "handwriting_decoding",
+    "section_key": "handwriting_decoding_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Handwriting decoding — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.handwriting_decoding.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "handwriting_decoding:handwriting_decoding_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "handwriting_decoding:handwriting_decoding_explanation"
+  },
+  {
+    "lesson_key": "handwriting_decoding",
+    "section_key": "handwriting_decoding_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Handwriting decoding — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.handwriting_decoding.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "pronunciation_drill",
+      "blockRef": "handwriting_decoding:handwriting_decoding_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "pronunciation_drill",
+    "block_ref": "handwriting_decoding:handwriting_decoding_drill"
+  },
+  {
+    "lesson_key": "handwriting_decoding",
+    "section_key": "handwriting_decoding_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Handwriting decoding — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.handwriting_decoding.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "handwriting_decoding:handwriting_decoding_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "handwriting_decoding:handwriting_decoding_quiz"
+  },
+  {
+    "lesson_key": "greetings",
+    "section_key": "greetings_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Greetings — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.greetings.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "greetings:greetings_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "greetings:greetings_intro"
+  },
+  {
+    "lesson_key": "greetings",
+    "section_key": "greetings_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Greetings — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.greetings.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "greetings:greetings_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "greetings:greetings_explanation"
+  },
+  {
+    "lesson_key": "greetings",
+    "section_key": "greetings_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Greetings — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.greetings.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "pronunciation_drill",
+      "blockRef": "greetings:greetings_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "pronunciation_drill",
+    "block_ref": "greetings:greetings_drill"
+  },
+  {
+    "lesson_key": "greetings",
+    "section_key": "greetings_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Greetings — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.greetings.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "greetings:greetings_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "greetings:greetings_quiz"
+  },
+  {
+    "lesson_key": "self_introduction",
+    "section_key": "self_introduction_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Self introduction — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.self_introduction.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "self_introduction:self_introduction_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "self_introduction:self_introduction_intro"
+  },
+  {
+    "lesson_key": "self_introduction",
+    "section_key": "self_introduction_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Self introduction — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.self_introduction.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "self_introduction:self_introduction_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "self_introduction:self_introduction_explanation"
+  },
+  {
+    "lesson_key": "self_introduction",
+    "section_key": "self_introduction_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Self introduction — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.self_introduction.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "pronunciation_drill",
+      "blockRef": "self_introduction:self_introduction_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "pronunciation_drill",
+    "block_ref": "self_introduction:self_introduction_drill"
+  },
+  {
+    "lesson_key": "self_introduction",
+    "section_key": "self_introduction_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Self introduction — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.self_introduction.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "self_introduction:self_introduction_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "self_introduction:self_introduction_quiz"
+  },
+  {
+    "lesson_key": "personal_information",
+    "section_key": "personal_information_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Personal information — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.personal_information.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "personal_information:personal_information_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "personal_information:personal_information_intro"
+  },
+  {
+    "lesson_key": "personal_information",
+    "section_key": "personal_information_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Personal information — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.personal_information.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "personal_information:personal_information_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "personal_information:personal_information_explanation"
+  },
+  {
+    "lesson_key": "personal_information",
+    "section_key": "personal_information_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Personal information — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.personal_information.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "pronunciation_drill",
+      "blockRef": "personal_information:personal_information_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "pronunciation_drill",
+    "block_ref": "personal_information:personal_information_drill"
+  },
+  {
+    "lesson_key": "personal_information",
+    "section_key": "personal_information_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Personal information — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.personal_information.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "personal_information:personal_information_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "personal_information:personal_information_quiz"
+  },
+  {
+    "lesson_key": "numbers_dates_time",
+    "section_key": "numbers_dates_time_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Numbers, dates, and time — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.numbers_dates_time.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "numbers_dates_time:numbers_dates_time_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "numbers_dates_time:numbers_dates_time_intro"
+  },
+  {
+    "lesson_key": "numbers_dates_time",
+    "section_key": "numbers_dates_time_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Numbers, dates, and time — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.numbers_dates_time.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "numbers_dates_time:numbers_dates_time_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "numbers_dates_time:numbers_dates_time_explanation"
+  },
+  {
+    "lesson_key": "numbers_dates_time",
+    "section_key": "numbers_dates_time_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Numbers, dates, and time — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.numbers_dates_time.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "pronunciation_drill",
+      "blockRef": "numbers_dates_time:numbers_dates_time_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "pronunciation_drill",
+    "block_ref": "numbers_dates_time:numbers_dates_time_drill"
+  },
+  {
+    "lesson_key": "numbers_dates_time",
+    "section_key": "numbers_dates_time_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Numbers, dates, and time — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.numbers_dates_time.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "numbers_dates_time:numbers_dates_time_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "numbers_dates_time:numbers_dates_time_quiz"
+  },
+  {
+    "lesson_key": "directions_places",
+    "section_key": "directions_places_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Directions and places — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.directions_places.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "directions_places:directions_places_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "directions_places:directions_places_intro"
+  },
+  {
+    "lesson_key": "directions_places",
+    "section_key": "directions_places_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Directions and places — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.directions_places.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "directions_places:directions_places_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "directions_places:directions_places_explanation"
+  },
+  {
+    "lesson_key": "directions_places",
+    "section_key": "directions_places_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Directions and places — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.directions_places.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "pronunciation_drill",
+      "blockRef": "directions_places:directions_places_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "pronunciation_drill",
+    "block_ref": "directions_places:directions_places_drill"
+  },
+  {
+    "lesson_key": "directions_places",
+    "section_key": "directions_places_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Directions and places — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.directions_places.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "directions_places:directions_places_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "directions_places:directions_places_quiz"
+  },
+  {
+    "lesson_key": "shopping_transport",
+    "section_key": "shopping_transport_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Shopping and transport — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.shopping_transport.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "shopping_transport:shopping_transport_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "shopping_transport:shopping_transport_intro"
+  },
+  {
+    "lesson_key": "shopping_transport",
+    "section_key": "shopping_transport_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Shopping and transport — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.shopping_transport.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "shopping_transport:shopping_transport_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "shopping_transport:shopping_transport_explanation"
+  },
+  {
+    "lesson_key": "shopping_transport",
+    "section_key": "shopping_transport_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Shopping and transport — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.shopping_transport.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "pronunciation_drill",
+      "blockRef": "shopping_transport:shopping_transport_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "pronunciation_drill",
+    "block_ref": "shopping_transport:shopping_transport_drill"
+  },
+  {
+    "lesson_key": "shopping_transport",
+    "section_key": "shopping_transport_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Shopping and transport — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.shopping_transport.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "shopping_transport:shopping_transport_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "shopping_transport:shopping_transport_quiz"
+  },
+  {
+    "lesson_key": "university_vocabulary",
+    "section_key": "university_vocabulary_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "University vocabulary — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.university_vocabulary.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "university_vocabulary:university_vocabulary_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "university_vocabulary:university_vocabulary_intro"
+  },
+  {
+    "lesson_key": "university_vocabulary",
+    "section_key": "university_vocabulary_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "University vocabulary — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.university_vocabulary.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "university_vocabulary:university_vocabulary_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "university_vocabulary:university_vocabulary_explanation"
+  },
+  {
+    "lesson_key": "university_vocabulary",
+    "section_key": "university_vocabulary_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "University vocabulary — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.university_vocabulary.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "pronunciation_drill",
+      "blockRef": "university_vocabulary:university_vocabulary_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "pronunciation_drill",
+    "block_ref": "university_vocabulary:university_vocabulary_drill"
+  },
+  {
+    "lesson_key": "university_vocabulary",
+    "section_key": "university_vocabulary_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "University vocabulary — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.university_vocabulary.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "university_vocabulary:university_vocabulary_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "university_vocabulary:university_vocabulary_quiz"
+  },
+  {
+    "lesson_key": "classroom_phrases",
+    "section_key": "classroom_phrases_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Classroom phrases — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.classroom_phrases.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "classroom_phrases:classroom_phrases_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "classroom_phrases:classroom_phrases_intro"
+  },
+  {
+    "lesson_key": "classroom_phrases",
+    "section_key": "classroom_phrases_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Classroom phrases — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.classroom_phrases.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "classroom_phrases:classroom_phrases_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "classroom_phrases:classroom_phrases_explanation"
+  },
+  {
+    "lesson_key": "classroom_phrases",
+    "section_key": "classroom_phrases_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Classroom phrases — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.classroom_phrases.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "classroom_phrases:classroom_phrases_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "classroom_phrases:classroom_phrases_drill"
+  },
+  {
+    "lesson_key": "classroom_phrases",
+    "section_key": "classroom_phrases_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Classroom phrases — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.classroom_phrases.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "classroom_phrases:classroom_phrases_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "classroom_phrases:classroom_phrases_quiz"
+  },
+  {
+    "lesson_key": "instructions_questions",
+    "section_key": "instructions_questions_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Instructions and questions — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.instructions_questions.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "instructions_questions:instructions_questions_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "instructions_questions:instructions_questions_intro"
+  },
+  {
+    "lesson_key": "instructions_questions",
+    "section_key": "instructions_questions_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Instructions and questions — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.instructions_questions.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "instructions_questions:instructions_questions_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "instructions_questions:instructions_questions_explanation"
+  },
+  {
+    "lesson_key": "instructions_questions",
+    "section_key": "instructions_questions_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Instructions and questions — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.instructions_questions.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "instructions_questions:instructions_questions_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "instructions_questions:instructions_questions_drill"
+  },
+  {
+    "lesson_key": "instructions_questions",
+    "section_key": "instructions_questions_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Instructions and questions — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.instructions_questions.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "instructions_questions:instructions_questions_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "instructions_questions:instructions_questions_quiz"
+  },
+  {
+    "lesson_key": "reading_notices",
+    "section_key": "reading_notices_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Reading notices — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.reading_notices.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "reading_notices:reading_notices_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "reading_notices:reading_notices_intro"
+  },
+  {
+    "lesson_key": "reading_notices",
+    "section_key": "reading_notices_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Reading notices — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.reading_notices.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "reading_notices:reading_notices_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "reading_notices:reading_notices_explanation"
+  },
+  {
+    "lesson_key": "reading_notices",
+    "section_key": "reading_notices_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Reading notices — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.reading_notices.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "reading_notices:reading_notices_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "reading_notices:reading_notices_drill"
+  },
+  {
+    "lesson_key": "reading_notices",
+    "section_key": "reading_notices_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Reading notices — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.reading_notices.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "reading_notices:reading_notices_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "reading_notices:reading_notices_quiz"
+  },
+  {
+    "lesson_key": "forms_labels",
+    "section_key": "forms_labels_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Forms and labels — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.forms_labels.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "forms_labels:forms_labels_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "forms_labels:forms_labels_intro"
+  },
+  {
+    "lesson_key": "forms_labels",
+    "section_key": "forms_labels_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Forms and labels — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.forms_labels.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "forms_labels:forms_labels_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "forms_labels:forms_labels_explanation"
+  },
+  {
+    "lesson_key": "forms_labels",
+    "section_key": "forms_labels_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Forms and labels — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.forms_labels.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "forms_labels:forms_labels_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "forms_labels:forms_labels_drill"
+  },
+  {
+    "lesson_key": "forms_labels",
+    "section_key": "forms_labels_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Forms and labels — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.forms_labels.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "forms_labels:forms_labels_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "forms_labels:forms_labels_quiz"
+  },
+  {
+    "lesson_key": "short_academic_texts",
+    "section_key": "short_academic_texts_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Short academic texts — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.short_academic_texts.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "short_academic_texts:short_academic_texts_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "short_academic_texts:short_academic_texts_intro"
+  },
+  {
+    "lesson_key": "short_academic_texts",
+    "section_key": "short_academic_texts_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Short academic texts — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.short_academic_texts.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "short_academic_texts:short_academic_texts_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "short_academic_texts:short_academic_texts_explanation"
+  },
+  {
+    "lesson_key": "short_academic_texts",
+    "section_key": "short_academic_texts_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Short academic texts — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.short_academic_texts.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "short_academic_texts:short_academic_texts_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "short_academic_texts:short_academic_texts_drill"
+  },
+  {
+    "lesson_key": "short_academic_texts",
+    "section_key": "short_academic_texts_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Short academic texts — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.short_academic_texts.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "short_academic_texts:short_academic_texts_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "short_academic_texts:short_academic_texts_quiz"
+  },
+  {
+    "lesson_key": "lecture_listening_cues",
+    "section_key": "lecture_listening_cues_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Lecture listening cues — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.lecture_listening_cues.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "lecture_listening_cues:lecture_listening_cues_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "lecture_listening_cues:lecture_listening_cues_intro"
+  },
+  {
+    "lesson_key": "lecture_listening_cues",
+    "section_key": "lecture_listening_cues_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Lecture listening cues — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.lecture_listening_cues.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "lecture_listening_cues:lecture_listening_cues_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "lecture_listening_cues:lecture_listening_cues_explanation"
+  },
+  {
+    "lesson_key": "lecture_listening_cues",
+    "section_key": "lecture_listening_cues_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Lecture listening cues — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.lecture_listening_cues.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "lecture_listening_cues:lecture_listening_cues_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "lecture_listening_cues:lecture_listening_cues_drill"
+  },
+  {
+    "lesson_key": "lecture_listening_cues",
+    "section_key": "lecture_listening_cues_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Lecture listening cues — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.lecture_listening_cues.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "lecture_listening_cues:lecture_listening_cues_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "lecture_listening_cues:lecture_listening_cues_quiz"
+  },
+  {
+    "lesson_key": "note_taking_phrases",
+    "section_key": "note_taking_phrases_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Note-taking phrases — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.note_taking_phrases.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "note_taking_phrases:note_taking_phrases_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "note_taking_phrases:note_taking_phrases_intro"
+  },
+  {
+    "lesson_key": "note_taking_phrases",
+    "section_key": "note_taking_phrases_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Note-taking phrases — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.note_taking_phrases.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "note_taking_phrases:note_taking_phrases_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "note_taking_phrases:note_taking_phrases_explanation"
+  },
+  {
+    "lesson_key": "note_taking_phrases",
+    "section_key": "note_taking_phrases_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Note-taking phrases — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.note_taking_phrases.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "note_taking_phrases:note_taking_phrases_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "note_taking_phrases:note_taking_phrases_drill"
+  },
+  {
+    "lesson_key": "note_taking_phrases",
+    "section_key": "note_taking_phrases_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Note-taking phrases — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.note_taking_phrases.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "note_taking_phrases:note_taking_phrases_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "note_taking_phrases:note_taking_phrases_quiz"
+  },
+  {
+    "lesson_key": "short_written_responses",
+    "section_key": "short_written_responses_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Short written responses — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.short_written_responses.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "short_written_responses:short_written_responses_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "short_written_responses:short_written_responses_intro"
+  },
+  {
+    "lesson_key": "short_written_responses",
+    "section_key": "short_written_responses_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Short written responses — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.short_written_responses.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "short_written_responses:short_written_responses_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "short_written_responses:short_written_responses_explanation"
+  },
+  {
+    "lesson_key": "short_written_responses",
+    "section_key": "short_written_responses_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Short written responses — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.short_written_responses.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "short_written_responses:short_written_responses_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "short_written_responses:short_written_responses_drill"
+  },
+  {
+    "lesson_key": "short_written_responses",
+    "section_key": "short_written_responses_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Short written responses — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.short_written_responses.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "short_written_responses:short_written_responses_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "short_written_responses:short_written_responses_quiz"
+  },
+  {
+    "lesson_key": "noun_gender_number",
+    "section_key": "noun_gender_number_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Noun gender and number — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.noun_gender_number.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "noun_gender_number:noun_gender_number_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "noun_gender_number:noun_gender_number_intro"
+  },
+  {
+    "lesson_key": "noun_gender_number",
+    "section_key": "noun_gender_number_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Noun gender and number — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.noun_gender_number.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "noun_gender_number:noun_gender_number_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "noun_gender_number:noun_gender_number_explanation"
+  },
+  {
+    "lesson_key": "noun_gender_number",
+    "section_key": "noun_gender_number_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Noun gender and number — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.noun_gender_number.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "noun_gender_number:noun_gender_number_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "noun_gender_number:noun_gender_number_drill"
+  },
+  {
+    "lesson_key": "noun_gender_number",
+    "section_key": "noun_gender_number_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Noun gender and number — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.noun_gender_number.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "noun_gender_number:noun_gender_number_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "noun_gender_number:noun_gender_number_quiz"
+  },
+  {
+    "lesson_key": "case_pattern_awareness",
+    "section_key": "case_pattern_awareness_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Case pattern awareness — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.case_pattern_awareness.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "case_pattern_awareness:case_pattern_awareness_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "case_pattern_awareness:case_pattern_awareness_intro"
+  },
+  {
+    "lesson_key": "case_pattern_awareness",
+    "section_key": "case_pattern_awareness_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Case pattern awareness — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.case_pattern_awareness.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "case_pattern_awareness:case_pattern_awareness_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "case_pattern_awareness:case_pattern_awareness_explanation"
+  },
+  {
+    "lesson_key": "case_pattern_awareness",
+    "section_key": "case_pattern_awareness_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Case pattern awareness — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.case_pattern_awareness.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "case_pattern_awareness:case_pattern_awareness_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "case_pattern_awareness:case_pattern_awareness_drill"
+  },
+  {
+    "lesson_key": "case_pattern_awareness",
+    "section_key": "case_pattern_awareness_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Case pattern awareness — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.case_pattern_awareness.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "case_pattern_awareness:case_pattern_awareness_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "case_pattern_awareness:case_pattern_awareness_quiz"
+  },
+  {
+    "lesson_key": "adjective_agreement_basics",
+    "section_key": "adjective_agreement_basics_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Adjective agreement basics — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.adjective_agreement_basics.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "adjective_agreement_basics:adjective_agreement_basics_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "adjective_agreement_basics:adjective_agreement_basics_intro"
+  },
+  {
+    "lesson_key": "adjective_agreement_basics",
+    "section_key": "adjective_agreement_basics_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Adjective agreement basics — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.adjective_agreement_basics.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "adjective_agreement_basics:adjective_agreement_basics_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "adjective_agreement_basics:adjective_agreement_basics_explanation"
+  },
+  {
+    "lesson_key": "adjective_agreement_basics",
+    "section_key": "adjective_agreement_basics_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Adjective agreement basics — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.adjective_agreement_basics.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "adjective_agreement_basics:adjective_agreement_basics_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "adjective_agreement_basics:adjective_agreement_basics_drill"
+  },
+  {
+    "lesson_key": "adjective_agreement_basics",
+    "section_key": "adjective_agreement_basics_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Adjective agreement basics — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.adjective_agreement_basics.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "adjective_agreement_basics:adjective_agreement_basics_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "adjective_agreement_basics:adjective_agreement_basics_quiz"
+  },
+  {
+    "lesson_key": "present_past_future",
+    "section_key": "present_past_future_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Present, past, and future — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.present_past_future.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "present_past_future:present_past_future_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "present_past_future:present_past_future_intro"
+  },
+  {
+    "lesson_key": "present_past_future",
+    "section_key": "present_past_future_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Present, past, and future — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.present_past_future.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "present_past_future:present_past_future_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "present_past_future:present_past_future_explanation"
+  },
+  {
+    "lesson_key": "present_past_future",
+    "section_key": "present_past_future_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Present, past, and future — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.present_past_future.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "present_past_future:present_past_future_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "present_past_future:present_past_future_drill"
+  },
+  {
+    "lesson_key": "present_past_future",
+    "section_key": "present_past_future_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Present, past, and future — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.present_past_future.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "present_past_future:present_past_future_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "present_past_future:present_past_future_quiz"
+  },
+  {
+    "lesson_key": "motion_verbs_intro",
+    "section_key": "motion_verbs_intro_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Motion verbs intro — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.motion_verbs_intro.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "motion_verbs_intro:motion_verbs_intro_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "motion_verbs_intro:motion_verbs_intro_intro"
+  },
+  {
+    "lesson_key": "motion_verbs_intro",
+    "section_key": "motion_verbs_intro_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Motion verbs intro — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.motion_verbs_intro.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "motion_verbs_intro:motion_verbs_intro_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "motion_verbs_intro:motion_verbs_intro_explanation"
+  },
+  {
+    "lesson_key": "motion_verbs_intro",
+    "section_key": "motion_verbs_intro_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Motion verbs intro — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.motion_verbs_intro.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "motion_verbs_intro:motion_verbs_intro_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "motion_verbs_intro:motion_verbs_intro_drill"
+  },
+  {
+    "lesson_key": "motion_verbs_intro",
+    "section_key": "motion_verbs_intro_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Motion verbs intro — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.motion_verbs_intro.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "motion_verbs_intro:motion_verbs_intro_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "motion_verbs_intro:motion_verbs_intro_quiz"
+  },
+  {
+    "lesson_key": "schedules_deadlines",
+    "section_key": "schedules_deadlines_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Schedules and deadlines — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.schedules_deadlines.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "text_explanation",
+      "blockRef": "schedules_deadlines:schedules_deadlines_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "text_explanation",
+    "block_ref": "schedules_deadlines:schedules_deadlines_intro"
+  },
+  {
+    "lesson_key": "schedules_deadlines",
+    "section_key": "schedules_deadlines_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Schedules and deadlines — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.schedules_deadlines.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "schedules_deadlines:schedules_deadlines_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "schedules_deadlines:schedules_deadlines_explanation"
+  },
+  {
+    "lesson_key": "schedules_deadlines",
+    "section_key": "schedules_deadlines_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Schedules and deadlines — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.schedules_deadlines.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "schedules_deadlines:schedules_deadlines_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "schedules_deadlines:schedules_deadlines_drill"
+  },
+  {
+    "lesson_key": "schedules_deadlines",
+    "section_key": "schedules_deadlines_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Schedules and deadlines — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.schedules_deadlines.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "schedules_deadlines:schedules_deadlines_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "schedules_deadlines:schedules_deadlines_quiz"
+  },
+  {
+    "lesson_key": "checkpoint_01_a",
+    "section_key": "checkpoint_01_a_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Checkpoint 01 A — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.checkpoint_01_a.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "checkpoint_01_a:checkpoint_01_a_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "checkpoint_01_a:checkpoint_01_a_intro"
+  },
+  {
+    "lesson_key": "checkpoint_01_a",
+    "section_key": "checkpoint_01_a_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Checkpoint 01 A — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.checkpoint_01_a.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "checkpoint_01_a:checkpoint_01_a_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "checkpoint_01_a:checkpoint_01_a_explanation"
+  },
+  {
+    "lesson_key": "checkpoint_01_a",
+    "section_key": "checkpoint_01_a_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Checkpoint 01 A — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.checkpoint_01_a.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "checkpoint_01_a:checkpoint_01_a_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "checkpoint_01_a:checkpoint_01_a_drill"
+  },
+  {
+    "lesson_key": "checkpoint_01_a",
+    "section_key": "checkpoint_01_a_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Checkpoint 01 A — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.checkpoint_01_a.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "checkpoint_01_a:checkpoint_01_a_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "checkpoint_01_a:checkpoint_01_a_quiz"
+  },
+  {
+    "lesson_key": "checkpoint_01_b",
+    "section_key": "checkpoint_01_b_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Checkpoint 01 B — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.checkpoint_01_b.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "checkpoint_01_b:checkpoint_01_b_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "checkpoint_01_b:checkpoint_01_b_intro"
+  },
+  {
+    "lesson_key": "checkpoint_01_b",
+    "section_key": "checkpoint_01_b_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Checkpoint 01 B — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.checkpoint_01_b.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "checkpoint_01_b:checkpoint_01_b_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "checkpoint_01_b:checkpoint_01_b_explanation"
+  },
+  {
+    "lesson_key": "checkpoint_01_b",
+    "section_key": "checkpoint_01_b_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Checkpoint 01 B — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.checkpoint_01_b.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "checkpoint_01_b:checkpoint_01_b_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "checkpoint_01_b:checkpoint_01_b_drill"
+  },
+  {
+    "lesson_key": "checkpoint_01_b",
+    "section_key": "checkpoint_01_b_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Checkpoint 01 B — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.checkpoint_01_b.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "checkpoint_01_b:checkpoint_01_b_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "checkpoint_01_b:checkpoint_01_b_quiz"
+  },
+  {
+    "lesson_key": "checkpoint_01_review",
+    "section_key": "checkpoint_01_review_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Checkpoint 01 review — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.checkpoint_01_review.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "checkpoint_01_review:checkpoint_01_review_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "checkpoint_01_review:checkpoint_01_review_intro"
+  },
+  {
+    "lesson_key": "checkpoint_01_review",
+    "section_key": "checkpoint_01_review_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Checkpoint 01 review — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.checkpoint_01_review.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "checkpoint_01_review:checkpoint_01_review_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "checkpoint_01_review:checkpoint_01_review_explanation"
+  },
+  {
+    "lesson_key": "checkpoint_01_review",
+    "section_key": "checkpoint_01_review_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Checkpoint 01 review — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.checkpoint_01_review.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "checkpoint_01_review:checkpoint_01_review_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "checkpoint_01_review:checkpoint_01_review_drill"
+  },
+  {
+    "lesson_key": "checkpoint_01_review",
+    "section_key": "checkpoint_01_review_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Checkpoint 01 review — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.checkpoint_01_review.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "checkpoint_01_review:checkpoint_01_review_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "checkpoint_01_review:checkpoint_01_review_quiz"
+  },
+  {
+    "lesson_key": "checkpoint_02_a",
+    "section_key": "checkpoint_02_a_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Checkpoint 02 A — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.checkpoint_02_a.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "checkpoint_02_a:checkpoint_02_a_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "checkpoint_02_a:checkpoint_02_a_intro"
+  },
+  {
+    "lesson_key": "checkpoint_02_a",
+    "section_key": "checkpoint_02_a_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Checkpoint 02 A — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.checkpoint_02_a.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "checkpoint_02_a:checkpoint_02_a_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "checkpoint_02_a:checkpoint_02_a_explanation"
+  },
+  {
+    "lesson_key": "checkpoint_02_a",
+    "section_key": "checkpoint_02_a_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Checkpoint 02 A — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.checkpoint_02_a.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "checkpoint_02_a:checkpoint_02_a_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "checkpoint_02_a:checkpoint_02_a_drill"
+  },
+  {
+    "lesson_key": "checkpoint_02_a",
+    "section_key": "checkpoint_02_a_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Checkpoint 02 A — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.checkpoint_02_a.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "checkpoint_02_a:checkpoint_02_a_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "checkpoint_02_a:checkpoint_02_a_quiz"
+  },
+  {
+    "lesson_key": "checkpoint_02_b",
+    "section_key": "checkpoint_02_b_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Checkpoint 02 B — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.checkpoint_02_b.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "checkpoint_02_b:checkpoint_02_b_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "checkpoint_02_b:checkpoint_02_b_intro"
+  },
+  {
+    "lesson_key": "checkpoint_02_b",
+    "section_key": "checkpoint_02_b_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Checkpoint 02 B — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.checkpoint_02_b.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "checkpoint_02_b:checkpoint_02_b_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "checkpoint_02_b:checkpoint_02_b_explanation"
+  },
+  {
+    "lesson_key": "checkpoint_02_b",
+    "section_key": "checkpoint_02_b_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Checkpoint 02 B — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.checkpoint_02_b.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "checkpoint_02_b:checkpoint_02_b_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "checkpoint_02_b:checkpoint_02_b_drill"
+  },
+  {
+    "lesson_key": "checkpoint_02_b",
+    "section_key": "checkpoint_02_b_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Checkpoint 02 B — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.checkpoint_02_b.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "checkpoint_02_b:checkpoint_02_b_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "checkpoint_02_b:checkpoint_02_b_quiz"
+  },
+  {
+    "lesson_key": "checkpoint_02_review",
+    "section_key": "checkpoint_02_review_intro",
+    "section_type": "intro",
+    "ordinal": 1,
+    "title": "Checkpoint 02 review — Intro",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "intro",
+      "contentKey": "russian.shared_core.checkpoint_02_review.intro",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "checkpoint_02_review:checkpoint_02_review_intro"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "checkpoint_02_review:checkpoint_02_review_intro"
+  },
+  {
+    "lesson_key": "checkpoint_02_review",
+    "section_key": "checkpoint_02_review_explanation",
+    "section_type": "explanation",
+    "ordinal": 2,
+    "title": "Checkpoint 02 review — Teach",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "explanation",
+      "contentKey": "russian.shared_core.checkpoint_02_review.explanation",
+      "trackScope": "shared_foundation",
+      "blockType": "task_scenario",
+      "blockRef": "checkpoint_02_review:checkpoint_02_review_explanation"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "task_scenario",
+    "block_ref": "checkpoint_02_review:checkpoint_02_review_explanation"
+  },
+  {
+    "lesson_key": "checkpoint_02_review",
+    "section_key": "checkpoint_02_review_drill",
+    "section_type": "drill",
+    "ordinal": 3,
+    "title": "Checkpoint 02 review — Practice",
+    "estimated_minutes": 2,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "drill",
+      "contentKey": "russian.shared_core.checkpoint_02_review.drill",
+      "trackScope": "shared_foundation",
+      "blockType": "recycle_review",
+      "blockRef": "checkpoint_02_review:checkpoint_02_review_drill"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": false
+    },
+    "block_type": "recycle_review",
+    "block_ref": "checkpoint_02_review:checkpoint_02_review_drill"
+  },
+  {
+    "lesson_key": "checkpoint_02_review",
+    "section_key": "checkpoint_02_review_quiz",
+    "section_type": "quiz",
+    "ordinal": 4,
+    "title": "Checkpoint 02 review — Check",
+    "estimated_minutes": 3,
+    "is_required": true,
+    "content_json": {
+      "blockTemplate": "quiz",
+      "contentKey": "russian.shared_core.checkpoint_02_review.quiz",
+      "trackScope": "shared_foundation",
+      "blockType": "mini_quiz",
+      "blockRef": "checkpoint_02_review:checkpoint_02_review_quiz"
+    },
+    "mastery_gate": {
+      "completionRequired": true,
+      "checkpointSource": true
+    },
+    "block_type": "mini_quiz",
+    "block_ref": "checkpoint_02_review:checkpoint_02_review_quiz"
+  }
+]

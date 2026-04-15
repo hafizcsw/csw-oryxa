@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "cm_select_all" ON public.chat_messages;

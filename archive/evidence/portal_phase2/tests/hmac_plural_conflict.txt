@@ -1,0 +1,65 @@
+# HTTP TEST EVIDENCE: Plural Conflict Test
+# Test ID: phase2_plural_conflict_test
+# Generated: 2026-01-27T07:45:00Z
+# Endpoint: portal-programs-search (via RPC direct test)
+
+================================================================================
+TEST OBJECTIVE
+================================================================================
+
+Verify conflict policy when BOTH singular and plural keys are sent:
+- country_code: "RU" (singular)
+- country_codes: ["TR", "GE"] (plural array)
+
+================================================================================
+REQUEST
+================================================================================
+
+{
+  "request_id": "phase2_plural_conflict_test",
+  "display_lang": "ar",
+  "display_currency_code": "USD",
+  "program_filters": {
+    "tuition_basis": "year",
+    "tuition_usd_min": 0,
+    "tuition_usd_max": 50000,
+    "partner_priority": "prefer",
+    "country_code": "RU",        // <-- SINGULAR (unknown)
+    "country_codes": ["TR", "GE"] // <-- PLURAL (canonical)
+  }
+}
+
+================================================================================
+RESPONSE
+================================================================================
+
+{
+  "ok": false,
+  "request_id": "phase2_plural_conflict_test",
+  "error": "MISSING_DATA_FIELDS",
+  "missing_data_fields": ["unsupported_filter.country_code"],
+  "ignored_filters": []
+}
+
+================================================================================
+ANALYSIS
+================================================================================
+
+✅ PASS: Fail-Closed Policy Enforced
+- Unknown key "country_code" was REJECTED immediately
+- Even though canonical "country_codes" was also present
+- The presence of ONE invalid key blocks the entire request
+
+⚠️ CONFLICT BEHAVIOR:
+- Policy: ANY unknown key → entire request fails
+- No "canonical-wins" fallback
+- No "ignore unknown and proceed"
+- This is STRICT security but may break CRM integration
+
+================================================================================
+CONCLUSION
+================================================================================
+
+CONFLICT POLICY: First-Unknown-Fails (not canonical-wins)
+- If CRM sends BOTH country_code and country_codes, request FAILS
+- CRM MUST send ONLY canonical keys

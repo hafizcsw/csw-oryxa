@@ -1,0 +1,1 @@
+UPDATE official_site_crawl_rows SET crawl_status = 'queued', locked_at = NULL WHERE id IN ('ab16254c-de2d-4ca6-b650-6403c6a5f822', '735349b0-7f11-412c-8c6e-bfa3cdd0b6b7');

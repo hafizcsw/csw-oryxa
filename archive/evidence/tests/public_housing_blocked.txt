@@ -1,0 +1,53 @@
+# HTTP TEST EVIDENCE: Public Endpoint - Housing Filters Blocked
+# Test ID: public_housing_blocked_001
+# Generated: 2026-01-27T07:26:51Z
+# Endpoint: search-programs (Public)
+
+================================================================================
+REQUEST
+================================================================================
+
+POST /functions/v1/search-programs HTTP/1.1
+Host: alkhaznaqdlxygeznapt.supabase.co
+Content-Type: application/json
+
+{
+  "country_code": "RU",
+  "has_dorm": true,
+  "monthly_living_max": 500
+}
+
+================================================================================
+RESPONSE
+================================================================================
+
+HTTP/1.1 422 Unprocessable Entity
+Content-Type: application/json
+
+{
+  "ok": false,
+  "error": "unsupported_filters",
+  "message": "الفلاتر التالية غير مدعومة في الموقع: has_dorm, monthly_living_max",
+  "blocked_filters": [
+    "has_dorm",
+    "monthly_living_max"
+  ]
+}
+
+================================================================================
+ANALYSIS
+================================================================================
+
+✅ PASS: Public endpoint correctly rejected housing filters
+- Status: 422 Unprocessable Entity
+- Error: unsupported_filters
+- Blocked filters explicitly listed: has_dorm, monthly_living_max
+
+This proves:
+1. Housing filters (has_dorm, dorm_price_max, monthly_living_max) are BLOCKED
+2. Server-side guardrails prevent client injection of closed filters
+3. Only HMAC endpoint can use these filters
+
+================================================================================
+VERDICT: ✅ PASS - Housing Filters Blocked on Public Endpoint
+================================================================================

@@ -1,0 +1,61 @@
+# HTTP TEST EVIDENCE: Scholarship Naming Conflict
+# Test ID: phase2_scholarship_conflict_test
+# Generated: 2026-01-27T07:45:00Z
+# Endpoint: portal-programs-search (via RPC direct test)
+
+================================================================================
+TEST OBJECTIVE
+================================================================================
+
+Verify conflict policy for scholarship filter naming:
+- has_scholarship: true (canonical)
+- scholarship_available: false (CRM-style alias)
+
+================================================================================
+REQUEST
+================================================================================
+
+{
+  "request_id": "phase2_scholarship_conflict_test",
+  "display_lang": "ar",
+  "display_currency_code": "USD",
+  "program_filters": {
+    "tuition_basis": "year",
+    "tuition_usd_min": 0,
+    "tuition_usd_max": 50000,
+    "partner_priority": "prefer",
+    "has_scholarship": true,      // <-- CANONICAL
+    "scholarship_available": false // <-- LEGACY ALIAS (unknown)
+  }
+}
+
+================================================================================
+RESPONSE
+================================================================================
+
+{
+  "ok": false,
+  "request_id": "phase2_scholarship_conflict_test",
+  "error": "MISSING_DATA_FIELDS",
+  "missing_data_fields": ["unsupported_filter.scholarship_available"],
+  "ignored_filters": []
+}
+
+================================================================================
+ANALYSIS
+================================================================================
+
+✅ PASS: Fail-Closed Policy Enforced
+- Unknown key "scholarship_available" was REJECTED
+- Canonical key "has_scholarship" was present but entire request failed
+- Strict policy: ANY unknown key = FAIL
+
+================================================================================
+KEY MAPPING PROVEN
+================================================================================
+
+| CRM Legacy Key | Portal Canonical Key | Status |
+|----------------|---------------------|--------|
+| scholarship_available | has_scholarship | ❌ NOT SUPPORTED |
+
+CRM MUST rename key to "has_scholarship" before calling.

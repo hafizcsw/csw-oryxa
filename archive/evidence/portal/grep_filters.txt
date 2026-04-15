@@ -1,0 +1,88 @@
+# GREP OUTPUT: Filter Keys and Normalization
+# Generated: 2026-01-27T07:27:00Z
+# Command equivalent: grep -rn "tuition_usd\|country_code\|degree_\|applied_filters\|ignored_filters\|normalized_from" supabase/functions/
+
+================================================================================
+TUITION TRIO REFERENCES (tuition_usd_min/max, tuition_basis)
+================================================================================
+
+supabase/functions/search-programs/index.ts:56:      'tuition_basis', 'tuition_usd_min', 'tuition_usd_max',
+supabase/functions/student-portal-api/index.ts:2025:          'tuition_basis', 'tuition_usd_min', 'tuition_usd_max',
+supabase/functions/portal-programs-search/index.ts:191:      .rpc('rpc_kb_programs_search_v1_3_final', { payload: body });
+supabase/functions/kb-search-probe/index.ts:137:        tuition_basis: "year",
+supabase/functions/kb-search-probe/index.ts:138:        tuition_usd_min: 0,
+supabase/functions/kb-search-probe/index.ts:139:        tuition_usd_max: 50000,
+
+================================================================================
+COUNTRY CODE NORMALIZATION
+================================================================================
+
+supabase/functions/search-programs/index.ts:46:      'country_code', 'country_slug', 'country',  // → country_code aliases
+supabase/functions/search-programs/index.ts:98:    const countryFilter = country_code || country_slug || country;
+supabase/functions/search-programs/index.ts:134-140:    // Filter: country_code
+    if (countryFilter) {
+      if (String(countryFilter).length === 2) {
+        query = query.eq('country_code', String(countryFilter).toUpperCase());
+      } else {
+        query = query.or(`country_code.eq.${String(countryFilter).toUpperCase()},country_name_en.ilike.%${countryFilter}%`);
+      }
+    }
+
+supabase/functions/student-portal-api/index.ts:2015:          'country_code', 'country_slug', 'country',  // → country_code aliases
+supabase/functions/student-portal-api/index.ts:2063:        const normalizedCountry = body.country_code ?? (bodyAny.country_slug as string) ?? (bodyAny.country as string);
+
+================================================================================
+DEGREE NORMALIZATION
+================================================================================
+
+supabase/functions/search-programs/index.ts:47:      'degree_level', 'degree_slug', 'degree_id', 'degree',  // → degree_level aliases
+supabase/functions/search-programs/index.ts:99:    const degreeFilter = degree_id || degree_slug;
+
+supabase/functions/student-portal-api/index.ts:2016:          'degree_level', 'degree_slug', 'degree_id', 'degree',  // → degree_level aliases
+supabase/functions/student-portal-api/index.ts:2064:        const normalizedDegree = body.degree_level ?? (bodyAny.degree_slug as string) ?? (bodyAny.degree_id as string) ?? (bodyAny.degree as string);
+
+================================================================================
+APPLIED_FILTERS / IGNORED_FILTERS / NORMALIZED_FROM (Evidence Pack v2)
+================================================================================
+
+supabase/functions/search-programs/index.ts:225-246:
+    // ============= BUILD APPLIED/IGNORED FILTERS (Evidence Pack v2) =============
+    const appliedFilters: Record<string, any> = {};
+    const ignoredFilters: string[] = [];
+    
+    // Track which filters were actually applied
+    if (countryFilter) appliedFilters.country_code = countryFilter;
+    if (degreeFilter) appliedFilters.degree_level = degreeFilter;
+    if (subject) appliedFilters.keyword = subject;
+    if (feesFilter) appliedFilters.max_tuition = Number(feesFilter);
+    appliedFilters.limit = Number(limit);
+    appliedFilters.offset = Number(offset);
+    
+    // Track ignored filters (non-canonical keys that were converted)
+    const normalizedFrom: Record<string, string> = {};
+    if (body.country_slug && body.country_slug !== countryFilter) normalizedFrom.country_slug = 'country_code';
+    if (body.country && body.country !== countryFilter) normalizedFrom.country = 'country_code';
+    if (body.degree_id && body.degree_id !== degreeFilter) normalizedFrom.degree_id = 'degree_level';
+    if (body.degree_slug && body.degree_slug !== degreeFilter) normalizedFrom.degree_slug = 'degree_level';
+    if (body.fees_max && body.fees_max !== feesFilter) normalizedFrom.fees_max = 'max_tuition';
+
+    console.log(`[search-programs] Found ${count} programs (v3_final)`);
+    console.log(`[search-programs] applied_filters=${JSON.stringify(appliedFilters)} ignored_filters=${JSON.stringify(ignoredFilters)} normalized_from=${JSON.stringify(normalizedFrom)}`);
+
+supabase/functions/search-programs/index.ts:257-260:
+        // ✅ Evidence Pack v2: Filter transparency
+        applied_filters: appliedFilters,
+        ignored_filters: ignoredFilters,
+        normalized_from: normalizedFrom,
+        contract_version: 'website_v1_public',
+
+================================================================================
+PORTAL-PROGRAMS-SEARCH (HMAC) - applied_filters in RPC
+================================================================================
+
+supabase/functions/portal-programs-search/index.ts:219:
+    console.log(`[portal-programs-search] PortalOut rid=${rid} status=200 ok=true count=${rpcResult?.meta?.count || 0} total=${rpcResult?.meta?.total || 0} applied_filters=${JSON.stringify(rpcResult?.applied_filters)} ignored_filters=[] missing_data_fields=[] duration_ms=${duration}`);
+
+================================================================================
+END OF GREP OUTPUT
+================================================================================

@@ -1,0 +1,147 @@
+# GREP OUTPUT: Portal Endpoints and Filter Policies
+# Generated: 2026-01-27T07:27:00Z
+# Command equivalent: grep -rn "CONTRACT_V1\|ALLOWED_KEYS\|BLOCKED_KEYS\|v_known" supabase/functions/
+
+================================================================================
+FILE: supabase/functions/search-programs/index.ts
+================================================================================
+
+Line 42:     // ============= CONTRACT V1 GUARDRAIL (Server-Side Enforcement) =============
+Line 43:     // SECURITY: Reject any filter keys outside the public allowlist
+Line 44:     const CONTRACT_V1_ALLOWED_KEYS = new Set([
+Line 45:       'keyword', 'q', 'query', 'subject',  // → keyword aliases
+Line 46:       'country_code', 'country_slug', 'country',  // → country_code aliases
+Line 47:       'degree_level', 'degree_slug', 'degree_id', 'degree',  // → degree_level aliases
+Line 48:       'language', 'instruction_languages',  // → language aliases
+Line 49:       'max_tuition', 'fees_max', 'tuition_max_year_usd',  // → max_tuition aliases
+Line 50:       'limit', 'offset', 'page', 'page_size',  // paging
+Line 51:     ]);
+Line 52:     
+Line 53:     const CONTRACT_V1_BLOCKED_KEYS = new Set([
+Line 54:       'discipline_slug', 'discipline_id', 'discipline',
+Line 55:       'study_mode', 'city',
+Line 56:       'tuition_basis', 'tuition_usd_min', 'tuition_usd_max',
+Line 57:       'duration_months_max', 'duration_months',
+Line 58:       'has_dorm', 'dorm_max', 'dorm_price_max', 'dorm_price_monthly_usd',
+Line 59:       'monthly_living_max', 'living_max', 'monthly_living_usd',
+Line 60:       'scholarship_available', 'scholarship_type', 'has_scholarship',
+Line 61:       'intake_months', 'deadline_before', 'deadline_date',
+Line 62:       'partner_priority', 'partner_tier', 'partner_preferred',
+Line 63:       'sort', 'sort_by',
+Line 64:       'enforce_eligibility', 'admission_policy', 'applicant_profile',
+Line 65:     ]);
+Line 66:     
+Line 67:     const receivedKeys = Object.keys(body).filter(k => body[k] !== undefined && body[k] !== null && body[k] !== '');
+Line 68:     const blockedKeysFound = receivedKeys.filter(k => CONTRACT_V1_BLOCKED_KEYS.has(k));
+Line 69:     
+Line 70:     if (blockedKeysFound.length > 0) {
+Line 71:       console.warn('[search-programs] ⚠️ 422: Blocked filters rejected:', blockedKeysFound);
+Line 72:       return new Response(
+Line 73:         JSON.stringify({
+Line 74:           ok: false,
+Line 75:           error: 'unsupported_filters',
+Line 76:           message: `الفلاتر التالية غير مدعومة في الموقع: ${blockedKeysFound.join(', ')}`,
+Line 77:           blocked_filters: blockedKeysFound,
+Line 78:         }),
+Line 79:         { status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+Line 80:       );
+Line 81:     }
+Line 82:     // ============= END CONTRACT V1 GUARDRAIL =============
+
+================================================================================
+FILE: supabase/functions/student-portal-api/index.ts
+================================================================================
+
+Line 2009:         // ============= CONTRACT V1 GUARDRAIL (Server-Side Enforcement) =============
+Line 2010:         // SECURITY: Reject any filter keys outside the public allowlist
+Line 2011:         // This prevents client-side injection of closed filters
+Line 2012:         const CONTRACT_V1_ALLOWED_KEYS = new Set([
+Line 2013:           'action',           // Required action parameter
+Line 2014:           'keyword', 'q', 'query', 'subject',  // → keyword aliases
+Line 2015:           'country_code', 'country_slug', 'country',  // → country_code aliases
+Line 2016:           'degree_level', 'degree_slug', 'degree_id', 'degree',  // → degree_level aliases
+Line 2017:           'language', 'instruction_languages',  // → language aliases
+Line 2018:           'max_tuition', 'fees_max', 'tuition_max_year_usd',  // → max_tuition aliases
+Line 2019:           'limit', 'offset', 'page', 'page_size',  // paging
+Line 2020:         ]);
+Line 2021:         
+Line 2022:         const CONTRACT_V1_BLOCKED_KEYS = new Set([
+Line 2023:           'discipline_slug', 'discipline_id', 'discipline',
+Line 2024:           'study_mode', 'city',
+Line 2025:           'tuition_basis', 'tuition_usd_min', 'tuition_usd_max',
+Line 2026:           'duration_months_max', 'duration_months',
+Line 2027:           'has_dorm', 'dorm_max', 'dorm_price_max', 'dorm_price_monthly_usd',
+Line 2028:           'monthly_living_max', 'living_max', 'monthly_living_usd',
+Line 2029:           'scholarship_available', 'scholarship_type', 'has_scholarship',
+Line 2030:           'intake_months', 'deadline_before', 'deadline_date',
+Line 2031:           'partner_priority', 'partner_tier', 'partner_preferred',
+Line 2032:           'sort', 'sort_by',
+Line 2033:           'enforce_eligibility', 'admission_policy', 'applicant_profile',
+Line 2034:         ]);
+Line 2035:         
+Line 2036:         // Check for blocked keys and reject with 422
+Line 2037:         const bodyAny = body as unknown as Record<string, unknown>;
+Line 2038:         const receivedKeys = Object.keys(bodyAny).filter(k => bodyAny[k] !== undefined && bodyAny[k] !== null && bodyAny[k] !== '');
+Line 2039:         const blockedKeysFound = receivedKeys.filter(k => CONTRACT_V1_BLOCKED_KEYS.has(k));
+Line 2040:         const unknownKeys = receivedKeys.filter(k => !CONTRACT_V1_ALLOWED_KEYS.has(k) && !CONTRACT_V1_BLOCKED_KEYS.has(k));
+Line 2041:         
+Line 2042:         if (blockedKeysFound.length > 0) {
+Line 2043:           console.warn('[student-portal-api] ⚠️ 422: Blocked filters rejected:', blockedKeysFound);
+Line 2044:           return Response.json({
+Line 2045:             ok: false,
+Line 2046:             error_code: 'unsupported_filters',
+Line 2047:             error: 'unsupported_filters',
+Line 2048:             message: `الفلاتر التالية غير مدعومة في الموقع: ${blockedKeysFound.join(', ')}`,
+Line 2049:             blocked_filters: blockedKeysFound,
+Line 2050:           }, { status: 422, headers: corsHeaders });
+Line 2051:         }
+Line 2052:         
+Line 2053:         if (unknownKeys.length > 0) {
+Line 2054:           console.warn('[student-portal-api] ⚠️ Unknown keys stripped (not rejected):', unknownKeys);
+Line 2055:         }
+Line 2056:         // ============= END CONTRACT V1 GUARDRAIL =============
+
+================================================================================
+FILE: supabase/functions/portal-programs-search/index.ts (HMAC Endpoint)
+================================================================================
+
+Line 4: const CONTRACT_VERSION = 'kb_search_v1_3_final';
+Line 5: const VERSION = '2026-01-26_v1_3_evidence';
+
+-- HMAC Headers Validation --
+Line 39:   const signature = req.headers.get('x-hmac-signature') || req.headers.get('x-signature');
+Line 40:   const timestamp = req.headers.get('x-hmac-timestamp') || req.headers.get('x-ts');
+Line 41:   const nonce = req.headers.get('x-hmac-nonce') || req.headers.get('x-nonce');
+Line 43:   if (!signature || !timestamp || !nonce) {
+Line 44:     console.log('[portal-programs-search] ⚠️ Missing HMAC headers');
+Line 45:     return { valid: false, error: 'Missing HMAC headers (x-ts, x-nonce, x-signature required)' };
+Line 46:   }
+
+-- Missing HMAC Rejection --
+Line 147:     } else {
+Line 148:       return Response.json({ 
+Line 149:         ok: false, 
+Line 150:         request_id: rid,
+Line 151:         error: 'unauthorized: HMAC signature required (service-to-service only)',
+Line 152:         code: 'MISSING_AUTH',
+Line 153:         meta: { contract: CONTRACT_VERSION, ts: requestTs }
+Line 154:       }, { status: 401, headers: corsHeaders });
+Line 155:     }
+
+================================================================================
+DATABASE RPC: rpc_kb_programs_search_v1_3_final (21 Filter Allowlist)
+================================================================================
+
+-- From database function definition --
+  v_known_program_filters text[] := ARRAY[
+    'tuition_basis', 'tuition_usd_min', 'tuition_usd_max',
+    'partner_priority', 'country_codes', 'degree_slugs', 'discipline_slugs',
+    'language_codes', 'has_scholarship', 'has_dorm'
+  ];
+  v_known_admission_policy text[] := ARRAY['enforce_eligibility'];
+  v_known_applicant_profile text[] := ARRAY['curriculum', 'stream'];
+  v_known_paging text[] := ARRAY['limit', 'offset'];
+
+================================================================================
+END OF GREP OUTPUT
+================================================================================

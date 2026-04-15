@@ -1,0 +1,69 @@
+{
+  "hero": {
+    "badge": "Pour les établissements éducatifs",
+    "titlePrefix": "Rejoignez notre ",
+    "titleHighlight": "réseau de partenaires académiques",
+    "subtitle": "Vous êtes une université ou un établissement éducatif souhaitant attirer des étudiants internationaux ? Nous vous aidons à atteindre des milliers d'étudiants dans le monde.",
+    "applyBtn": "Postuler pour un partenariat",
+    "howItWorks": "Comment ça marche"
+  },
+  "stats": { "universities": "Universités dans notre base", "countries": "Pays", "programs": "Programmes d'études" },
+  "claim": {
+    "title": "Votre université est déjà répertoriée",
+    "subtitle": "Plus de 36 000 établissements sont déjà répertoriés. Recherchez le vôtre et revendiquez votre profil académique.",
+    "placeholder": "Tapez le nom de votre université...",
+    "claimBtn": "Revendiquer",
+    "noResults": "Nous n'avons pas trouvé votre établissement",
+    "addBtn": "Ajouter votre établissement"
+  },
+  "postVerification": {
+    "badge": "Avantages du partenaire vérifié",
+    "title": "Que recevez-vous après la vérification ?",
+    "subtitle": "Une fois vérifié, vous débloquez des outils professionnels pour gérer la présence de votre établissement et recevoir des candidatures qualifiées",
+    "feature1": { "title": "Contrôlez les données de votre établissement", "desc": "Après vérification, vous obtenez les droits complets pour corriger les données et gérer la section de votre établissement.", "f1": "Modifier les frais, programmes et coordonnées", "f2": "Mettre à jour photos, vidéos et contenu promotionnel", "f3": "Surveiller et améliorer la visibilité dans les recherches" },
+    "feature2": { "title": "Canal d'admission international direct", "desc": "Connexion directe avec votre département d'admissions internationales. Notre IA filtre et classe les candidatures.", "f1": "Filtrage intelligent par GPA, niveau de langue et spécialité", "f2": "Classement par pourcentage de correspondance", "f3": "Notifications instantanées pour les nouvelles candidatures qualifiées" },
+    "feature3": { "title": "Tableau de bord analytique partenaire", "desc": "Analyses détaillées sur la performance de votre page — visites, sources d'étudiants, taux de conversion.", "f1": "Rapports mensuels sur les visites et conversions", "f2": "Analyse géographique des sources d'étudiants", "f3": "Comparaison des performances des programmes" }
+  },
+  "whyPartner": {
+    "title": "Pourquoi devenir partenaire ?",
+    "subtitle": "Nous fournissons tout le nécessaire pour attirer les meilleurs étudiants internationaux",
+    "item1": { "title": "Réseau mondial d'étudiants", "desc": "Accès direct à des milliers d'étudiants de 215+ pays" },
+    "item2": { "title": "Support complet d'inscription", "desc": "Équipe dédiée pour le processus d'admission et d'inscription" },
+    "item3": { "title": "Marketing digital avancé", "desc": "Campagnes marketing ciblées par IA pour vos programmes" },
+    "item4": { "title": "Plateforme technologique fiable", "desc": "Plateforme intégrée pour gérer les candidatures et communiquer avec les étudiants" }
+  },
+  "partnershipTypes": {
+    "title": "Types de partenariat",
+    "type1": { "title": "Partenariat académique", "desc": "Accords de collaboration avec les universités pour attirer les étudiants internationaux" },
+    "type2": { "title": "Partenariat institutionnel", "desc": "Partenariats avec instituts de langues et centres de formation accrédités" },
+    "type3": { "title": "Partenariat de services", "desc": "Collaboration avec fournisseurs de logement, assurance et transport" }
+  },
+  "howItWorks": {
+    "title": "Parcours de vérification et lancement",
+    "subtitle": "Quatre étapes de la demande à la première candidature qualifiée",
+    "step1": { "title": "Rechercher et revendiquer", "desc": "Trouvez votre université et soumettez une demande de gestion de profil" },
+    "step2": { "title": "Vérification d'identité", "desc": "Nous vérifions votre identité via l'email officiel ou les documents" },
+    "step3": { "title": "Tableau de bord partenaire", "desc": "Obtenez les droits d'édition et suivez les performances" },
+    "step4": { "title": "Recevoir les candidatures filtrées", "desc": "Commencez à recevoir des candidatures filtrées par IA" }
+  },
+  "metrics": {
+    "title": "Les chiffres parlent",
+    "subtitle": "Résultats réels avec nos partenaires académiques",
+    "m1": { "val": "36 000+", "label": "Universités sur la plateforme" },
+    "m2": { "val": "38 000+", "label": "Programmes d'études" },
+    "m3": { "val": "215+", "label": "Pays couverts" },
+    "m4": { "val": "48 heures", "label": "Temps de réponse moyen" }
+  },
+  "faq": {
+    "title": "Questions fréquentes",
+    "q1": { "q": "Combien coûte le partenariat ?", "a": "Modèles flexibles basés sur les résultats. Pas de frais initiaux." },
+    "q2": { "q": "Quels pays couvrez-vous ?", "a": "215+ pays avec un focus sur le Moyen-Orient, l'Afrique du Nord et l'Asie centrale." },
+    "q3": { "q": "Combien de temps pour commencer ?", "a": "2-4 semaines de la première réunion au début du recrutement." },
+    "q4": { "q": "Supportez-vous les petits établissements ?", "a": "Oui ! Nous travaillons avec des établissements de toutes tailles." }
+  },
+  "cta": {
+    "title": "Commencez votre partenariat aujourd'hui",
+    "subtitle": "Contactez-nous et nous vous aiderons à concevoir un partenariat adapté.",
+    "button": "Nous contacter"
+  }
+}

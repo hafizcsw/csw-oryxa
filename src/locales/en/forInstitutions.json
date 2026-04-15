@@ -1,0 +1,94 @@
+{
+  "hero": {
+    "badge": "For Educational Institutions",
+    "title": "Join Our <1>Academic Partner Network</1>",
+    "titlePlain": "Join Our Academic Partner Network",
+    "titleHighlight": "Academic Partner Network",
+    "titlePrefix": "Join Our ",
+    "subtitle": "Are you a university or educational institution looking to attract international students? We help you reach thousands of students worldwide.",
+    "applyBtn": "Apply for Partnership",
+    "howItWorks": "How It Works"
+  },
+  "stats": {
+    "universities": "Universities in Our Database",
+    "countries": "Countries",
+    "programs": "Study Programs"
+  },
+  "claim": {
+    "title": "Your University Is Already Listed",
+    "subtitle": "Over 36,000 institutions are already listed. Search for yours and claim your academic profile — control your data, connect with students, and boost your digital presence.",
+    "placeholder": "Type your university or institution name...",
+    "claimBtn": "Claim",
+    "noResults": "We couldn't find your institution in our database",
+    "addBtn": "Add Your Institution",
+    "manageBtn": "Claim"
+  },
+  "postVerification": {
+    "badge": "Verified Partner Benefits",
+    "title": "What Do You Get After Verification?",
+    "subtitle": "Once verified as an official representative, you unlock professional tools to manage your institution's presence and receive qualified student applications",
+    "feature1": {
+      "title": "Control Your Institution's Data",
+      "desc": "After verifying your identity as an official representative, you get full permissions to correct inaccurate data and manage your institution's section on the platform.",
+      "f1": "Edit tuition fees, programs, and contact information",
+      "f2": "Update photos, videos, and promotional content",
+      "f3": "Monitor and improve your institution's search visibility"
+    },
+    "feature2": {
+      "title": "Direct International Admissions Channel",
+      "desc": "Direct connection to your international admissions department. Our AI system filters and ranks applications by admission criteria match, delivering review-ready applications.",
+      "f1": "Smart filtering by GPA, language level, and major",
+      "f2": "Priority ranking by match percentage",
+      "f3": "Instant notifications for new qualified applications"
+    },
+    "feature3": {
+      "title": "Partner Analytics Dashboard",
+      "desc": "Detailed analytics on your institution's page performance — visits, student sources, conversion rates, and comparisons with competing institutions in your region.",
+      "f1": "Monthly reports on visits, engagement, and conversions",
+      "f2": "Geographic analysis of interested student sources",
+      "f3": "Program performance comparison and demand insights"
+    }
+  },
+  "whyPartner": {
+    "title": "Why Partner With Us?",
+    "subtitle": "We provide your institution with everything needed to attract the best international students",
+    "item1": { "title": "Global Student Network", "desc": "Direct access to thousands of international students from 215+ countries seeking study opportunities" },
+    "item2": { "title": "Full Enrollment Support", "desc": "Dedicated team assisting with complete student admission and enrollment processes" },
+    "item3": { "title": "Advanced Digital Marketing", "desc": "AI-powered targeted marketing campaigns to attract the right students for your programs" },
+    "item4": { "title": "Trusted Tech Platform", "desc": "Integrated digital platform for managing applications and communicating with students transparently" }
+  },
+  "partnershipTypes": {
+    "title": "Partnership Types",
+    "type1": { "title": "Academic Partnership", "desc": "Collaboration agreements with universities to attract international students and streamline admissions" },
+    "type2": { "title": "Institutional Partnership", "desc": "Partnerships with language institutes, training centers, and accredited educational institutions" },
+    "type3": { "title": "Service Partnership", "desc": "Collaboration with housing, insurance, and transport providers to serve students" }
+  },
+  "howItWorks": {
+    "title": "Verification & Launch Path",
+    "subtitle": "Four steps from request to receiving your first qualified student application",
+    "step1": { "title": "Search & Claim", "desc": "Find your university in our database and submit a profile management request" },
+    "step2": { "title": "Identity Verification", "desc": "We verify your identity through your institution's official email or documents" },
+    "step3": { "title": "Partner Dashboard", "desc": "Get editing permissions and track your institution's page performance" },
+    "step4": { "title": "Receive Filtered Applications", "desc": "Start receiving AI-filtered and ranked student applications ready for review" }
+  },
+  "metrics": {
+    "title": "Numbers That Speak",
+    "subtitle": "Real results we've achieved with our academic partners",
+    "m1": { "val": "36,000+", "label": "Universities on Platform" },
+    "m2": { "val": "38,000+", "label": "Study Programs" },
+    "m3": { "val": "215+", "label": "Countries Covered" },
+    "m4": { "val": "48 Hours", "label": "Average Response Time" }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "q1": { "q": "What does the partnership cost?", "a": "We offer flexible performance-based partnership models. No upfront fees — you only pay when actual results are achieved." },
+    "q2": { "q": "What countries do you cover?", "a": "We cover 215+ countries with a special focus on the Middle East, North Africa, and Central Asia." },
+    "q3": { "q": "How long does it take to start?", "a": "Partnership setup typically takes 2-4 weeks from the first meeting to starting student recruitment." },
+    "q4": { "q": "Do you support smaller institutions too?", "a": "Yes! We work with institutions of all sizes — from language institutes to major universities." }
+  },
+  "cta": {
+    "title": "Start Your Partnership Today",
+    "subtitle": "Get in touch and we'll help you design a partnership that fits your institution and goals.",
+    "button": "Contact Us"
+  }
+}

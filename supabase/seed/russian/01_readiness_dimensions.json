@@ -1,0 +1,58 @@
+[
+  {
+    "dimension_key": "script_sound_control",
+    "label": "Script & sound control",
+    "dimension_group": "foundation",
+    "dashboard_order": 1,
+    "max_score": 100
+  },
+  {
+    "dimension_key": "core_survival_communication",
+    "label": "Core survival communication",
+    "dimension_group": "foundation",
+    "dashboard_order": 2,
+    "max_score": 100
+  },
+  {
+    "dimension_key": "navigation_transactions",
+    "label": "Navigation & transactions",
+    "dimension_group": "foundation",
+    "dashboard_order": 3,
+    "max_score": 100
+  },
+  {
+    "dimension_key": "academic_classroom_comprehension",
+    "label": "Academic classroom comprehension",
+    "dimension_group": "academic",
+    "dashboard_order": 4,
+    "max_score": 100
+  },
+  {
+    "dimension_key": "academic_reading_decoding",
+    "label": "Academic reading decoding",
+    "dimension_group": "academic",
+    "dashboard_order": 5,
+    "max_score": 100
+  },
+  {
+    "dimension_key": "academic_response_production",
+    "label": "Academic response production",
+    "dimension_group": "academic",
+    "dashboard_order": 6,
+    "max_score": 100
+  },
+  {
+    "dimension_key": "grammar_control",
+    "label": "Grammar control",
+    "dimension_group": "academic",
+    "dashboard_order": 7,
+    "max_score": 100
+  },
+  {
+    "dimension_key": "exam_checkpoint_readiness",
+    "label": "Exam & checkpoint readiness",
+    "dimension_group": "exam",
+    "dashboard_order": 8,
+    "max_score": 100
+  }
+]

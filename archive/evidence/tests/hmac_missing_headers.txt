@@ -1,0 +1,53 @@
+# HTTP TEST EVIDENCE: HMAC Missing Headers
+# Test ID: hmac_no_headers_test_002
+# Generated: 2026-01-27T07:26:56Z
+# Endpoint: portal-programs-search (HMAC Bot Endpoint)
+
+================================================================================
+REQUEST
+================================================================================
+
+POST /functions/v1/portal-programs-search HTTP/1.1
+Host: alkhaznaqdlxygeznapt.supabase.co
+Content-Type: application/json
+(NO x-ts, x-nonce, x-signature headers)
+
+{
+  "request_id": "hmac_no_headers_test_002"
+}
+
+================================================================================
+RESPONSE
+================================================================================
+
+HTTP/1.1 401 Unauthorized
+Content-Type: application/json
+
+{
+  "ok": false,
+  "request_id": "019bfe59-303c-792e-89fe-8b0800581f24",
+  "error": "unauthorized: HMAC signature required (service-to-service only)",
+  "code": "MISSING_AUTH",
+  "meta": {
+    "contract": "kb_search_v1_3_final",
+    "ts": "2026-01-27T07:26:56.718Z"
+  }
+}
+
+================================================================================
+ANALYSIS
+================================================================================
+
+✅ PASS: HMAC endpoint correctly rejected request without HMAC headers
+- Status: 401 Unauthorized
+- Code: MISSING_AUTH
+- Error: "unauthorized: HMAC signature required (service-to-service only)"
+
+This proves:
+1. Portal-programs-search is NOT accessible without HMAC
+2. Bot/CRM must sign requests with HMAC-SHA256
+3. Public access to full 21 filters is BLOCKED
+
+================================================================================
+VERDICT: ✅ PASS - HMAC Required (Service-to-Service Only)
+================================================================================

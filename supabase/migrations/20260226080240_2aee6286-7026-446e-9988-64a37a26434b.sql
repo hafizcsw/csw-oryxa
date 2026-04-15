@@ -1,0 +1,2 @@
+ALTER TABLE official_site_special_queue 
+ADD CONSTRAINT official_site_special_queue_university_id_key UNIQUE (university_id);

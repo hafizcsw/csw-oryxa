@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#fff7ed"/>
+  <text x="40" y="60" font-size="34" font-family="Arial" fill="#7c2d12">Shopping & Transport Phrase Board</text>
+  <rect x="70" y="100" width="360" height="380" rx="20" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="95" y="170" font-size="28" font-family="Arial">Сколько стоит?</text>
+  <text x="95" y="230" font-size="28" font-family="Arial">Где касса?</text>
+  <text x="95" y="290" font-size="28" font-family="Arial">Мне билет, пожалуйста.</text>
+  <rect x="500" y="100" width="390" height="380" rx="20" fill="#e0f2fe" stroke="#0369a1"/>
+  <text x="530" y="170" font-size="28" font-family="Arial">Где остановка?</text>
+  <text x="530" y="230" font-size="28" font-family="Arial">Метро направо.</text>
+  <text x="530" y="290" font-size="28" font-family="Arial">Автобус в центр.</text>
+</svg>

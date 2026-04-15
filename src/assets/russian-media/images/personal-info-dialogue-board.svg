@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#f8fafc"/>
+  <text x="40" y="60" font-size="34" font-family="Arial" fill="#0f172a">Personal Information Dialogue Board</text>
+  <rect x="60" y="110" width="400" height="360" rx="20" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="90" y="170" font-size="30" font-family="Arial">Здравствуйте!</text>
+  <text x="90" y="230" font-size="30" font-family="Arial">Меня зовут ...</text>
+  <text x="90" y="290" font-size="30" font-family="Arial">Мне ... лет.</text>
+  <text x="90" y="350" font-size="30" font-family="Arial">Я из ...</text>
+  <rect x="510" y="110" width="390" height="360" rx="20" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="540" y="180" font-size="28" font-family="Arial">Greeting</text>
+  <text x="540" y="240" font-size="28" font-family="Arial">Name</text>
+  <text x="540" y="300" font-size="28" font-family="Arial">Age</text>
+  <text x="540" y="360" font-size="28" font-family="Arial">Origin</text>
+</svg>

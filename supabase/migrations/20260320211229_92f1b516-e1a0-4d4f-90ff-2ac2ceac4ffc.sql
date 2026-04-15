@@ -1,0 +1,2 @@
+ALTER TABLE official_site_crawl_jobs DROP CONSTRAINT official_site_crawl_jobs_mode_check;
+ALTER TABLE official_site_crawl_jobs ADD CONSTRAINT official_site_crawl_jobs_mode_check CHECK (mode = ANY (ARRAY['pilot10'::text, 'top500'::text, 'top1000'::text, 'all'::text, 'targeted'::text]));

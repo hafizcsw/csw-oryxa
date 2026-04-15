@@ -1,0 +1,72 @@
+[
+  {
+    "course_key": "russian_shared_core_v1",
+    "language_code": "ru",
+    "title": "Russian Shared Core",
+    "goal_type": "prep_exam",
+    "academic_track": "shared_foundation",
+    "delivery_mode": "self_paced",
+    "visibility": "active",
+    "version": "v1",
+    "placement_required": true,
+    "readiness_profile_enabled": true,
+    "dashboard_enabled": true,
+    "sort_order": 1
+  },
+  {
+    "course_key": "russian_academic_core_v1",
+    "language_code": "ru",
+    "title": "Russian Academic Core",
+    "goal_type": "university_study",
+    "academic_track": "academic_core",
+    "delivery_mode": "self_paced",
+    "visibility": "draft",
+    "version": "v1",
+    "placement_required": true,
+    "readiness_profile_enabled": true,
+    "dashboard_enabled": false,
+    "sort_order": 2
+  },
+  {
+    "course_key": "russian_medicine_overlay_v1",
+    "language_code": "ru",
+    "title": "Russian Medicine Overlay",
+    "goal_type": "university_study",
+    "academic_track": "medicine",
+    "delivery_mode": "self_paced",
+    "visibility": "draft",
+    "version": "v1",
+    "placement_required": false,
+    "readiness_profile_enabled": true,
+    "dashboard_enabled": false,
+    "sort_order": 3
+  },
+  {
+    "course_key": "russian_engineering_overlay_v1",
+    "language_code": "ru",
+    "title": "Russian Engineering Overlay",
+    "goal_type": "university_study",
+    "academic_track": "engineering",
+    "delivery_mode": "self_paced",
+    "visibility": "draft",
+    "version": "v1",
+    "placement_required": false,
+    "readiness_profile_enabled": true,
+    "dashboard_enabled": false,
+    "sort_order": 4
+  },
+  {
+    "course_key": "russian_humanities_social_overlay_v1",
+    "language_code": "ru",
+    "title": "Russian Humanities/Social Overlay",
+    "goal_type": "university_study",
+    "academic_track": "humanities_social",
+    "delivery_mode": "self_paced",
+    "visibility": "draft",
+    "version": "v1",
+    "placement_required": false,
+    "readiness_profile_enabled": true,
+    "dashboard_enabled": false,
+    "sort_order": 5
+  }
+]

@@ -1,0 +1,1 @@
+UPDATE official_site_crawl_jobs SET status = 'crawling' WHERE id = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0001';
