@@ -147,7 +147,8 @@ export function useDocumentAnalysis({
           fieldKey: proposal.field_key,
           value: proposal.proposed_value!,
           proposalId: proposal.proposal_id,
-          source: 'manual_accepted',
+          documentId: proposal.document_id,
+          source: 'manual_accepted' as const,
         }]);
       }
       return prev;
