@@ -376,7 +376,7 @@ Deno.serve(async (req) => {
     try {
       const { data: similar } = await supabase
         .from("universities")
-        .select("id, name, name_ar, name_en, city, logo_url, hero_image_url, main_image_url, qs_world_rank, country_id, countries!inner(name_ar, slug)")
+        .select("id, name, name_ar, name_en, city, logo_url, hero_image_url, main_image_url, qs_world_rank, country_id, countries!inner(name_ar, name_en, slug)")
         .eq("countries.slug", uni.country_slug)
         .neq("id", universityId)
         .order("qs_world_rank", { ascending: true, nullsFirst: false })
@@ -401,8 +401,11 @@ Deno.serve(async (req) => {
       similarUniversities = sorted.map((s: any) => ({
         id: s.id,
         name: s.name || s.name_ar || s.name_en,
+        name_ar: s.name_ar,
+        name_en: s.name_en,
         city: s.city,
         country_name: (s.countries as any)?.name_ar || uni.country_name,
+        country_name_en: (s.countries as any)?.name_en || null,
         logo_url: s.logo_url,
         image_url: s.hero_image_url || s.main_image_url,
         qs_rank: s.qs_world_rank,
