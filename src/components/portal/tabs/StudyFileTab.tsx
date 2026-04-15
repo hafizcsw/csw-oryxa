@@ -5,6 +5,8 @@ import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AccountContentHeader } from "@/components/portal/account/AccountContentHeader";
+import { useCanonicalStudentFile } from "@/hooks/useCanonicalStudentFile";
+import { useStudentDocuments } from "@/hooks/useStudentDocuments";
 import type { FileQualityResult } from "@/features/file-quality/types";
 import type { DocumentTypeFilter } from "./DocumentsTab";
 
