@@ -239,18 +239,6 @@ export function ProgramCard({ p }: { p: ProgramCardData }) {
             <Heart className={cn("w-4 h-4 transition-colors", isFavorite ? "fill-destructive text-destructive" : "text-muted-foreground hover:text-destructive")} />
           )}
         </button>
-        <ProgramInsightSheet
-          programId={p.program_id}
-          programName={displayProgramName || ''}
-          universityId={p.university_id || null}
-        >
-          <button
-            className="w-9 h-9 rounded-full flex items-center justify-center bg-muted/60 hover:bg-primary/10 hover:scale-110 transition-all shrink-0"
-            aria-label={t("insight.viewInsight")}
-          >
-            <Brain className="w-4 h-4 text-primary/70 hover:text-primary" />
-          </button>
-        </ProgramInsightSheet>
         </div>
 
         {degreeDisplay && (
