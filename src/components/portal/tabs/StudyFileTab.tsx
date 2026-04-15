@@ -75,6 +75,16 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     promotedFields: analysisHook.promotedFields,
   });
 
+  // ═══ Door 4: Academic Truth ═══
+  const { academicTruth } = useAcademicTruth({ canonicalFile });
+
+  // ═══ Door 5: Decision Engine (no program requirements in V1 — empty) ═══
+  const decision = useDecisionEngine({
+    canonicalFile,
+    academicTruth,
+    requirements: [], // Fed from DB when available
+  });
+
   // File map for post-upload analysis: keyed by unique ID, not filename
   const pendingFilesRef = useRef(new Map<string, { file: File; fileKey: string }>());
   // Map from original_file_name to unique keys for lookup
