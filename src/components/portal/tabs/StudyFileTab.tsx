@@ -16,6 +16,7 @@ import { useDocumentAnalysis } from "@/hooks/useDocumentAnalysis";
 import { useAcademicTruth } from "@/hooks/useAcademicTruth";
 import { useDecisionEngine } from "@/hooks/useDecisionEngine";
 import { useProgramRequirements } from "@/hooks/useProgramRequirements";
+import { useShortlistRequirementsContext } from "@/hooks/useShortlistRequirementsContext";
 import type { FileQualityResult } from "@/features/file-quality/types";
 import type { DocumentTypeFilter } from "./DocumentsTab";
 
