@@ -9562,7 +9562,9 @@
     "lastSeenHours": "il y a {{count}}h",
     "lastSeenDays": "il y a {{count}}j",
     "offline": "Hors ligne",
-    "sendMessage": "Envoyer un message"
+    "sendMessage": "Envoyer un message",
+    "comingSoon": "Bientôt disponible",
+    "comingSoonDesc": "Nous développons l'assistant IA ORYXA. Restez connectés !"
   },
   "claim": {
     "addBtn": "Add Btn",

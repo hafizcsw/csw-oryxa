@@ -8572,7 +8572,9 @@
     "lastSeenHours": "{{count}}시간 전",
     "lastSeenDays": "{{count}}일 전",
     "offline": "오프라인",
-    "sendMessage": "메시지 보내기"
+    "sendMessage": "메시지 보내기",
+    "comingSoon": "곧 출시",
+    "comingSoonDesc": "ORYXA AI 어시스턴트를 개발 중입니다. 기대해주세요!"
   },
   "claim": {
     "addBtn": "Add Btn",
