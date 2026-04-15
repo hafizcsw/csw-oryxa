@@ -998,7 +998,7 @@ export default function UniversityDetails() {
                 </Link>
                 <div className="qs-similar-card-v3__loc">
                   <MapPin className="h-3.5 w-3.5" />
-                  <span>{u.city ? `${u.city}, ` : ""}{u.country_name || countryName}</span>
+                  <span>{u.city ? `${u.city}, ` : ""}{language === 'ar' ? (u.country_name || countryName) : (u.country_name_en || u.country_name || countryName)}</span>
                 </div>
                 <div className="qs-similar-card-v3__stats">
                   <div className="qs-similar-card-v3__stat-box">
