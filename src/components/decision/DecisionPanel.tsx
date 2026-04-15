@@ -43,6 +43,26 @@ export function DecisionPanel({ decision, requirementsCount = 0, requirementsSou
           <h3 className="font-semibold text-foreground">{t('decision.panel_title')}</h3>
           <p className="text-xs text-muted-foreground">{t('decision.panel_subtitle')}</p>
         </div>
+        {/* Requirements source badge */}
+        {requirementsCount > 0 && (
+          <div className="ml-auto text-right">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
+              {requirementsCount} {t('decision.requirements_loaded')}
+            </span>
+            {requirementsProgramName && (
+              <p className="text-[10px] text-muted-foreground mt-0.5 max-w-[200px] truncate">
+                {requirementsProgramName} ({requirementsSource})
+              </p>
+            )}
+          </div>
+        )}
+        {requirementsCount === 0 && (
+          <div className="ml-auto">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs">
+              {t('decision.no_requirements')}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="p-6 space-y-6">
