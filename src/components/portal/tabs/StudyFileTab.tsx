@@ -243,6 +243,8 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
             isAnalyzing={analysisHook.isAnalyzing}
             onAcceptProposal={analysisHook.acceptProposal}
             onRejectProposal={analysisHook.rejectProposal}
+            onDismissAnalysis={analysisHook.dismissAnalysis}
+            onClearAll={analysisHook.clearAllAnalyses}
           />
         </section>
       )}
