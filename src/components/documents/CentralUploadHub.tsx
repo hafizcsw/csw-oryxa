@@ -8,6 +8,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { Upload, FileUp, X, CheckCircle2, AlertCircle, Loader2, Clock, Ban } from 'lucide-react';
+import brainImg from '@/assets/brain-upload.png';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
