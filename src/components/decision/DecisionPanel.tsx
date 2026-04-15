@@ -53,12 +53,12 @@ export function DecisionPanel({ decision }: DecisionPanelProps) {
           />
           <StatusCard
             icon={<CheckCircle2 className="h-4 w-4" />}
-            title={t('decision.eligibility')}
+            title={t('decision.eligibility_title')}
             status={d.eligibility_status}
           />
           <StatusCard
             icon={<Zap className="h-4 w-4" />}
-            title={t('decision.fit')}
+            title={t('decision.fit_title')}
             status={d.fit_status}
           />
           <StatusCard
