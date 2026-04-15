@@ -1326,7 +1326,18 @@
       "myStudyFile": "My Study File"
     },
     "studyFile": {
-      "quality": "File Quality"
+      "quality": "File Quality",
+      "summary": "File Summary",
+      "identity": "Identity",
+      "academic": "Academic",
+      "language": "Language",
+      "targeting": "Targeting",
+      "filled": "Filled",
+      "missing": "Missing",
+      "status_incomplete": "Incomplete",
+      "status_partial": "Partial",
+      "status_complete": "Complete",
+      "status_verified": "Verified"
     },
     "nav": {
       "sections": "Sections"

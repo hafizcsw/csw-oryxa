@@ -1328,7 +1328,18 @@
       "myStudyFile": "ملفي الدراسي"
     },
     "studyFile": {
-      "quality": "جودة الملف"
+      "quality": "جودة الملف",
+      "summary": "ملخص الملف",
+      "identity": "الهوية",
+      "academic": "الأكاديمي",
+      "language": "اللغة",
+      "targeting": "الاستهداف",
+      "filled": "مكتمل",
+      "missing": "ناقص",
+      "status_incomplete": "غير مكتمل",
+      "status_partial": "جزئي",
+      "status_complete": "مكتمل",
+      "status_verified": "موثّق"
     },
     "nav": {
       "sections": "الأقسام"
