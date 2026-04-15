@@ -76,7 +76,8 @@ export function findDuplicateFiles(files: StudentDocument[]): {
   return { toKeep, toDelete, byKind };
 }
 
-export function useStudentDocuments() {
+export function useStudentDocuments(options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true;
   const { t } = useTranslation('common');
   const [documents, setDocuments] = useState<StudentDocument[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,8 +106,8 @@ export function useStudentDocuments() {
   }, []);
 
   useEffect(() => {
-    loadDocuments();
-  }, []);
+    if (enabled) loadDocuments();
+  }, [enabled]);
 
   // ✅ Auto-sign documents for live preview (sign image/PDF files)
   const autoSignDocuments = useCallback(async (docs: StudentDocument[]) => {

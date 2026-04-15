@@ -32,7 +32,8 @@ export interface StudentPayment {
   application_id?: string | null;
 }
 
-export function useStudentPayments() {
+export function useStudentPayments(options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true;
   const [payments, setPayments] = useState<StudentPayment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,8 +41,8 @@ export function useStudentPayments() {
   const { toast } = useToast();
 
   useEffect(() => {
-    loadPayments();
-  }, []);
+    if (enabled) loadPayments();
+  }, [enabled]);
 
   async function loadPayments() {
     setError(null);
