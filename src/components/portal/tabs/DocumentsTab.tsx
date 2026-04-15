@@ -495,7 +495,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
       )}
 
       {/* Save Button */}
-      {onUpdate && (
+      {onUpdate && (showType('passport') || showType('certificate')) && (
         <div className="flex justify-end">
           <Button
             onClick={handleSaveDocFields}
