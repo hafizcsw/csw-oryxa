@@ -206,7 +206,7 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
       <span onClick={() => setOpen(true)} className="cursor-pointer">{children}</span>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className={cn(
-          "max-w-2xl w-[95vw] p-0 gap-0 rounded-2xl border-border/40 shadow-2xl",
+          "max-w-3xl w-[95vw] max-h-[90vh] p-0 gap-0 rounded-2xl border-border/40 shadow-2xl flex flex-col",
           "[&>button:last-child]:hidden"
         )}>
 
@@ -225,7 +225,7 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
           </div>
 
           {/* ─── Body ─── */}
-          <div className="overflow-y-auto" style={{ maxHeight: 'calc(85vh - 120px)' }}>
+          <div className="overflow-y-auto flex-1">
 
             {loading && (
               <div className="flex flex-col items-center py-12 gap-2">
