@@ -206,7 +206,7 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
       <span onClick={() => setOpen(true)} className="cursor-pointer">{children}</span>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className={cn(
-          "max-w-[440px] p-0 gap-0 rounded-2xl border-border/40 shadow-2xl",
+          "max-w-2xl w-[95vw] p-0 gap-0 rounded-2xl border-border/40 shadow-2xl",
           "[&>button:last-child]:hidden"
         )}>
 
@@ -216,7 +216,7 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
               <Brain className="w-4.5 h-4.5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] uppercase tracking-widest text-primary font-bold leading-none mb-0.5">{t('insight.orxAnalysis')}</p>
+              <p className="text-[11px] uppercase tracking-widest text-primary font-bold leading-none mb-0.5">{t('insight.orxAnalysis')}</p>
               <DialogTitle className="text-[13px] font-bold truncate leading-tight">{programName}</DialogTitle>
             </div>
             <button onClick={() => setOpen(false)} className="w-7 h-7 rounded-md hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground">
@@ -255,51 +255,55 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
             )}
 
             {!loading && hasData && (
-              <div className="px-4 py-3 space-y-3">
+              <div className="px-5 py-4 space-y-4">
 
-                {/* ── Main Score + Sub-scores ── */}
+                {/* ── Main Score + Sub-scores — side by side ── */}
                 {orx && (
                   <>
-                    {/* Main score badge */}
-                    {orx.overall_execution_score != null && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-foreground/60">{t('insight.executionQuality')}</span>
-                        <div className={cn(
-                          "px-3 py-1 rounded-full border-2 font-black text-lg tabular-nums",
-                          scoreBorder(orx.overall_execution_score),
-                          scoreBg(orx.overall_execution_score),
-                          scoreColor(orx.overall_execution_score)
-                        )}>
-                          {orx.overall_execution_score.toFixed(1)}<span className="text-[10px] font-normal text-muted-foreground/50">/10</span>
+                    <div className="flex items-start gap-5">
+                      {/* Main score badge — left */}
+                      {orx.overall_execution_score != null && (
+                        <div className="flex flex-col items-center gap-1.5 shrink-0">
+                          <div className={cn(
+                            "w-[72px] h-[72px] rounded-full border-[3px] flex flex-col items-center justify-center",
+                            scoreBorder(orx.overall_execution_score),
+                            scoreBg(orx.overall_execution_score)
+                          )}>
+                            <span className={cn("text-2xl font-black tabular-nums leading-none", scoreColor(orx.overall_execution_score))}>
+                              {orx.overall_execution_score.toFixed(1)}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground/50">/10</span>
+                          </div>
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-foreground/60">{t('insight.executionQuality')}</span>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Sub-scores grid — 4 cols, compact */}
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {signals.map(s => (
-                        <div key={s.key} className={cn(
-                          "flex flex-col items-center gap-1 rounded-lg border py-2 px-1",
-                          scoreBorder(s.score), scoreBg(s.score)
-                        )}>
-                          <span className="text-muted-foreground/50">{s.icon}</span>
-                          <span className="text-[9px] text-muted-foreground/70 text-center leading-tight line-clamp-1">{t(`insight.orx.${s.key}`)}</span>
-                          <span className={cn("text-[13px] font-bold tabular-nums leading-none", scoreColor(s.score))}>
-                            {s.score != null ? s.score.toFixed(1) : '—'}
-                          </span>
-                        </div>
-                      ))}
+                      {/* Sub-scores grid — right, 4 cols */}
+                      <div className="flex-1 grid grid-cols-4 gap-2">
+                        {signals.map(s => (
+                          <div key={s.key} className={cn(
+                            "flex flex-col items-center gap-1 rounded-lg border py-2.5 px-1.5",
+                            scoreBorder(s.score), scoreBg(s.score)
+                          )}>
+                            <span className="text-muted-foreground/50">{s.icon}</span>
+                            <span className="text-[11px] text-muted-foreground/70 text-center leading-tight line-clamp-1">{t(`insight.orx.${s.key}`)}</span>
+                            <span className={cn("text-sm font-bold tabular-nums leading-none", scoreColor(s.score))}>
+                              {s.score != null ? s.score.toFixed(1) : '—'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
                     {/* Discipline Future */}
                     {orx.discipline_future_strength != null && (
                       <div className={cn(
-                        "flex items-center gap-2 rounded-lg border px-3 py-2",
+                        "flex items-center gap-2 rounded-lg border px-3 py-2.5",
                         scoreBorder(orx.discipline_future_strength), scoreBg(orx.discipline_future_strength)
                       )}>
                         <TrendingUp className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
                         <span className="text-[11px] text-foreground/70 flex-1">{t('insight.disciplineFuture')}</span>
-                        <span className={cn("text-[13px] font-bold tabular-nums", scoreColor(orx.discipline_future_strength))}>
+                        <span className={cn("text-sm font-bold tabular-nums", scoreColor(orx.discipline_future_strength))}>
                           {orx.discipline_future_strength.toFixed(1)}
                         </span>
                       </div>
@@ -309,58 +313,62 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
 
                 {snapshot && (
                   <>
-                    {/* ── Summary (truncated) ── */}
-                    {shortSummary && (
-                      <div className="border-t border-border/20 pt-3">
-                        <p className="text-[11px] font-bold uppercase tracking-wider text-foreground/60 mb-1">{t('insight.summary')}</p>
-                        <p className="text-[11px] text-muted-foreground leading-relaxed">{shortSummary}</p>
-                      </div>
-                    )}
-
-                    {/* ── Future Outlook ── */}
-                    {snapshot.future_outlook && (
-                      <div className="flex items-center gap-2 rounded-lg border border-border/25 bg-muted/15 px-3 py-2">
-                        {getOutlookIcon(snapshot.future_outlook)}
-                        <span className="text-[11px] font-semibold flex-1">{t('insight.futureOutlook')}</span>
-                        <span className="text-[11px] text-muted-foreground capitalize">{snapshot.future_outlook}</span>
+                    {/* ── Summary + Future Outlook — side by side ── */}
+                    {(shortSummary || snapshot.future_outlook) && (
+                      <div className="grid grid-cols-3 gap-4 border-t border-border/20 pt-4">
+                        {shortSummary && (
+                          <div className="col-span-2">
+                            <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-1.5">{t('insight.summary')}</p>
+                            <p className="text-[12px] text-muted-foreground leading-relaxed">{shortSummary}</p>
+                          </div>
+                        )}
+                        {snapshot.future_outlook && (
+                          <div className={shortSummary ? 'col-span-1' : 'col-span-3'}>
+                            <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-1.5">{t('insight.futureOutlook')}</p>
+                            <div className="flex items-center gap-2 rounded-lg border border-border/25 bg-muted/15 px-3 py-2.5">
+                              {getOutlookIcon(snapshot.future_outlook)}
+                              <span className="text-[12px] text-muted-foreground capitalize">{snapshot.future_outlook}</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
                     {/* ── Strengths & Weaknesses (max 3 each) ── */}
                     {(snapshot.strengths?.length > 0 || snapshot.weaknesses?.length > 0) && (
-                      <div className="grid grid-cols-2 gap-3 border-t border-border/20 pt-3">
+                      <div className="grid grid-cols-2 gap-4 border-t border-border/20 pt-4">
                         {snapshot.strengths?.length > 0 && (
                           <div>
-                            <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mb-1.5">
-                              <Star className="w-3 h-3" /> {t('insight.strengths')}
+                            <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mb-2">
+                              <Star className="w-3.5 h-3.5" /> {t('insight.strengths')}
                             </p>
-                            <ul className="space-y-1">
+                            <ul className="space-y-1.5">
                               {snapshot.strengths.slice(0, 3).map((s, i) => (
-                                <li key={i} className="text-[10px] text-muted-foreground flex items-start gap-1.5">
-                                  <span className="w-1 h-1 rounded-full bg-emerald-500/60 mt-[5px] shrink-0" />
+                                <li key={i} className="text-[12px] text-muted-foreground flex items-start gap-2">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/60 mt-[5px] shrink-0" />
                                   <span className="leading-snug line-clamp-2">{s}</span>
                                 </li>
                               ))}
                               {snapshot.strengths.length > 3 && (
-                                <li className="text-[9px] text-muted-foreground/50">+{snapshot.strengths.length - 3} more…</li>
+                                <li className="text-[11px] text-muted-foreground/50">+{snapshot.strengths.length - 3} more…</li>
                               )}
                             </ul>
                           </div>
                         )}
                         {snapshot.weaknesses?.length > 0 && (
                           <div>
-                            <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 mb-1.5">
-                              <TrendingDown className="w-3 h-3" /> {t('insight.weaknesses')}
+                            <p className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 mb-2">
+                              <TrendingDown className="w-3.5 h-3.5" /> {t('insight.weaknesses')}
                             </p>
-                            <ul className="space-y-1">
+                            <ul className="space-y-1.5">
                               {snapshot.weaknesses.slice(0, 3).map((w, i) => (
-                                <li key={i} className="text-[10px] text-muted-foreground flex items-start gap-1.5">
-                                  <span className="w-1 h-1 rounded-full bg-amber-500/60 mt-[5px] shrink-0" />
+                                <li key={i} className="text-[12px] text-muted-foreground flex items-start gap-2">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-[5px] shrink-0" />
                                   <span className="leading-snug line-clamp-2">{w}</span>
                                 </li>
                               ))}
                               {snapshot.weaknesses.length > 3 && (
-                                <li className="text-[9px] text-muted-foreground/50">+{snapshot.weaknesses.length - 3} more…</li>
+                                <li className="text-[11px] text-muted-foreground/50">+{snapshot.weaknesses.length - 3} more…</li>
                               )}
                             </ul>
                           </div>
@@ -370,13 +378,13 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
 
                     {/* ── Career Paths (badges) ── */}
                     {snapshot.career_paths?.length > 0 && (
-                      <div className="border-t border-border/20 pt-3">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-foreground/60 flex items-center gap-1 mb-1.5">
-                          <Briefcase className="w-3 h-3 text-muted-foreground/50" /> {t('insight.careerPaths')}
+                      <div className="border-t border-border/20 pt-4">
+                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 flex items-center gap-1 mb-2">
+                          <Briefcase className="w-3.5 h-3.5 text-muted-foreground/50" /> {t('insight.careerPaths')}
                         </p>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-2">
                           {snapshot.career_paths.map((c, i) => (
-                            <Badge key={i} variant="outline" className="text-[10px] px-2 py-0.5 rounded-md font-normal border-border/40">
+                            <Badge key={i} variant="outline" className="text-[11px] px-2.5 py-1 rounded-md font-normal border-border/40">
                               {c.title}
                             </Badge>
                           ))}
@@ -385,7 +393,7 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
                     )}
 
                     {/* ── Meta ── */}
-                    <div className="flex items-center justify-between text-[9px] text-muted-foreground/30 pt-2 border-t border-border/15">
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground/30 pt-3 border-t border-border/15">
                       <span>{t('insight.confidence')}: {Math.round((snapshot.confidence || 0) * 100)}%</span>
                       <span>{snapshot.generated_at ? new Date(snapshot.generated_at).toLocaleDateString(language === 'ar' ? 'ar' : 'en') : ''}</span>
                     </div>
