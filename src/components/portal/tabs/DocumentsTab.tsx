@@ -530,7 +530,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
       )}
 
       {/* Success Banner */}
-      {completedRequired === totalRequired && (
+      {!compact && completedRequired === totalRequired && (
         <div className="bg-gradient-to-r from-success/10 via-success/5 to-transparent border border-success/30 rounded-xl p-4 flex items-center gap-4">
           <div className="p-3 rounded-full bg-success/20">
             <CheckCircle className="h-6 w-6 text-success" />
@@ -543,6 +543,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
       )}
 
       {/* Security Info */}
+      {!compact && (
       <div className="bg-muted/30 rounded-xl border border-border p-4 flex items-start gap-3">
         <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
           <AlertCircle className="h-4 w-4 text-primary" />
@@ -554,6 +555,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
           </p>
         </div>
       </div>
+      )}
 
       {/* Preview Modal */}
       <Dialog open={!!previewDoc} onOpenChange={(open) => !open && setPreviewDoc(null)}>
