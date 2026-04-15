@@ -34,6 +34,14 @@ const ADDITIONAL_FILTER: DocumentTypeFilter[] = ['additional'];
 
 export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabChange, onAvatarUpdate, fileQuality }: StudyFileTabProps) {
   const { t } = useLanguage();
+  const { documents } = useStudentDocuments();
+
+  // ═══ Door 1: First runtime consumer of CanonicalStudentFile ═══
+  const { canonicalFile } = useCanonicalStudentFile({
+    crmProfile,
+    documents,
+    userId: profile?.user_id ?? null,
+  });
 
   return (
     <div className="space-y-8">
