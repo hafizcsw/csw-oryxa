@@ -117,27 +117,60 @@ export function useStudentProfile() {
 
       const userId = session.user.id;
 
+      // Helper: load local profile from Supabase profiles table (fallback for avatar etc.)
+      const loadLocalProfile = async (): Promise<StudentProfile> => {
+        const { data: localData } = await supabase
+          .from('profiles')
+          .select('full_name, phone, avatar_storage_path')
+          .eq('user_id', userId)
+          .maybeSingle();
+        return {
+          user_id: userId,
+          full_name: localData?.full_name || session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || null,
+          email: session.user.email || null,
+          phone: localData?.phone || session.user.phone || null,
+          national_id: null,
+          city: null,
+          country: null,
+          avatar_storage_path: localData?.avatar_storage_path || null,
+          student_substage: null,
+          student_progress: 0,
+        };
+      };
+
       // Call student-portal-api Edge Function to get profile from CRM
-      // CRM is the ONLY source of truth - no local fallback
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
       
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/student-portal-api`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ action: 'get_profile' }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
+      let res: Response;
+      let result: any;
+      try {
+        res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/student-portal-api`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ action: 'get_profile' }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        result = await res.json();
+      } catch (fetchErr: any) {
+        clearTimeout(timeoutId);
+        console.warn('[useStudentProfile] CRM fetch failed (timeout/network), using local fallback:', fetchErr?.message);
+        // Fallback to local profile so avatar etc. still show
+        const localProfile = await loadLocalProfile();
+        setProfile(localProfile);
+        setError(t('hooks.profile.loadFailed'));
+        return;
+      }
 
-      const result = await res.json();
-
-      // Handle API-level errors
+      // Handle API-level errors - still load local profile for avatar
       if (!res.ok || !result.ok) {
         console.error('[useStudentProfile] CRM API error:', result.error);
+        const localProfile = await loadLocalProfile();
+        setProfile(localProfile);
         setError(result.message || t('hooks.profile.loadFailed'));
         return;
       }
@@ -145,24 +178,9 @@ export function useStudentProfile() {
       // Handle case where profile returned but no linked customer
       if (result.data?.error === 'no_linked_customer' || result.data?.success === false) {
         console.warn('[useStudentProfile] ⚠️ No linked customer detected - setting error for UI banner');
-        
-        // ✅ Set error for UI to display re-link banner
         setError('no_linked_customer');
-        
-        // Create minimal profile from auth session for display
-        const minimalProfile: StudentProfile = {
-          user_id: userId,
-          full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || null,
-          email: session.user.email || null,
-          phone: session.user.phone || null,
-          national_id: null,
-          city: null,
-          country: null,
-          avatar_storage_path: null,
-          student_substage: null,
-          student_progress: 0,
-        };
-        setProfile(minimalProfile);
+        const localProfile = await loadLocalProfile();
+        setProfile(localProfile);
         setCrmProfile(null);
         return;
       }
