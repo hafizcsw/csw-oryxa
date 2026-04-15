@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { useState, useRef, useCallback, useMemo } from 'react';
-import { FileUp, CheckCircle2, AlertCircle, Loader2, Clock, Ban } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DocumentRecord, ProcessingStatus } from '@/features/documents/document-registry-model';
@@ -22,27 +22,6 @@ interface CentralUploadHubProps {
 
 const ACCEPTED_TYPES = '.pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx';
 
-function statusIcon(status: ProcessingStatus) {
-  switch (status) {
-    case 'registered':
-      return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
-    case 'upload_failed':
-      return <AlertCircle className="h-4 w-4 text-destructive" />;
-    case 'uploading':
-    case 'confirming':
-      return <Loader2 className="h-4 w-4 text-primary animate-spin" />;
-    case 'pending_upload':
-      return <Clock className="h-4 w-4 text-muted-foreground" />;
-    case 'cancelled':
-      return <Ban className="h-4 w-4 text-muted-foreground" />;
-    default:
-      return <FileUp className="h-4 w-4 text-muted-foreground" />;
-  }
-}
-
-function statusLabel(status: ProcessingStatus, t: (key: string) => string): string {
-  return t(`portal.uploadHub.status_${status}`);
-}
 
 function getFileType(filename: string): 'pdf' | 'image' | 'doc' | 'spreadsheet' | 'other' {
   const ext = filename.split('.').pop()?.toLowerCase() || '';
