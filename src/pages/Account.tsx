@@ -79,6 +79,7 @@ const ReadinessTab = lazy(() => loadReadinessTab().then(m => ({ default: m.Readi
 
 // Tab loaders map for hover preload
 const tabLoaders: Record<string, () => Promise<any>> = {
+  'study-file': loadProfileTab,
   profile: loadProfileTab,
   documents: loadDocumentsTab,
   shortlist: loadShortlistTab,
