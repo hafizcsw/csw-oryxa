@@ -351,18 +351,18 @@ export function ProgramCard({ p, compact }: { p: ProgramCardData; compact?: bool
         </div>
       )}
 
-      {/* CTA - Intelligence */}
-      <div className="p-4 pt-2 mt-auto border-t border-border/50 flex items-center justify-end">
+      {/* ORX Intelligence trigger */}
+      <div className="px-4 pb-3 mt-auto flex justify-end">
         <ProgramInsightSheet
           programId={p.program_id}
           programName={displayProgramName || ''}
           universityId={p.university_id || null}
         >
           <button
-            className="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-all hover:scale-110 group/orx"
+            className="w-7 h-7 rounded-full bg-primary/8 hover:bg-primary/15 flex items-center justify-center transition-all duration-200 hover:scale-110 hover:shadow-[0_0_12px_hsl(var(--primary)/0.3)] group/orx"
             title={t("insight.viewInsight")}
           >
-            <Brain className="w-4 h-4 text-primary group-hover/orx:animate-pulse" />
+            <Brain className="w-3.5 h-3.5 text-primary/70 group-hover/orx:text-primary transition-colors" />
           </button>
         </ProgramInsightSheet>
       </div>
