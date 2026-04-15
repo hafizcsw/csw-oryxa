@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getShortlist, syncShortlist } from "@/lib/portalApi";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * @deprecated Use useUnifiedShortlist instead - this hook sends IDs only (causes "Unknown" in CRM).
@@ -7,20 +9,30 @@ import { getShortlist, syncShortlist } from "@/lib/portalApi";
  */
 export function useShortlist() {
   const qc = useQueryClient();
+  const [hasSession, setHasSession] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setHasSession(!!session?.user);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setHasSession(!!session?.user);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const query = useQuery({
     queryKey: ["shortlist"],
     queryFn: async () => {
       const res = await getShortlist();
-      // Keep error shape for error_code handling
       if (res?.ok === false) return res;
       return res;
     },
-    // ✅ P0 PATCH 3: Reduced staleTime + better refetch settings
-    staleTime: 5_000, // 5 seconds instead of 60
+    enabled: hasSession,
+    staleTime: 5_000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    placeholderData: (prev) => prev, // Prevents flicker by keeping old data while refetching
+    placeholderData: (prev) => prev,
     retry: 1,
   });
 
