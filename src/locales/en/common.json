@@ -1339,6 +1339,20 @@
       "status_complete": "Complete",
       "status_verified": "Verified"
     },
+    "uploadHub": {
+      "title": "Upload Documents",
+      "dropzone_title": "Drop files here or click to browse",
+      "dropzone_subtitle": "PDF, images, Word — single or multiple files",
+      "queue_title": "Upload Queue",
+      "in_progress": "uploading…",
+      "clear_completed": "Clear completed",
+      "status_pending_upload": "Queued",
+      "status_uploading": "Uploading…",
+      "status_confirming": "Confirming…",
+      "status_registered": "Registered",
+      "status_upload_failed": "Failed",
+      "status_cancelled": "Cancelled"
+    },
     "nav": {
       "sections": "Sections"
     },

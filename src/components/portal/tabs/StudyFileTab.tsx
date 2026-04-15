@@ -1,13 +1,14 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { FolderOpen } from "lucide-react";
 import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
 import { CanonicalFileSummary } from "@/components/student-file/CanonicalFileSummary";
+import { CentralUploadHub } from "@/components/documents/CentralUploadHub";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AccountContentHeader } from "@/components/portal/account/AccountContentHeader";
 import { useCanonicalStudentFile } from "@/hooks/useCanonicalStudentFile";
 import { useStudentDocuments } from "@/hooks/useStudentDocuments";
+import { useDocumentRegistry } from "@/hooks/useDocumentRegistry";
 import type { FileQualityResult } from "@/features/file-quality/types";
 import type { DocumentTypeFilter } from "./DocumentsTab";
 
@@ -35,18 +36,32 @@ const ADDITIONAL_FILTER: DocumentTypeFilter[] = ['additional'];
 
 export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabChange, onAvatarUpdate, fileQuality }: StudyFileTabProps) {
   const { t } = useLanguage();
-  const { documents } = useStudentDocuments();
+  const { documents, refetch: refetchDocs } = useStudentDocuments();
 
-  // ═══ Door 1: First runtime consumer of CanonicalStudentFile ═══
+  // ═══ Door 1: Canonical Student File ═══
   const { canonicalFile, hasIdentity, hasAcademic, hasLanguage, hasTargeting } = useCanonicalStudentFile({
     crmProfile,
     documents,
     userId: profile?.user_id ?? null,
   });
 
+  // ═══ Door 2: Document Registry + Upload Hub ═══
+  const handleBatchComplete = useCallback(() => {
+    refetchDocs({ silent: true });
+  }, [refetchDocs]);
+
+  const registry = useDocumentRegistry({
+    studentId: profile?.user_id ?? null,
+    onBatchComplete: handleBatchComplete,
+  });
+
+  const handleFilesSelected = useCallback((files: File[]) => {
+    registry.enqueueFiles(files, 'upload_hub');
+  }, [registry]);
+
   return (
     <div className="space-y-8" data-canonical-status={canonicalFile?.file_status.profile_completion_status ?? 'none'}>
-      {/* Top: Avatar (circle) + Page Title */}
+      {/* Top: Avatar + Page Title */}
       <div className="flex items-center gap-4">
         <AccountContentHeader
           profile={profile}
@@ -64,7 +79,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         </section>
       )}
 
-      {/* 1b. Canonical File Summary — visible canonical truth consumer */}
+      {/* 1b. Canonical File Summary */}
       {canonicalFile && (
         <section>
           <h2 className="text-sm font-semibold text-foreground mb-2">{t('portal.studyFile.summary')}</h2>
@@ -77,6 +92,22 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           />
         </section>
       )}
+
+      <Separator />
+
+      {/* ═══ Door 2: Central Upload Hub ═══ */}
+      <section>
+        <h2 className="text-base font-semibold text-foreground mb-3">{t('portal.uploadHub.title')}</h2>
+        <CentralUploadHub
+          records={registry.records}
+          isUploading={registry.isUploading}
+          disabled={crmProfile?.docs_locked}
+          onFilesSelected={handleFilesSelected}
+          onCancel={registry.cancelRecord}
+          onDismiss={registry.dismissRecord}
+          onClearCompleted={registry.clearCompleted}
+        />
+      </section>
 
       <Separator />
 
