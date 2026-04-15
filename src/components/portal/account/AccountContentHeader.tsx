@@ -47,6 +47,7 @@ const maskPhone = (phone?: string | null): string => {
 export function AccountContentHeader({
   profile,
   crmProfile,
+  canonicalIdentity,
   onEditProfile,
   onAvatarUpdate
 }: AccountContentHeaderProps) {
@@ -58,7 +59,8 @@ export function AccountContentHeader({
   const [localAvatarOverride, setLocalAvatarOverride] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fullName = crmProfile?.full_name || profile?.full_name || t('portal.header.student');
+  // Door 1: canonical identity is primary read source, fallback to CRM → profile
+  const fullName = canonicalIdentity?.full_name || crmProfile?.full_name || profile?.full_name || t('portal.header.student');
   const phone = crmProfile?.phone_e164 || crmProfile?.phone || profile?.phone;
 
   // ✅ Resolve both full URLs and storage paths safely
