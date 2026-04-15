@@ -5,6 +5,8 @@ import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AccountContentHeader } from "@/components/portal/account/AccountContentHeader";
+import { useCanonicalStudentFile } from "@/hooks/useCanonicalStudentFile";
+import { useStudentDocuments } from "@/hooks/useStudentDocuments";
 import type { FileQualityResult } from "@/features/file-quality/types";
 import type { DocumentTypeFilter } from "./DocumentsTab";
 
@@ -32,9 +34,17 @@ const ADDITIONAL_FILTER: DocumentTypeFilter[] = ['additional'];
 
 export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabChange, onAvatarUpdate, fileQuality }: StudyFileTabProps) {
   const { t } = useLanguage();
+  const { documents } = useStudentDocuments();
+
+  // ═══ Door 1: First runtime consumer of CanonicalStudentFile ═══
+  const { canonicalFile } = useCanonicalStudentFile({
+    crmProfile,
+    documents,
+    userId: profile?.user_id ?? null,
+  });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-canonical-status={canonicalFile?.file_status.profile_completion_status ?? 'none'}>
       {/* Top: Avatar (circle) + Page Title */}
       <div className="flex items-center gap-4">
         <AccountContentHeader
