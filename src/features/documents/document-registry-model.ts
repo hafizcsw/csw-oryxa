@@ -1,9 +1,12 @@
 // ═══════════════════════════════════════════════════════════════
-// Document Registry Model — Door 2: Local document truth
+// Document Registry Model — Door 2: Session-local upload registry
 // ═══════════════════════════════════════════════════════════════
-// Every uploaded file becomes a typed DocumentRecord.
+// Tracks each uploaded file as a typed DocumentRecord within
+// the current browser session. This is NOT persistent canonical
+// document truth — it is upload orchestration state that lives
+// for the duration of the page session. Persistent truth remains
+// in the CRM via prepare→PUT→confirm.
 // No OCR. No extraction. No decision engine.
-// Only upload orchestration + registry.
 // ═══════════════════════════════════════════════════════════════
 
 // ── Document slot types ──────────────────────────────────────
@@ -45,7 +48,7 @@ export type SourceSurface =
 
 // ── The Document Record ──────────────────────────────────────
 export interface DocumentRecord {
-  /** Unique ID — from CRM file_id after confirm, or local UUID before */
+  /** Local tracking ID — always a local UUID. See crm_file_id for CRM identity. */
   document_id: string;
   /** Student user ID */
   student_id: string;
@@ -61,8 +64,9 @@ export interface DocumentRecord {
   file_size_bytes: number;
   /** Storage path in CRM bucket */
   storage_path: string | null;
-  /** Detected document type — null or simple hint only in Door 2 */
-  detected_document_type: DocumentSlotType | null;
+  /** Preliminary slot hint from filename heuristic — NOT real detection.
+   *  Will remain null/unknown until Door 3 introduces actual document understanding. */
+  slot_hint: DocumentSlotType | null;
   /** Processing status */
   processing_status: ProcessingStatus;
   /** Readability — unknown until Door 3+ */
