@@ -44,7 +44,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-canonical-status={canonicalFile?.file_status.profile_completion_status ?? 'none'}>
       {/* Top: Avatar (circle) + Page Title */}
       <div className="flex items-center gap-4">
         <AccountContentHeader
