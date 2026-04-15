@@ -668,7 +668,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
       </AlertDialog>
 
       {/* Tab Navigation */}
-      {onTabChange && <TabNavigation currentTab="documents" onTabChange={onTabChange} />}
+      {!compact && onTabChange && <TabNavigation currentTab="documents" onTabChange={onTabChange} />}
     </div>
   );
 }
