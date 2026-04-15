@@ -6,7 +6,6 @@
 
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DocumentRecord, ProcessingStatus } from '@/features/documents/document-registry-model';
 
