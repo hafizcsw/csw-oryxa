@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-const STUDY_ORDER = ['profile', 'readiness', 'documents', 'shortlist', 'services', 'applications', 'visa'];
+const STUDY_ORDER = ['study-file', 'shortlist', 'services', 'applications', 'visa'];
 
 interface TabNavigationProps {
   currentTab: string;
@@ -16,9 +16,7 @@ export function TabNavigation({ currentTab, onTabChange }: TabNavigationProps) {
   const nextTab = currentIndex < STUDY_ORDER.length - 1 ? STUDY_ORDER[currentIndex + 1] : null;
 
   const TAB_KEYS: Record<string, string> = {
-    profile: 'portal.sidebar.profile',
-    readiness: 'portal.sidebar.readiness',
-    documents: 'portal.sidebar.documents',
+    'study-file': 'portal.sidebar.myStudyFile',
     shortlist: 'portal.sidebar.favorites',
     applications: 'portal.sidebar.applications',
     services: 'portal.sidebar.services',

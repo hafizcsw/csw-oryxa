@@ -698,6 +698,10 @@ export default function AccountPage() {
             fileQuality={fileQuality}
           />
         );
+      case 'applications':
+        return <ApplicationsTab crmProfile={crmProfile} onUpdate={updateCrmProfile} onTabChange={setActiveTab} />;
+      case 'case':
+        return <CaseStatusTab applicationId={searchParams.get('application_id') || undefined} />;
       case 'payments':
         return <PaymentsTab />;
       case 'shortlist':

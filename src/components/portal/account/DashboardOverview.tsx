@@ -1,10 +1,6 @@
 import { AccountContentHeader } from "./AccountContentHeader";
 import { AccountVerificationSteps } from "./AccountVerificationSteps";
 import { TransferCountriesSection } from "./TransferCountriesSection";
-import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
-import { FileQualityGapList } from "@/components/file-quality/FileQualityGapList";
-import { FileQualityGate } from "@/components/file-quality/FileQualityGate";
-import type { FileQualityResult } from "@/features/file-quality/types";
 
 interface DashboardOverviewProps {
   profile: {
