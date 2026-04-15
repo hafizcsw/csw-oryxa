@@ -98,6 +98,7 @@ export function useDocumentRegistry({
         updateRecord(record.document_id, {
           processing_status: 'registered',
           upload_progress: 100,
+          crm_file_id: result.file_id || null,
           storage_path: result.path || null,
           file_url: result.file_url || null,
           error_message: null,
