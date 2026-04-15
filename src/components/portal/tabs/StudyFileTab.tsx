@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FolderOpen } from "lucide-react";
 import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
+import { CanonicalFileSummary } from "@/components/student-file/CanonicalFileSummary";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AccountContentHeader } from "@/components/portal/account/AccountContentHeader";
@@ -37,7 +38,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   const { documents } = useStudentDocuments();
 
   // ═══ Door 1: First runtime consumer of CanonicalStudentFile ═══
-  const { canonicalFile } = useCanonicalStudentFile({
+  const { canonicalFile, hasIdentity, hasAcademic, hasLanguage, hasTargeting } = useCanonicalStudentFile({
     crmProfile,
     documents,
     userId: profile?.user_id ?? null,
