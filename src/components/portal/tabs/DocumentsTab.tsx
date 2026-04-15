@@ -380,7 +380,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
         onDeleteDuplicates={() => setShowDuplicatesDialog(true)}
         isRefreshing={isRefreshing}
       />
-      )
+      )}
 
       {/* Upload Progress */}
       {Object.entries(uploadProgress).filter(([_, p]) => p.stage !== 'done').length > 0 && (
