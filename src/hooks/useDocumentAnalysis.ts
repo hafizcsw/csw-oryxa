@@ -1,0 +1,181 @@
+// ═══════════════════════════════════════════════════════════════
+// useDocumentAnalysis — Door 3: Analysis + proposal state
+// ═══════════════════════════════════════════════════════════════
+// Manages analysis results and proposals for uploaded documents.
+// Integrates with useDocumentRegistry (Door 2) and
+// useCanonicalStudentFile (Door 1).
+// No external LLM. No OpenAI.
+// ═══════════════════════════════════════════════════════════════
+
+import { useState, useCallback, useRef } from 'react';
+import type { DocumentAnalysis } from '@/features/documents/document-analysis-model';
+import type {
+  ExtractionProposal,
+  ProposalStatus,
+} from '@/features/documents/extraction-proposal-model';
+import { analyzeDocument, type AnalysisResult } from '@/features/documents/analysis-engine';
+import type { CanonicalStudentFile } from '@/features/student-file/canonical-model';
+import type { FieldProvenance, FieldSourceType } from '@/features/student-file/canonical-model';
+import type { DocumentSlotType } from '@/features/documents/document-registry-model';
+
+interface UseDocumentAnalysisOptions {
+  studentId: string | null;
+  canonicalFile: CanonicalStudentFile | null;
+}
+
+export interface PromotedField {
+  fieldKey: string;
+  value: string;
+  proposalId: string;
+  source: 'auto_accepted' | 'manual_accepted';
+}
+
+interface UseDocumentAnalysisResult {
+  /** All analysis records */
+  analyses: DocumentAnalysis[];
+  /** All proposals (across all documents) */
+  proposals: ExtractionProposal[];
+  /** Fields promoted to canonical truth */
+  promotedFields: PromotedField[];
+  /** True when any analysis is running */
+  isAnalyzing: boolean;
+  /** Run analysis on a file */
+  analyzeFile: (file: File, documentId: string, slotHint: DocumentSlotType | null) => Promise<AnalysisResult | null>;
+  /** Manually accept a proposal */
+  acceptProposal: (proposalId: string) => void;
+  /** Manually reject a proposal */
+  rejectProposal: (proposalId: string) => void;
+  /** Get proposals for a specific document */
+  getProposalsForDocument: (documentId: string) => ExtractionProposal[];
+  /** Get analysis for a specific document */
+  getAnalysis: (documentId: string) => DocumentAnalysis | undefined;
+}
+
+export function useDocumentAnalysis({
+  studentId,
+  canonicalFile,
+}: UseDocumentAnalysisOptions): UseDocumentAnalysisResult {
+  const [analyses, setAnalyses] = useState<DocumentAnalysis[]>([]);
+  const [proposals, setProposals] = useState<ExtractionProposal[]>([]);
+  const [promotedFields, setPromotedFields] = useState<PromotedField[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const analyzingCount = useRef(0);
+
+  const analyzeFile = useCallback(async (
+    file: File,
+    documentId: string,
+    slotHint: DocumentSlotType | null,
+  ): Promise<AnalysisResult | null> => {
+    if (!studentId) return null;
+
+    analyzingCount.current++;
+    setIsAnalyzing(true);
+
+    try {
+      const result = await analyzeDocument({
+        file,
+        documentId,
+        studentId,
+        slotHint,
+        canonicalFile,
+      });
+
+      // Store analysis
+      setAnalyses(prev => {
+        const existing = prev.findIndex(a => a.document_id === documentId);
+        if (existing >= 0) {
+          const updated = [...prev];
+          updated[existing] = result.analysis;
+          return updated;
+        }
+        return [...prev, result.analysis];
+      });
+
+      // Store proposals
+      setProposals(prev => {
+        // Remove old proposals for this document
+        const filtered = prev.filter(p => p.document_id !== documentId);
+        return [...filtered, ...result.proposals];
+      });
+
+      // Auto-promote accepted proposals
+      const autoAccepted = result.proposals.filter(p => p.proposal_status === 'auto_accepted');
+      if (autoAccepted.length > 0) {
+        const newPromoted: PromotedField[] = autoAccepted
+          .filter(p => p.proposed_value !== null)
+          .map(p => ({
+            fieldKey: p.field_key,
+            value: p.proposed_value!,
+            proposalId: p.proposal_id,
+            source: 'auto_accepted' as const,
+          }));
+        setPromotedFields(prev => [...prev, ...newPromoted]);
+      }
+
+      if (import.meta.env.DEV) {
+        console.log('[DocumentAnalysis] Completed', {
+          documentId,
+          classification: result.analysis.classification_result,
+          confidence: result.analysis.classification_confidence,
+          fieldsExtracted: Object.keys(result.analysis.extracted_fields).length,
+          proposals: result.proposals.length,
+          autoAccepted: result.proposals.filter(p => p.proposal_status === 'auto_accepted').length,
+          pendingReview: result.proposals.filter(p => p.proposal_status === 'pending_review').length,
+        });
+      }
+
+      return result;
+    } finally {
+      analyzingCount.current--;
+      if (analyzingCount.current === 0) setIsAnalyzing(false);
+    }
+  }, [studentId, canonicalFile]);
+
+  const acceptProposal = useCallback((proposalId: string) => {
+    setProposals(prev => prev.map(p => {
+      if (p.proposal_id !== proposalId) return p;
+      return { ...p, proposal_status: 'auto_accepted' as ProposalStatus, updated_at: new Date().toISOString() };
+    }));
+
+    // Find the proposal and promote it
+    setProposals(prev => {
+      const proposal = prev.find(p => p.proposal_id === proposalId);
+      if (proposal && proposal.proposed_value) {
+        setPromotedFields(pf => [...pf, {
+          fieldKey: proposal.field_key,
+          value: proposal.proposed_value!,
+          proposalId: proposal.proposal_id,
+          source: 'manual_accepted',
+        }]);
+      }
+      return prev;
+    });
+  }, []);
+
+  const rejectProposal = useCallback((proposalId: string) => {
+    setProposals(prev => prev.map(p => {
+      if (p.proposal_id !== proposalId) return p;
+      return { ...p, proposal_status: 'rejected' as ProposalStatus, updated_at: new Date().toISOString() };
+    }));
+  }, []);
+
+  const getProposalsForDocument = useCallback((documentId: string) => {
+    return proposals.filter(p => p.document_id === documentId);
+  }, [proposals]);
+
+  const getAnalysis = useCallback((documentId: string) => {
+    return analyses.find(a => a.document_id === documentId);
+  }, [analyses]);
+
+  return {
+    analyses,
+    proposals,
+    promotedFields,
+    isAnalyzing,
+    analyzeFile,
+    acceptProposal,
+    rejectProposal,
+    getProposalsForDocument,
+    getAnalysis,
+  };
+}
