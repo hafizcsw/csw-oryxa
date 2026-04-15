@@ -364,9 +364,12 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
     );
   }
 
+  const showType = (type: DocumentTypeFilter) => !docTypesFilter || docTypesFilter.includes(type);
+
   return (
     <div className="space-y-6">
-      {/* Header with Progress */}
+      {/* Header with Progress - hidden in compact mode */}
+      {!compact && (
       <DocumentVaultHeader
         totalRequired={totalRequired}
         completedRequired={completedRequired}
@@ -377,6 +380,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
         onDeleteDuplicates={() => setShowDuplicatesDialog(true)}
         isRefreshing={isRefreshing}
       />
+      )
 
       {/* Upload Progress */}
       {Object.entries(uploadProgress).filter(([_, p]) => p.stage !== 'done').length > 0 && (
