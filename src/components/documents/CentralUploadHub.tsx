@@ -5,9 +5,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { useState, useRef, useCallback, useMemo } from 'react';
-import { Upload, FileUp, X, CheckCircle2, AlertCircle, Loader2, Clock, Ban } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import { FileUp, CheckCircle2, AlertCircle, Loader2, Clock, Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DocumentRecord, ProcessingStatus } from '@/features/documents/document-registry-model';
