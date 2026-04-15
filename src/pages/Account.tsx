@@ -100,7 +100,9 @@ export default function AccountPage() {
   const { studentPortalToken, fullLogout, setAuthenticatedSession, shortlist: localShortlist } = useMalakChat();
 
   const { profile, crmProfile, loading: crmLoading, error: profileError, refetch: refetchCrm, updateProfile: updateCrmProfile } = useStudentProfile();
-  const { documents: studentDocs } = useStudentDocuments();
+  // ✅ Gate secondary CRM calls until profile loads to avoid overwhelming edge functions
+  const profileReady = !crmLoading && !!crmProfile;
+  const { documents: studentDocs } = useStudentDocuments({ enabled: profileReady });
   const fileQuality = useFileQuality(crmProfile, studentDocs);
   const staffAuth = useStaffAuthority();
   const { isStaff, role, teacherTruth } = staffAuth;
