@@ -116,7 +116,7 @@ Be factual and evidence-based. If you lack data, lower your confidence score.`;
     const aiData = await aiResponse.json();
     const snapshot = JSON.parse(aiData.choices[0].message.content);
 
-    const sourceHash = btoa(contextStr).slice(0, 64);
+    const sourceHash = Array.from(new TextEncoder().encode(contextStr)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 64);
 
     // Mark old snapshots as not current
     await supabase
