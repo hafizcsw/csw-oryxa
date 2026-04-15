@@ -110,148 +110,114 @@ export function CentralUploadHub({
           disabled && 'opacity-50 cursor-not-allowed',
         )}
       >
-        {/* Brain SVG */}
+        {/* Brain SVG — lobed shape like reference */}
         <div className={cn(
-          'relative w-56 h-52 transition-transform duration-300',
+          'relative w-52 h-48 transition-transform duration-300',
           isDragOver && 'scale-105',
         )}>
-          <svg viewBox="0 0 512 460" className="w-full h-full drop-shadow-lg" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 400 380" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <linearGradient id="brainLeft" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="1" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.7" />
+              <linearGradient id="bFL" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.18" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.38" />
               </linearGradient>
-              <linearGradient id="brainRight" x1="100%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.55" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
+              <linearGradient id="bFR" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.28" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.12" />
               </linearGradient>
-              <filter id="brainShadow">
-                <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="hsl(var(--primary))" floodOpacity="0.25" />
-              </filter>
-              <filter id="glowPulse">
-                <feGaussianBlur stdDeviation="6" result="glow" />
-                <feMerge><feMergeNode in="glow" /><feMergeNode in="SourceGraphic" /></feMerge>
+              <filter id="glow2">
+                <feGaussianBlur stdDeviation="4" result="g" />
+                <feMerge><feMergeNode in="g" /><feMergeNode in="SourceGraphic" /></feMerge>
               </filter>
             </defs>
 
-            <g filter="url(#brainShadow)">
-              {/* ── Left hemisphere ── realistic brain shape with folds */}
-              <path
-                d="M248 400 C240 385, 230 360, 220 340 C205 310, 175 295, 150 275
-                   C120 250, 95 225, 80 195 C65 165, 55 140, 55 115
-                   C55 90, 62 70, 78 52 C94 34, 118 22, 145 18
-                   C165 15, 185 20, 200 32 C212 42, 225 28, 240 20
-                   C248 16, 252 16, 256 18 L256 400 Z"
-                fill="url(#brainLeft)"
-                className={cn(
-                  'transition-all duration-300',
-                  isDragOver ? 'opacity-100' : 'opacity-85 group-hover:opacity-95',
-                )}
-              />
-
-              {/* Left hemisphere brain folds (sulci) */}
-              <g stroke="hsl(var(--primary-foreground))" strokeWidth="1.8" fill="none"
-                 opacity={isDragOver ? '0.5' : '0.25'} strokeLinecap="round"
-                 className="transition-opacity duration-300">
-                {/* Frontal lobe folds */}
-                <path d="M230 45 C215 50, 195 48, 178 55 C160 62, 148 58, 135 52" />
-                <path d="M242 72 C225 78, 200 75, 180 82 C162 88, 140 80, 120 75" />
-                <path d="M248 100 C228 108, 205 102, 185 110 C168 116, 148 108, 128 100 C110 93, 90 98, 78 105" />
-                {/* Parietal folds */}
-                <path d="M250 135 C232 142, 210 138, 190 145 C172 150, 155 145, 138 138 C118 130, 98 135, 82 142" />
-                <path d="M252 170 C235 178, 215 172, 195 180 C178 186, 160 178, 142 172 C122 165, 105 170, 88 178" />
-                {/* Temporal lobe folds */}
-                <path d="M250 205 C238 212, 218 208, 200 215 C182 220, 165 215, 148 208 C130 200, 112 205, 95 212" />
-                <path d="M248 240 C235 248, 218 242, 200 250 C185 255, 168 248, 152 242 C135 235, 118 240, 105 248" />
-                <path d="M242 275 C230 282, 215 278, 198 285 C182 290, 168 285, 155 278" />
-                <path d="M235 310 C225 316, 210 312, 198 318 C185 322, 172 318, 162 312" />
-              </g>
-
-              {/* ── Right hemisphere ── */}
-              <path
-                d="M264 400 C272 385, 282 360, 292 340 C307 310, 337 295, 362 275
-                   C392 250, 417 225, 432 195 C447 165, 457 140, 457 115
-                   C457 90, 450 70, 434 52 C418 34, 394 22, 367 18
-                   C347 15, 327 20, 312 32 C300 42, 287 28, 272 20
-                   C264 16, 260 16, 256 18 L256 400 Z"
-                fill="url(#brainRight)"
-                className={cn(
-                  'transition-all duration-300',
-                  isDragOver ? 'opacity-100' : 'opacity-75 group-hover:opacity-88',
-                )}
-              />
-
-              {/* Right hemisphere brain folds */}
-              <g stroke="hsl(var(--primary))" strokeWidth="1.5" fill="none"
-                 opacity={isDragOver ? '0.45' : '0.2'} strokeLinecap="round"
-                 className="transition-opacity duration-300">
-                <path d="M282 45 C297 50, 317 48, 334 55 C352 62, 364 58, 377 52" />
-                <path d="M270 72 C287 78, 312 75, 332 82 C350 88, 372 80, 392 75" />
-                <path d="M264 100 C284 108, 307 102, 327 110 C344 116, 364 108, 384 100 C402 93, 422 98, 434 105" />
-                <path d="M262 135 C280 142, 302 138, 322 145 C340 150, 357 145, 374 138 C394 130, 414 135, 430 142" />
-                <path d="M260 170 C277 178, 297 172, 317 180 C334 186, 352 178, 370 172 C390 165, 407 170, 424 178" />
-                <path d="M262 205 C274 212, 294 208, 312 215 C330 220, 347 215, 364 208 C382 200, 400 205, 417 212" />
-                <path d="M264 240 C277 248, 294 242, 312 250 C327 255, 344 248, 360 242 C377 235, 394 240, 407 248" />
-                <path d="M270 275 C282 282, 297 278, 314 285 C330 290, 344 285, 357 278" />
-                <path d="M277 310 C287 316, 302 312, 314 318 C327 322, 340 318, 350 312" />
-              </g>
-
-              {/* Center fissure */}
-              <line x1="256" y1="18" x2="256" y2="400" stroke="hsl(var(--border))" strokeWidth="2" opacity="0.5" />
-
-              {/* Brain stem */}
-              <path
-                d="M240 390 C240 400, 242 420, 248 435 C252 445, 256 450, 260 445
-                   C264 435, 268 420, 272 400 C272 395, 268 390, 264 390 Z"
-                fill="hsl(var(--primary))" opacity="0.4"
-              />
+            {/* ═══ LEFT HEMISPHERE — bulbous lobed outline ═══ */}
+            <path
+              d="M200 30
+                 C192 28, 178 24, 165 30
+                 C150 38, 142 52, 130 60
+                 C116 50, 96 46, 78 58
+                 C58 72, 48 92, 46 112
+                 C36 110, 24 122, 22 142
+                 C18 166, 28 190, 42 206
+                 C36 214, 30 230, 38 248
+                 C48 270, 66 282, 82 290
+                 C78 302, 72 316, 84 330
+                 C98 346, 120 352, 142 350
+                 C160 348, 174 338, 184 324
+                 C192 310, 196 292, 198 276
+                 C200 264, 200 252, 200 242
+                 Z"
+              fill="url(#bFL)"
+              stroke="hsl(var(--primary))"
+              strokeWidth="2.8"
+              strokeLinejoin="round"
+              className={cn('transition-all duration-300', isDragOver ? 'opacity-100' : 'opacity-80 group-hover:opacity-95')}
+            />
+            {/* Left sulci */}
+            <g stroke="hsl(var(--primary))" strokeWidth="1.6" fill="none" strokeLinecap="round"
+               opacity={isDragOver ? '0.55' : '0.3'} className="transition-opacity duration-300">
+              <path d="M192 58 C174 64, 154 54, 136 64 C120 72, 106 62, 90 68" />
+              <path d="M196 95 C176 104, 150 92, 128 102 C108 110, 86 98, 66 108" />
+              <path d="M198 135 C178 146, 150 132, 126 144 C102 154, 76 140, 52 152" />
+              <path d="M198 175 C180 186, 156 172, 134 184 C114 194, 92 180, 68 192" />
+              <path d="M196 218 C178 228, 156 216, 136 226 C118 234, 98 222, 78 232" />
+              <path d="M192 258 C176 268, 156 256, 140 266 C126 274, 110 264, 96 272" />
+              <path d="M184 296 C170 304, 154 294, 140 302 C128 308, 116 300, 106 308" />
             </g>
 
-            {/* ── Circuit nodes (tech overlay) ── */}
-            <g className="transition-opacity duration-300" opacity={isDragOver ? '0.7' : '0.35'}>
-              {/* Left side nodes + lines */}
-              <g stroke="hsl(var(--primary-foreground))" strokeWidth="1" fill="none">
-                <path d="M180 60 L160 80 L140 82" />
-                <path d="M200 95 L175 110 L150 112" />
-                <path d="M195 150 L170 162 L145 160" />
-                <path d="M190 210 L168 220 L148 218" />
-              </g>
-              <g fill="hsl(var(--primary-foreground))">
-                <circle cx="140" cy="82" r="3" />
-                <circle cx="150" cy="112" r="3" />
-                <circle cx="145" cy="160" r="3" />
-                <circle cx="148" cy="218" r="3" />
-                <circle cx="180" cy="60" r="2.5" />
-                <circle cx="200" cy="95" r="2.5" />
-              </g>
-
-              {/* Right side nodes + lines */}
-              <g stroke="hsl(var(--primary))" strokeWidth="1" fill="none">
-                <path d="M332 60 L352 80 L372 82" />
-                <path d="M312 95 L337 110 L362 112" />
-                <path d="M317 150 L342 162 L367 160" />
-                <path d="M322 210 L344 220 L364 218" />
-              </g>
-              <g fill="hsl(var(--primary))" opacity="0.6">
-                <circle cx="372" cy="82" r="3" />
-                <circle cx="362" cy="112" r="3" />
-                <circle cx="367" cy="160" r="3" />
-                <circle cx="364" cy="218" r="3" />
-                <circle cx="332" cy="60" r="2.5" />
-                <circle cx="312" cy="95" r="2.5" />
-              </g>
+            {/* ═══ RIGHT HEMISPHERE ═══ */}
+            <path
+              d="M200 30
+                 C208 28, 222 24, 235 30
+                 C250 38, 258 52, 270 60
+                 C284 50, 304 46, 322 58
+                 C342 72, 352 92, 354 112
+                 C364 110, 376 122, 378 142
+                 C382 166, 372 190, 358 206
+                 C364 214, 370 230, 362 248
+                 C352 270, 334 282, 318 290
+                 C322 302, 328 316, 316 330
+                 C302 346, 280 352, 258 350
+                 C240 348, 226 338, 216 324
+                 C208 310, 204 292, 202 276
+                 C200 264, 200 252, 200 242
+                 Z"
+              fill="url(#bFR)"
+              stroke="hsl(var(--primary))"
+              strokeWidth="2.8"
+              strokeLinejoin="round"
+              className={cn('transition-all duration-300', isDragOver ? 'opacity-100' : 'opacity-70 group-hover:opacity-88')}
+            />
+            {/* Right sulci */}
+            <g stroke="hsl(var(--primary))" strokeWidth="1.6" fill="none" strokeLinecap="round"
+               opacity={isDragOver ? '0.45' : '0.25'} className="transition-opacity duration-300">
+              <path d="M208 58 C226 64, 246 54, 264 64 C280 72, 294 62, 310 68" />
+              <path d="M204 95 C224 104, 250 92, 272 102 C292 110, 314 98, 334 108" />
+              <path d="M202 135 C222 146, 250 132, 274 144 C298 154, 324 140, 348 152" />
+              <path d="M202 175 C220 186, 244 172, 266 184 C286 194, 308 180, 332 192" />
+              <path d="M204 218 C222 228, 244 216, 264 226 C282 234, 302 222, 322 232" />
+              <path d="M208 258 C224 268, 244 256, 260 266 C274 274, 290 264, 304 272" />
+              <path d="M216 296 C230 304, 246 294, 260 302 C272 308, 284 300, 294 308" />
             </g>
+
+            {/* Center fissure */}
+            <line x1="200" y1="30" x2="200" y2="350" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.25" />
+
+            {/* Brain stem */}
+            <path d="M190 348 C192 358, 196 368, 200 372 C204 368, 208 358, 210 348"
+              fill="none" stroke="hsl(var(--primary))" strokeWidth="2.2" opacity="0.35" strokeLinecap="round" />
 
             {/* ── Upload icon center ── */}
-            <g filter={isDragOver ? 'url(#glowPulse)' : undefined}>
-              <circle cx="256" cy="200" r="28" fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2.5"
+            <g filter={isDragOver ? 'url(#glow2)' : undefined}>
+              <circle cx="200" cy="190" r="28" fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2.2"
                 className={cn(isDragOver && 'animate-pulse')} />
-              <path d="M256 188 L256 212 M246 196 L256 186 L266 196"
-                stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              <path d="M200 178 L200 202 M191 186 L200 176 L209 186"
+                stroke="hsl(var(--primary))" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
             </g>
 
             {isDragOver && (
-              <circle cx="256" cy="200" r="36" fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.4" className="animate-ping" />
+              <circle cx="200" cy="190" r="36" fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.4" className="animate-ping" />
             )}
           </svg>
         </div>
