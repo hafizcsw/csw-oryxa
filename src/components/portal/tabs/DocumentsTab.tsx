@@ -37,11 +37,17 @@ const docTime = (d: StudentDocument): number => {
 const isBlobUrl = (url?: string | null): boolean => 
   !!url && url.startsWith('blob:');
 
+export type DocumentTypeFilter = 'photo' | 'passport' | 'certificate' | 'additional';
+
 interface DocumentsTabProps {
   profile?: StudentProfile;
   crmProfile?: StudentPortalProfile | null;
   onUpdate?: (payload: Partial<StudentPortalProfile>) => Promise<boolean>;
   onTabChange?: (tab: string) => void;
+  /** When set, only show these document types. Omit to show all. */
+  docTypesFilter?: DocumentTypeFilter[];
+  /** When true, hide header/progress/success/security/nav chrome */
+  compact?: boolean;
 }
 
 export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange }: DocumentsTabProps) {
