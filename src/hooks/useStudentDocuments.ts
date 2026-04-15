@@ -105,8 +105,8 @@ export function useStudentDocuments() {
   }, []);
 
   useEffect(() => {
-    loadDocuments();
-  }, []);
+    if (enabled) loadDocuments();
+  }, [enabled]);
 
   // ✅ Auto-sign documents for live preview (sign image/PDF files)
   const autoSignDocuments = useCallback(async (docs: StudentDocument[]) => {
