@@ -60,17 +60,17 @@ export function useShortlistRequirementsContext(): RequirementsContext {
       try {
         const { data } = await supabase
           .from('programs')
-          .select('university_id, name_en, name_ar')
+          .select('university_id, title, title_ar')
           .eq('id', programId)
           .maybeSingle();
 
         if (!cancelled && data) {
           setUniversityId(data.university_id ?? null);
-          setProgramName(data.name_en || data.name_ar || programId);
+          setProgramName(data.title || data.title_ar || programId);
           console.log('[RequirementsContext] Resolved from shortlist', {
             programId,
             universityId: data.university_id,
-            programName: data.name_en || data.name_ar,
+            programName: data.title || data.title_ar,
           });
         }
       } catch (e) {
