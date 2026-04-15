@@ -50,7 +50,7 @@ interface DocumentsTabProps {
   compact?: boolean;
 }
 
-export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange }: DocumentsTabProps) {
+export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTypesFilter, compact }: DocumentsTabProps) {
   const { t } = useLanguage();
   const { 
     documents: studentDocs, 
