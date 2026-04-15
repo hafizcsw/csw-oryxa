@@ -1341,6 +1341,20 @@
       "status_complete": "مكتمل",
       "status_verified": "موثّق"
     },
+    "uploadHub": {
+      "title": "رفع المستندات",
+      "dropzone_title": "اسحب الملفات هنا أو انقر للتصفح",
+      "dropzone_subtitle": "PDF، صور، Word — ملف واحد أو عدة ملفات",
+      "queue_title": "قائمة الرفع",
+      "in_progress": "جارٍ الرفع…",
+      "clear_completed": "مسح المكتمل",
+      "status_pending_upload": "في الانتظار",
+      "status_uploading": "جارٍ الرفع…",
+      "status_confirming": "جارٍ التأكيد…",
+      "status_registered": "مسجّل",
+      "status_upload_failed": "فشل",
+      "status_cancelled": "ملغى"
+    },
     "nav": {
       "sections": "الأقسام"
     },
