@@ -36,25 +36,34 @@ const PASSPORT_FILTER: DocumentTypeFilter[] = ['passport'];
 const CERTIFICATE_FILTER: DocumentTypeFilter[] = ['certificate'];
 const ADDITIONAL_FILTER: DocumentTypeFilter[] = ['additional'];
 
+/** Generate a unique key for file tracking (avoids duplicate filename collision) */
+let fileCounter = 0;
+function uniqueFileKey(file: File): string {
+  return `${file.name}__${file.size}__${++fileCounter}`;
+}
+
 export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabChange, onAvatarUpdate, fileQuality }: StudyFileTabProps) {
   const { t } = useLanguage();
   const { documents, refetch: refetchDocs } = useStudentDocuments();
 
-  // ═══ Door 1: Canonical Student File ═══
+  // ═══ Door 3: Document Analysis + Proposals ═══
+  const analysisHook = useDocumentAnalysis({
+    studentId: profile?.user_id ?? null,
+    canonicalFile: null, // Will be set after canonical is built — chicken/egg solved by using base CRM
+  });
+
+  // ═══ Door 1: Canonical Student File (with Door 3 promoted fields merged) ═══
   const { canonicalFile, hasIdentity, hasAcademic, hasLanguage, hasTargeting } = useCanonicalStudentFile({
     crmProfile,
     documents,
     userId: profile?.user_id ?? null,
+    promotedFields: analysisHook.promotedFields,
   });
 
-  // ═══ Door 3: Document Analysis + Proposals ═══
-  const analysisHook = useDocumentAnalysis({
-    studentId: profile?.user_id ?? null,
-    canonicalFile,
-  });
-
-  // File map for post-upload analysis (ref to avoid re-renders)
-  const pendingFilesRef = useRef(new Map<string, File>());
+  // File map for post-upload analysis: keyed by unique ID, not filename
+  const pendingFilesRef = useRef(new Map<string, { file: File; fileKey: string }>());
+  // Map from original_file_name to unique keys for lookup
+  const fileNameToKeysRef = useRef(new Map<string, string[]>());
 
   // ═══ Door 2: Document Registry + Upload Hub ═══
   const handleBatchComplete = useCallback(() => {
@@ -79,17 +88,30 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     for (const id of newlyRegistered) {
       const record = registry.records.find(r => r.document_id === id);
       if (!record) continue;
-      const file = pendingFilesRef.current.get(record.original_file_name);
-      if (file && !analysisHook.getAnalysis(id)) {
-        analysisHook.analyzeFile(file, id, record.slot_hint);
-        pendingFilesRef.current.delete(record.original_file_name);
+      
+      // Find the file by name, consuming one key at a time to handle duplicates
+      const keys = fileNameToKeysRef.current.get(record.original_file_name);
+      if (keys && keys.length > 0) {
+        const fileKey = keys.shift()!;
+        const entry = pendingFilesRef.current.get(fileKey);
+        if (entry && !analysisHook.getAnalysis(id)) {
+          analysisHook.analyzeFile(entry.file, id, record.slot_hint);
+          pendingFilesRef.current.delete(fileKey);
+        }
+        if (keys.length === 0) {
+          fileNameToKeysRef.current.delete(record.original_file_name);
+        }
       }
     }
   }, [registry.records, analysisHook]);
 
   const handleFilesSelected = useCallback((files: File[]) => {
     for (const file of files) {
-      pendingFilesRef.current.set(file.name, file);
+      const key = uniqueFileKey(file);
+      pendingFilesRef.current.set(key, { file, fileKey: key });
+      const existing = fileNameToKeysRef.current.get(file.name) || [];
+      existing.push(key);
+      fileNameToKeysRef.current.set(file.name, existing);
     }
     registry.enqueueFiles(files, 'upload_hub');
   }, [registry]);
@@ -151,6 +173,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           <DocumentAnalysisPanel
             analyses={analysisHook.analyses}
             proposals={analysisHook.proposals}
+            promotedFields={analysisHook.promotedFields}
             isAnalyzing={analysisHook.isAnalyzing}
             onAcceptProposal={analysisHook.acceptProposal}
             onRejectProposal={analysisHook.rejectProposal}

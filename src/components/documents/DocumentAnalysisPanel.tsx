@@ -1,21 +1,23 @@
 // ═══════════════════════════════════════════════════════════════
 // DocumentAnalysisPanel — Door 3: Runtime surface
 // ═══════════════════════════════════════════════════════════════
-// Shows analysis results, extracted fields, and proposal state
-// for each document. Allows manual accept/reject of proposals.
+// Shows analysis results, extracted fields, proposal state,
+// AND which values have been promoted to canonical truth.
 // No report. No eligibility. No improvement plan.
 // ═══════════════════════════════════════════════════════════════
 
-import { CheckCircle2, XCircle, Clock, AlertTriangle, FileSearch, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, AlertTriangle, FileSearch, Loader2, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DocumentAnalysis } from '@/features/documents/document-analysis-model';
 import type { ExtractionProposal, ProposalStatus } from '@/features/documents/extraction-proposal-model';
+import type { PromotedField } from '@/hooks/useDocumentAnalysis';
 
 interface DocumentAnalysisPanelProps {
   analyses: DocumentAnalysis[];
   proposals: ExtractionProposal[];
+  promotedFields: PromotedField[];
   isAnalyzing: boolean;
   onAcceptProposal: (proposalId: string) => void;
   onRejectProposal: (proposalId: string) => void;
@@ -43,7 +45,6 @@ function proposalStatusBadge(status: ProposalStatus) {
 }
 
 function fieldKeyLabel(fieldKey: string): string {
-  // Convert "identity.passport_name" → "Passport Name"
   const field = fieldKey.split('.').pop() || fieldKey;
   return field.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
@@ -51,6 +52,7 @@ function fieldKeyLabel(fieldKey: string): string {
 export function DocumentAnalysisPanel({
   analyses,
   proposals,
+  promotedFields,
   isAnalyzing,
   onAcceptProposal,
   onRejectProposal,
@@ -58,6 +60,8 @@ export function DocumentAnalysisPanel({
   const { t } = useLanguage();
 
   if (analyses.length === 0 && !isAnalyzing) return null;
+
+  const promotedSet = new Set(promotedFields.map(p => p.proposalId));
 
   const groupedProposals = new Map<string, ExtractionProposal[]>();
   for (const p of proposals) {
@@ -69,6 +73,7 @@ export function DocumentAnalysisPanel({
   const totalAccepted = proposals.filter(p => p.proposal_status === 'auto_accepted').length;
   const totalPending = proposals.filter(p => p.proposal_status === 'pending_review').length;
   const totalRejected = proposals.filter(p => p.proposal_status === 'rejected').length;
+  const totalPromoted = promotedFields.length;
 
   return (
     <div className="space-y-3" data-door3-consumer="analysis-panel">
@@ -80,6 +85,12 @@ export function DocumentAnalysisPanel({
         <span className="text-emerald-500">{totalAccepted} {t('portal.analysis.accepted')}</span>
         <span className="text-amber-500">{totalPending} {t('portal.analysis.pending')}</span>
         <span className="text-destructive">{totalRejected} {t('portal.analysis.rejected')}</span>
+        {totalPromoted > 0 && (
+          <span className="flex items-center gap-1 text-primary font-medium">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            {totalPromoted} in canonical truth
+          </span>
+        )}
       </div>
 
       {/* Per-document analysis */}
@@ -112,6 +123,12 @@ export function DocumentAnalysisPanel({
                   <span className="text-[10px] text-muted-foreground font-mono">
                     {(analysis.classification_confidence * 100).toFixed(0)}%
                   </span>
+                  {/* Image limitation notice */}
+                  {analysis.parser_type === 'filename_only' && analysis.readability_status === 'unknown' && (
+                    <span className="text-[9px] text-amber-500 italic">
+                      filename only — no OCR
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-1.5">
                   {analysis.readability_status !== 'unknown' && (
@@ -137,52 +154,71 @@ export function DocumentAnalysisPanel({
               {/* Proposals */}
               {docProposals.length > 0 && (
                 <div className="space-y-1 mt-2">
-                  {docProposals.map(proposal => (
-                    <div
-                      key={proposal.proposal_id}
-                      className="flex items-center gap-2 py-1 px-2 rounded bg-muted/30"
-                      data-proposal-id={proposal.proposal_id}
-                      data-proposal-status={proposal.proposal_status}
-                    >
-                      {proposalStatusIcon(proposal.proposal_status)}
-                      <span className="text-[11px] text-muted-foreground min-w-[100px]">
-                        {fieldKeyLabel(proposal.field_key)}
-                      </span>
-                      <span className="text-[11px] text-foreground font-mono flex-1 truncate">
-                        {proposal.proposed_value}
-                      </span>
-                      <Badge
-                        variant="outline"
-                        className={`text-[9px] ${proposalStatusBadge(proposal.proposal_status)}`}
+                  {docProposals.map(proposal => {
+                    const isPromoted = promotedSet.has(proposal.proposal_id);
+                    return (
+                      <div
+                        key={proposal.proposal_id}
+                        className={`flex items-center gap-2 py-1 px-2 rounded ${
+                          isPromoted ? 'bg-primary/5 border border-primary/20' : 'bg-muted/30'
+                        }`}
+                        data-proposal-id={proposal.proposal_id}
+                        data-proposal-status={proposal.proposal_status}
+                        data-promoted={isPromoted ? 'true' : 'false'}
                       >
-                        {proposal.proposal_status.replace('_', ' ')}
-                      </Badge>
-                      <span className="text-[9px] text-muted-foreground font-mono">
-                        {(proposal.confidence * 100).toFixed(0)}%
-                      </span>
-                      {/* Actions for pending proposals */}
-                      {proposal.proposal_status === 'pending_review' && (
-                        <div className="flex gap-1 ml-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-5 w-5 text-emerald-500 hover:text-emerald-600"
-                            onClick={() => onAcceptProposal(proposal.proposal_id)}
+                        {isPromoted ? (
+                          <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                        ) : (
+                          proposalStatusIcon(proposal.proposal_status)
+                        )}
+                        <span className="text-[11px] text-muted-foreground min-w-[100px]">
+                          {fieldKeyLabel(proposal.field_key)}
+                        </span>
+                        <span className="text-[11px] text-foreground font-mono flex-1 truncate">
+                          {proposal.proposed_value}
+                        </span>
+                        {isPromoted ? (
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] bg-primary/10 text-primary border-primary/30"
                           >
-                            <CheckCircle2 className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-5 w-5 text-destructive hover:text-destructive/80"
-                            onClick={() => onRejectProposal(proposal.proposal_id)}
+                            canonical truth
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className={`text-[9px] ${proposalStatusBadge(proposal.proposal_status)}`}
                           >
-                            <XCircle className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                            {proposal.proposal_status.replace('_', ' ')}
+                          </Badge>
+                        )}
+                        <span className="text-[9px] text-muted-foreground font-mono">
+                          {(proposal.confidence * 100).toFixed(0)}%
+                        </span>
+                        {/* Actions for pending proposals */}
+                        {proposal.proposal_status === 'pending_review' && (
+                          <div className="flex gap-1 ml-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5 text-emerald-500 hover:text-emerald-600"
+                              onClick={() => onAcceptProposal(proposal.proposal_id)}
+                            >
+                              <CheckCircle2 className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5 text-destructive hover:text-destructive/80"
+                              onClick={() => onRejectProposal(proposal.proposal_id)}
+                            >
+                              <XCircle className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 

@@ -79,7 +79,8 @@ export async function analyzeDocument(params: {
         analysis.parser_type = 'filename_only';
       }
     } else if (file.type.startsWith('image/')) {
-      // Future: Tesseract.js OCR — for now, filename-only
+      // HONEST GAP: No OCR in V1. Image documents yield filename-only classification.
+      // MRZ/field extraction will NOT work on image uploads until Tesseract.js is added.
       analysis.parser_type = 'filename_only';
       analysis.readability_status = 'unknown';
     } else {
