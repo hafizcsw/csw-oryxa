@@ -1322,7 +1322,8 @@
       "other": "Other",
       "visa": "Visa",
       "messages": "Messages",
-      "readiness": "Readiness"
+      "readiness": "Readiness",
+      "myStudyFile": "My Study File"
     },
     "nav": {
       "sections": "Sections"

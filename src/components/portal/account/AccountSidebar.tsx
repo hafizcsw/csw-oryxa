@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LayoutDashboard, User, Paperclip, Heart, FileText, Wallet, Settings, Briefcase, ChevronDown, CreditCard, ClipboardList, LogOut, GraduationCap, ShieldCheck, FileUp, MessageCircle, Shield } from "lucide-react";
+import { LayoutDashboard, User, Paperclip, Heart, FileText, Wallet, Settings, Briefcase, ChevronDown, CreditCard, ClipboardList, LogOut, GraduationCap, ShieldCheck, FileUp, MessageCircle, Shield, FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -54,17 +54,9 @@ export function AccountSidebar({
   }];
 
   const STUDY_ITEMS = isTeacher ? [] : [{
-    id: 'profile',
-    label: t('portal.sidebar.profile'),
-    icon: User
-  }, {
-    id: 'readiness',
-    label: t('portal.sidebar.readiness'),
-    icon: Shield
-  }, {
-    id: 'documents',
-    label: t('portal.sidebar.documents'),
-    icon: Paperclip
+    id: 'study-file',
+    label: t('portal.sidebar.myStudyFile'),
+    icon: FolderOpen
   }, {
     id: 'shortlist',
     label: t('portal.sidebar.favorites'),

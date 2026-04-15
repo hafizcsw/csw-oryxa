@@ -1,4 +1,4 @@
-import { LayoutDashboard, User, Paperclip, Heart, FileText, Wallet, Plane, Menu, X, GraduationCap, ShieldCheck, FileUp, MessageCircle, Shield } from "lucide-react";
+import { LayoutDashboard, User, Paperclip, Heart, FileText, Wallet, Plane, Menu, X, GraduationCap, ShieldCheck, FileUp, MessageCircle, FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -19,9 +19,7 @@ export function AccountMobileNav({ activeTab, onTabChange, isTeacher = false }: 
 
   const STUDENT_ITEMS = [
     { id: 'overview', label: t('portal.sidebar.dashboard'), icon: LayoutDashboard },
-    { id: 'profile', label: t('portal.sidebar.profile'), icon: User },
-    { id: 'readiness', label: t('portal.sidebar.readiness'), icon: Shield },
-    { id: 'documents', label: t('portal.sidebar.documents'), icon: Paperclip },
+    { id: 'study-file', label: t('portal.sidebar.myStudyFile'), icon: FolderOpen },
     { id: 'shortlist', label: t('portal.sidebar.favorites'), icon: Heart },
     { id: 'applications', label: t('portal.sidebar.applications'), icon: FileText },
     { id: 'messages', label: t('portal.sidebar.messages', { defaultValue: 'Messages' }), icon: MessageCircle },
