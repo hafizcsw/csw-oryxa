@@ -11898,9 +11898,7 @@
     "lastSeenHours": "منذ {{count}} ساعة",
     "lastSeenDays": "منذ {{count}} يوم",
     "offline": "غير متصل",
-    "sendMessage": "إرسال رسالة",
-    "comingSoon": "قادم قريباً",
-    "comingSoonDesc": "نعمل على تطوير مساعد ORYXA الذكي. ترقبوا!"
+    "sendMessage": "إرسال رسالة"
   },
   "chatPause": {
     "countdown": "⏳ الشات سيعود خلال {{days}} يوم و{{hours}} ساعة",

@@ -9188,9 +9188,7 @@
     "lastSeenHours": "{{count}}小时前",
     "lastSeenDays": "{{count}}天前",
     "offline": "离线",
-    "sendMessage": "发送消息",
-    "comingSoon": "即将推出",
-    "comingSoonDesc": "我们正在开发ORYXA AI助手，敬请期待！"
+    "sendMessage": "发送消息"
   },
   "claim": {
     "addBtn": "Add Btn",

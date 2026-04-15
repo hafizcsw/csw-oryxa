@@ -11837,9 +11837,7 @@
     "messages": "Messages",
     "unknown": "Unknown",
     "noConversations": "No conversations yet",
-    "_messaging_separator": "",
-    "comingSoon": "Coming Soon",
-    "comingSoonDesc": "We're building the ORYXA AI assistant. Stay tuned!"
+    "_messaging_separator": ""
   },
   "chatPause": {
     "countdown": "⏳ Chat returns in {{days}} days and {{hours}} hours",

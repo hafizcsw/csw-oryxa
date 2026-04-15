@@ -8948,9 +8948,7 @@
     "lastSeenHours": "hace {{count}}h",
     "lastSeenDays": "hace {{count}}d",
     "offline": "Desconectado",
-    "sendMessage": "Enviar mensaje",
-    "comingSoon": "Próximamente",
-    "comingSoonDesc": "Estamos desarrollando el asistente IA ORYXA. ¡Estén atentos!"
+    "sendMessage": "Enviar mensaje"
   },
   "claim": {
     "addBtn": "Add Btn",

@@ -9603,9 +9603,7 @@
     "lastSeenHours": "{{count}}ч назад",
     "lastSeenDays": "{{count}}д назад",
     "offline": "Не в сети",
-    "sendMessage": "Отправить сообщение",
-    "comingSoon": "Скоро",
-    "comingSoonDesc": "Мы разрабатываем ИИ-ассистента ORYXA. Следите за обновлениями!"
+    "sendMessage": "Отправить сообщение"
   },
   "claim": {
     "addBtn": "Add Btn",

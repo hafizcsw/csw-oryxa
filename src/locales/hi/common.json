@@ -8582,9 +8582,7 @@
     "lastSeenHours": "{{count}} घंटे पहले",
     "lastSeenDays": "{{count}} दिन पहले",
     "offline": "ऑफ़लाइन",
-    "sendMessage": "संदेश भेजें",
-    "comingSoon": "जल्द आ रहा है",
-    "comingSoonDesc": "हम ORYXA AI सहायक बना रहे हैं। बने रहें!"
+    "sendMessage": "संदेश भेजें"
   },
   "claim": {
     "addBtn": "Add Btn",
