@@ -257,42 +257,38 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
             {!loading && hasData && (
               <div className="px-5 py-4 space-y-4">
 
-                {/* ── Main Score + Sub-scores — side by side ── */}
+                {/* ── Scores — compact inline icons ── */}
                 {orx && (
                   <>
-                    <div className="flex items-start gap-5">
-                      {/* Main score badge — left */}
+                    {/* Main score + sub-scores in one compact row */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {/* Main score pill */}
                       {orx.overall_execution_score != null && (
-                        <div className="flex flex-col items-center gap-1.5 shrink-0">
-                          <div className={cn(
-                            "w-[72px] h-[72px] rounded-full border-[3px] flex flex-col items-center justify-center",
-                            scoreBorder(orx.overall_execution_score),
-                            scoreBg(orx.overall_execution_score)
-                          )}>
-                            <span className={cn("text-2xl font-black tabular-nums leading-none", scoreColor(orx.overall_execution_score))}>
-                              {orx.overall_execution_score.toFixed(1)}
-                            </span>
-                            <span className="text-[11px] text-muted-foreground/50">/10</span>
-                          </div>
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-foreground/60">{t('insight.executionQuality')}</span>
+                        <div className={cn(
+                          "flex items-center gap-1.5 rounded-full border-2 px-3 py-1",
+                          scoreBorder(orx.overall_execution_score),
+                          scoreBg(orx.overall_execution_score)
+                        )}>
+                          <Brain className="w-3.5 h-3.5 text-muted-foreground/60" />
+                          <span className={cn("text-base font-black tabular-nums", scoreColor(orx.overall_execution_score))}>
+                            {orx.overall_execution_score.toFixed(1)}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground/40">/10</span>
                         </div>
                       )}
 
-                      {/* Sub-scores grid — right, 4 cols */}
-                      <div className="flex-1 grid grid-cols-4 gap-2">
-                        {signals.map(s => (
-                          <div key={s.key} className={cn(
-                            "flex flex-col items-center gap-1 rounded-lg border py-2.5 px-1.5",
-                            scoreBorder(s.score), scoreBg(s.score)
-                          )}>
-                            <span className="text-muted-foreground/50">{s.icon}</span>
-                            <span className="text-[11px] text-muted-foreground/70 text-center leading-tight line-clamp-1">{t(`insight.orx.${s.key}`)}</span>
-                            <span className={cn("text-sm font-bold tabular-nums leading-none", scoreColor(s.score))}>
-                              {s.score != null ? s.score.toFixed(1) : '—'}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
+                      {/* Sub-scores as small icon pills */}
+                      {signals.map(s => (
+                        <div key={s.key} className={cn(
+                          "flex items-center gap-1 rounded-full border px-2 py-0.5",
+                          scoreBorder(s.score), scoreBg(s.score)
+                        )} title={t(`insight.orx.${s.key}`)}>
+                          <span className="text-muted-foreground/50">{s.icon}</span>
+                          <span className={cn("text-xs font-bold tabular-nums", scoreColor(s.score))}>
+                            {s.score != null ? s.score.toFixed(1) : '—'}
+                          </span>
+                        </div>
+                      ))}
                     </div>
 
                     {/* Discipline Future */}
