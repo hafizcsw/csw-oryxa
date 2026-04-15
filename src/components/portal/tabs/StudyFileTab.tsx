@@ -202,14 +202,6 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         />
       </div>
 
-      {/* 1. File Quality */}
-      {fileQuality && (
-        <section>
-          <h2 className="text-sm font-semibold text-foreground mb-2">{t('portal.studyFile.quality')}</h2>
-          <FileQualityCard result={fileQuality} />
-        </section>
-      )}
-
       {/* 1b. Canonical File Summary */}
       {canonicalFile && (
         <section>
@@ -338,6 +330,15 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           />
         </Suspense>
       </section>
+
+      {/* File Quality — bottom */}
+      {fileQuality && (
+        <section>
+          <Separator className="mb-8" />
+          <h2 className="text-sm font-semibold text-foreground mb-2">{t('portal.studyFile.quality')}</h2>
+          <FileQualityCard result={fileQuality} />
+        </section>
+      )}
     </div>
   );
 }
