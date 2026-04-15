@@ -10,28 +10,21 @@ interface FileQualityGapListProps {
 export function FileQualityGapList({ blockingGaps, improvementGaps }: FileQualityGapListProps) {
   const { t } = useTranslation();
 
-  if (blockingGaps.length === 0 && improvementGaps.length === 0) {
-    return null;
-  }
+  if (blockingGaps.length === 0 && improvementGaps.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-      <h3 className="font-semibold text-foreground">{t('file_quality.gap_list.title')}</h3>
-
+    <div className="rounded-xl border border-border bg-card px-4 py-3 space-y-3">
       {blockingGaps.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-destructive flex items-center gap-1.5">
-            <AlertCircle className="h-4 w-4" />
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-destructive flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
             {t('file_quality.gap_list.blocking')}
           </p>
-          <ul className="space-y-1.5">
+          <ul className="space-y-0.5">
             {blockingGaps.map(g => (
-              <li key={g.id} className="text-sm flex items-start gap-2 text-foreground">
-                <span className="w-1.5 h-1.5 rounded-full bg-destructive mt-1.5 shrink-0" />
-                <div>
-                  <span>{t(g.title_key)}</span>
-                  <span className="text-muted-foreground ms-1">— {t(g.action_key)}</span>
-                </div>
+              <li key={g.id} className="text-xs flex items-start gap-1.5 text-foreground">
+                <span className="w-1 h-1 rounded-full bg-destructive mt-1.5 shrink-0" />
+                <span>{t(g.title_key)} <span className="text-muted-foreground">— {t(g.action_key)}</span></span>
               </li>
             ))}
           </ul>
@@ -39,19 +32,16 @@ export function FileQualityGapList({ blockingGaps, improvementGaps }: FileQualit
       )}
 
       {improvementGaps.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-            <Lightbulb className="h-4 w-4" />
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+            <Lightbulb className="h-3 w-3" />
             {t('file_quality.gap_list.improvements')}
           </p>
-          <ul className="space-y-1.5">
+          <ul className="space-y-0.5">
             {improvementGaps.map(g => (
-              <li key={g.id} className="text-sm flex items-start gap-2 text-muted-foreground">
-                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground mt-1.5 shrink-0" />
-                <div>
-                  <span>{t(g.title_key)}</span>
-                  <span className="ms-1">— {t(g.action_key)}</span>
-                </div>
+              <li key={g.id} className="text-xs flex items-start gap-1.5 text-muted-foreground">
+                <span className="w-1 h-1 rounded-full bg-muted-foreground mt-1.5 shrink-0" />
+                <span>{t(g.title_key)} — {t(g.action_key)}</span>
               </li>
             ))}
           </ul>
