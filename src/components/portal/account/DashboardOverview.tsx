@@ -68,7 +68,7 @@ export function DashboardOverview({
       {/* Verification Steps */}
       <AccountVerificationSteps 
         currentStep={getCurrentStep()}
-        onVerifyClick={() => onNavigate("profile")}
+        onVerifyClick={() => onNavigate("study-file")}
       />
 
       {/* Transfer Countries Section */}
