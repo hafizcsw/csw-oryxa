@@ -144,6 +144,20 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         />
       </section>
 
+      {/* ═══ Door 3: Document Analysis + Proposals ═══ */}
+      {(analysisHook.analyses.length > 0 || analysisHook.isAnalyzing) && (
+        <section>
+          <h2 className="text-base font-semibold text-foreground mb-3">{t('portal.analysis.title')}</h2>
+          <DocumentAnalysisPanel
+            analyses={analysisHook.analyses}
+            proposals={analysisHook.proposals}
+            isAnalyzing={analysisHook.isAnalyzing}
+            onAcceptProposal={analysisHook.acceptProposal}
+            onRejectProposal={analysisHook.rejectProposal}
+          />
+        </section>
+      )}
+
       <Separator />
 
       {/* 2. Personal Info + Passport side by side */}
