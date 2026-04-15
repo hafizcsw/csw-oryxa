@@ -3,12 +3,14 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
 import { CanonicalFileSummary } from "@/components/student-file/CanonicalFileSummary";
 import { CentralUploadHub } from "@/components/documents/CentralUploadHub";
+import { DocumentAnalysisPanel } from "@/components/documents/DocumentAnalysisPanel";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AccountContentHeader } from "@/components/portal/account/AccountContentHeader";
 import { useCanonicalStudentFile } from "@/hooks/useCanonicalStudentFile";
 import { useStudentDocuments } from "@/hooks/useStudentDocuments";
 import { useDocumentRegistry } from "@/hooks/useDocumentRegistry";
+import { useDocumentAnalysis } from "@/hooks/useDocumentAnalysis";
 import type { FileQualityResult } from "@/features/file-quality/types";
 import type { DocumentTypeFilter } from "./DocumentsTab";
 
