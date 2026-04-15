@@ -695,6 +695,7 @@ export default function AccountPage() {
             onUpdate={updateCrmProfile}
             onRefetch={refetchCrm}
             onTabChange={setActiveTab}
+            onAvatarUpdate={handleAvatarUpdate}
             fileQuality={fileQuality}
           />
         );
