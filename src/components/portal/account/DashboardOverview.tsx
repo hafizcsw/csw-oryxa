@@ -26,7 +26,7 @@ interface DashboardOverviewProps {
   onNavigate: (tab: string) => void;
   onEditProfile?: () => void;
   onAvatarUpdate?: (path: string | null) => Promise<boolean>;
-  fileQuality?: FileQualityResult | null;
+  
 }
 
 export function DashboardOverview({
@@ -36,7 +36,6 @@ export function DashboardOverview({
   onNavigate,
   onEditProfile,
   onAvatarUpdate,
-  fileQuality,
 }: DashboardOverviewProps) {
   const getCurrentStep = () => {
     const substage = crmProfile?.substage?.toLowerCase() || '';
@@ -65,21 +64,6 @@ export function DashboardOverview({
         onAvatarUpdate={onAvatarUpdate}
       />
 
-      {/* File Quality Assessment */}
-      {fileQuality && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1 space-y-4">
-            <FileQualityCard result={fileQuality} />
-            <FileQualityGate gates={fileQuality.gates} />
-          </div>
-          <div className="lg:col-span-2">
-            <FileQualityGapList
-              blockingGaps={fileQuality.blocking_gaps}
-              improvementGaps={fileQuality.improvement_gaps}
-            />
-          </div>
-        </div>
-      )}
 
       {/* Verification Steps */}
       <AccountVerificationSteps 
