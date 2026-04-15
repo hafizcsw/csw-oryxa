@@ -679,9 +679,8 @@ export default function AccountPage() {
             shortlistCount={shortlistCount}
             walletBalance={walletBalance}
             onNavigate={setActiveTab}
-            onEditProfile={() => setActiveTab('profile')}
+            onEditProfile={() => setActiveTab('study-file')}
             onAvatarUpdate={handleAvatarUpdate}
-            fileQuality={fileQuality}
           />
         );
       case 'study-file':
