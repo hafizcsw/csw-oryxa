@@ -57,9 +57,39 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     onBatchComplete: handleBatchComplete,
   });
 
+  // ═══ Door 3: Document Analysis + Proposals ═══
+  const analysis = useDocumentAnalysis({
+    studentId: profile?.user_id ?? null,
+    canonicalFile,
+  });
+
+  // Store file references for analysis after upload
+  const fileMapRef = useCallback(() => new Map<string, File>(), []);
+  const pendingFiles = fileMapRef();
+
   const handleFilesSelected = useCallback((files: File[]) => {
-    registry.enqueueFiles(files, 'upload_hub');
-  }, [registry]);
+    // Store files for post-upload analysis
+    const records = registry.enqueueFiles(files, 'upload_hub');
+    // We'll trigger analysis when records reach 'registered' status
+    for (const file of files) {
+      pendingFiles.set(file.name, file);
+    }
+  }, [registry, pendingFiles]);
+
+  // Trigger analysis for newly registered documents
+  const handleBatchCompleteWithAnalysis = useCallback(() => {
+    refetchDocs({ silent: true });
+    // Analyze registered records that haven't been analyzed yet
+    for (const record of registry.records) {
+      if (record.processing_status === 'registered' && !analysis.getAnalysis(record.document_id)) {
+        const file = pendingFiles.get(record.original_file_name);
+        if (file) {
+          analysis.analyzeFile(file, record.document_id, record.slot_hint);
+          pendingFiles.delete(record.original_file_name);
+        }
+      }
+    }
+  }, [refetchDocs, registry.records, analysis, pendingFiles]);
 
   return (
     <div className="space-y-8" data-canonical-status={canonicalFile?.file_status.profile_completion_status ?? 'none'}>
