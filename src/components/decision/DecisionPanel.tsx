@@ -7,6 +7,9 @@ import type { DecisionResult, DomainDecision, Blocker, LanguageGap, DecisionReas
 
 interface DecisionPanelProps {
   decision: DecisionResult;
+  requirementsCount?: number;
+  requirementsSource?: string;
+  requirementsProgramName?: string;
 }
 
 const STATUS_COLORS = {
