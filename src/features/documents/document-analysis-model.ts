@@ -73,6 +73,8 @@ export interface DocumentAnalysis {
   rejection_reason: string | null;
   /** Internal summary (not for student display — for staff/debug) */
   summary_message_internal: string | null;
+  /** Raw text content extracted from document (for downstream use like transcript parsing) */
+  text_content: string | null;
   /** Timestamps */
   created_at: string;
   updated_at: string;
@@ -96,6 +98,7 @@ export function createPendingAnalysis(documentId: string, slotHint: DocumentSlot
     duplicate_status: 'unknown',
     rejection_reason: null,
     summary_message_internal: null,
+    text_content: null,
     created_at: now,
     updated_at: now,
   };

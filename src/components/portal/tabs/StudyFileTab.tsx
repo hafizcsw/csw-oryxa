@@ -15,6 +15,7 @@ import { useDocumentRegistry } from "@/hooks/useDocumentRegistry";
 import { useDocumentAnalysis } from "@/hooks/useDocumentAnalysis";
 import { useAcademicTruth } from "@/hooks/useAcademicTruth";
 import { useDecisionEngine } from "@/hooks/useDecisionEngine";
+import { useProgramRequirements } from "@/hooks/useProgramRequirements";
 import type { FileQualityResult } from "@/features/file-quality/types";
 import type { DocumentTypeFilter } from "./DocumentsTab";
 
@@ -51,23 +52,19 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   const { documents, refetch: refetchDocs } = useStudentDocuments();
 
   // ═══ Door 1: Base canonical file (CRM truth, no promotions) ═══
-  // This is used by Door 3 analysis for conflict detection against real current truth.
   const { canonicalFile: baseCanonicalFile } = useCanonicalStudentFile({
     crmProfile,
     documents,
     userId: profile?.user_id ?? null,
-    // No promotedFields here — this is the base truth for comparison
   });
 
   // ═══ Door 3: Document Analysis + Proposals ═══
-  // Receives REAL base canonical file so conflict detection works
   const analysisHook = useDocumentAnalysis({
     studentId: profile?.user_id ?? null,
     canonicalFile: baseCanonicalFile,
   });
 
   // ═══ Door 1: Merged canonical file (base + promoted overlay) ═══
-  // This is the final truth shown on all surfaces.
   const { canonicalFile, hasIdentity, hasAcademic, hasLanguage, hasTargeting } = useCanonicalStudentFile({
     crmProfile,
     documents,
@@ -76,13 +73,48 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   });
 
   // ═══ Door 4: Academic Truth ═══
-  const { academicTruth } = useAcademicTruth({ canonicalFile });
+  const academicTruthHook = useAcademicTruth({ canonicalFile });
 
-  // ═══ Door 5: Decision Engine (no program requirements in V1 — empty) ═══
+  // ═══ Door 3→4 Bridge: Feed transcript text into subject row parsing ═══
+  const parsedTranscriptIds = useRef(new Set<string>());
+  useEffect(() => {
+    for (const analysis of analysisHook.analyses) {
+      if (
+        analysis.classification_result === 'transcript' &&
+        analysis.analysis_status === 'completed' &&
+        analysis.text_content &&
+        !parsedTranscriptIds.current.has(analysis.document_id)
+      ) {
+        parsedTranscriptIds.current.add(analysis.document_id);
+        const rows = academicTruthHook.parseTranscript(
+          analysis.text_content,
+          profile?.user_id ?? 'unknown',
+          analysis.document_id,
+        );
+        if (import.meta.env.DEV) {
+          console.log('[Door3→4] Transcript parsed into subject rows', {
+            documentId: analysis.document_id,
+            subjectRowCount: rows.length,
+            families: [...new Set(rows.map(r => r.subject_family))],
+          });
+        }
+      }
+    }
+  }, [analysisHook.analyses, academicTruthHook.parseTranscript, profile?.user_id]);
+
+  // ═══ Door 4.5: Program Requirements from DB ═══
+  // Use first application university_id if available, otherwise none
+  const firstUniversityId = crmProfile?.university_id ?? null;
+  const { requirements, source: reqSource } = useProgramRequirements({
+    universityId: firstUniversityId,
+    targetDegree: canonicalFile?.targeting?.target_degree,
+  });
+
+  // ═══ Door 5: Decision Engine ═══
   const decision = useDecisionEngine({
     canonicalFile,
-    academicTruth,
-    requirements: [], // Fed from DB when available
+    academicTruth: academicTruthHook.academicTruth,
+    requirements,
   });
 
   // File map for post-upload analysis: keyed by unique ID, not filename
@@ -208,7 +240,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
 
       {/* ═══ Door 4: Academic Truth Panel ═══ */}
       <section>
-        <AcademicTruthPanel academicTruth={academicTruth} />
+        <AcademicTruthPanel academicTruth={academicTruthHook.academicTruth} />
       </section>
 
       {/* ═══ Door 5: Decision Panel ═══ */}
