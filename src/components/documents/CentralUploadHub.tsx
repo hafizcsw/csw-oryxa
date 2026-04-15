@@ -564,13 +564,9 @@ export function CentralUploadHub({
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, [onFilesSelected]);
 
-  const completedCount = records.filter(r =>
-    r.processing_status === 'registered' ||
-    r.processing_status === 'upload_failed' ||
-    r.processing_status === 'cancelled'
-  ).length;
-
-  const hasActiveRecords = records.length > 0;
+  const isProcessing = isUploading || records.some(r =>
+    r.processing_status === 'uploading' || r.processing_status === 'confirming'
+  );
   const isProcessing = isUploading || records.some(r =>
     r.processing_status === 'uploading' || r.processing_status === 'confirming'
   );
