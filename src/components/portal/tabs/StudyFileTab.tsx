@@ -262,7 +262,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
 
       {/* ═══ Door 5: Decision Panel ═══ */}
       <section>
-        <DecisionPanel decision={decision} />
+        <DecisionPanel
+          decision={decision}
+          requirementsCount={requirements.length}
+          requirementsSource={reqSource}
+          requirementsProgramName={shortlistCtx.programName}
+        />
       </section>
 
       <Separator />
