@@ -8551,7 +8551,9 @@
     "lastSeenHours": "vor {{count}} Std.",
     "lastSeenDays": "vor {{count}} T.",
     "offline": "Offline",
-    "sendMessage": "Nachricht senden"
+    "sendMessage": "Nachricht senden",
+    "comingSoon": "Demnächst verfügbar",
+    "comingSoonDesc": "Wir entwickeln den ORYXA KI-Assistenten. Bleiben Sie dran!"
   },
   "claim": {
     "addBtn": "Add Btn",
