@@ -209,7 +209,7 @@ const COUNTRIES: Country[] = [
   { iso2: 'PG', dialCode: '+675', flag: '🇵🇬', minLength: 8 },
   // Middle East (additional)
   { iso2: 'IR', dialCode: '+98', flag: '🇮🇷', minLength: 10 },
-  { iso2: 'IL', dialCode: '+972', flag: '🇮🇱', minLength: 9 },
+  { iso2: 'PS', dialCode: '+972', flag: '🇵🇸', minLength: 9 },
 ];
 
 interface SmartPhoneInputProps {
