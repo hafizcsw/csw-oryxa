@@ -206,6 +206,16 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         </section>
       )}
 
+      {/* ═══ Door 4: Academic Truth Panel ═══ */}
+      <section>
+        <AcademicTruthPanel academicTruth={academicTruth} />
+      </section>
+
+      {/* ═══ Door 5: Decision Panel ═══ */}
+      <section>
+        <DecisionPanel decision={decision} />
+      </section>
+
       <Separator />
 
       {/* 2. Personal Info + Passport side by side */}
