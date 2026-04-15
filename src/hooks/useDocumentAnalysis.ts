@@ -50,6 +50,10 @@ interface UseDocumentAnalysisResult {
   getProposalsForDocument: (documentId: string) => ExtractionProposal[];
   /** Get analysis for a specific document */
   getAnalysis: (documentId: string) => DocumentAnalysis | undefined;
+  /** Dismiss a single analysis */
+  dismissAnalysis: (documentId: string) => void;
+  /** Clear all analyses */
+  clearAllAnalyses: () => void;
 }
 
 export function useDocumentAnalysis({
