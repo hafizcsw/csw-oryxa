@@ -703,7 +703,9 @@
     "logoutSuccess": "サインアウトしました",
     "completeAccountNotice": "アカウント情報を完成させてください",
     "teacherDashboard": "講師ダッシュボード",
-    "teacherDashboardDesc": "生徒とセッションの管理"
+    "teacherDashboardDesc": "生徒とセッションの管理",
+    "adminPanel": "管理パネル",
+    "adminPanelDesc": "システム管理"
   },
   "phone": {
     "placeholder": "電話番号を入力",
@@ -9554,6 +9556,8 @@
     "inbox": "受信箱",
     "online": "オンライン",
     "yesterday": "昨日",
-    "noConversationSelected": "会話を選択してください"
+    "noConversationSelected": "会話を選択してください",
+    "newMessage": "新しいメッセージ",
+    "title": "メッセージ"
   }
 }

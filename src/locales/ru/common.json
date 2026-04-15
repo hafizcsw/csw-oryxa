@@ -705,7 +705,9 @@
     "logoutSuccess": "Выход выполнен успешно",
     "completeAccountNotice": "Заполните данные вашего аккаунта",
     "teacherDashboard": "Панель преподавателя",
-    "teacherDashboardDesc": "Управление студентами и занятиями"
+    "teacherDashboardDesc": "Управление студентами и занятиями",
+    "adminPanel": "Панель администратора",
+    "adminPanelDesc": "Системное администрирование"
   },
   "phone": {
     "placeholder": "Введите номер телефона",
@@ -10598,6 +10600,8 @@
     "inbox": "Входящие",
     "online": "В сети",
     "yesterday": "Вчера",
-    "noConversationSelected": "Выберите беседу для начала"
+    "noConversationSelected": "Выберите беседу для начала",
+    "newMessage": "Новое сообщение",
+    "title": "Сообщения"
   }
 }

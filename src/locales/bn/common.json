@@ -703,7 +703,9 @@
     "logoutSuccess": "সফলভাবে সাইন আউট হয়েছে",
     "completeAccountNotice": "আপনার অ্যাকাউন্টের বিবরণ সম্পূর্ণ করুন",
     "teacherDashboard": "শিক্ষক ড্যাশবোর্ড",
-    "teacherDashboardDesc": "ছাত্র ও সেশন পরিচালনা"
+    "teacherDashboardDesc": "ছাত্র ও সেশন পরিচালনা",
+    "adminPanel": "অ্যাডমিন প্যানেল",
+    "adminPanelDesc": "সিস্টেম প্রশাসন"
   },
   "phone": {
     "placeholder": "ফোন নম্বর লিখুন",
@@ -9554,6 +9556,8 @@
     "inbox": "ইনবক্স",
     "online": "অনলাইন",
     "yesterday": "গতকাল",
-    "noConversationSelected": "মেসেজিং শুরু করতে একটি কথোপকথন নির্বাচন করুন"
+    "noConversationSelected": "মেসেজিং শুরু করতে একটি কথোপকথন নির্বাচন করুন",
+    "newMessage": "নতুন বার্তা",
+    "title": "বার্তা"
   }
 }

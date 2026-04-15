@@ -922,7 +922,9 @@
     "teacherDashboard": "لوحة المعلم",
     "teacherDashboardDesc": "إدارة الطلاب والجلسات",
     "home": "الرئيسية",
-    "homeDesc": "العودة للصفحة الرئيسية"
+    "homeDesc": "العودة للصفحة الرئيسية",
+    "adminPanel": "لوحة الإدارة",
+    "adminPanelDesc": "إدارة النظام"
   },
   "phone": {
     "placeholder": "أدخل رقم الهاتف",
@@ -12911,7 +12913,11 @@
       "security": "الأمان",
       "system": "النظام",
       "archived": "الأرشيف"
-    }
+    },
+    "newMessage": "رسالة جديدة",
+    "title": "الرسائل",
+    "emptyInboxHint": "لا توجد رسائل بعد",
+    "noConversationSelected": "اختر محادثة لبدء المراسلة"
   },
   "insight": {
     "noData": "لا توجد بيانات ذكاء بعد",

@@ -703,7 +703,9 @@
     "logoutSuccess": "Sessão encerrada com sucesso",
     "completeAccountNotice": "Complete os detalhes da sua conta",
     "teacherDashboard": "Painel do Professor",
-    "teacherDashboardDesc": "Gerenciar alunos e sessões"
+    "teacherDashboardDesc": "Gerenciar alunos e sessões",
+    "adminPanel": "Painel de administração",
+    "adminPanelDesc": "Administração do sistema"
   },
   "phone": {
     "placeholder": "Digite o número de telefone",
@@ -9554,6 +9556,8 @@
     "inbox": "Caixa de entrada",
     "online": "Online",
     "yesterday": "Ontem",
-    "noConversationSelected": "Selecione uma conversa para começar"
+    "noConversationSelected": "Selecione uma conversa para começar",
+    "newMessage": "Nova mensagem",
+    "title": "Mensagens"
   }
 }
