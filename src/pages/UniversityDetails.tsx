@@ -696,7 +696,7 @@ export default function UniversityDetails() {
                             seats_available: program.seats_available,
                             application_deadline: program.application_deadline,
                           };
-                          return <ProgramCard key={program.id} p={cardData} />;
+                          return <ProgramCard key={program.id} p={cardData} compact />;
                         })}
                       </div>
                     )}

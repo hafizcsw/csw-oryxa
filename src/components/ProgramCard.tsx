@@ -75,7 +75,7 @@ export type ProgramCardData = {
   application_deadline?: string | null;
 };
 
-export function ProgramCard({ p }: { p: ProgramCardData }) {
+export function ProgramCard({ p, compact }: { p: ProgramCardData; compact?: boolean }) {
   const navigate = useNavigate();
   const { getField, getFieldMeta, hasLegacyNativeField, isResolverDisplaySource, language } = useLocalizedField();
   const uiLocale = language || 'en';
@@ -250,25 +250,29 @@ export function ProgramCard({ p }: { p: ProgramCardData }) {
       </div>
 
       {/* Program name + University logo */}
-      <div className="px-4 pt-3 pb-2 flex gap-3 items-start">
+      <div className={cn("px-4 pt-3 pb-2 flex items-start", !compact && "gap-3")}>
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-extrabold text-foreground leading-snug mb-1 group-hover:text-primary transition-colors">
             {displayProgramName}
           </h3>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="w-3 h-3 shrink-0" />
-            <span className="truncate">{displayUniversityName}</span>
-          </div>
+          {!compact && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <MapPin className="w-3 h-3 shrink-0" />
+              <span className="truncate">{displayUniversityName}</span>
+            </div>
+          )}
           <p className="text-[11px] text-muted-foreground/70 mt-0.5">
             {[p.city, countryDisplay].filter(Boolean).join(' • ')}
           </p>
         </div>
-        <Avatar className="w-12 h-12 border-2 border-border shrink-0 rounded-lg">
-          <AvatarImage src={p.logo_url || undefined} alt={displayUniversityName || "University"} className="object-contain" />
-          <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm rounded-lg">
-            {String(displayUniversityName || "U").trim().charAt(0)}
-          </AvatarFallback>
-        </Avatar>
+        {!compact && (
+          <Avatar className="w-12 h-12 border-2 border-border shrink-0 rounded-lg">
+            <AvatarImage src={p.logo_url || undefined} alt={displayUniversityName || "University"} className="object-contain" />
+            <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm rounded-lg">
+              {String(displayUniversityName || "U").trim().charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+        )}
       </div>
 
       {/* Fees highlight */}
