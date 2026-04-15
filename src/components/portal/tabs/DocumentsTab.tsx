@@ -517,6 +517,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
       )}
 
       {/* Additional Files */}
+      {showType('additional') && (
       <AdditionalFilesTable
         files={additionalFiles}
         onUpload={handleAdditionalUpload}
@@ -526,6 +527,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
         uploading={uploadingCategory === 'additional'}
         disabled={crmProfile?.docs_locked}
       />
+      )}
 
       {/* Success Banner */}
       {completedRequired === totalRequired && (
