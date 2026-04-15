@@ -359,17 +359,22 @@ export function ProgramCard({ p }: { p: ProgramCardData }) {
         </div>
       )}
 
-      {/* CTA */}
+      {/* CTA - Intelligence */}
       <div className="p-4 pt-2 mt-auto border-t border-border/50">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleDetailsClick}
-          className="w-full gap-2 text-xs font-bold hover:bg-primary hover:text-primary-foreground transition-colors rounded-xl h-9"
+        <ProgramInsightSheet
+          programId={p.program_id}
+          programName={displayProgramName || ''}
+          universityId={p.university_id || null}
         >
-          <ExternalLink className="w-3.5 h-3.5" />
-          {t("action.viewDetails")}
-        </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full gap-2 text-xs font-bold hover:bg-primary hover:text-primary-foreground transition-colors rounded-xl h-9"
+          >
+            <Brain className="w-3.5 h-3.5" />
+            {t("insight.viewInsight")}
+          </Button>
+        </ProgramInsightSheet>
       </div>
     </div>
   );
