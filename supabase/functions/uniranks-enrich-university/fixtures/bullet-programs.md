@@ -1,0 +1,2 @@
+- MBA in International Business
+- MSc in Finance

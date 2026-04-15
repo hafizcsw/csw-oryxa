@@ -1,0 +1,306 @@
+/* Floating Chat Button */
+.ai-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 60;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #4285F4 0%, #9B72F2 33%, #F538A0 66%, #FF9C27 100%);
+  color: #fff;
+  cursor: grab;
+  transition: box-shadow 0.3s ease, background 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+.ai-fab:active {
+  cursor: grabbing;
+}
+
+.ai-fab:hover {
+  box-shadow: 0 8px 30px rgba(66, 133, 244, 0.4);
+}
+
+/* Chat Wrapper */
+.ai-chat-wrapper {
+  position: fixed;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+}
+
+/* زر القائمة في الهيدر الأزرق */
+.ai-chat__menu-btn {
+  background: transparent;
+  border: none;
+  color: hsl(var(--primary-foreground));
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  transition: background 0.2s;
+}
+
+.ai-chat__menu-btn:hover {
+  background: hsl(var(--primary-foreground) / 0.2);
+}
+
+/* Sidebar خارجي ينزلق من اليسار */
+.ai-chat__external-sidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translateX(-100%);
+  width: 180px;
+  height: 100%;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px 0 0 12px;
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.15);
+  animation: slideInFromLeft 0.3s ease forwards;
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* Sidebar على اليمين عندما لا توجد مساحة على اليسار */
+.ai-chat__external-sidebar--right {
+  left: auto;
+  right: 0;
+  transform: translateX(100%);
+  border-radius: 0 12px 12px 0;
+  box-shadow: 8px 0 24px rgba(0, 0, 0, 0.15);
+  animation: slideInFromRight 0.3s ease forwards;
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-50%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(50%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 1;
+  }
+}
+
+/* Chat Window - Full height in unified container */
+.ai-chat {
+  width: 100%;
+  height: 100%;
+  background: hsl(var(--card));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ORYXA V3.1: Ensure chat fills its parent container */
+.oryxa-unified-container .ai-chat {
+  height: 100%;
+  min-height: 0;
+}
+
+/* Standalone chat (not in split view) */
+.ai-chat--standalone {
+  max-width: 420px;
+  max-height: 80vh;
+  border-radius: 1.5rem;
+  border: 1px solid hsl(var(--border) / 0.5);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  background: hsl(var(--card));
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Chat Header */
+.ai-chat__head {
+  padding: 12px 16px;
+  border-bottom: 1px solid hsl(var(--border));
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+  color: hsl(var(--primary-foreground));
+  flex-shrink: 0;
+}
+
+.ai-chat__head b {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Close Button */
+.ai-chat__x {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  color: hsl(var(--primary-foreground));
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  line-height: 1;
+}
+
+.ai-chat__x:hover {
+  background: hsl(var(--primary-foreground) / 0.2);
+}
+
+/* Chat Body - Full height flex container */
+.ai-chat__body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  height: 100%;
+}
+
+/* Ensure MalakChatInterface fills the body */
+.ai-chat__body > div:last-child {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+/* ═══════════════════════════════════════════
+   MOBILE — Full-screen bottom sheet
+   ═══════════════════════════════════════════ */
+@media (max-width: 640px) {
+  /* Mobile fullscreen chat */
+  .oryxa-mobile-fullscreen,
+  .ai-chat-wrapper {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    overflow: hidden;
+    z-index: 9999 !important;
+  }
+
+  .oryxa-mobile-fullscreen .ai-chat,
+  .ai-chat {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    max-width: none;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .ai-chat--standalone {
+    max-width: none;
+    max-height: none;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .ai-chat__head {
+    padding: 8px 12px;
+    border-radius: 0 !important;
+    padding-top: env(safe-area-inset-top, 8px);
+  }
+
+  .ai-chat__body {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+  }
+
+  /* Input area: respect keyboard + safe area */
+  .ai-chat__body .flex-shrink-0 {
+    padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
+  }
+
+  .ai-fab {
+    right: 16px;
+    bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    width: 48px;
+    height: 48px;
+    z-index: 9998;
+  }
+
+  .ai-fab svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Hide FAB when chat is open */
+  .oryxa-mobile-fullscreen ~ .ai-fab {
+    display: none;
+  }
+
+  /* Hide external sidebar on mobile */
+  .ai-chat__external-sidebar {
+    display: none;
+  }
+}
+
+/* Also target oryxa-chat wrapper for small screens */
+@media (max-width: 768px) {
+  .oryxa-chat {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    z-index: 9999 !important;
+  }
+
+  .oryxa-chat .ai-chat,
+  .oryxa-chat > div {
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   TABLET — Larger floating chat
+   ═══════════════════════════════════════════ */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .ai-chat-wrapper {
+    max-width: 420px !important;
+    max-height: 75vh !important;
+  }
+
+  .ai-chat__external-sidebar {
+    width: 200px;
+  }
+}

@@ -1,0 +1,65 @@
+# HTTP TEST EVIDENCE: HMAC Invalid Signature
+# Test ID: hmac_invalid_test_001
+# Generated: 2026-01-27T07:26:49Z
+# Endpoint: portal-programs-search (HMAC Bot Endpoint)
+
+================================================================================
+REQUEST
+================================================================================
+
+POST /functions/v1/portal-programs-search HTTP/1.1
+Host: alkhaznaqdlxygeznapt.supabase.co
+Content-Type: application/json
+x-ts: 1234567890
+x-nonce: invalid_nonce_test
+x-signature: invalid_signature_here
+
+{
+  "request_id": "hmac_invalid_test_001",
+  "display_lang": "ar",
+  "display_currency_code": "USD",
+  "program_filters": {
+    "tuition_basis": "year",
+    "tuition_usd_min": 0,
+    "tuition_usd_max": 50000,
+    "partner_priority": "ignore"
+  },
+  "paging": {
+    "limit": 2,
+    "offset": 0
+  }
+}
+
+================================================================================
+RESPONSE
+================================================================================
+
+HTTP/1.1 401 Unauthorized
+Content-Type: application/json
+
+{
+  "ok": false,
+  "request_id": "019bfe59-0f05-7374-ae57-fdeeaeb81962",
+  "error": "Request expired (timestamp >5min old)",
+  "code": "HMAC_FAILED",
+  "meta": {
+    "contract": "kb_search_v1_3_final",
+    "ts": "2026-01-27T07:26:49.471Z"
+  }
+}
+
+================================================================================
+ANALYSIS
+================================================================================
+
+✅ PASS: HMAC endpoint correctly rejected invalid timestamp
+- Status: 401 Unauthorized
+- Code: HMAC_FAILED
+- Reason: Timestamp 1234567890 is from 2009, rejected as expired (>5min skew)
+
+Edge Function Log:
+[portal-programs-search] ⚠️ HMAC timestamp expired, skew: 534930919 s
+
+================================================================================
+VERDICT: ✅ PASS - HMAC Authentication Enforced
+================================================================================

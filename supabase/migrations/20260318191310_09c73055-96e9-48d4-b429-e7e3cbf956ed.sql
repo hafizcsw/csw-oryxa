@@ -1,0 +1,1 @@
+UPDATE public.official_site_crawl_jobs SET status = 'crawling', phase = 'crawl', updated_at = now(), completed_at = NULL WHERE id = 'f052c9e9-1e4c-4b45-892a-f8218b5e9930'

@@ -1,0 +1,422 @@
+[
+  {
+    "template_key": "russian_placement_v1",
+    "course_key": "russian_shared_core_v1",
+    "template_type": "placement",
+    "checkpoint_family_key": null,
+    "title": "Russian Placement v1",
+    "version": "v1",
+    "track_scope": "shared_foundation",
+    "total_items": 20,
+    "passing_score": null,
+    "lesson_scope_keys": [],
+    "module_scope_keys": [
+      "foundations_01_script_sounds",
+      "foundations_02_core_interaction",
+      "foundations_03_survival_navigation",
+      "academic_01_classroom_basics"
+    ],
+    "scoring_json": {
+      "bands": [
+        {
+          "placementBand": "start_from_zero",
+          "min": 0,
+          "max": 7
+        },
+        {
+          "placementBand": "basics_refresh",
+          "min": 8,
+          "max": 14
+        },
+        {
+          "placementBand": "early_academic",
+          "min": 15,
+          "max": 20
+        }
+      ]
+    },
+    "blueprint_json": {
+      "dimensionWeights": {
+        "script_sound_control": 0.35,
+        "core_survival_communication": 0.35,
+        "academic_classroom_comprehension": 0.3
+      }
+    }
+  },
+  {
+    "template_key": "shared_core_checkpoint_01_v1",
+    "course_key": "russian_shared_core_v1",
+    "template_type": "checkpoint",
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "title": "Shared Core Checkpoint 01",
+    "version": "v1",
+    "track_scope": "shared_foundation",
+    "total_items": 15,
+    "passing_score": 70,
+    "lesson_scope_keys": [
+      "alphabet_map",
+      "sound_rules",
+      "handwriting_decoding",
+      "greetings",
+      "self_introduction",
+      "personal_information",
+      "numbers_dates_time",
+      "directions_places",
+      "shopping_transport",
+      "university_vocabulary",
+      "classroom_phrases",
+      "instructions_questions",
+      "reading_notices",
+      "forms_labels",
+      "short_academic_texts"
+    ],
+    "module_scope_keys": [
+      "foundations_01_script_sounds",
+      "foundations_02_core_interaction",
+      "foundations_03_survival_navigation",
+      "academic_01_classroom_basics",
+      "academic_02_reading_patterns"
+    ],
+    "scoring_json": {
+      "passThreshold": 70,
+      "scoringVersion": "shared_core_answer_key_v1",
+      "sectionWeights": {
+        "reading": 0.33,
+        "language_use": 0.33,
+        "listening_lite": 0.34
+      }
+    },
+    "blueprint_json": {
+      "sections": [
+        {
+          "key": "reading",
+          "title": "Reading",
+          "content_blocks": [
+            {
+              "block_key": "reading_prompt_1",
+              "type": "prompt",
+              "title": "Campus notice",
+              "content": "Общежитие: регистрация до 18:00. Возьмите паспорт и студенческий билет."
+            },
+            {
+              "block_key": "reading_prompt_2",
+              "type": "note",
+              "title": "Form labels",
+              "content": "Фамилия = surname; Имя = first name; Дата рождения = date of birth."
+            }
+          ],
+          "items": [
+            {
+              "item_key": "reading_1",
+              "lesson_key": "reading_notices",
+              "prompt": "What document must the learner bring besides a passport?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "студенческий билет",
+                  "student card"
+                ],
+                "incorrectFeedback": "The notice requires the student card."
+              }
+            },
+            {
+              "item_key": "reading_2",
+              "lesson_key": "reading_notices",
+              "prompt": "By what time is dormitory registration completed?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "18:00",
+                  "6:00 pm",
+                  "6 pm"
+                ],
+                "incorrectFeedback": "The notice says registration ends at 18:00."
+              }
+            },
+            {
+              "item_key": "reading_3",
+              "lesson_key": "forms_labels",
+              "prompt": "Which label means surname?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "фамилия"
+                ],
+                "incorrectFeedback": "Фамилия means surname."
+              }
+            },
+            {
+              "item_key": "reading_4",
+              "lesson_key": "forms_labels",
+              "prompt": "Which label means date of birth?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "дата рождения"
+                ],
+                "incorrectFeedback": "Дата рождения means date of birth."
+              }
+            },
+            {
+              "item_key": "reading_5",
+              "lesson_key": "short_academic_texts",
+              "prompt": "Write the Russian word from the prompt that means first name.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "имя"
+                ],
+                "incorrectFeedback": "Имя means first name."
+              }
+            }
+          ]
+        },
+        {
+          "key": "language_use",
+          "title": "Language use",
+          "content_blocks": [
+            {
+              "block_key": "language_use_prompt_1",
+              "type": "prompt",
+              "title": "Interaction frame",
+              "content": "You are greeting a classmate, giving your name, and stating where you are from."
+            }
+          ],
+          "items": [
+            {
+              "item_key": "language_use_1",
+              "lesson_key": "greetings",
+              "prompt": "Write a standard Russian greeting for one person.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "здравствуйте",
+                  "привет"
+                ],
+                "incorrectFeedback": "A standard greeting here is здравствуйте."
+              }
+            },
+            {
+              "item_key": "language_use_2",
+              "lesson_key": "self_introduction",
+              "prompt": "Complete: Меня ... Анна.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "зовут"
+                ],
+                "incorrectFeedback": "The standard expression is Меня зовут ..."
+              }
+            },
+            {
+              "item_key": "language_use_3",
+              "lesson_key": "personal_information",
+              "prompt": "Translate into Russian: I am from Moscow.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "я из москвы"
+                ],
+                "incorrectFeedback": "Expected form: Я из Москвы."
+              }
+            },
+            {
+              "item_key": "language_use_4",
+              "lesson_key": "numbers_dates_time",
+              "prompt": "Write the number 15 in Russian.",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "пятнадцать"
+                ],
+                "incorrectFeedback": "15 = пятнадцать."
+              }
+            },
+            {
+              "item_key": "language_use_5",
+              "lesson_key": "directions_places",
+              "prompt": "Which Russian word means to the right?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "направо"
+                ],
+                "incorrectFeedback": "Направо means to the right."
+              }
+            }
+          ]
+        },
+        {
+          "key": "listening_lite",
+          "title": "Listening lite",
+          "content_blocks": [
+            {
+              "block_key": "listening_prompt_1",
+              "type": "transcript",
+              "title": "Short transcript",
+              "content": "Здравствуйте! Меня зовут Ирина. Я из Казани. Пара начинается в девять часов в аудитории пять."
+            }
+          ],
+          "items": [
+            {
+              "item_key": "listening_lite_1",
+              "lesson_key": "classroom_phrases",
+              "prompt": "What is the speaker's name?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "ирина"
+                ],
+                "incorrectFeedback": "The speaker says Меня зовут Ирина."
+              }
+            },
+            {
+              "item_key": "listening_lite_2",
+              "lesson_key": "personal_information",
+              "prompt": "Which city is the speaker from?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "казань",
+                  "казани"
+                ],
+                "incorrectFeedback": "The speaker is from Kazan."
+              }
+            },
+            {
+              "item_key": "listening_lite_3",
+              "lesson_key": "numbers_dates_time",
+              "prompt": "At what time does the class start?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "9:00",
+                  "09:00",
+                  "девять часов"
+                ],
+                "incorrectFeedback": "Пара начинается в девять часов."
+              }
+            },
+            {
+              "item_key": "listening_lite_4",
+              "lesson_key": "university_vocabulary",
+              "prompt": "In which room does the class take place?",
+              "prompt_type": "short_answer",
+              "scoring": {
+                "mode": "exact_match",
+                "maxPoints": 1,
+                "acceptedAnswers": [
+                  "5",
+                  "пять",
+                  "аудитория пять"
+                ],
+                "incorrectFeedback": "The class is in room five."
+              }
+            },
+            {
+              "item_key": "listening_lite_5",
+              "lesson_key": "short_academic_texts",
+              "prompt": "Write one complete Russian sentence summarizing the transcript.",
+              "prompt_type": "written_response",
+              "scoring": {
+                "mode": "concept_match",
+                "maxPoints": 2,
+                "requiredConceptGroups": [
+                  [
+                    "ирина"
+                  ],
+                  [
+                    "казань",
+                    "казани"
+                  ],
+                  [
+                    "девять",
+                    "9:00",
+                    "09:00"
+                  ],
+                  [
+                    "аудитория пять",
+                    "аудитории пять",
+                    "комната пять"
+                  ]
+                ],
+                "incorrectFeedback": "Include the speaker, city, class time, and room."
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "template_key": "shared_core_checkpoint_02_v1",
+    "course_key": "russian_shared_core_v1",
+    "template_type": "checkpoint",
+    "checkpoint_family_key": "shared_core_checkpoint_02",
+    "title": "Shared Core Checkpoint 02",
+    "version": "v1",
+    "track_scope": "shared_foundation",
+    "total_items": 15,
+    "passing_score": 70,
+    "lesson_scope_keys": [
+      "lecture_listening_cues",
+      "note_taking_phrases",
+      "short_written_responses",
+      "noun_gender_number",
+      "case_pattern_awareness",
+      "adjective_agreement_basics",
+      "present_past_future",
+      "motion_verbs_intro",
+      "schedules_deadlines",
+      "checkpoint_01_a",
+      "checkpoint_01_b",
+      "checkpoint_01_review",
+      "checkpoint_02_a",
+      "checkpoint_02_b",
+      "checkpoint_02_review"
+    ],
+    "module_scope_keys": [
+      "academic_03_note_taking_response",
+      "grammar_01_case_awareness",
+      "grammar_02_verbs_motion_time",
+      "checkpoint_01_foundation",
+      "checkpoint_02_academic_entry"
+    ],
+    "scoring_json": {
+      "passThreshold": 70
+    },
+    "blueprint_json": {
+      "sections": [
+        "reading",
+        "language_use",
+        "written_response"
+      ]
+    }
+  }
+]

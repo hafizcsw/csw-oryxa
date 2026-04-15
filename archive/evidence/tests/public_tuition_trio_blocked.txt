@@ -1,0 +1,53 @@
+# HTTP TEST EVIDENCE: Public Endpoint - Tuition Trio Blocked
+# Test ID: public_trio_blocked_001
+# Generated: 2026-01-27T07:26:52Z
+# Endpoint: search-programs (Public)
+
+================================================================================
+REQUEST
+================================================================================
+
+POST /functions/v1/search-programs HTTP/1.1
+Host: alkhaznaqdlxygeznapt.supabase.co
+Content-Type: application/json
+
+{
+  "country_code": "RU",
+  "tuition_usd_min": 1000,
+  "tuition_basis": "year"
+}
+
+================================================================================
+RESPONSE
+================================================================================
+
+HTTP/1.1 422 Unprocessable Entity
+Content-Type: application/json
+
+{
+  "ok": false,
+  "error": "unsupported_filters",
+  "message": "الفلاتر التالية غير مدعومة في الموقع: tuition_usd_min, tuition_basis",
+  "blocked_filters": [
+    "tuition_usd_min",
+    "tuition_basis"
+  ]
+}
+
+================================================================================
+ANALYSIS
+================================================================================
+
+✅ PASS: Public endpoint correctly rejected Tuition Trio filters
+- Status: 422 Unprocessable Entity
+- Error: unsupported_filters
+- Blocked filters explicitly listed: tuition_usd_min, tuition_basis
+
+This proves:
+1. Tuition Trio (tuition_basis, tuition_usd_min, tuition_usd_max) is BLOCKED on public endpoints
+2. Server-side guardrails are enforced
+3. No "silent defaults" can be invented for tuition_basis
+
+================================================================================
+VERDICT: ✅ PASS - Tuition Trio Blocked on Public Endpoint
+================================================================================

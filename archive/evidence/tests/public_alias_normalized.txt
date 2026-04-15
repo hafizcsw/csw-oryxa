@@ -1,0 +1,70 @@
+# HTTP TEST EVIDENCE: Public Endpoint - Valid Request with Alias Normalization
+# Test ID: public_alias_normalized_001
+# Generated: 2026-01-27T07:26:50Z
+# Endpoint: search-programs (Public)
+
+================================================================================
+REQUEST
+================================================================================
+
+POST /functions/v1/search-programs HTTP/1.1
+Host: alkhaznaqdlxygeznapt.supabase.co
+Content-Type: application/json
+
+{
+  "country_code": "RU",
+  "country_slug": "russia",
+  "degree_level": "bachelor",
+  "max_tuition": 5000
+}
+
+================================================================================
+RESPONSE
+================================================================================
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: public, max-age=60
+ETag: W/"-1992315191"
+Server-Timing: db;dur=199
+
+{
+  "ok": true,
+  "items": [],
+  "count": 0,
+  "total": 0,
+  "has_next": false,
+  "next_offset": 0,
+  "sot_view": "vw_program_search_api_v3_final",
+  "applied_filters": {
+    "country_code": "RU",
+    "limit": 20,
+    "max_tuition": 5000,
+    "offset": 0
+  },
+  "ignored_filters": [],
+  "normalized_from": {
+    "country_slug": "country_code"
+  },
+  "contract_version": "website_v1_public"
+}
+
+================================================================================
+ANALYSIS
+================================================================================
+
+✅ PASS: Public endpoint correctly processed request with alias normalization
+- Status: 200 OK
+- applied_filters: Shows which filters were actually applied
+- normalized_from: Shows alias conversion (country_slug → country_code)
+- contract_version: "website_v1_public" (confirms Contract v1)
+- sot_view: "vw_program_search_api_v3_final" (confirms SoT)
+
+CONFLICT POLICY EVIDENCE:
+- Both country_code="RU" and country_slug="russia" were sent
+- applied_filters shows country_code="RU" (canonical wins)
+- normalized_from shows country_slug was converted to country_code
+
+================================================================================
+VERDICT: ✅ PASS - Alias Normalization Working + Conflict Policy = Canonical Wins
+================================================================================

@@ -1,0 +1,53 @@
+{
+  "hero": {
+    "badge": "Para instituciones educativas",
+    "titlePrefix": "Únase a nuestra ",
+    "titleHighlight": "red de socios académicos",
+    "subtitle": "¿Es una universidad o institución educativa que busca atraer estudiantes internacionales? Le ayudamos a llegar a miles de estudiantes en todo el mundo.",
+    "applyBtn": "Solicitar asociación",
+    "howItWorks": "Cómo funciona"
+  },
+  "stats": { "universities": "Universidades en nuestra base", "countries": "Países", "programs": "Programas de estudio" },
+  "claim": { "title": "Su universidad ya está registrada", "subtitle": "Más de 36.000 instituciones ya están registradas. Busque la suya y reclame su perfil académico.", "placeholder": "Escriba el nombre de su universidad...", "claimBtn": "Reclamar", "noResults": "No encontramos su institución", "addBtn": "Agregar su institución" },
+  "postVerification": {
+    "badge": "Beneficios del socio verificado", "title": "¿Qué obtiene tras la verificación?", "subtitle": "Una vez verificado, desbloquea herramientas profesionales para gestionar la presencia de su institución",
+    "feature1": { "title": "Controle los datos de su institución", "desc": "Tras la verificación obtiene permisos completos para corregir datos y gestionar la sección de su institución.", "f1": "Editar tarifas, programas e información de contacto", "f2": "Actualizar fotos, videos y contenido promocional", "f3": "Monitorear y mejorar la visibilidad en búsquedas" },
+    "feature2": { "title": "Canal directo de admisiones internacionales", "desc": "Conexión directa con su departamento de admisiones. Nuestro sistema de IA filtra y clasifica solicitudes.", "f1": "Filtrado inteligente por GPA, nivel de idioma y especialidad", "f2": "Clasificación por porcentaje de coincidencia", "f3": "Notificaciones instantáneas de nuevas solicitudes cualificadas" },
+    "feature3": { "title": "Panel analítico del socio", "desc": "Analíticas detalladas sobre el rendimiento de su página — visitas, fuentes de estudiantes y tasas de conversión.", "f1": "Informes mensuales de visitas y conversiones", "f2": "Análisis geográfico de fuentes de estudiantes", "f3": "Comparación de rendimiento de programas" }
+  },
+  "whyPartner": {
+    "title": "¿Por qué asociarse con nosotros?", "subtitle": "Proporcionamos todo lo necesario para atraer a los mejores estudiantes internacionales",
+    "item1": { "title": "Red global de estudiantes", "desc": "Acceso directo a miles de estudiantes de 215+ países" },
+    "item2": { "title": "Soporte completo de inscripción", "desc": "Equipo dedicado para el proceso de admisión e inscripción" },
+    "item3": { "title": "Marketing digital avanzado", "desc": "Campañas de marketing dirigidas por IA para sus programas" },
+    "item4": { "title": "Plataforma tecnológica confiable", "desc": "Plataforma integrada para gestionar solicitudes y comunicarse con estudiantes" }
+  },
+  "partnershipTypes": {
+    "title": "Tipos de asociación",
+    "type1": { "title": "Asociación académica", "desc": "Acuerdos de colaboración con universidades para atraer estudiantes internacionales" },
+    "type2": { "title": "Asociación institucional", "desc": "Asociaciones con institutos de idiomas y centros de formación acreditados" },
+    "type3": { "title": "Asociación de servicios", "desc": "Colaboración con proveedores de alojamiento, seguros y transporte" }
+  },
+  "howItWorks": {
+    "title": "Ruta de verificación y lanzamiento", "subtitle": "Cuatro pasos desde la solicitud hasta recibir la primera solicitud cualificada",
+    "step1": { "title": "Buscar y reclamar", "desc": "Encuentre su universidad y envíe una solicitud de gestión de perfil" },
+    "step2": { "title": "Verificación de identidad", "desc": "Verificamos su identidad a través del correo oficial o documentos" },
+    "step3": { "title": "Panel del socio", "desc": "Obtenga permisos de edición y seguimiento de rendimiento" },
+    "step4": { "title": "Recibir solicitudes filtradas", "desc": "Comience a recibir solicitudes filtradas y clasificadas por IA" }
+  },
+  "metrics": {
+    "title": "Los números hablan", "subtitle": "Resultados reales con nuestros socios académicos",
+    "m1": { "val": "36.000+", "label": "Universidades en la plataforma" },
+    "m2": { "val": "38.000+", "label": "Programas de estudio" },
+    "m3": { "val": "215+", "label": "Países cubiertos" },
+    "m4": { "val": "48 horas", "label": "Tiempo de respuesta promedio" }
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "q1": { "q": "¿Cuánto cuesta la asociación?", "a": "Modelos flexibles basados en resultados. Sin tarifas iniciales." },
+    "q2": { "q": "¿Qué países cubren?", "a": "215+ países con enfoque en Oriente Medio, Norte de África y Asia Central." },
+    "q3": { "q": "¿Cuánto tiempo toma comenzar?", "a": "2-4 semanas desde la primera reunión hasta el inicio del reclutamiento." },
+    "q4": { "q": "¿Apoyan instituciones pequeñas?", "a": "¡Sí! Trabajamos con instituciones de todos los tamaños." }
+  },
+  "cta": { "title": "Comience su asociación hoy", "subtitle": "Contáctenos y le ayudaremos a diseñar una asociación a su medida.", "button": "Contáctenos" }
+}

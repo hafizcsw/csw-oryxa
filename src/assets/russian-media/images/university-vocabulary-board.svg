@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#eef2ff"/>
+  <text x="40" y="60" font-size="34" font-family="Arial" fill="#312e81">University Vocabulary Board</text>
+  <rect x="70" y="100" width="820" height="380" rx="22" fill="#ffffff" stroke="#6366f1"/>
+  <text x="110" y="170" font-size="30" font-family="Arial">аудитория</text>
+  <text x="340" y="170" font-size="30" font-family="Arial">библиотека</text>
+  <text x="600" y="170" font-size="30" font-family="Arial">лаборатория</text>
+  <text x="110" y="270" font-size="30" font-family="Arial">расписание</text>
+  <text x="340" y="270" font-size="30" font-family="Arial">лекция</text>
+  <text x="600" y="270" font-size="30" font-family="Arial">семинар</text>
+  <text x="110" y="380" font-size="30" font-family="Arial">Сначала читайте, потом пишите.</text>
+</svg>

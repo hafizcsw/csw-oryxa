@@ -1,0 +1,172 @@
+[
+  {
+    "course_key": "russian_shared_core_v1",
+    "module_key": "foundations_01_script_sounds",
+    "slug": "script-sounds",
+    "title": "Script and sounds",
+    "module_type": "instruction",
+    "domain_track": "shared_foundation",
+    "cefr_band": "A0",
+    "ordinal": 1,
+    "estimated_minutes": 45,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential",
+      "previous_module_required": false
+    },
+    "metadata": {}
+  },
+  {
+    "course_key": "russian_shared_core_v1",
+    "module_key": "foundations_02_core_interaction",
+    "slug": "core-interaction",
+    "title": "Core interaction",
+    "module_type": "instruction",
+    "domain_track": "shared_foundation",
+    "cefr_band": "A1",
+    "ordinal": 2,
+    "estimated_minutes": 45,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential",
+      "previous_module_required": true
+    },
+    "metadata": {}
+  },
+  {
+    "course_key": "russian_shared_core_v1",
+    "module_key": "foundations_03_survival_navigation",
+    "slug": "survival-navigation",
+    "title": "Survival navigation",
+    "module_type": "instruction",
+    "domain_track": "shared_foundation",
+    "cefr_band": "A1",
+    "ordinal": 3,
+    "estimated_minutes": 45,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential",
+      "previous_module_required": true
+    },
+    "metadata": {}
+  },
+  {
+    "course_key": "russian_shared_core_v1",
+    "module_key": "academic_01_classroom_basics",
+    "slug": "classroom-basics",
+    "title": "Classroom basics",
+    "module_type": "instruction",
+    "domain_track": "shared_foundation",
+    "cefr_band": "A1",
+    "ordinal": 4,
+    "estimated_minutes": 45,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential",
+      "previous_module_required": true
+    },
+    "metadata": {}
+  },
+  {
+    "course_key": "russian_shared_core_v1",
+    "module_key": "academic_02_reading_patterns",
+    "slug": "reading-patterns",
+    "title": "Reading patterns",
+    "module_type": "instruction",
+    "domain_track": "shared_foundation",
+    "cefr_band": "A1+",
+    "ordinal": 5,
+    "estimated_minutes": 45,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential",
+      "previous_module_required": true
+    },
+    "metadata": {}
+  },
+  {
+    "course_key": "russian_shared_core_v1",
+    "module_key": "academic_03_note_taking_response",
+    "slug": "note-taking-response",
+    "title": "Note-taking and response",
+    "module_type": "instruction",
+    "domain_track": "shared_foundation",
+    "cefr_band": "A1+",
+    "ordinal": 6,
+    "estimated_minutes": 45,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "sequential",
+      "previous_module_required": true
+    },
+    "metadata": {}
+  },
+  {
+    "course_key": "russian_shared_core_v1",
+    "module_key": "grammar_01_case_awareness",
+    "slug": "case-awareness",
+    "title": "Case awareness",
+    "module_type": "instruction",
+    "domain_track": "shared_foundation",
+    "cefr_band": "A1+",
+    "ordinal": 7,
+    "estimated_minutes": 45,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "sequential",
+      "previous_module_required": true
+    },
+    "metadata": {}
+  },
+  {
+    "course_key": "russian_shared_core_v1",
+    "module_key": "grammar_02_verbs_motion_time",
+    "slug": "verbs-motion-time",
+    "title": "Verbs, motion, and time",
+    "module_type": "instruction",
+    "domain_track": "shared_foundation",
+    "cefr_band": "A2",
+    "ordinal": 8,
+    "estimated_minutes": 45,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "sequential",
+      "previous_module_required": true
+    },
+    "metadata": {}
+  },
+  {
+    "course_key": "russian_shared_core_v1",
+    "module_key": "checkpoint_01_foundation",
+    "slug": "checkpoint-foundation",
+    "title": "Foundation checkpoint",
+    "module_type": "checkpoint",
+    "domain_track": "shared_foundation",
+    "cefr_band": "A1+",
+    "ordinal": 9,
+    "estimated_minutes": 30,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "sequential",
+      "previous_module_required": false
+    },
+    "metadata": {}
+  },
+  {
+    "course_key": "russian_shared_core_v1",
+    "module_key": "checkpoint_02_academic_entry",
+    "slug": "checkpoint-academic-entry",
+    "title": "Academic entry checkpoint",
+    "module_type": "checkpoint",
+    "domain_track": "shared_foundation",
+    "cefr_band": "A2",
+    "ordinal": 10,
+    "estimated_minutes": 30,
+    "checkpoint_family_key": "shared_core_checkpoint_02",
+    "unlock_rule": {
+      "type": "sequential",
+      "previous_module_required": false
+    },
+    "metadata": {}
+  }
+]

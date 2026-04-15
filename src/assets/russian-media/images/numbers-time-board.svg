@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#f1f5f9"/>
+  <text x="50" y="70" font-family="Arial" font-size="34" fill="#0f172a">Numbers, date, and time board</text>
+  <circle cx="260" cy="280" r="140" fill="#fff" stroke="#334155" stroke-width="8"/>
+  <line x1="260" y1="280" x2="260" y2="185" stroke="#0f172a" stroke-width="8"/>
+  <line x1="260" y1="280" x2="330" y2="320" stroke="#0f172a" stroke-width="8"/>
+  <text x="205" y="455" font-family="Arial" font-size="26">09:00 → девять часов</text>
+  <rect x="480" y="160" width="390" height="240" rx="20" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="520" y="230" font-family="Arial" font-size="42">12.03</text>
+  <text x="520" y="290" font-family="Arial" font-size="32">двенадцатое марта</text>
+  <text x="520" y="350" font-family="Arial" font-size="32">Мне 18 лет</text>
+</svg>

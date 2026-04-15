@@ -1,0 +1,56 @@
+# GREP OUTPUT: HMAC Endpoint Contract Analysis
+# Generated: 2026-01-27T07:45:00Z
+# Target: supabase/functions/portal-programs-search/index.ts
+
+================================================================================
+HMAC ENDPOINT CODE ANALYSIS
+================================================================================
+
+## File: supabase/functions/portal-programs-search/index.ts
+
+### Version & Contract
+Line 4-5:
+  const CONTRACT_VERSION = 'kb_search_v1_3_final';
+  const VERSION = '2026-01-26_v1_3_evidence';
+
+### HMAC Verification (Required)
+Line 35-107: verifyHmacSignature function
+  - Requires: x-hmac-signature OR x-signature
+  - Requires: x-hmac-timestamp OR x-ts  
+  - Requires: x-hmac-nonce OR x-nonce
+  - Canonical format: `${timestamp}.${nonce}.${body}`
+  - Nonce replay protection via hmac_nonces table
+
+### Payload Handling (CRITICAL FINDING)
+Line 188-191:
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const { data: rpcResult, error: rpcError } = await supabase
+    .rpc('rpc_kb_programs_search_v1_3_final', { payload: body });
+
+>>> IMPORTANT: Body is passed DIRECTLY to RPC without normalization <<<
+>>> No alias mapping in Edge Function layer <<<
+>>> No conflict detection in Edge Function layer <<<
+
+================================================================================
+PAYLOAD SHAPE POLICY (FROM CODE)
+================================================================================
+
+The HMAC endpoint expects body to contain:
+- request_id: string (optional, defaults to generated)
+- display_lang: string (REQUIRED)
+- display_currency_code: string (defaults to USD)
+- program_filters: object (with strict allowlist)
+- admission_policy: object (optional)
+- applicant_profile: object (optional)
+- paging: object (optional)
+
+>>> SHAPE: program_filters MUST be nested, NOT top-level <<<
+
+================================================================================
+CONCLUSION
+================================================================================
+
+1. HMAC endpoint does NOT normalize keys
+2. HMAC endpoint does NOT handle aliases (country_code vs country_codes)
+3. All validation happens in RPC layer (Fail-Closed)
+4. CRM MUST send exact canonical keys - no aliases accepted

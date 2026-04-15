@@ -1,0 +1,1552 @@
+[
+  {
+    "module_key": "foundations_01_script_sounds",
+    "lesson_key": "alphabet_map",
+    "slug": "alphabet-map",
+    "title": "Alphabet map",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 1,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "module_entry"
+    },
+    "metadata": {
+      "primary_dimension_key": "script_sound_control"
+    },
+    "lane": "literacy",
+    "lesson_mode": "guided",
+    "readiness_target": "Alphabet I readiness",
+    "grammar_focus": [
+      "letter_sound_control"
+    ],
+    "function_focus": [
+      "decode letters"
+    ],
+    "teacher_notes": [
+      "Phase 1A runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 5,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "alphabet-map-block-1",
+      "alphabet-map-block-2",
+      "alphabet-map-block-3",
+      "alphabet-map-block-4",
+      "alphabet-map-block-5",
+      "alphabet-map-block-6"
+    ],
+    "homework_refs": [
+      "hw-alphabet_map"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "identity_mapping": {
+      "canonical_slug": "alphabet-map",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Alphabet map"
+    }
+  },
+  {
+    "module_key": "foundations_01_script_sounds",
+    "lesson_key": "sound_rules",
+    "slug": "sound-rules",
+    "title": "Sound rules",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 2,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "script_sound_control"
+    },
+    "lane": "literacy",
+    "lesson_mode": "guided",
+    "readiness_target": "Alphabet II readiness",
+    "grammar_focus": [
+      "consonant contrast"
+    ],
+    "function_focus": [
+      "decode syllables"
+    ],
+    "teacher_notes": [
+      "Phase 1A runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 5,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "sound-rules-block-1",
+      "sound-rules-block-2",
+      "sound-rules-block-3",
+      "sound-rules-block-4",
+      "sound-rules-block-5",
+      "sound-rules-block-6"
+    ],
+    "homework_refs": [
+      "hw-sound_rules"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "identity_mapping": {
+      "canonical_slug": "sound-rules",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Sound rules"
+    }
+  },
+  {
+    "module_key": "foundations_01_script_sounds",
+    "lesson_key": "handwriting_decoding",
+    "slug": "handwriting-decoding",
+    "title": "Handwriting decoding",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 3,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "script_sound_control"
+    },
+    "lane": "literacy",
+    "lesson_mode": "blended",
+    "readiness_target": "Stress readiness",
+    "grammar_focus": [
+      "word stress"
+    ],
+    "function_focus": [
+      "pronounce stress"
+    ],
+    "teacher_notes": [
+      "Phase 1A runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 5,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "handwriting-decoding-block-1",
+      "handwriting-decoding-block-2",
+      "handwriting-decoding-block-3",
+      "handwriting-decoding-block-4",
+      "handwriting-decoding-block-5",
+      "handwriting-decoding-block-6"
+    ],
+    "homework_refs": [
+      "hw-handwriting_decoding"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "identity_mapping": {
+      "canonical_slug": "handwriting-decoding",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Handwriting decoding"
+    }
+  },
+  {
+    "module_key": "foundations_02_core_interaction",
+    "lesson_key": "greetings",
+    "slug": "greetings",
+    "title": "Greetings",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 1,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "module_entry"
+    },
+    "metadata": {
+      "primary_dimension_key": "core_survival_communication"
+    },
+    "lane": "literacy",
+    "lesson_mode": "guided",
+    "readiness_target": "Cursive readiness",
+    "grammar_focus": [
+      "orthography"
+    ],
+    "function_focus": [
+      "decode cursive"
+    ],
+    "teacher_notes": [
+      "Phase 1A runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 5,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "greetings-block-1",
+      "greetings-block-2",
+      "greetings-block-3",
+      "greetings-block-4",
+      "greetings-block-5",
+      "greetings-block-6"
+    ],
+    "homework_refs": [
+      "hw-greetings"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "identity_mapping": {
+      "canonical_slug": "greetings",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Greetings"
+    }
+  },
+  {
+    "module_key": "foundations_02_core_interaction",
+    "lesson_key": "self_introduction",
+    "slug": "self-introduction",
+    "title": "Self introduction",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 2,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "core_survival_communication"
+    },
+    "lane": "literacy",
+    "lesson_mode": "practice",
+    "readiness_target": "Word reading readiness",
+    "grammar_focus": [
+      "syllable blending"
+    ],
+    "function_focus": [
+      "read words"
+    ],
+    "teacher_notes": [
+      "Phase 1A runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 5,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "self-introduction-block-1",
+      "self-introduction-block-2",
+      "self-introduction-block-3",
+      "self-introduction-block-4",
+      "self-introduction-block-5",
+      "self-introduction-block-6"
+    ],
+    "homework_refs": [
+      "hw-self_introduction"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "identity_mapping": {
+      "canonical_slug": "self-introduction",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Self introduction"
+    }
+  },
+  {
+    "module_key": "foundations_02_core_interaction",
+    "lesson_key": "personal_information",
+    "slug": "personal-information",
+    "title": "Personal information",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 3,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "core_survival_communication"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "blended",
+    "readiness_target": "Introduction readiness",
+    "grammar_focus": [
+      "register control"
+    ],
+    "function_focus": [
+      "self introduction"
+    ],
+    "teacher_notes": [
+      "Phase 1A runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 5,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "personal-information-block-1",
+      "personal-information-block-2",
+      "personal-information-block-3",
+      "personal-information-block-4",
+      "personal-information-block-5",
+      "personal-information-block-6"
+    ],
+    "homework_refs": [
+      "hw-personal_information"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "identity_mapping": {
+      "canonical_slug": "personal-information",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Personal information"
+    }
+  },
+  {
+    "module_key": "foundations_03_survival_navigation",
+    "lesson_key": "numbers_dates_time",
+    "slug": "numbers-dates-time",
+    "title": "Numbers, dates, and time",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 1,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "module_entry"
+    },
+    "metadata": {
+      "primary_dimension_key": "navigation_transactions"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "blended",
+    "readiness_target": "Date/time readiness",
+    "grammar_focus": [
+      "number forms"
+    ],
+    "function_focus": [
+      "state age time"
+    ],
+    "teacher_notes": [
+      "Phase 1A runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 5,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "numbers-dates-time-block-1",
+      "numbers-dates-time-block-2",
+      "numbers-dates-time-block-3",
+      "numbers-dates-time-block-4",
+      "numbers-dates-time-block-5",
+      "numbers-dates-time-block-6"
+    ],
+    "homework_refs": [
+      "hw-numbers_dates_time"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "identity_mapping": {
+      "canonical_slug": "numbers-dates-time",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Numbers, dates, and time"
+    }
+  },
+  {
+    "module_key": "foundations_03_survival_navigation",
+    "lesson_key": "directions_places",
+    "slug": "directions-places",
+    "title": "Directions and places",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 2,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "navigation_transactions"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "guided",
+    "readiness_target": "Classroom object readiness",
+    "grammar_focus": [
+      "prepositions"
+    ],
+    "function_focus": [
+      "locate objects"
+    ],
+    "teacher_notes": [
+      "Phase 1A runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 5,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "directions-places-block-1",
+      "directions-places-block-2",
+      "directions-places-block-3",
+      "directions-places-block-4",
+      "directions-places-block-5",
+      "directions-places-block-6"
+    ],
+    "homework_refs": [
+      "hw-directions_places"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "identity_mapping": {
+      "canonical_slug": "directions-places",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Directions and places"
+    }
+  },
+  {
+    "module_key": "foundations_03_survival_navigation",
+    "lesson_key": "shopping_transport",
+    "slug": "shopping-transport",
+    "title": "Shopping and transport",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 3,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "navigation_transactions"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "practice",
+    "readiness_target": "Command response readiness",
+    "grammar_focus": [
+      "imperative basics"
+    ],
+    "function_focus": [
+      "follow commands"
+    ],
+    "teacher_notes": [
+      "Phase 1A runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 5,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "shopping-transport-block-1",
+      "shopping-transport-block-2",
+      "shopping-transport-block-3",
+      "shopping-transport-block-4",
+      "shopping-transport-block-5",
+      "shopping-transport-block-6"
+    ],
+    "homework_refs": [
+      "hw-shopping_transport"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "identity_mapping": {
+      "canonical_slug": "shopping-transport",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Shopping and transport"
+    }
+  },
+  {
+    "module_key": "academic_01_classroom_basics",
+    "lesson_key": "university_vocabulary",
+    "slug": "university-vocabulary",
+    "title": "University Vocabulary",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 1,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "module_entry"
+    },
+    "metadata": {
+      "primary_dimension_key": "academic_classroom_comprehension"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "blended",
+    "readiness_target": "Command chaining readiness",
+    "grammar_focus": [
+      "sequencing"
+    ],
+    "function_focus": [
+      "clarification"
+    ],
+    "teacher_notes": [
+      "Phase 1A runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 5,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "university-vocabulary-block-1",
+      "university-vocabulary-block-2",
+      "university-vocabulary-block-3",
+      "university-vocabulary-block-4",
+      "university-vocabulary-block-5",
+      "university-vocabulary-block-6"
+    ],
+    "homework_refs": [
+      "hw-university_vocabulary"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "identity_mapping": {
+      "canonical_slug": "university-vocabulary",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "University Vocabulary"
+    }
+  },
+  {
+    "module_key": "academic_01_classroom_basics",
+    "lesson_key": "classroom_phrases",
+    "slug": "classroom-phrases",
+    "title": "Classroom Phrases",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 2,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "academic_classroom_comprehension"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "guided",
+    "readiness_target": "Use pronouns for simple identity statements",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1B runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "classroom-phrases-block-1",
+      "classroom-phrases-block-2",
+      "classroom-phrases-block-3",
+      "classroom-phrases-block-4",
+      "classroom-phrases-block-5",
+      "classroom-phrases-block-6"
+    ],
+    "homework_refs": [
+      "hw-classroom_phrases"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can introduce self with pronouns."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "classroom-phrases",
+      "mapping_mode": "compatibility_remap",
+      "mapped_concept_title": "Classroom Phrases",
+      "note": "Legacy canonical slug retained for compatibility with existing progression graph."
+    }
+  },
+  {
+    "module_key": "academic_01_classroom_basics",
+    "lesson_key": "instructions_questions",
+    "slug": "instructions-questions",
+    "title": "Instructions and Questions",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 3,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "academic_classroom_comprehension"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "guided",
+    "readiness_target": "Use singular/plural and gender cues",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1B runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "instructions-questions-block-1",
+      "instructions-questions-block-2",
+      "instructions-questions-block-3",
+      "instructions-questions-block-4",
+      "instructions-questions-block-5",
+      "instructions-questions-block-6"
+    ],
+    "homework_refs": [
+      "hw-instructions_questions"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can identify gender and number in basic nouns."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "instructions-questions",
+      "mapping_mode": "compatibility_remap",
+      "mapped_concept_title": "Instructions and Questions",
+      "note": "Legacy canonical slug retained for compatibility with existing progression graph."
+    }
+  },
+  {
+    "module_key": "academic_02_reading_patterns",
+    "lesson_key": "reading_notices",
+    "slug": "reading-notices",
+    "title": "Reading Notices and Signs",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 1,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "module_entry"
+    },
+    "metadata": {
+      "primary_dimension_key": "academic_reading_decoding"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "practice",
+    "readiness_target": "Use study verbs in classroom routines",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1B runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "reading-notices-block-1",
+      "reading-notices-block-2",
+      "reading-notices-block-3",
+      "reading-notices-block-4",
+      "reading-notices-block-5",
+      "reading-notices-block-6"
+    ],
+    "homework_refs": [
+      "hw-reading_notices"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can describe study actions with basic verbs."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "reading-notices",
+      "mapping_mode": "compatibility_remap",
+      "mapped_concept_title": "Reading Notices and Signs",
+      "note": "Legacy canonical slug retained for compatibility with existing progression graph."
+    }
+  },
+  {
+    "module_key": "academic_02_reading_patterns",
+    "lesson_key": "forms_labels",
+    "slug": "forms-labels",
+    "title": "Forms and Labels",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 2,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "academic_reading_decoding"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "guided",
+    "readiness_target": "Ask simple classroom questions",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1B runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "forms-labels-block-1",
+      "forms-labels-block-2",
+      "forms-labels-block-3",
+      "forms-labels-block-4",
+      "forms-labels-block-5",
+      "forms-labels-block-6"
+    ],
+    "homework_refs": [
+      "hw-forms_labels"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can ask short who/what/where questions."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "forms-labels",
+      "mapping_mode": "compatibility_remap",
+      "mapped_concept_title": "Forms and Labels",
+      "note": "Legacy canonical slug retained for compatibility with existing progression graph."
+    }
+  },
+  {
+    "module_key": "academic_02_reading_patterns",
+    "lesson_key": "short_academic_texts",
+    "slug": "short-academic-texts",
+    "title": "Short Academic Texts",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 3,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": null,
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "academic_reading_decoding"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "blended",
+    "readiness_target": "Discuss schedule and homework tasks",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1B runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "short-academic-texts-block-1",
+      "short-academic-texts-block-2",
+      "short-academic-texts-block-3",
+      "short-academic-texts-block-4",
+      "short-academic-texts-block-5",
+      "short-academic-texts-block-6"
+    ],
+    "homework_refs": [
+      "hw-short_academic_texts"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can state class schedule and homework due items."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "short-academic-texts",
+      "mapping_mode": "compatibility_remap",
+      "mapped_concept_title": "Short Academic Texts",
+      "note": "Legacy canonical slug retained for compatibility with existing progression graph."
+    }
+  },
+  {
+    "module_key": "academic_03_note_taking_response",
+    "lesson_key": "lecture_listening_cues",
+    "slug": "lecture-listening-cues",
+    "title": "Lecture Listening Cues",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 1,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "module_entry"
+    },
+    "metadata": {
+      "primary_dimension_key": "academic_response_production"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "practice",
+    "readiness_target": "Request repetition and clarification politely",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1B runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "lecture-listening-cues-block-1",
+      "lecture-listening-cues-block-2",
+      "lecture-listening-cues-block-3",
+      "lecture-listening-cues-block-4",
+      "lecture-listening-cues-block-5",
+      "lecture-listening-cues-block-6"
+    ],
+    "homework_refs": [
+      "hw-lecture_listening_cues"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can ask for clarification politely."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "lecture-listening-cues",
+      "mapping_mode": "compatibility_remap",
+      "mapped_concept_title": "Lecture Listening Cues",
+      "note": "Legacy canonical slug retained for compatibility with existing progression graph."
+    }
+  },
+  {
+    "module_key": "academic_03_note_taking_response",
+    "lesson_key": "note_taking_phrases",
+    "slug": "note-taking-phrases",
+    "title": "Note-Taking Phrases",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 2,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "academic_response_production"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "guided",
+    "readiness_target": "Define simple scientific concepts",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1B runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "note-taking-phrases-block-1",
+      "note-taking-phrases-block-2",
+      "note-taking-phrases-block-3",
+      "note-taking-phrases-block-4",
+      "note-taking-phrases-block-5",
+      "note-taking-phrases-block-6"
+    ],
+    "homework_refs": [
+      "hw-note_taking_phrases"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can answer “What is…?” for basic terms."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "note-taking-phrases",
+      "mapping_mode": "compatibility_remap",
+      "mapped_concept_title": "Note-Taking Phrases",
+      "note": "Legacy canonical slug retained for compatibility with existing progression graph."
+    }
+  },
+  {
+    "module_key": "academic_03_note_taking_response",
+    "lesson_key": "short_written_responses",
+    "slug": "short-written-responses",
+    "title": "Short Written Responses",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 3,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "academic_response_production"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "blended",
+    "readiness_target": "Classify beginner scientific terms",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1B runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "short-written-responses-block-1",
+      "short-written-responses-block-2",
+      "short-written-responses-block-3",
+      "short-written-responses-block-4",
+      "short-written-responses-block-5",
+      "short-written-responses-block-6"
+    ],
+    "homework_refs": [
+      "hw-short_written_responses"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can classify simple scientific concepts."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "short-written-responses",
+      "mapping_mode": "compatibility_remap",
+      "mapped_concept_title": "Short Written Responses",
+      "note": "Legacy canonical slug retained for compatibility with existing progression graph."
+    }
+  },
+  {
+    "module_key": "grammar_01_case_awareness",
+    "lesson_key": "noun_gender_number",
+    "slug": "noun-gender-number",
+    "title": "Noun Gender and Number",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 1,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "module_entry"
+    },
+    "metadata": {
+      "primary_dimension_key": "grammar_control"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "blended",
+    "readiness_target": "Describe cause and process simply",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1B runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "noun-gender-number-block-1",
+      "noun-gender-number-block-2",
+      "noun-gender-number-block-3",
+      "noun-gender-number-block-4",
+      "noun-gender-number-block-5",
+      "noun-gender-number-block-6"
+    ],
+    "homework_refs": [
+      "hw-noun_gender_number"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can explain a simple cause-result relation."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "noun-gender-number",
+      "mapping_mode": "compatibility_remap",
+      "mapped_concept_title": "Noun Gender and Number",
+      "note": "Legacy canonical slug retained for compatibility with existing progression graph."
+    }
+  },
+  {
+    "module_key": "grammar_01_case_awareness",
+    "lesson_key": "case_pattern_awareness",
+    "slug": "case-pattern-awareness",
+    "title": "Case Pattern Awareness",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 2,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "grammar_control"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "guided",
+    "readiness_target": "Describe cell and organism basics",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1B runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "case-pattern-awareness-block-1",
+      "case-pattern-awareness-block-2",
+      "case-pattern-awareness-block-3",
+      "case-pattern-awareness-block-4",
+      "case-pattern-awareness-block-5",
+      "case-pattern-awareness-block-6"
+    ],
+    "homework_refs": [
+      "hw-case_pattern_awareness"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can describe a cell in beginner Russian."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "case-pattern-awareness",
+      "mapping_mode": "compatibility_remap",
+      "mapped_concept_title": "Case Pattern Awareness",
+      "note": "Legacy canonical slug retained for compatibility with existing progression graph."
+    }
+  },
+  {
+    "module_key": "grammar_01_case_awareness",
+    "lesson_key": "adjective_agreement_basics",
+    "slug": "adjective-agreement-basics",
+    "title": "Adjective Agreement Basics",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 3,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "grammar_control"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "guided",
+    "readiness_target": "Use adjective agreement in beginner phrases",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1C runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "adjective-agreement-basics-block-1",
+      "adjective-agreement-basics-block-2",
+      "adjective-agreement-basics-block-3",
+      "adjective-agreement-basics-block-4",
+      "adjective-agreement-basics-block-5",
+      "adjective-agreement-basics-block-6"
+    ],
+    "homework_refs": [
+      "hw-adjective_agreement_basics"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can form simple adjective+noun phrases."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "adjective-agreement-basics",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Adjective Agreement Basics"
+    }
+  },
+  {
+    "module_key": "grammar_02_verbs_motion_time",
+    "lesson_key": "present_past_future",
+    "slug": "present-past-future",
+    "title": "Present, Past, Future",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 1,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "module_entry"
+    },
+    "metadata": {
+      "primary_dimension_key": "grammar_control"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "guided",
+    "readiness_target": "Use present/past/future study lines",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1C runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "present-past-future-block-1",
+      "present-past-future-block-2",
+      "present-past-future-block-3",
+      "present-past-future-block-4",
+      "present-past-future-block-5",
+      "present-past-future-block-6"
+    ],
+    "homework_refs": [
+      "hw-present_past_future"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can state one sentence in each tense timeframe."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "present-past-future",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Present, Past, Future"
+    }
+  },
+  {
+    "module_key": "grammar_02_verbs_motion_time",
+    "lesson_key": "motion_verbs_intro",
+    "slug": "motion-verbs-intro",
+    "title": "Motion Verbs Introduction",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 2,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "grammar_control"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "guided",
+    "readiness_target": "Use motion verbs for class movement",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1C runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "motion-verbs-intro-block-1",
+      "motion-verbs-intro-block-2",
+      "motion-verbs-intro-block-3",
+      "motion-verbs-intro-block-4",
+      "motion-verbs-intro-block-5",
+      "motion-verbs-intro-block-6"
+    ],
+    "homework_refs": [
+      "hw-motion_verbs_intro"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can describe movement to class."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "motion-verbs-intro",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Motion Verbs Introduction"
+    }
+  },
+  {
+    "module_key": "grammar_02_verbs_motion_time",
+    "lesson_key": "schedules_deadlines",
+    "slug": "schedules-deadlines",
+    "title": "Schedules and Deadlines",
+    "lesson_type": "content",
+    "track_scope": "shared_foundation",
+    "ordinal": 3,
+    "estimated_minutes": 8,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "grammar_control"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "guided",
+    "readiness_target": "Discuss schedule and deadlines",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1C runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "schedules-deadlines-block-1",
+      "schedules-deadlines-block-2",
+      "schedules-deadlines-block-3",
+      "schedules-deadlines-block-4",
+      "schedules-deadlines-block-5",
+      "schedules-deadlines-block-6"
+    ],
+    "homework_refs": [
+      "hw-schedules_deadlines"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can communicate assignment deadlines."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "schedules-deadlines",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Schedules and Deadlines"
+    }
+  },
+  {
+    "module_key": "checkpoint_01_foundation",
+    "lesson_key": "checkpoint_01_a",
+    "slug": "checkpoint-01-a",
+    "title": "Checkpoint 01 A",
+    "lesson_type": "checkpoint",
+    "track_scope": "shared_foundation",
+    "ordinal": 1,
+    "estimated_minutes": 10,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "module_entry"
+    },
+    "metadata": {
+      "primary_dimension_key": "exam_checkpoint_readiness"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "practice",
+    "readiness_target": "Mixed checkpoint review pass A",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1C runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "checkpoint-01-a-block-1",
+      "checkpoint-01-a-block-2",
+      "checkpoint-01-a-block-3",
+      "checkpoint-01-a-block-4",
+      "checkpoint-01-a-block-5",
+      "checkpoint-01-a-block-6"
+    ],
+    "homework_refs": [
+      "hw-checkpoint_01_a"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can complete mixed checkpoint prompts."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "checkpoint-01-a",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Checkpoint 01 A"
+    }
+  },
+  {
+    "module_key": "checkpoint_01_foundation",
+    "lesson_key": "checkpoint_01_b",
+    "slug": "checkpoint-01-b",
+    "title": "Checkpoint 01 B",
+    "lesson_type": "checkpoint",
+    "track_scope": "shared_foundation",
+    "ordinal": 2,
+    "estimated_minutes": 10,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "exam_checkpoint_readiness"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "practice",
+    "readiness_target": "Mixed checkpoint review pass B",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1C runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "checkpoint-01-b-block-1",
+      "checkpoint-01-b-block-2",
+      "checkpoint-01-b-block-3",
+      "checkpoint-01-b-block-4",
+      "checkpoint-01-b-block-5",
+      "checkpoint-01-b-block-6"
+    ],
+    "homework_refs": [
+      "hw-checkpoint_01_b"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can complete mixed checkpoint prompts with less support."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "checkpoint-01-b",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Checkpoint 01 B"
+    }
+  },
+  {
+    "module_key": "checkpoint_01_foundation",
+    "lesson_key": "checkpoint_01_review",
+    "slug": "checkpoint-01-review",
+    "title": "Checkpoint 01 Review",
+    "lesson_type": "checkpoint",
+    "track_scope": "shared_foundation",
+    "ordinal": 3,
+    "estimated_minutes": 10,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_01",
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "exam_checkpoint_readiness"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "practice",
+    "readiness_target": "Remediation review after checkpoint 01",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1C runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "checkpoint-01-review-block-1",
+      "checkpoint-01-review-block-2",
+      "checkpoint-01-review-block-3",
+      "checkpoint-01-review-block-4",
+      "checkpoint-01-review-block-5",
+      "checkpoint-01-review-block-6"
+    ],
+    "homework_refs": [
+      "hw-checkpoint_01_review"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can repair key checkpoint 01 errors."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "checkpoint-01-review",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Checkpoint 01 Review"
+    }
+  },
+  {
+    "module_key": "checkpoint_02_academic_entry",
+    "lesson_key": "checkpoint_02_a",
+    "slug": "checkpoint-02-a",
+    "title": "Checkpoint 02 A",
+    "lesson_type": "checkpoint",
+    "track_scope": "shared_foundation",
+    "ordinal": 1,
+    "estimated_minutes": 10,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_02",
+    "unlock_rule": {
+      "type": "module_entry"
+    },
+    "metadata": {
+      "primary_dimension_key": "exam_checkpoint_readiness"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "practice",
+    "readiness_target": "Integrated checkpoint full-slice pass A",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1C runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "checkpoint-02-a-block-1",
+      "checkpoint-02-a-block-2",
+      "checkpoint-02-a-block-3",
+      "checkpoint-02-a-block-4",
+      "checkpoint-02-a-block-5",
+      "checkpoint-02-a-block-6"
+    ],
+    "homework_refs": [
+      "hw-checkpoint_02_a"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can complete integrated Phase 1 prompts."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "checkpoint-02-a",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Checkpoint 02 A"
+    }
+  },
+  {
+    "module_key": "checkpoint_02_academic_entry",
+    "lesson_key": "checkpoint_02_b",
+    "slug": "checkpoint-02-b",
+    "title": "Checkpoint 02 B",
+    "lesson_type": "checkpoint",
+    "track_scope": "shared_foundation",
+    "ordinal": 2,
+    "estimated_minutes": 10,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_02",
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "exam_checkpoint_readiness"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "practice",
+    "readiness_target": "Integrated checkpoint full-slice pass B",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1C runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "checkpoint-02-b-block-1",
+      "checkpoint-02-b-block-2",
+      "checkpoint-02-b-block-3",
+      "checkpoint-02-b-block-4",
+      "checkpoint-02-b-block-5",
+      "checkpoint-02-b-block-6"
+    ],
+    "homework_refs": [
+      "hw-checkpoint_02_b"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can complete integrated prompts with consistency."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "checkpoint-02-b",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Checkpoint 02 B"
+    }
+  },
+  {
+    "module_key": "checkpoint_02_academic_entry",
+    "lesson_key": "checkpoint_02_review",
+    "slug": "checkpoint-02-review",
+    "title": "Checkpoint 02 Review",
+    "lesson_type": "checkpoint",
+    "track_scope": "shared_foundation",
+    "ordinal": 3,
+    "estimated_minutes": 10,
+    "readiness_weight": 3.33,
+    "checkpoint_family_key": "shared_core_checkpoint_02",
+    "unlock_rule": {
+      "type": "sequential_lesson"
+    },
+    "metadata": {
+      "primary_dimension_key": "exam_checkpoint_readiness"
+    },
+    "lane": "classroom_foundation",
+    "lesson_mode": "practice",
+    "readiness_target": "Final Phase 1 consolidation review",
+    "grammar_focus": [],
+    "function_focus": [],
+    "teacher_notes": [
+      "Phase 1C runtime-backed lesson"
+    ],
+    "mastery_rules": {
+      "minimum_required_blocks": 4,
+      "minimum_quiz_score": 70
+    },
+    "ordered_block_refs": [
+      "checkpoint-02-review-block-1",
+      "checkpoint-02-review-block-2",
+      "checkpoint-02-review-block-3",
+      "checkpoint-02-review-block-4",
+      "checkpoint-02-review-block-5",
+      "checkpoint-02-review-block-6"
+    ],
+    "homework_refs": [
+      "hw-checkpoint_02_review"
+    ],
+    "checkpoint_links": [],
+    "mock_links": [],
+    "can_do_outcomes": [
+      "Can sustain full-slice can-do targets."
+    ],
+    "identity_mapping": {
+      "canonical_slug": "checkpoint-02-review",
+      "mapping_mode": "canonical",
+      "mapped_concept_title": "Checkpoint 02 Review"
+    }
+  }
+]

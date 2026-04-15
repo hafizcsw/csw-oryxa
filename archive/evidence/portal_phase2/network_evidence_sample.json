@@ -1,0 +1,115 @@
+[
+  {
+    "path": "/functions/v1/portal-chat-proxy",
+    "headers": {
+      "accept-encoding": "identity",
+      "content-length": "402",
+      "host": "127.0.0.1:8787",
+      "user-agent": "Python-urllib/3.10",
+      "content-type": "application/json",
+      "x-client-trace-id": "trace_guest_chat_001",
+      "connection": "close"
+    },
+    "body": {
+      "envelope_version": "1.2",
+      "envelope_type": "chat_message",
+      "trace_id": "trace_guest_chat_001",
+      "client_request_id": "req_guest_chat_001",
+      "session_id": "sess_guest_1",
+      "channel": "web_chat",
+      "actor": {
+        "type": "portal",
+        "id": "portal-web"
+      },
+      "ui_locale": "ar",
+      "output_locale": "ar",
+      "payload": {
+        "type": "message",
+        "text": "مرحبا",
+        "message": "مرحبا"
+      }
+    }
+  },
+  {
+    "path": "/functions/v1/portal-chat-proxy",
+    "headers": {
+      "accept-encoding": "identity",
+      "content-length": "534",
+      "host": "127.0.0.1:8787",
+      "user-agent": "Python-urllib/3.10",
+      "content-type": "application/json",
+      "x-client-trace-id": "trace_auth_patch_002",
+      "authorization": "Bearer test-auth-token",
+      "connection": "close"
+    },
+    "body": {
+      "envelope_version": "1.2",
+      "envelope_type": "control_patch",
+      "trace_id": "trace_auth_patch_002",
+      "client_request_id": "req_auth_patch_002",
+      "session_id": "sess_auth_1",
+      "channel": "web_portal",
+      "actor": {
+        "type": "portal",
+        "id": "portal-web"
+      },
+      "ui_locale": "en",
+      "output_locale": "en",
+      "expected_state_rev": 42,
+      "filters_patch": [
+        {
+          "op": "replace",
+          "path": "/filters/country_code",
+          "value": "DE"
+        },
+        {
+          "op": "remove",
+          "path": "/filters/tuition_usd_max"
+        }
+      ],
+      "payload": {
+        "type": "event",
+        "event": {
+          "name": "filters_updated",
+          "payload": {}
+        }
+      }
+    }
+  },
+  {
+    "path": "/functions/v1/portal-chat-proxy",
+    "headers": {
+      "accept-encoding": "identity",
+      "content-length": "417",
+      "host": "127.0.0.1:8787",
+      "user-agent": "Python-urllib/3.10",
+      "content-type": "application/json",
+      "x-client-trace-id": "trace_auth_receipt_003",
+      "authorization": "Bearer test-auth-token",
+      "connection": "close"
+    },
+    "body": {
+      "envelope_version": "1.2",
+      "envelope_type": "render_receipt",
+      "trace_id": "trace_auth_receipt_003",
+      "client_request_id": "req_auth_receipt_003",
+      "session_id": "sess_auth_1",
+      "channel": "web_portal",
+      "actor": {
+        "type": "portal",
+        "id": "portal-web"
+      },
+      "ui_locale": "en",
+      "output_locale": "en",
+      "payload": {
+        "type": "ack",
+        "ack_name": "cards_rendered",
+        "ack_ref": {
+          "query_id": "cq_1",
+          "sequence": 1
+        },
+        "ack_success": true
+      }
+    }
+  }
+]

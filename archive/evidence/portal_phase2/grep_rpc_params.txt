@@ -1,0 +1,104 @@
+# GREP OUTPUT: RPC Parameter Contract
+# Generated: 2026-01-27T07:45:00Z
+# Target: rpc_kb_programs_search_v1_3_final
+
+================================================================================
+RPC FUNCTION ALLOWLISTS (FAIL-CLOSED)
+================================================================================
+
+## From: supabase/migrations/20260126174645_1c7b3c6d-0a9a-444e-be4d-2b0da10be2bc.sql
+
+### program_filters allowlist (Line 25-29):
+  v_known_program_filters text[] := ARRAY[
+    'tuition_basis', 'tuition_usd_min', 'tuition_usd_max',
+    'partner_priority', 'country_codes', 'degree_slugs', 'discipline_slugs',
+    'language_codes', 'has_scholarship', 'has_dorm'
+  ];
+
+>>> TOTAL: 10 allowed keys in program_filters <<<
+
+### admission_policy allowlist (Line 30):
+  v_known_admission_policy text[] := ARRAY['enforce_eligibility'];
+
+>>> TOTAL: 1 allowed key <<<
+
+### applicant_profile allowlist (Line 31):
+  v_known_applicant_profile text[] := ARRAY['curriculum', 'stream'];
+
+>>> TOTAL: 2 allowed keys <<<
+
+### paging allowlist (Line 32):
+  v_known_paging text[] := ARRAY['limit', 'offset'];
+
+>>> TOTAL: 2 allowed keys <<<
+
+================================================================================
+UNKNOWN KEY POLICY (FAIL-CLOSED)
+================================================================================
+
+## program_filters unknown keys (Line 101-114):
+  SELECT array_agg(k) INTO v_unknown_keys
+  FROM jsonb_object_keys(v_program_filters) AS t(k)
+  WHERE NOT (k = ANY(v_known_program_filters));
+
+  IF v_unknown_keys IS NOT NULL AND array_length(v_unknown_keys, 1) > 0 THEN
+    RETURN jsonb_build_object(
+      'ok', false,
+      'request_id', v_request_id,
+      'error', 'MISSING_DATA_FIELDS',
+      'missing_data_fields', to_jsonb(ARRAY(SELECT 'unsupported_filter.' || unnest(v_unknown_keys))),
+      ...
+    );
+  END IF;
+
+>>> POLICY: 422 REJECTION for any unknown key (NOT ignored) <<<
+
+## Same pattern for:
+  - admission_policy (Line 117-129)
+  - applicant_profile (Line 143-155)
+  - paging (Line 169-181)
+
+================================================================================
+MANDATORY FIELDS
+================================================================================
+
+## Tuition Trio (REQUIRED - Line 76-87):
+  - program_filters.tuition_usd_min (REQUIRED)
+  - program_filters.tuition_usd_max (REQUIRED)
+  - program_filters.tuition_basis (REQUIRED, enum: year|semester|program_total)
+  - program_filters.partner_priority (REQUIRED, enum: prefer|only|ignore)
+
+## Top-level required:
+  - display_lang (REQUIRED)
+  - request_id (optional, defaults to 'unknown')
+  - display_currency_code (optional, defaults to 'USD')
+
+================================================================================
+KEY NAMING (CANONICAL ONLY)
+================================================================================
+
+>>> CRITICAL: RPC accepts ONLY these exact keys <<<
+>>> NO ALIASES are accepted <<<
+>>> NO NORMALIZATION in RPC <<<
+
+Correct keys:
+  - country_codes (PLURAL array, NOT country_code singular)
+  - degree_slugs (PLURAL array, NOT degree_slug singular)
+  - discipline_slugs (PLURAL array)
+  - language_codes (PLURAL array, NOT instruction_languages)
+  - has_scholarship (NOT scholarship_available)
+  - has_dorm (NOT dorm_price_monthly_usd_max)
+
+================================================================================
+WHAT IS NOT SUPPORTED (REJECTED WITH 422)
+================================================================================
+
+CRM-style keys that will FAIL:
+  - country_code (singular) → REJECTED, use country_codes[]
+  - degree_slug (singular) → REJECTED, use degree_slugs[]
+  - instruction_languages → REJECTED, use language_codes[]
+  - scholarship_available → REJECTED, use has_scholarship
+  - dorm_price_monthly_usd_max → REJECTED, use has_dorm (boolean only)
+  - monthly_living_usd_max → NOT SUPPORTED AT ALL
+  - query → NOT SUPPORTED (no keyword search in HMAC endpoint)
+  - keyword → NOT SUPPORTED (no keyword search in HMAC endpoint)

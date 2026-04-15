@@ -1,0 +1,1 @@
+COMMENT ON COLUMN public.crawl_file_artifacts.parse_status IS 'Lifecycle: pending → parsed → extracted → parse_failed. extracted means observations have been created from parsed text.';

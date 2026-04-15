@@ -1,0 +1,2 @@
+ALTER TABLE public.website_enrichment_rows DROP CONSTRAINT website_enrichment_rows_enrichment_status_check;
+ALTER TABLE public.website_enrichment_rows ADD CONSTRAINT website_enrichment_rows_enrichment_status_check CHECK (enrichment_status = ANY (ARRAY['pending','matched','review','failed','skipped','approved','rejected','applied','skipped_existing']));

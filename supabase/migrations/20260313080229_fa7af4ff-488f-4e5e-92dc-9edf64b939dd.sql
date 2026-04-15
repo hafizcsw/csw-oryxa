@@ -1,0 +1,2 @@
+DELETE FROM website_enrichment_rows;
+DELETE FROM website_enrichment_jobs;

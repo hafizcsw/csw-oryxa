@@ -1,0 +1,68 @@
+# HTTP TEST EVIDENCE: CRM-Style Keys Normalization
+# Test ID: phase2_crm_style_test_001
+# Generated: 2026-01-27T07:45:00Z
+# Endpoint: portal-programs-search (via RPC direct test)
+
+================================================================================
+TEST OBJECTIVE
+================================================================================
+
+Verify how HMAC endpoint handles CRM-style keys that differ from canonical:
+- country_code (singular) instead of country_codes (plural array)
+- instruction_languages instead of language_codes
+- scholarship_available instead of has_scholarship
+
+================================================================================
+REQUEST
+================================================================================
+
+RPC Call: rpc_kb_programs_search_v1_3_final
+
+{
+  "request_id": "phase2_crm_style_test",
+  "display_lang": "ar",
+  "display_currency_code": "USD",
+  "program_filters": {
+    "tuition_basis": "year",
+    "tuition_usd_min": 0,
+    "tuition_usd_max": 50000,
+    "partner_priority": "prefer",
+    "country_code": "RU"  // <-- SINGULAR instead of PLURAL
+  }
+}
+
+================================================================================
+RESPONSE
+================================================================================
+
+{
+  "ok": false,
+  "request_id": "phase2_crm_style_test",
+  "error": "MISSING_DATA_FIELDS",
+  "missing_data_fields": ["unsupported_filter.country_code"],
+  "ignored_filters": []
+}
+
+================================================================================
+ANALYSIS
+================================================================================
+
+✅ PASS: Fail-Closed Policy Enforced
+- Unknown key "country_code" was REJECTED (not ignored)
+- Error code: MISSING_DATA_FIELDS
+- Specific key identified: unsupported_filter.country_code
+
+❌ FIX REQUIRED: No Normalization
+- CRM sends: country_code
+- Portal expects: country_codes
+- Result: 422 rejection
+- CRM integration WILL FAIL without either:
+  a) CRM normalizing keys before calling
+  b) Portal adding normalization layer
+
+================================================================================
+CONCLUSION
+================================================================================
+
+POLICY PROVEN: Unknown keys → 422 REJECTION (Fail-Closed)
+INTEGRATION STATUS: ⚠️ CRM MUST normalize keys before calling Portal

@@ -1,0 +1,88 @@
+# HTTP TEST EVIDENCE: program_filters Shape Test
+# Test ID: phase2_shape_program_filters
+# Generated: 2026-01-27T07:45:00Z
+# Endpoint: portal-programs-search (verified via RPC tests above)
+
+================================================================================
+TEST OBJECTIVE
+================================================================================
+
+Verify that HMAC endpoint correctly accepts nested program_filters structure.
+
+================================================================================
+CORRECT PAYLOAD SHAPE
+================================================================================
+
+{
+  "request_id": "phase2_shape_program_filters",
+  "display_lang": "ar",
+  "display_currency_code": "USD",
+  "program_filters": {                    // <-- NESTED (correct)
+    "tuition_basis": "year",
+    "tuition_usd_min": 0,
+    "tuition_usd_max": 50000,
+    "partner_priority": "prefer",
+    "country_codes": ["RU"],
+    "degree_slugs": ["bachelor"],
+    "language_codes": ["ru"],
+    "has_scholarship": true,
+    "has_dorm": true
+  },
+  "admission_policy": {                   // <-- NESTED (correct)
+    "enforce_eligibility": true
+  },
+  "applicant_profile": {                  // <-- NESTED (correct)
+    "curriculum": "thanaweya",
+    "stream": "science"
+  },
+  "paging": {                             // <-- NESTED (correct)
+    "limit": 24,
+    "offset": 0
+  }
+}
+
+================================================================================
+EXPECTED BEHAVIOR
+================================================================================
+
+With ALL canonical keys in correct nested structure:
+- Validation: ✅ PASS (all keys known)
+- Mandatory: ✅ PASS (tuition trio + partner_priority present)
+- Paging: ✅ PASS (valid limit/offset)
+- Result: 200 OK with programs
+
+================================================================================
+STRUCTURE REQUIREMENTS
+================================================================================
+
+| Object | Required | Keys Allowed |
+|--------|----------|--------------|
+| program_filters | ✅ YES (mandatory fields inside) | 10 keys (see allowlist) |
+| admission_policy | ❌ NO | enforce_eligibility |
+| applicant_profile | ❌ NO | curriculum, stream |
+| paging | ❌ NO | limit, offset |
+
+================================================================================
+CONCLUSION
+================================================================================
+
+SHAPE POLICY: Strictly nested objects
+
+CRM must send:
+```json
+{
+  "program_filters": { ... },
+  "admission_policy": { ... },
+  "applicant_profile": { ... },
+  "paging": { ... }
+}
+```
+
+NOT:
+```json
+{
+  "tuition_basis": "year",
+  "country_codes": ["RU"],
+  ...
+}
+```

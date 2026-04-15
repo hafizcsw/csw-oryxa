@@ -1,0 +1,61 @@
+name: CI - Supabase migration smoke + tests
+
+on:
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  supabase-migrations-and-tests:
+    name: Supabase migrations + unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase stack
+        run: supabase start
+
+      - name: Migration smoke test (reset local DB)
+        run: supabase db reset --local
+
+      - name: Run unit tests (vitest)
+        run: npx vitest run
+
+      - name: Run lint (if available)
+        shell: bash
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts.lint ? 0 : 1)"; then
+            npm run lint
+          else
+            echo "No lint script found; skipping"
+          fi
+
+      - name: Run typecheck (if available)
+        shell: bash
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts.typecheck ? 0 : 1)"; then
+            npm run typecheck
+          else
+            echo "No typecheck script found; skipping"
+          fi
+
+      - name: Stop local Supabase stack
+        if: always()
+        run: supabase stop

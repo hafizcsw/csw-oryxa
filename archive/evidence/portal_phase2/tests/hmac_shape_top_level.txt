@@ -1,0 +1,78 @@
+# HTTP TEST EVIDENCE: Top-Level Filters Shape Test
+# Test ID: phase2_shape_top_level
+# Generated: 2026-01-27T07:45:00Z
+# Endpoint: portal-programs-search (analysis from code)
+
+================================================================================
+TEST OBJECTIVE
+================================================================================
+
+Verify if HMAC endpoint accepts filters as top-level keys vs nested in program_filters.
+
+================================================================================
+PAYLOAD SHAPE: TOP-LEVEL (INCORRECT)
+================================================================================
+
+{
+  "request_id": "phase2_shape_top_level",
+  "display_lang": "ar",
+  "display_currency_code": "USD",
+  "tuition_basis": "year",           // <-- TOP-LEVEL (wrong)
+  "tuition_usd_min": 0,              // <-- TOP-LEVEL (wrong)
+  "tuition_usd_max": 50000,          // <-- TOP-LEVEL (wrong)
+  "partner_priority": "prefer",       // <-- TOP-LEVEL (wrong)
+  "country_codes": ["RU"]            // <-- TOP-LEVEL (wrong)
+}
+
+================================================================================
+EXPECTED BEHAVIOR (FROM CODE ANALYSIS)
+================================================================================
+
+From RPC Line 65-68:
+  v_program_filters := COALESCE(payload->'program_filters', '{}'::jsonb);
+  v_admission_policy := COALESCE(payload->'admission_policy', '{}'::jsonb);
+
+The RPC reads from nested objects:
+- payload->'program_filters'
+- payload->'admission_policy'
+- payload->'applicant_profile'
+- payload->'paging'
+
+If filters are sent as TOP-LEVEL:
+- v_program_filters = {} (empty)
+- Mandatory fields missing → 422 MISSING_DATA_FIELDS
+
+================================================================================
+EXPECTED RESPONSE (TOP-LEVEL FILTERS)
+================================================================================
+
+{
+  "ok": false,
+  "request_id": "phase2_shape_top_level",
+  "error": "MISSING_DATA_FIELDS",
+  "missing_data_fields": [
+    "program_filters.tuition_usd_min",
+    "program_filters.tuition_usd_max",
+    "program_filters.tuition_basis",
+    "program_filters.partner_priority"
+  ],
+  "ignored_filters": []
+}
+
+================================================================================
+CONCLUSION
+================================================================================
+
+PAYLOAD SHAPE POLICY: Nested objects ONLY
+
+✅ CORRECT:
+{
+  "program_filters": { "tuition_basis": "year", ... }
+}
+
+❌ INCORRECT:
+{
+  "tuition_basis": "year", ...  // TOP-LEVEL = IGNORED
+}
+
+CRM MUST send filters inside nested objects, NOT top-level.

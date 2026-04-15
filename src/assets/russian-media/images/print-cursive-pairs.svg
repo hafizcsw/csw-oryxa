@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Russian print and cursive letter comparison</title>
+  <desc id="desc">Side-by-side comparison of Russian print and cursive forms for key letters.</desc>
+  
+  <rect width="960" height="540" fill="#fafaf9"/>
+  
+  <!-- Title -->
+  <text x="480" y="40" font-size="26" font-family="Arial" fill="#0f172a" text-anchor="middle" font-weight="bold">✍️ Печатные и прописные буквы — Print vs Cursive</text>
+  <line x1="80" y1="55" x2="880" y2="55" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <!-- Column headers -->
+  <rect x="40" y="68" width="880" height="40" rx="10" fill="#f1f5f9"/>
+  <text x="160" y="94" fill="#1d4ed8" font-size="18" font-family="Arial" text-anchor="middle" font-weight="bold">Печатная / Print</text>
+  <text x="370" y="94" fill="#7c3aed" font-size="18" font-family="Arial" text-anchor="middle" font-weight="bold">Прописная / Cursive</text>
+  <text x="580" y="94" fill="#0f172a" font-size="18" font-family="Arial" text-anchor="middle" font-weight="bold">Пример / Example</text>
+  <text x="800" y="94" fill="#64748b" font-size="18" font-family="Arial" text-anchor="middle" font-weight="bold">Meaning</text>
+  
+  <!-- Letter rows -->
+  <g font-family="Arial">
+    <!-- Row 1: Д/д -->
+    <rect x="40" y="118" width="880" height="62" rx="8" fill="#eff6ff"/>
+    <rect x="80" y="124" width="120" height="50" rx="10" fill="white" stroke="#bfdbfe"/>
+    <text x="140" y="160" fill="#1d4ed8" font-size="38" text-anchor="middle" font-weight="bold">Д д</text>
+    <rect x="280" y="124" width="160" height="50" rx="10" fill="white" stroke="#ddd6fe"/>
+    <text x="360" y="160" fill="#7c3aed" font-size="38" text-anchor="middle" font-style="italic">Д д</text>
+    <text x="540" y="158" fill="#334155" font-size="26">дом, дéвушка</text>
+    <text x="800" y="158" fill="#64748b" font-size="18" text-anchor="middle">house, girl</text>
+    
+    <!-- Row 2: Т/т -->
+    <rect x="40" y="188" width="880" height="62" rx="8" fill="white"/>
+    <rect x="80" y="194" width="120" height="50" rx="10" fill="#f8fafc" stroke="#bfdbfe"/>
+    <text x="140" y="230" fill="#1d4ed8" font-size="38" text-anchor="middle" font-weight="bold">Т т</text>
+    <rect x="280" y="194" width="160" height="50" rx="10" fill="#f8fafc" stroke="#ddd6fe"/>
+    <text x="360" y="230" fill="#7c3aed" font-size="38" text-anchor="middle" font-style="italic">Т т</text>
+    <text x="540" y="228" fill="#334155" font-size="26">там, тетрáдь</text>
+    <text x="800" y="228" fill="#64748b" font-size="18" text-anchor="middle">there, notebook</text>
+    
+    <!-- Row 3: М/м -->
+    <rect x="40" y="258" width="880" height="62" rx="8" fill="#eff6ff"/>
+    <rect x="80" y="264" width="120" height="50" rx="10" fill="white" stroke="#bfdbfe"/>
+    <text x="140" y="300" fill="#1d4ed8" font-size="38" text-anchor="middle" font-weight="bold">М м</text>
+    <rect x="280" y="264" width="160" height="50" rx="10" fill="white" stroke="#ddd6fe"/>
+    <text x="360" y="300" fill="#7c3aed" font-size="38" text-anchor="middle" font-style="italic">М м</text>
+    <text x="540" y="298" fill="#334155" font-size="26">мáма, мир</text>
+    <text x="800" y="298" fill="#64748b" font-size="18" text-anchor="middle">mom, world</text>
+    
+    <!-- Row 4: Б/б -->
+    <rect x="40" y="328" width="880" height="62" rx="8" fill="white"/>
+    <rect x="80" y="334" width="120" height="50" rx="10" fill="#f8fafc" stroke="#bfdbfe"/>
+    <text x="140" y="370" fill="#1d4ed8" font-size="38" text-anchor="middle" font-weight="bold">Б б</text>
+    <rect x="280" y="334" width="160" height="50" rx="10" fill="#f8fafc" stroke="#ddd6fe"/>
+    <text x="360" y="370" fill="#7c3aed" font-size="38" text-anchor="middle" font-style="italic">Б б</text>
+    <text x="540" y="368" fill="#334155" font-size="26">бáнк, большóй</text>
+    <text x="800" y="368" fill="#64748b" font-size="18" text-anchor="middle">bank, big</text>
+    
+    <!-- Row 5: А/а -->
+    <rect x="40" y="398" width="880" height="62" rx="8" fill="#eff6ff"/>
+    <rect x="80" y="404" width="120" height="50" rx="10" fill="white" stroke="#bfdbfe"/>
+    <text x="140" y="440" fill="#1d4ed8" font-size="38" text-anchor="middle" font-weight="bold">А а</text>
+    <rect x="280" y="404" width="160" height="50" rx="10" fill="white" stroke="#ddd6fe"/>
+    <text x="360" y="440" fill="#7c3aed" font-size="38" text-anchor="middle" font-style="italic">А а</text>
+    <text x="540" y="438" fill="#334155" font-size="26">áзбука, автóбус</text>
+    <text x="800" y="438" fill="#64748b" font-size="18" text-anchor="middle">alphabet, bus</text>
+    
+    <!-- Row 6: О/о -->
+    <rect x="40" y="468" width="880" height="62" rx="8" fill="white"/>
+    <rect x="80" y="474" width="120" height="50" rx="10" fill="#f8fafc" stroke="#bfdbfe"/>
+    <text x="140" y="510" fill="#1d4ed8" font-size="38" text-anchor="middle" font-weight="bold">О о</text>
+    <rect x="280" y="474" width="160" height="50" rx="10" fill="#f8fafc" stroke="#ddd6fe"/>
+    <text x="360" y="510" fill="#7c3aed" font-size="38" text-anchor="middle" font-style="italic">О о</text>
+    <text x="540" y="508" fill="#334155" font-size="26">окнó, он</text>
+    <text x="800" y="508" fill="#64748b" font-size="18" text-anchor="middle">window, he</text>
+  </g>
+</svg>
