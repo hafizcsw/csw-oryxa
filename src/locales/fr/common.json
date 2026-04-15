@@ -703,7 +703,9 @@
     "logoutSuccess": "Déconnexion réussie",
     "completeAccountNotice": "Complétez les détails de votre compte",
     "teacherDashboard": "Tableau de bord enseignant",
-    "teacherDashboardDesc": "Gérer les étudiants et sessions"
+    "teacherDashboardDesc": "Gérer les étudiants et sessions",
+    "adminPanel": "Panneau d'administration",
+    "adminPanelDesc": "Administration du système"
   },
   "phone": {
     "placeholder": "Entrez le numéro de téléphone",
@@ -10557,6 +10559,8 @@
     "inbox": "Boîte de réception",
     "online": "En ligne",
     "yesterday": "Hier",
-    "noConversationSelected": "Sélectionnez une conversation"
+    "noConversationSelected": "Sélectionnez une conversation",
+    "newMessage": "Nouveau message",
+    "title": "Messages"
   }
 }

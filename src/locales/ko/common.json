@@ -703,7 +703,9 @@
     "logoutSuccess": "성공적으로 로그아웃되었습니다",
     "completeAccountNotice": "계정 정보를 완성하세요",
     "teacherDashboard": "강사 대시보드",
-    "teacherDashboardDesc": "학생 및 세션 관리"
+    "teacherDashboardDesc": "학생 및 세션 관리",
+    "adminPanel": "관리 패널",
+    "adminPanelDesc": "시스템 관리"
   },
   "phone": {
     "placeholder": "전화번호를 입력하세요",
@@ -9554,6 +9556,8 @@
     "inbox": "받은편지함",
     "online": "온라인",
     "yesterday": "어제",
-    "noConversationSelected": "대화를 선택하여 메시지를 시작하세요"
+    "noConversationSelected": "대화를 선택하여 메시지를 시작하세요",
+    "newMessage": "새 메시지",
+    "title": "메시지"
   }
 }

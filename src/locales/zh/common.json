@@ -704,7 +704,9 @@
     "logoutSuccess": "已成功退出登录",
     "completeAccountNotice": "完善您的账户信息",
     "teacherDashboard": "教师控制台",
-    "teacherDashboardDesc": "管理学生和课程"
+    "teacherDashboardDesc": "管理学生和课程",
+    "adminPanel": "管理面板",
+    "adminPanelDesc": "系统管理"
   },
   "phone": {
     "placeholder": "输入电话号码",
@@ -10170,6 +10172,8 @@
     "inbox": "收件箱",
     "online": "在线",
     "yesterday": "昨天",
-    "noConversationSelected": "选择一个对话开始聊天"
+    "noConversationSelected": "选择一个对话开始聊天",
+    "newMessage": "新消息",
+    "title": "消息"
   }
 }

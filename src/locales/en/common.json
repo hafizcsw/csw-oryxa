@@ -921,7 +921,9 @@
     "teacherDashboard": "Teacher Dashboard",
     "teacherDashboardDesc": "Manage students & sessions",
     "home": "Home",
-    "homeDesc": "Back to main page"
+    "homeDesc": "Back to main page",
+    "adminPanel": "Admin Panel",
+    "adminPanelDesc": "System administration"
   },
   "phone": {
     "placeholder": "Enter phone number",
@@ -12875,7 +12877,11 @@
       "security": "Security",
       "system": "System",
       "archived": "Archived"
-    }
+    },
+    "newMessage": "New Message",
+    "title": "Messages",
+    "emptyInboxHint": "No messages yet",
+    "noConversationSelected": "Select a conversation to start messaging"
   },
   "insight": {
     "noData": "No intelligence data yet",

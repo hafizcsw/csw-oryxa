@@ -703,7 +703,9 @@
     "logoutSuccess": "Erfolgreich abgemeldet",
     "completeAccountNotice": "Vervollständigen Sie Ihre Kontodaten",
     "teacherDashboard": "Lehrer-Dashboard",
-    "teacherDashboardDesc": "Schüler & Sitzungen verwalten"
+    "teacherDashboardDesc": "Schüler & Sitzungen verwalten",
+    "adminPanel": "Admin-Panel",
+    "adminPanelDesc": "Systemverwaltung"
   },
   "phone": {
     "placeholder": "Telefonnummer eingeben",
@@ -9533,6 +9535,8 @@
     "inbox": "Posteingang",
     "online": "Online",
     "yesterday": "Gestern",
-    "noConversationSelected": "Wählen Sie eine Unterhaltung aus"
+    "noConversationSelected": "Wählen Sie eine Unterhaltung aus",
+    "newMessage": "Neue Nachricht",
+    "title": "Nachrichten"
   }
 }

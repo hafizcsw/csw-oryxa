@@ -703,7 +703,9 @@
     "logoutSuccess": "सफलतापूर्वक साइन आउट हुआ",
     "completeAccountNotice": "अपने खाते का विवरण पूरा करें",
     "teacherDashboard": "शिक्षक डैशबोर्ड",
-    "teacherDashboardDesc": "छात्रों और सत्रों का प्रबंधन"
+    "teacherDashboardDesc": "छात्रों और सत्रों का प्रबंधन",
+    "adminPanel": "व्यवस्थापक पैनल",
+    "adminPanelDesc": "सिस्टम प्रशासन"
   },
   "phone": {
     "placeholder": "फ़ोन नंबर दर्ज करें",
@@ -9564,6 +9566,8 @@
     "inbox": "इनबॉक्स",
     "online": "ऑनलाइन",
     "yesterday": "कल",
-    "noConversationSelected": "मैसेजिंग शुरू करने के लिए एक बातचीत चुनें"
+    "noConversationSelected": "मैसेजिंग शुरू करने के लिए एक बातचीत चुनें",
+    "newMessage": "नया संदेश",
+    "title": "संदेश"
   }
 }
