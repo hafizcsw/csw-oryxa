@@ -29,7 +29,7 @@ const STATUS_COLORS = {
   weak: 'text-red-500 bg-red-500/10',
 };
 
-export function DecisionPanel({ decision }: DecisionPanelProps) {
+export function DecisionPanel({ decision, requirementsCount = 0, requirementsSource, requirementsProgramName }: DecisionPanelProps) {
   const { t } = useLanguage();
   const d = decision;
 
