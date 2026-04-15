@@ -233,7 +233,7 @@ export function UniversityCard({ university }: UniversityCardProps) {
         <div className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/8 to-amber-500/4 border border-amber-500/15">
           <Sparkles className="w-3.5 h-3.5 text-amber-500" />
           <span className="text-[10px] font-bold tracking-widest text-amber-500 uppercase">{t("orx.brandName")}</span>
-          <span className="text-[10px] text-muted-foreground">{t("orx.evaluating.title")}</span>
+          <span className="text-[10px] text-muted-foreground">{t("orx.card.evaluating.title")}</span>
         </div>
       </div>
 
