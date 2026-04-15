@@ -170,6 +170,18 @@ export function useDocumentAnalysis({
     return analyses.find(a => a.document_id === documentId);
   }, [analyses]);
 
+  const dismissAnalysis = useCallback((documentId: string) => {
+    setAnalyses(prev => prev.filter(a => a.document_id !== documentId));
+    setProposals(prev => prev.filter(p => p.document_id !== documentId));
+    setPromotedFields(prev => prev.filter(pf => pf.documentId !== documentId));
+  }, []);
+
+  const clearAllAnalyses = useCallback(() => {
+    setAnalyses([]);
+    setProposals([]);
+    setPromotedFields([]);
+  }, []);
+
   return {
     analyses,
     proposals,
@@ -180,5 +192,7 @@ export function useDocumentAnalysis({
     rejectProposal,
     getProposalsForDocument,
     getAnalysis,
+    dismissAnalysis,
+    clearAllAnalyses,
   };
 }

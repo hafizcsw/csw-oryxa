@@ -6,7 +6,7 @@
 // No report. No eligibility. No improvement plan.
 // ═══════════════════════════════════════════════════════════════
 
-import { CheckCircle2, XCircle, Clock, AlertTriangle, FileSearch, Loader2, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, AlertTriangle, FileSearch, Loader2, ShieldCheck, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -21,6 +21,8 @@ interface DocumentAnalysisPanelProps {
   isAnalyzing: boolean;
   onAcceptProposal: (proposalId: string) => void;
   onRejectProposal: (proposalId: string) => void;
+  onDismissAnalysis?: (documentId: string) => void;
+  onClearAll?: () => void;
 }
 
 function proposalStatusIcon(status: ProposalStatus) {
@@ -56,6 +58,8 @@ export function DocumentAnalysisPanel({
   isAnalyzing,
   onAcceptProposal,
   onRejectProposal,
+  onDismissAnalysis,
+  onClearAll,
 }: DocumentAnalysisPanelProps) {
   const { t } = useLanguage();
 
@@ -78,18 +82,31 @@ export function DocumentAnalysisPanel({
   return (
     <div className="space-y-3" data-door3-consumer="analysis-panel">
       {/* Summary strip */}
-      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-        <FileSearch className="h-4 w-4" />
-        <span>{t('portal.analysis.documents_analyzed')}: {analyses.length}</span>
-        {isAnalyzing && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
-        <span className="text-emerald-500">{totalAccepted} {t('portal.analysis.accepted')}</span>
-        <span className="text-amber-500">{totalPending} {t('portal.analysis.pending')}</span>
-        <span className="text-destructive">{totalRejected} {t('portal.analysis.rejected')}</span>
-        {totalPromoted > 0 && (
-          <span className="flex items-center gap-1 text-primary font-medium">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            {totalPromoted} in canonical truth
-          </span>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <FileSearch className="h-4 w-4" />
+          <span>{t('portal.analysis.documents_analyzed')}: {analyses.length}</span>
+          {isAnalyzing && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
+          <span className="text-emerald-500">{totalAccepted} {t('portal.analysis.accepted')}</span>
+          <span className="text-amber-500">{totalPending} {t('portal.analysis.pending')}</span>
+          <span className="text-destructive">{totalRejected} {t('portal.analysis.rejected')}</span>
+          {totalPromoted > 0 && (
+            <span className="flex items-center gap-1 text-primary font-medium">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              {totalPromoted} in canonical truth
+            </span>
+          )}
+        </div>
+        {onClearAll && analyses.length > 0 && !isAnalyzing && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs text-muted-foreground hover:text-destructive gap-1"
+            onClick={onClearAll}
+          >
+            <Trash2 className="h-3 w-3" />
+            {t('portal.analysis.clear_all')}
+          </Button>
         )}
       </div>
 
@@ -123,7 +140,6 @@ export function DocumentAnalysisPanel({
                   <span className="text-[10px] text-muted-foreground font-mono">
                     {(analysis.classification_confidence * 100).toFixed(0)}%
                   </span>
-                  {/* Image limitation notice */}
                   {analysis.parser_type === 'filename_only' && analysis.readability_status === 'unknown' && (
                     <span className="text-[9px] text-amber-500 italic">
                       filename only — no OCR
@@ -140,6 +156,16 @@ export function DocumentAnalysisPanel({
                     <Badge variant="outline" className="text-[9px]">
                       {analysis.usefulness_status}
                     </Badge>
+                  )}
+                  {onDismissAnalysis && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5 text-muted-foreground hover:text-destructive"
+                      onClick={() => onDismissAnalysis(analysis.document_id)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
                   )}
                 </div>
               </div>
