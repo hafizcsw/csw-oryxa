@@ -97,6 +97,10 @@ export function CentralUploadHub({
   ).length;
 
   const hasActiveRecords = records.length > 0;
+  const isProcessing = isUploading || records.some(r =>
+    r.processing_status === 'uploading' || r.processing_status === 'confirming'
+  );
+  const isActive = isDragOver || isProcessing;
 
   return (
     <div className="space-y-3" data-door2-consumer="upload-hub">
@@ -107,47 +111,122 @@ export function CentralUploadHub({
         onDrop={handleDrop}
         onClick={() => !disabled && fileInputRef.current?.click()}
         className={cn(
-          'relative flex flex-col items-center justify-center cursor-pointer transition-all group',
+          'relative flex flex-col items-center justify-center cursor-pointer transition-all group py-4',
           disabled && 'opacity-50 cursor-not-allowed',
         )}
       >
-        {/* Brain image as upload zone */}
+        {/* Brain container with neural effects */}
         <div className={cn(
-          'relative w-40 h-40 transition-transform duration-300 flex items-center justify-center',
-          isDragOver && 'scale-110',
+          'relative w-44 h-44 transition-transform duration-500 flex items-center justify-center',
+          isActive && 'scale-105',
         )}>
+          {/* Outer pulse rings when processing */}
+          {isProcessing && (
+            <>
+              <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-ping" style={{ animationDuration: '2s' }} />
+              <div className="absolute inset-2 rounded-full border border-primary/15 animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
+            </>
+          )}
+
+          {/* Neural connection lines — visible when processing */}
+          {isProcessing && (
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 200">
+              {/* Animated signal paths flowing into brain center */}
+              {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => {
+                const rad = (angle * Math.PI) / 180;
+                const x1 = 100 + Math.cos(rad) * 95;
+                const y1 = 100 + Math.sin(rad) * 95;
+                const x2 = 100 + Math.cos(rad) * 35;
+                const y2 = 100 + Math.sin(rad) * 35;
+                return (
+                  <g key={angle}>
+                    <line x1={x1} y1={y1} x2={x2} y2={y2}
+                      stroke="hsl(var(--primary))" strokeWidth="0.8" opacity="0.3" />
+                    {/* Animated dot traveling along the line */}
+                    <circle r="2.5" fill="hsl(var(--primary))" opacity="0.8">
+                      <animateMotion
+                        dur={`${1.2 + i * 0.15}s`}
+                        repeatCount="indefinite"
+                        path={`M${x1},${y1} L${x2},${y2}`}
+                      />
+                    </circle>
+                  </g>
+                );
+              })}
+              {/* Inner glow */}
+              <circle cx="100" cy="100" r="30" fill="hsl(var(--primary))" opacity="0.06">
+                <animate attributeName="r" values="28;34;28" dur="1.5s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.04;0.1;0.04" dur="1.5s" repeatCount="indefinite" />
+              </circle>
+            </svg>
+          )}
+
+          {/* Drag-over neural sparks */}
+          {isDragOver && !isProcessing && (
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 200">
+              {[30, 90, 150, 210, 270, 330].map((angle) => {
+                const rad = (angle * Math.PI) / 180;
+                const x1 = 100 + Math.cos(rad) * 90;
+                const y1 = 100 + Math.sin(rad) * 90;
+                const x2 = 100 + Math.cos(rad) * 40;
+                const y2 = 100 + Math.sin(rad) * 40;
+                return (
+                  <circle key={angle} r="2" fill="hsl(var(--primary))" opacity="0.6">
+                    <animateMotion
+                      dur="0.8s"
+                      repeatCount="indefinite"
+                      path={`M${x1},${y1} L${x2},${y2}`}
+                    />
+                  </circle>
+                );
+              })}
+            </svg>
+          )}
+
+          {/* Brain image */}
           <img
             src={brainImg}
             alt=""
             className={cn(
-              'w-full h-full object-contain transition-all duration-300 opacity-60 group-hover:opacity-80',
-              isDragOver && 'opacity-100 drop-shadow-[0_0_20px_hsl(var(--primary)/0.5)]',
+              'w-32 h-32 object-contain transition-all duration-500 relative z-10',
+              isActive
+                ? 'opacity-100 drop-shadow-[0_0_24px_hsl(var(--primary)/0.4)]'
+                : 'opacity-50 group-hover:opacity-75 group-hover:drop-shadow-[0_0_12px_hsl(var(--primary)/0.2)]',
             )}
             draggable={false}
             width={512}
             height={512}
             loading="lazy"
           />
-          {/* Upload arrow overlay */}
-          <div className={cn(
-            'absolute inset-0 flex items-center justify-center',
-          )}>
+
+          {/* Center icon overlay */}
+          <div className="absolute inset-0 flex items-center justify-center z-20">
             <div className={cn(
-              'rounded-full p-2.5 bg-background/80 border-2 border-primary/40 transition-all duration-300',
-              isDragOver && 'border-primary bg-background animate-pulse scale-110',
+              'rounded-full transition-all duration-300',
+              isProcessing
+                ? 'p-2 bg-primary/10 border border-primary/30'
+                : 'p-2.5 bg-background/70 border-2 border-primary/30 group-hover:border-primary/50',
+              isDragOver && !isProcessing && 'border-primary bg-background/90 scale-110',
             )}>
-              <Upload className={cn('h-5 w-5 text-primary transition-colors', isDragOver && 'text-primary')} />
+              {isProcessing ? (
+                <Loader2 className="h-5 w-5 text-primary animate-spin" />
+              ) : (
+                <Upload className={cn(
+                  'h-5 w-5 transition-colors',
+                  isDragOver ? 'text-primary' : 'text-primary/60 group-hover:text-primary',
+                )} />
+              )}
             </div>
           </div>
         </div>
 
         {/* Label below brain */}
-        <div className="text-center mt-1">
+        <div className="text-center mt-2">
           <p className={cn(
             'text-sm font-medium transition-colors',
-            isDragOver ? 'text-primary' : 'text-foreground',
+            isProcessing ? 'text-primary' : isDragOver ? 'text-primary' : 'text-foreground',
           )}>
-            {t('portal.uploadHub.dropzone_title')}
+            {isProcessing ? t('portal.uploadHub.in_progress') : t('portal.uploadHub.dropzone_title')}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
             {t('portal.uploadHub.dropzone_subtitle')}
