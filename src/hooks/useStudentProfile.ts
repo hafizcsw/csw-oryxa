@@ -119,6 +119,9 @@ export function useStudentProfile() {
 
       // Call student-portal-api Edge Function to get profile from CRM
       // CRM is the ONLY source of truth - no local fallback
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+      
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/student-portal-api`, {
         method: 'POST',
         headers: {
@@ -126,7 +129,9 @@ export function useStudentProfile() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ action: 'get_profile' }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const result = await res.json();
 
