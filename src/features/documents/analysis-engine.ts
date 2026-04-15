@@ -169,6 +169,11 @@ export async function analyzeDocument(params: {
       `Evidence: ${classification.evidence.join(', ')}`,
     ].join(' | ');
 
+    // Store text content for downstream use (e.g. transcript subject parsing)
+    if (textContent.trim().length > 0) {
+      analysis.text_content = textContent;
+    }
+
     analysis.analysis_status = 'completed';
     analysis.updated_at = new Date().toISOString();
 
