@@ -178,24 +178,9 @@ export function useStudentProfile() {
       // Handle case where profile returned but no linked customer
       if (result.data?.error === 'no_linked_customer' || result.data?.success === false) {
         console.warn('[useStudentProfile] ⚠️ No linked customer detected - setting error for UI banner');
-        
-        // ✅ Set error for UI to display re-link banner
         setError('no_linked_customer');
-        
-        // Create minimal profile from auth session for display
-        const minimalProfile: StudentProfile = {
-          user_id: userId,
-          full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || null,
-          email: session.user.email || null,
-          phone: session.user.phone || null,
-          national_id: null,
-          city: null,
-          country: null,
-          avatar_storage_path: null,
-          student_substage: null,
-          student_progress: 0,
-        };
-        setProfile(minimalProfile);
+        const localProfile = await loadLocalProfile();
+        setProfile(localProfile);
         setCrmProfile(null);
         return;
       }
