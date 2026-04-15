@@ -352,20 +352,18 @@ export function ProgramCard({ p, compact }: { p: ProgramCardData; compact?: bool
       )}
 
       {/* CTA - Intelligence */}
-      <div className="p-4 pt-2 mt-auto border-t border-border/50">
+      <div className="p-4 pt-2 mt-auto border-t border-border/50 flex items-center justify-end">
         <ProgramInsightSheet
           programId={p.program_id}
           programName={displayProgramName || ''}
           universityId={p.university_id || null}
         >
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full gap-2 text-xs font-bold hover:bg-primary hover:text-primary-foreground transition-colors rounded-xl h-9"
+          <button
+            className="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-all hover:scale-110 group/orx"
+            title={t("insight.viewInsight")}
           >
-            <Brain className="w-3.5 h-3.5" />
-            {t("insight.viewInsight")}
-          </Button>
+            <Brain className="w-4 h-4 text-primary group-hover/orx:animate-pulse" />
+          </button>
         </ProgramInsightSheet>
       </div>
     </div>
