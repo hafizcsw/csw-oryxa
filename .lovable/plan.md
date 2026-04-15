@@ -1,41 +1,33 @@
 
 
-## Plan: Fix ORX Analysis Modal — Proper Layout & Live Feel
+## Plan: Widen ORX Analysis Modal & Use Full Space
 
-**Problem**: The modal has excessive unused space, cramped/overlapping elements, and feels static/lifeless. The information hierarchy is poor — scores, text, and sections are awkwardly sized.
+**Problem**: The modal is locked at `max-w-[440px]` — a narrow column that wastes most of the screen, cramming all information into a tiny strip. On a 1529px viewport, this uses less than 30% of available width.
 
 ### Changes to `src/components/programs/ProgramInsightSheet.tsx`
 
-**1. Fix layout and spacing**
-- Change `max-w-[420px]` → `max-w-md` (448px) and set `max-h-[85vh]`
-- Replace the single `px-4 py-3` body wrapper with tighter per-section spacing
-- Scores section: increase sub-score card size slightly, use `grid-cols-3` on mobile / `grid-cols-4` on wider, add proper internal padding
-- Remove tiny 8px/9px/10px font sizes — minimum 11px for readability, section headers 12px
+**1. Widen the modal to use available space**
+- Change `max-w-[440px]` → `max-w-2xl` (672px) — uses ~44% of the viewport, balanced and readable
+- This gives room for proper 2-column layouts inside
 
-**2. Redesign score visualization**
-- Main score: large centered circular badge at top (48×48 rounded-full with score inside, colored border based on score tier)
-- Sub-scores: clean horizontal rows instead of grid — icon + label on left, score on right, with a subtle progress-bar-like colored accent
-- This eliminates the cramped 4-col grid that wastes vertical space while being unreadable
+**2. Redesign content layout to use the wider space**
+- **Scores section**: Main score on the left, sub-scores grid (`grid-cols-4`) on the right — side by side instead of stacked
+- **Strengths & Weaknesses**: Already 2-column but now with proper breathing room at the wider width
+- **Summary + Future Outlook**: Side by side — summary takes 2/3, outlook takes 1/3
+- **Career Paths**: Horizontal wrap with larger badges now that there's room
 
-**3. Improve section hierarchy**
-- Add subtle section dividers (`border-b border-border/20`) between major sections
-- Strengths/Weaknesses: proper padding, readable 11px text, green/amber left-border accent instead of tiny dots
-- Summary: give it breathing room with `py-3`
-- Career paths: larger badges with proper padding
+**3. Fix font sizes — nothing below 11px**
+- Remove all `text-[9px]` and `text-[10px]` instances → minimum `text-[11px]`
+- Sub-score labels: `text-[11px]`, score values: `text-sm` (14px)
+- Section headers: `text-xs` (12px) bold
+- Career badges: `text-[11px]`
 
-**4. Add life/animation**
-- Score numbers: `animate-in fade-in` on load
-- Sections: staggered fade-in using `animation-delay`
-- Main score circle: subtle pulse on first appearance
-- Scrollable body with smooth scroll behavior
+**4. Better spacing and visual hierarchy**
+- Body padding: `px-5 py-4` instead of `px-4 py-3`
+- Gap between sections: `space-y-4` instead of `space-y-3`
+- Sub-score cards: slightly taller with `py-2.5`
 
-**5. Fix "Ask Oryxa" button area**
-- Make it sticky at bottom with a gradient fade overlay above it
-- Full-width gradient button with proper size (`h-10`)
-
-### No changes needed
-- Data fetching logic stays the same
-- `handleAskOryxa` logic stays (already working)
-- ProgramCard Brain icon trigger stays as-is
-- No new locale keys (all existing keys reused)
+### No changes
+- Data fetching, `handleAskOryxa`, chat handoff logic — all stay as-is
+- No new locale keys
 
