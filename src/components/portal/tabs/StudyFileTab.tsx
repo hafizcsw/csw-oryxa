@@ -2,8 +2,6 @@ import { lazy, Suspense } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FolderOpen } from "lucide-react";
 import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
-import { FileQualityGapList } from "@/components/file-quality/FileQualityGapList";
-import { FileQualityGate } from "@/components/file-quality/FileQualityGate";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AccountContentHeader } from "@/components/portal/account/AccountContentHeader";
@@ -49,17 +47,8 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       {/* 1. File Quality */}
       {fileQuality && (
         <section>
-          <h2 className="text-base font-semibold text-foreground mb-3">{t('portal.studyFile.quality')}</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <FileQualityCard result={fileQuality} />
-            <div className="space-y-3">
-              <FileQualityGate gates={fileQuality.gates} />
-              <FileQualityGapList
-                blockingGaps={fileQuality.blocking_gaps}
-                improvementGaps={fileQuality.improvement_gaps}
-              />
-            </div>
-          </div>
+          <h2 className="text-sm font-semibold text-foreground mb-2">{t('portal.studyFile.quality')}</h2>
+          <FileQualityCard result={fileQuality} />
         </section>
       )}
 
