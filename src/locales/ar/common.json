@@ -1355,6 +1355,14 @@
       "status_upload_failed": "فشل",
       "status_cancelled": "ملغى"
     },
+    "analysis": {
+      "title": "تحليل المستندات",
+      "documents_analyzed": "المستندات المحللة",
+      "accepted": "مقبول",
+      "pending": "قيد المراجعة",
+      "rejected": "مرفوض",
+      "no_fields_extracted": "لم يتم استخراج أي حقول من هذا المستند"
+    },
     "nav": {
       "sections": "الأقسام"
     },
