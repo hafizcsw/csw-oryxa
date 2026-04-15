@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════
 // CentralUploadHub — Door 2: AI Brain Upload Zone
 // ═══════════════════════════════════════════════════════════════
-// Documents flow into a central brain — animated neural paths
-// show data being "analyzed" during upload/processing.
+// Documents dynamically appear around the brain based on actual
+// upload count. Each file gets its own document icon + flow path.
 // ═══════════════════════════════════════════════════════════════
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { Upload, FileUp, X, CheckCircle2, AlertCircle, Loader2, Clock, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -47,12 +47,128 @@ function statusLabel(status: ProcessingStatus, t: (key: string) => string): stri
   return t(`portal.uploadHub.status_${status}`);
 }
 
-/** Inline SVG brain with document-flow animation */
-function BrainScene({ isActive, isProcessing, isDragOver }: { isActive: boolean; isProcessing: boolean; isDragOver: boolean }) {
+// ── Positions for documents around the brain ──
+// Distribute documents in a semicircle on both sides
+function getDocPositions(count: number): Array<{ x: number; y: number; side: 'left' | 'right' }> {
+  if (count === 0) return [];
+  const positions: Array<{ x: number; y: number; side: 'left' | 'right' }> = [];
+  const brainCx = 300, brainCy = 150;
+  const radius = 170;
+
+  // Distribute evenly around, alternating left/right
+  // Angles: spread from top-left to bottom-left, then top-right to bottom-right
+  const leftSlots = Math.ceil(count / 2);
+  const rightSlots = Math.floor(count / 2);
+
+  // Left side: angles from 150° to 210° (spread around 180°)
+  for (let i = 0; i < leftSlots; i++) {
+    const spread = Math.min(80, leftSlots > 1 ? 80 : 0);
+    const baseAngle = 180;
+    const offset = leftSlots > 1 ? (i / (leftSlots - 1) - 0.5) * spread : 0;
+    const angle = (baseAngle + offset) * Math.PI / 180;
+    positions.push({
+      x: brainCx + Math.cos(angle) * radius,
+      y: brainCy + Math.sin(angle) * (radius * 0.6),
+      side: 'left',
+    });
+  }
+
+  // Right side: angles around 0°
+  for (let i = 0; i < rightSlots; i++) {
+    const spread = Math.min(80, rightSlots > 1 ? 80 : 0);
+    const baseAngle = 0;
+    const offset = rightSlots > 1 ? (i / (rightSlots - 1) - 0.5) * spread : 0;
+    const angle = (baseAngle + offset) * Math.PI / 180;
+    positions.push({
+      x: brainCx + Math.cos(angle) * radius,
+      y: brainCy + Math.sin(angle) * (radius * 0.6),
+      side: 'right',
+    });
+  }
+
+  return positions;
+}
+
+// ── Mini document icon SVG ──
+function MiniDoc({ x, y, status, name, index }: {
+  x: number; y: number; status: ProcessingStatus; name: string; index: number;
+}) {
+  const w = 50, h = 62;
+  const dx = x - w / 2, dy = y - h / 2;
+  const isActive = status === 'uploading' || status === 'confirming';
+  const isDone = status === 'registered';
+  const isFailed = status === 'upload_failed';
+  const cornerSize = 12;
+
   return (
-    <svg viewBox="0 0 600 300" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+    <g>
+      {/* Document shadow/glow */}
+      {isActive && (
+        <rect x={dx - 2} y={dy - 2} width={w + 4} height={h + 4} rx="5"
+          fill="hsl(var(--primary))" opacity="0.15" filter="url(#softGlow)">
+          <animate attributeName="opacity" values="0.1;0.2;0.1" dur="1.5s" repeatCount="indefinite" />
+        </rect>
+      )}
+
+      {/* Document body */}
+      <rect x={dx} y={dy} width={w} height={h} rx="3"
+        fill="hsl(var(--card))"
+        stroke={isDone ? 'hsl(142 71% 45%)' : isFailed ? 'hsl(var(--destructive))' : isActive ? 'hsl(var(--primary))' : 'hsl(var(--border))'}
+        strokeWidth={isActive ? 1.5 : 1}
+      />
+      {/* Folded corner */}
+      <path d={`M${dx + w - cornerSize} ${dy} L${dx + w} ${dy} L${dx + w} ${dy + cornerSize} Z`}
+        fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.5" />
+
+      {/* Text lines */}
+      <rect x={dx + 6} y={dy + 10} width={w * 0.5} height="3" rx="1" fill="hsl(var(--muted-foreground))" opacity="0.3" />
+      <rect x={dx + 6} y={dy + 18} width={w * 0.7} height="2.5" rx="1" fill="hsl(var(--muted-foreground))" opacity="0.2" />
+      <rect x={dx + 6} y={dy + 24} width={w * 0.55} height="2.5" rx="1" fill="hsl(var(--muted-foreground))" opacity="0.15" />
+      <rect x={dx + 6} y={dy + 30} width={w * 0.65} height="2.5" rx="1" fill="hsl(var(--muted-foreground))" opacity="0.15" />
+      <rect x={dx + 6} y={dy + 38} width={w * 0.4} height="4" rx="1"
+        fill={isDone ? 'hsl(142 71% 45%)' : 'hsl(var(--primary))'} opacity="0.3" />
+      <rect x={dx + 6} y={dy + 47} width={w * 0.6} height="2.5" rx="1" fill="hsl(var(--muted-foreground))" opacity="0.12" />
+
+      {/* Status indicator */}
+      {isDone && (
+        <circle cx={dx + w - 5} cy={dy + h - 5} r="6" fill="hsl(142 71% 45%)" opacity="0.9">
+          <animate attributeName="r" values="5;7;5" dur="0.6s" repeatCount="1" />
+        </circle>
+      )}
+      {isDone && (
+        <path d={`M${dx + w - 8} ${dy + h - 5} L${dx + w - 5.5} ${dy + h - 3} L${dx + w - 2.5} ${dy + h - 7.5}`}
+          fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      )}
+      {isFailed && (
+        <circle cx={dx + w - 5} cy={dy + h - 5} r="5" fill="hsl(var(--destructive))" opacity="0.9" />
+      )}
+
+      {/* File name (truncated) */}
+      <text x={x} y={dy + h + 11} textAnchor="middle" fontSize="7" fill="hsl(var(--muted-foreground))" opacity="0.7">
+        {name.length > 10 ? name.slice(0, 8) + '…' : name}
+      </text>
+    </g>
+  );
+}
+
+/** Inline SVG brain with dynamic document positions */
+function BrainScene({ records, isProcessing, isDragOver }: {
+  records: DocumentRecord[];
+  isProcessing: boolean;
+  isDragOver: boolean;
+}) {
+  const isActive = isDragOver || isProcessing || records.length > 0;
+  const activeRecords = records.filter(r =>
+    r.processing_status !== 'cancelled'
+  );
+
+  const docPositions = useMemo(() => getDocPositions(activeRecords.length), [activeRecords.length]);
+
+  const brainCx = 300, brainCy = 150;
+
+  return (
+    <svg viewBox="0 0 600 320" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        {/* Brain gradient */}
         <linearGradient id="brainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.15" />
           <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.25" />
@@ -62,129 +178,99 @@ function BrainScene({ isActive, isProcessing, isDragOver }: { isActive: boolean;
           <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
           <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
         </linearGradient>
-        {/* Glow filter */}
         <filter id="glow">
           <feGaussianBlur stdDeviation="3" result="blur" />
           <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
         <filter id="softGlow">
-          <feGaussianBlur stdDeviation="6" result="blur" />
+          <feGaussianBlur stdDeviation="5" result="blur" />
           <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
       </defs>
 
-      {/* ===== LEFT DOCUMENT ===== */}
-      <g className={cn('transition-all duration-500', isActive ? 'opacity-100' : 'opacity-40')}>
-        {/* Document page */}
-        <rect x="30" y="60" width="120" height="160" rx="4" fill="hsl(var(--card))" stroke="hsl(var(--border))" strokeWidth="1.5" />
-        {/* Folded corner */}
-        <path d="M120 60 L150 60 L150 90 L120 60Z" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="1" />
-        {/* Text lines */}
-        <rect x="45" y="80" width="60" height="5" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.3" />
-        <rect x="45" y="95" width="80" height="4" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.2" />
-        <rect x="45" y="107" width="70" height="4" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.2" />
-        <rect x="45" y="119" width="85" height="4" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.15" />
-        <rect x="45" y="131" width="50" height="4" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.15" />
-        <rect x="45" y="148" width="40" height="8" rx="2" fill="hsl(var(--primary))" opacity="0.3" />
-        <rect x="45" y="165" width="75" height="4" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.15" />
-        <rect x="45" y="177" width="60" height="4" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.15" />
-        <rect x="45" y="195" width="35" height="8" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.2" />
-      </g>
+      {/* ===== DYNAMIC DOCUMENTS + FLOW LINES ===== */}
+      {activeRecords.map((record, i) => {
+        if (i >= docPositions.length) return null;
+        const pos = docPositions[i];
+        const isRecordActive = record.processing_status === 'uploading' || record.processing_status === 'confirming';
+        const isRecordDone = record.processing_status === 'registered';
 
-      {/* ===== RIGHT DOCUMENT ===== */}
-      <g className={cn('transition-all duration-500', isActive ? 'opacity-100' : 'opacity-40')}>
-        <rect x="450" y="60" width="120" height="160" rx="4" fill="hsl(var(--card))" stroke="hsl(var(--border))" strokeWidth="1.5" />
-        <path d="M540 60 L570 60 L570 90 L540 60Z" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="1" />
-        {/* ID photo placeholder */}
-        <circle cx="530" cy="90" r="10" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.8" />
-        <rect x="465" y="80" width="45" height="5" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.3" />
-        <rect x="465" y="95" width="55" height="4" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.2" />
-        <rect x="465" y="107" width="90" height="4" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.2" />
-        <rect x="465" y="119" width="80" height="4" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.15" />
-        <rect x="465" y="131" width="70" height="4" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.15" />
-        <rect x="465" y="148" width="90" height="4" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.15" />
-        <rect x="465" y="160" width="60" height="4" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.15" />
-        <rect x="465" y="177" width="50" height="8" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.2" />
-      </g>
+        return (
+          <g key={record.document_id}>
+            {/* Flow line: document → brain */}
+            <path
+              d={`M${pos.x},${pos.y} Q${(pos.x + brainCx) / 2},${pos.y * 0.7 + brainCy * 0.3} ${brainCx + (pos.side === 'left' ? -52 : 52)},${brainCy}`}
+              fill="none"
+              stroke={isRecordDone ? 'hsl(142 71% 45%)' : 'hsl(var(--muted-foreground))'}
+              strokeWidth="1.2"
+              opacity={isRecordActive ? 0.5 : 0.25}
+              strokeDasharray={isRecordActive ? "5,5" : isRecordDone ? "none" : "3,6"}
+            >
+              {isRecordActive && (
+                <animate attributeName="stroke-dashoffset" from="10" to="0" dur="0.6s" repeatCount="indefinite" />
+              )}
+            </path>
 
-      {/* ===== FLOW ARROWS: Left doc → Brain ===== */}
-      <g className={cn('transition-opacity duration-300', isActive ? 'opacity-100' : 'opacity-30')}>
-        {/* Arrow lines from left doc to brain */}
-        <path d="M155 110 L220 130" stroke="hsl(var(--muted-foreground))" strokeWidth="1.2" fill="none" opacity="0.4" strokeDasharray={isActive ? "4,4" : "none"}>
-          {isActive && <animate attributeName="stroke-dashoffset" from="8" to="0" dur="0.6s" repeatCount="indefinite" />}
-        </path>
-        <path d="M155 140 L220 145" stroke="hsl(var(--muted-foreground))" strokeWidth="1.2" fill="none" opacity="0.4" strokeDasharray={isActive ? "4,4" : "none"}>
-          {isActive && <animate attributeName="stroke-dashoffset" from="8" to="0" dur="0.5s" repeatCount="indefinite" />}
-        </path>
-        <path d="M155 170 L220 160" stroke="hsl(var(--muted-foreground))" strokeWidth="1.2" fill="none" opacity="0.4" strokeDasharray={isActive ? "4,4" : "none"}>
-          {isActive && <animate attributeName="stroke-dashoffset" from="8" to="0" dur="0.7s" repeatCount="indefinite" />}
-        </path>
-        {/* Arrowheads */}
-        <polygon points="220,127 220,133 228,130" fill="hsl(var(--muted-foreground))" opacity="0.5" />
-        <polygon points="220,142 220,148 228,145" fill="hsl(var(--muted-foreground))" opacity="0.5" />
-        <polygon points="220,157 220,163 228,160" fill="hsl(var(--muted-foreground))" opacity="0.5" />
-      </g>
+            {/* Arrowhead */}
+            {(() => {
+              const ax = brainCx + (pos.side === 'left' ? -48 : 48);
+              const dir = pos.side === 'left' ? 1 : -1;
+              return (
+                <polygon
+                  points={`${ax},${brainCy - 4} ${ax},${brainCy + 4} ${ax + dir * 8},${brainCy}`}
+                  fill={isRecordDone ? 'hsl(142 71% 45%)' : 'hsl(var(--muted-foreground))'}
+                  opacity={isRecordActive ? 0.6 : 0.3}
+                />
+              );
+            })()}
 
-      {/* ===== FLOW ARROWS: Right doc → Brain ===== */}
-      <g className={cn('transition-opacity duration-300', isActive ? 'opacity-100' : 'opacity-30')}>
-        <path d="M445 110 L380 130" stroke="hsl(var(--muted-foreground))" strokeWidth="1.2" fill="none" opacity="0.4" strokeDasharray={isActive ? "4,4" : "none"}>
-          {isActive && <animate attributeName="stroke-dashoffset" from="8" to="0" dur="0.6s" repeatCount="indefinite" />}
-        </path>
-        <path d="M445 140 L380 145" stroke="hsl(var(--muted-foreground))" strokeWidth="1.2" fill="none" opacity="0.4" strokeDasharray={isActive ? "4,4" : "none"}>
-          {isActive && <animate attributeName="stroke-dashoffset" from="8" to="0" dur="0.5s" repeatCount="indefinite" />}
-        </path>
-        <path d="M445 170 L380 160" stroke="hsl(var(--muted-foreground))" strokeWidth="1.2" fill="none" opacity="0.4" strokeDasharray={isActive ? "4,4" : "none"}>
-          {isActive && <animate attributeName="stroke-dashoffset" from="8" to="0" dur="0.7s" repeatCount="indefinite" />}
-        </path>
-        <polygon points="380,127 380,133 372,130" fill="hsl(var(--muted-foreground))" opacity="0.5" />
-        <polygon points="380,142 380,148 372,145" fill="hsl(var(--muted-foreground))" opacity="0.5" />
-        <polygon points="380,157 380,163 372,160" fill="hsl(var(--muted-foreground))" opacity="0.5" />
-      </g>
-
-      {/* ===== ANIMATED DATA PARTICLES (when processing) ===== */}
-      {isProcessing && (
-        <g filter="url(#glow)">
-          {/* Left side particles */}
-          {[0, 1, 2].map(i => (
-            <circle key={`lp${i}`} r="3" fill="hsl(var(--primary))" opacity="0.8">
-              <animateMotion
-                dur={`${1.0 + i * 0.3}s`}
-                repeatCount="indefinite"
-                begin={`${i * 0.3}s`}
-                path={`M155,${110 + i * 30} L${240 + i * 5},${130 + i * 15} L300,150`}
-              />
-              <animate attributeName="r" values="2;4;2" dur={`${1.0 + i * 0.3}s`} repeatCount="indefinite" />
-            </circle>
-          ))}
-          {/* Right side particles */}
-          {[0, 1, 2].map(i => (
-            <circle key={`rp${i}`} r="3" fill="hsl(var(--primary))" opacity="0.8">
-              <animateMotion
-                dur={`${1.1 + i * 0.25}s`}
-                repeatCount="indefinite"
-                begin={`${i * 0.35 + 0.15}s`}
-                path={`M445,${110 + i * 30} L${360 - i * 5},${130 + i * 15} L300,150`}
-              />
-              <animate attributeName="r" values="2;4;2" dur={`${1.1 + i * 0.25}s`} repeatCount="indefinite" />
-            </circle>
-          ))}
-        </g>
-      )}
-
-      {/* ===== DRAG-OVER PARTICLES ===== */}
-      {isDragOver && !isProcessing && (
-        <g filter="url(#glow)">
-          {[0, 1, 2, 3].map(i => {
-            const fromLeft = i < 2;
-            const startX = fromLeft ? 155 : 445;
-            const startY = 110 + (i % 2) * 50;
-            return (
-              <circle key={`dp${i}`} r="3.5" fill="hsl(var(--primary))" opacity="0.7">
+            {/* Animated particle along the path */}
+            {isRecordActive && (
+              <circle r="3.5" fill="hsl(var(--primary))" opacity="0.85" filter="url(#glow)">
                 <animateMotion
-                  dur="0.8s"
+                  dur={`${1.0 + (i % 3) * 0.2}s`}
                   repeatCount="indefinite"
-                  begin={`${i * 0.2}s`}
-                  path={`M${startX},${startY} L300,150`}
+                  begin={`${i * 0.15}s`}
+                  path={`M${pos.x},${pos.y} Q${(pos.x + brainCx) / 2},${pos.y * 0.7 + brainCy * 0.3} ${brainCx + (pos.side === 'left' ? -52 : 52)},${brainCy}`}
+                />
+                <animate attributeName="r" values="2;4;2" dur="0.8s" repeatCount="indefinite" />
+              </circle>
+            )}
+
+            {/* Done particle burst */}
+            {isRecordDone && (
+              <circle cx={brainCx + (pos.side === 'left' ? -45 : 45)} cy={brainCy} r="3" fill="hsl(142 71% 45%)" opacity="0.5">
+                <animate attributeName="r" values="3;8;0" dur="1s" repeatCount="1" fill="freeze" />
+                <animate attributeName="opacity" values="0.6;0.2;0" dur="1s" repeatCount="1" fill="freeze" />
+              </circle>
+            )}
+
+            {/* Mini document icon */}
+            <MiniDoc
+              x={pos.x}
+              y={pos.y}
+              status={record.processing_status}
+              name={record.original_file_name}
+              index={i}
+            />
+          </g>
+        );
+      })}
+
+      {/* ===== DRAG-OVER floating particles (no files yet) ===== */}
+      {isDragOver && activeRecords.length === 0 && (
+        <g filter="url(#glow)">
+          {[150, 210, 330, 30].map((angle, i) => {
+            const rad = (angle * Math.PI) / 180;
+            const startX = brainCx + Math.cos(rad) * 170;
+            const startY = brainCy + Math.sin(rad) * 100;
+            return (
+              <circle key={`dp${i}`} r="4" fill="hsl(var(--primary))" opacity="0.6">
+                <animateMotion
+                  dur="1s"
+                  repeatCount="indefinite"
+                  begin={`${i * 0.25}s`}
+                  path={`M${startX},${startY} L${brainCx},${brainCy}`}
                 />
               </circle>
             );
@@ -193,84 +279,71 @@ function BrainScene({ isActive, isProcessing, isDragOver }: { isActive: boolean;
       )}
 
       {/* ===== CENTRAL BRAIN ===== */}
-      <g className={cn('transition-all duration-500', isActive && 'drop-shadow-lg')}>
+      <g>
         {/* Brain glow when active */}
-        {isActive && (
-          <ellipse cx="300" cy="145" rx="55" ry="50" fill="hsl(var(--primary))" opacity="0.08" filter="url(#softGlow)">
-            <animate attributeName="opacity" values="0.05;0.12;0.05" dur="2s" repeatCount="indefinite" />
+        {(isActive || isDragOver) && (
+          <ellipse cx={brainCx} cy={brainCy} rx="58" ry="52" fill="hsl(var(--primary))" opacity="0.07" filter="url(#softGlow)">
+            <animate attributeName="opacity" values="0.04;0.12;0.04" dur="2s" repeatCount="indefinite" />
           </ellipse>
         )}
 
         {/* Brain — Left hemisphere */}
         <path
-          d="M300 95 
-             C290 93 275 95 265 105
-             C255 115 248 125 248 140
-             C248 155 252 165 260 175
-             C268 185 280 192 290 195
-             C295 197 298 198 300 198"
+          d={`M${brainCx} ${brainCy - 55}
+             C${brainCx - 10} ${brainCy - 57} ${brainCx - 25} ${brainCy - 55} ${brainCx - 35} ${brainCy - 45}
+             C${brainCx - 45} ${brainCy - 35} ${brainCx - 52} ${brainCy - 25} ${brainCx - 52} ${brainCy - 10}
+             C${brainCx - 52} ${brainCy + 5} ${brainCx - 48} ${brainCy + 15} ${brainCx - 40} ${brainCy + 25}
+             C${brainCx - 32} ${brainCy + 35} ${brainCx - 20} ${brainCy + 42} ${brainCx - 10} ${brainCy + 45}
+             C${brainCx - 5} ${brainCy + 47} ${brainCx - 2} ${brainCy + 48} ${brainCx} ${brainCy + 48}`}
           fill="url(#brainGrad)" stroke="url(#brainStroke)" strokeWidth="2" strokeLinejoin="round"
         />
-        {/* Left hemisphere folds/sulci */}
-        <path d="M268 115 C275 120 280 118 288 112" fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.3" />
-        <path d="M258 135 C268 130 278 132 290 128" fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.25" />
-        <path d="M255 150 C265 148 278 152 295 145" fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.2" />
-        <path d="M260 168 C270 163 282 167 295 162" fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.2" />
-        <path d="M272 182 C280 178 290 180 298 176" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.8" opacity="0.15" />
+        {/* Left sulci */}
+        <path d={`M${brainCx - 32} ${brainCy - 35} C${brainCx - 25} ${brainCy - 30} ${brainCx - 20} ${brainCy - 32} ${brainCx - 12} ${brainCy - 38}`} fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.3" />
+        <path d={`M${brainCx - 42} ${brainCy - 15} C${brainCx - 32} ${brainCy - 20} ${brainCx - 22} ${brainCy - 18} ${brainCx - 10} ${brainCy - 22}`} fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.25" />
+        <path d={`M${brainCx - 45} ${brainCy} C${brainCx - 35} ${brainCy - 2} ${brainCx - 22} ${brainCy + 2} ${brainCx - 5} ${brainCy - 5}`} fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.2" />
+        <path d={`M${brainCx - 40} ${brainCy + 18} C${brainCx - 30} ${brainCy + 13} ${brainCx - 18} ${brainCy + 17} ${brainCx - 5} ${brainCy + 12}`} fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.2" />
+        <path d={`M${brainCx - 28} ${brainCy + 32} C${brainCx - 20} ${brainCy + 28} ${brainCx - 10} ${brainCy + 30} ${brainCx - 2} ${brainCy + 26}`} fill="none" stroke="hsl(var(--primary))" strokeWidth="0.8" opacity="0.15" />
 
         {/* Brain — Right hemisphere */}
         <path
-          d="M300 95 
-             C310 93 325 95 335 105
-             C345 115 352 125 352 140
-             C352 155 348 165 340 175
-             C332 185 320 192 310 195
-             C305 197 302 198 300 198"
+          d={`M${brainCx} ${brainCy - 55}
+             C${brainCx + 10} ${brainCy - 57} ${brainCx + 25} ${brainCy - 55} ${brainCx + 35} ${brainCy - 45}
+             C${brainCx + 45} ${brainCy - 35} ${brainCx + 52} ${brainCy - 25} ${brainCx + 52} ${brainCy - 10}
+             C${brainCx + 52} ${brainCy + 5} ${brainCx + 48} ${brainCy + 15} ${brainCx + 40} ${brainCy + 25}
+             C${brainCx + 32} ${brainCy + 35} ${brainCx + 20} ${brainCy + 42} ${brainCx + 10} ${brainCy + 45}
+             C${brainCx + 5} ${brainCy + 47} ${brainCx + 2} ${brainCy + 48} ${brainCx} ${brainCy + 48}`}
           fill="url(#brainGrad)" stroke="url(#brainStroke)" strokeWidth="2" strokeLinejoin="round"
         />
-        {/* Right hemisphere folds */}
-        <path d="M332 115 C325 120 320 118 312 112" fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.3" />
-        <path d="M342 135 C332 130 322 132 310 128" fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.25" />
-        <path d="M345 150 C335 148 322 152 305 145" fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.2" />
-        <path d="M340 168 C330 163 318 167 305 162" fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.2" />
-        <path d="M328 182 C320 178 310 180 302 176" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.8" opacity="0.15" />
+        {/* Right sulci */}
+        <path d={`M${brainCx + 32} ${brainCy - 35} C${brainCx + 25} ${brainCy - 30} ${brainCx + 20} ${brainCy - 32} ${brainCx + 12} ${brainCy - 38}`} fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.3" />
+        <path d={`M${brainCx + 42} ${brainCy - 15} C${brainCx + 32} ${brainCy - 20} ${brainCx + 22} ${brainCy - 18} ${brainCx + 10} ${brainCy - 22}`} fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.25" />
+        <path d={`M${brainCx + 45} ${brainCy} C${brainCx + 35} ${brainCy - 2} ${brainCx + 22} ${brainCy + 2} ${brainCx + 5} ${brainCy - 5}`} fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.2" />
+        <path d={`M${brainCx + 40} ${brainCy + 18} C${brainCx + 30} ${brainCy + 13} ${brainCx + 18} ${brainCy + 17} ${brainCx + 5} ${brainCy + 12}`} fill="none" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.2" />
+        <path d={`M${brainCx + 28} ${brainCy + 32} C${brainCx + 20} ${brainCy + 28} ${brainCx + 10} ${brainCy + 30} ${brainCx + 2} ${brainCy + 26}`} fill="none" stroke="hsl(var(--primary))" strokeWidth="0.8" opacity="0.15" />
 
         {/* Central dividing line */}
-        <line x1="300" y1="97" x2="300" y2="196" stroke="hsl(var(--primary))" strokeWidth="1.5" opacity="0.2" />
+        <line x1={brainCx} y1={brainCy - 53} x2={brainCx} y2={brainCy + 46} stroke="hsl(var(--primary))" strokeWidth="1.5" opacity="0.15" />
 
         {/* Brain stem */}
         <path
-          d="M295 195 C295 205 293 215 290 225 M305 195 C305 205 307 215 310 225"
-          fill="none" stroke="url(#brainStroke)" strokeWidth="1.5" opacity="0.5"
+          d={`M${brainCx - 5} ${brainCy + 45} C${brainCx - 5} ${brainCy + 55} ${brainCx - 7} ${brainCy + 65} ${brainCx - 10} ${brainCy + 75}
+              M${brainCx + 5} ${brainCy + 45} C${brainCx + 5} ${brainCy + 55} ${brainCx + 7} ${brainCy + 65} ${brainCx + 10} ${brainCy + 75}`}
+          fill="none" stroke="url(#brainStroke)" strokeWidth="1.5" opacity="0.4"
         />
 
         {/* Neural sparkle at center when active */}
-        {isActive && (
+        {(isActive || isDragOver) && (
           <g>
-            <circle cx="300" cy="145" r="4" fill="hsl(var(--primary))" opacity="0.6">
-              <animate attributeName="r" values="3;6;3" dur="1.2s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.2s" repeatCount="indefinite" />
+            <circle cx={brainCx} cy={brainCy} r="4" fill="hsl(var(--primary))" opacity="0.5">
+              <animate attributeName="r" values="3;7;3" dur="1.5s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.3;0.7;0.3" dur="1.5s" repeatCount="indefinite" />
             </circle>
-            {/* Small sparkle dots */}
-            {[0, 60, 120, 180, 240, 300].map(angle => {
-              const r = 20;
+            {[0, 72, 144, 216, 288].map(angle => {
               const rad = (angle * Math.PI) / 180;
               return (
-                <circle
-                  key={angle}
-                  cx={300 + Math.cos(rad) * r}
-                  cy={145 + Math.sin(rad) * r}
-                  r="1.5"
-                  fill="hsl(var(--primary))"
-                  opacity="0.5"
-                >
-                  <animate
-                    attributeName="opacity"
-                    values="0.2;0.7;0.2"
-                    dur="1.5s"
-                    begin={`${angle / 360}s`}
-                    repeatCount="indefinite"
-                  />
+                <circle key={angle} cx={brainCx + Math.cos(rad) * 22} cy={brainCy + Math.sin(rad) * 22}
+                  r="1.5" fill="hsl(var(--primary))" opacity="0.4">
+                  <animate attributeName="opacity" values="0.15;0.6;0.15" dur="1.8s" begin={`${angle / 400}s`} repeatCount="indefinite" />
                 </circle>
               );
             })}
@@ -279,20 +352,19 @@ function BrainScene({ isActive, isProcessing, isDragOver }: { isActive: boolean;
       </g>
 
       {/* Upload icon at brain center */}
-      <g className="transition-opacity duration-300" opacity={isProcessing ? 0.9 : 0.6}>
+      <g opacity={isProcessing ? 0.9 : isDragOver ? 0.8 : 0.5}>
         {isProcessing ? (
           <g>
-            <circle cx="300" cy="145" r="14" fill="hsl(var(--background))" opacity="0.85" stroke="hsl(var(--primary))" strokeWidth="1.5" />
-            {/* Spinning loader */}
-            <circle cx="300" cy="145" r="8" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeDasharray="15 35" strokeLinecap="round">
-              <animateTransform attributeName="transform" type="rotate" from="0 300 145" to="360 300 145" dur="1s" repeatCount="indefinite" />
+            <circle cx={brainCx} cy={brainCy} r="15" fill="hsl(var(--background))" opacity="0.85" stroke="hsl(var(--primary))" strokeWidth="1.5" />
+            <circle cx={brainCx} cy={brainCy} r="9" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeDasharray="16 38" strokeLinecap="round">
+              <animateTransform attributeName="transform" type="rotate" from={`0 ${brainCx} ${brainCy}`} to={`360 ${brainCx} ${brainCy}`} dur="1s" repeatCount="indefinite" />
             </circle>
           </g>
         ) : (
           <g>
-            <circle cx="300" cy="145" r="14" fill="hsl(var(--background))" opacity="0.7" stroke="hsl(var(--primary))" strokeWidth="1" />
-            {/* Upload arrow icon */}
-            <path d="M300 139 L300 151 M295 143 L300 138 L305 143" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.7" />
+            <circle cx={brainCx} cy={brainCy} r="15" fill="hsl(var(--background))" opacity="0.65" stroke="hsl(var(--primary))" strokeWidth="1" />
+            <path d={`M${brainCx} ${brainCy - 6} L${brainCx} ${brainCy + 6} M${brainCx - 5} ${brainCy - 2} L${brainCx} ${brainCy - 7} L${brainCx + 5} ${brainCy - 2}`}
+              stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.7" />
           </g>
         )}
       </g>
@@ -350,7 +422,6 @@ export function CentralUploadHub({
   const isProcessing = isUploading || records.some(r =>
     r.processing_status === 'uploading' || r.processing_status === 'confirming'
   );
-  const isActive = isDragOver || isProcessing;
 
   return (
     <div className="space-y-3" data-door2-consumer="upload-hub">
@@ -369,16 +440,16 @@ export function CentralUploadHub({
           disabled && 'opacity-50 cursor-not-allowed',
         )}
       >
-        {/* The SVG scene */}
-        <div className="w-full max-w-md">
-          <BrainScene isActive={isActive} isProcessing={isProcessing} isDragOver={isDragOver} />
+        {/* The SVG scene — dynamic documents around brain */}
+        <div className="w-full max-w-lg">
+          <BrainScene records={records} isProcessing={isProcessing} isDragOver={isDragOver} />
         </div>
 
         {/* Label below */}
         <div className="text-center mt-1">
           <p className={cn(
             'text-sm font-medium transition-colors',
-            isActive ? 'text-primary' : 'text-foreground',
+            isProcessing ? 'text-primary' : isDragOver ? 'text-primary' : 'text-foreground',
           )}>
             {isProcessing ? t('portal.uploadHub.in_progress') : t('portal.uploadHub.dropzone_title')}
           </p>
