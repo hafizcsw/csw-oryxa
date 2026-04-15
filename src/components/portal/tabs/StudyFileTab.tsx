@@ -7,6 +7,7 @@ import { FileQualityGate } from "@/components/file-quality/FileQualityGate";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { FileQualityResult } from "@/features/file-quality/types";
+import type { DocumentTypeFilter } from "./DocumentsTab";
 
 const ProfileTab = lazy(() => import("@/components/portal/tabs/ProfileTab").then(m => ({ default: m.ProfileTab })));
 const ReadinessTab = lazy(() => import("@/components/readiness/ReadinessTab").then(m => ({ default: m.ReadinessTab })));
@@ -24,6 +25,12 @@ interface StudyFileTabProps {
 function SectionSkeleton() {
   return <div className="space-y-3"><Skeleton className="h-8 w-48" /><Skeleton className="h-32 w-full" /></div>;
 }
+
+// Typed filter arrays (stable references)
+const PHOTO_FILTER: DocumentTypeFilter[] = ['photo'];
+const PASSPORT_FILTER: DocumentTypeFilter[] = ['passport'];
+const CERTIFICATE_FILTER: DocumentTypeFilter[] = ['certificate'];
+const ADDITIONAL_FILTER: DocumentTypeFilter[] = ['additional'];
 
 export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabChange, fileQuality }: StudyFileTabProps) {
   const { t } = useLanguage();
@@ -59,31 +66,86 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
 
       <Separator />
 
-      {/* 2. Profile */}
+      {/* 2. Profile Photo — at the top */}
+      <section>
+        <h2 className="text-base font-semibold text-foreground mb-4">{t('portal.documents.photo')}</h2>
+        <Suspense fallback={<SectionSkeleton />}>
+          <DocumentsTab
+            profile={profile}
+            crmProfile={crmProfile}
+            onUpdate={onUpdate}
+            docTypesFilter={PHOTO_FILTER}
+            compact
+          />
+        </Suspense>
+      </section>
+
+      <Separator />
+
+      {/* 3. Personal Info + Passport side by side */}
       <section>
         <h2 className="text-base font-semibold text-foreground mb-4">{t('portal.sidebar.profile')}</h2>
-        <Suspense fallback={<SectionSkeleton />}>
-          <ProfileTab profile={profile} crmProfile={crmProfile} onUpdate={onUpdate} onRefetch={onRefetch} onTabChange={onTabChange} />
-        </Suspense>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <Suspense fallback={<SectionSkeleton />}>
+              <ProfileTab profile={profile} crmProfile={crmProfile} onUpdate={onUpdate} onRefetch={onRefetch} onTabChange={onTabChange} />
+            </Suspense>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-muted-foreground mb-3">{t('portal.documents.passport')}</h3>
+            <Suspense fallback={<SectionSkeleton />}>
+              <DocumentsTab
+                profile={profile}
+                crmProfile={crmProfile}
+                onUpdate={onUpdate}
+                docTypesFilter={PASSPORT_FILTER}
+                compact
+              />
+            </Suspense>
+          </div>
+        </div>
       </section>
 
       <Separator />
 
-      {/* 3. Readiness */}
+      {/* 4. Readiness + Certificate side by side */}
       <section>
         <h2 className="text-base font-semibold text-foreground mb-4">{t('portal.sidebar.readiness')}</h2>
-        <Suspense fallback={<SectionSkeleton />}>
-          <ReadinessTab onTabChange={onTabChange} />
-        </Suspense>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <Suspense fallback={<SectionSkeleton />}>
+              <ReadinessTab onTabChange={onTabChange} />
+            </Suspense>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-muted-foreground mb-3">{t('portal.documents.certificate')}</h3>
+            <Suspense fallback={<SectionSkeleton />}>
+              <DocumentsTab
+                profile={profile}
+                crmProfile={crmProfile}
+                onUpdate={onUpdate}
+                docTypesFilter={CERTIFICATE_FILTER}
+                compact
+              />
+            </Suspense>
+          </div>
+        </div>
       </section>
 
       <Separator />
 
-      {/* 4. Documents */}
+      {/* 5. Additional Documents */}
       <section>
         <h2 className="text-base font-semibold text-foreground mb-4">{t('portal.sidebar.documents')}</h2>
         <Suspense fallback={<SectionSkeleton />}>
-          <DocumentsTab profile={profile} crmProfile={crmProfile} onUpdate={onUpdate} onTabChange={onTabChange} />
+          <DocumentsTab
+            profile={profile}
+            crmProfile={crmProfile}
+            onUpdate={onUpdate}
+            onTabChange={onTabChange}
+            docTypesFilter={ADDITIONAL_FILTER}
+            compact
+          />
         </Suspense>
       </section>
     </div>

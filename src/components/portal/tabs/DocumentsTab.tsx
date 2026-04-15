@@ -37,14 +37,20 @@ const docTime = (d: StudentDocument): number => {
 const isBlobUrl = (url?: string | null): boolean => 
   !!url && url.startsWith('blob:');
 
+export type DocumentTypeFilter = 'photo' | 'passport' | 'certificate' | 'additional';
+
 interface DocumentsTabProps {
   profile?: StudentProfile;
   crmProfile?: StudentPortalProfile | null;
   onUpdate?: (payload: Partial<StudentPortalProfile>) => Promise<boolean>;
   onTabChange?: (tab: string) => void;
+  /** When set, only show these document types. Omit to show all. */
+  docTypesFilter?: DocumentTypeFilter[];
+  /** When true, hide header/progress/success/security/nav chrome */
+  compact?: boolean;
 }
 
-export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange }: DocumentsTabProps) {
+export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTypesFilter, compact }: DocumentsTabProps) {
   const { t } = useLanguage();
   const { 
     documents: studentDocs, 
@@ -358,9 +364,12 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange }: Doc
     );
   }
 
+  const showType = (type: DocumentTypeFilter) => !docTypesFilter || docTypesFilter.includes(type);
+
   return (
     <div className="space-y-6">
-      {/* Header with Progress */}
+      {/* Header with Progress - hidden in compact mode */}
+      {!compact && (
       <DocumentVaultHeader
         totalRequired={totalRequired}
         completedRequired={completedRequired}
@@ -371,6 +380,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange }: Doc
         onDeleteDuplicates={() => setShowDuplicatesDialog(true)}
         isRefreshing={isRefreshing}
       />
+      )}
 
       {/* Upload Progress */}
       {Object.entries(uploadProgress).filter(([_, p]) => p.stage !== 'done').length > 0 && (
@@ -428,7 +438,9 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange }: Doc
       })()}
 
       {/* Required Documents Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {(showType('photo') || showType('passport') || showType('certificate')) && (
+      <div className={compact ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"}>
+        {showType('photo') && (
         <RequiredDocumentCard
           type="photo"
           document={photoDoc}
@@ -441,7 +453,9 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange }: Doc
           onDownload={() => handleDownloadDocument('photo')}
           onDelete={() => handleDeleteDocument('photo')}
         />
+        )}
 
+        {showType('passport') && (
         <RequiredDocumentCard
           type="passport"
           document={passportDoc}
@@ -458,7 +472,9 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange }: Doc
           onDownload={() => handleDownloadDocument('passport')}
           onDelete={() => handleDeleteDocument('passport')}
         />
+        )}
 
+        {showType('certificate') && (
         <RequiredDocumentCard
           type="certificate"
           document={certificateDoc}
@@ -474,10 +490,12 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange }: Doc
           onDownload={() => handleDownloadDocument('certificate')}
           onDelete={() => handleDeleteDocument('certificate')}
         />
+        )}
       </div>
+      )}
 
       {/* Save Button */}
-      {onUpdate && (
+      {onUpdate && (showType('passport') || showType('certificate')) && (
         <div className="flex justify-end">
           <Button
             onClick={handleSaveDocFields}
@@ -499,6 +517,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange }: Doc
       )}
 
       {/* Additional Files */}
+      {showType('additional') && (
       <AdditionalFilesTable
         files={additionalFiles}
         onUpload={handleAdditionalUpload}
@@ -508,9 +527,10 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange }: Doc
         uploading={uploadingCategory === 'additional'}
         disabled={crmProfile?.docs_locked}
       />
+      )}
 
       {/* Success Banner */}
-      {completedRequired === totalRequired && (
+      {!compact && completedRequired === totalRequired && (
         <div className="bg-gradient-to-r from-success/10 via-success/5 to-transparent border border-success/30 rounded-xl p-4 flex items-center gap-4">
           <div className="p-3 rounded-full bg-success/20">
             <CheckCircle className="h-6 w-6 text-success" />
@@ -523,6 +543,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange }: Doc
       )}
 
       {/* Security Info */}
+      {!compact && (
       <div className="bg-muted/30 rounded-xl border border-border p-4 flex items-start gap-3">
         <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
           <AlertCircle className="h-4 w-4 text-primary" />
@@ -534,6 +555,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange }: Doc
           </p>
         </div>
       </div>
+      )}
 
       {/* Preview Modal */}
       <Dialog open={!!previewDoc} onOpenChange={(open) => !open && setPreviewDoc(null)}>
@@ -646,7 +668,7 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange }: Doc
       </AlertDialog>
 
       {/* Tab Navigation */}
-      {onTabChange && <TabNavigation currentTab="documents" onTabChange={onTabChange} />}
+      {!compact && onTabChange && <TabNavigation currentTab="documents" onTabChange={onTabChange} />}
     </div>
   );
 }
