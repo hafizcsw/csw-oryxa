@@ -9,6 +9,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
+    "sync:canonical": "node scripts/sync-canonical-repo.mjs",
+    "sync:canonical:dry": "node scripts/sync-canonical-repo.mjs --dry-run",
     "test": "vitest run",
     "test:watch": "vitest"
   },
