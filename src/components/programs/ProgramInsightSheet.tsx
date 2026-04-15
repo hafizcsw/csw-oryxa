@@ -150,7 +150,7 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
 
     // Close modal, open chat, send message
     setOpen(false);
-    addMessage({ role: 'user', content: fullMessage });
+    addMessage({ from: 'user', type: 'text', content: fullMessage });
     openChat();
   }
 
