@@ -1324,7 +1324,11 @@
       "other": "أخرى",
       "visa": "التأشيرة",
       "messages": "الرسائل",
-      "readiness": "الجاهزية"
+      "readiness": "الجاهزية",
+      "myStudyFile": "ملفي الدراسي"
+    },
+    "studyFile": {
+      "quality": "جودة الملف"
     },
     "nav": {
       "sections": "الأقسام"

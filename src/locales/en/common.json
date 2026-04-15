@@ -1322,7 +1322,11 @@
       "other": "Other",
       "visa": "Visa",
       "messages": "Messages",
-      "readiness": "Readiness"
+      "readiness": "Readiness",
+      "myStudyFile": "My Study File"
+    },
+    "studyFile": {
+      "quality": "File Quality"
     },
     "nav": {
       "sections": "Sections"

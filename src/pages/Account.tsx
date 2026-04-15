@@ -47,6 +47,7 @@ import { useTeacherState } from "@/hooks/useTeacherState";
 import { calculateProfileProgress } from "@/utils/calculateProfileProgress";
 import { useFileQuality } from "@/hooks/useFileQuality";
 import { StudentInbox } from "@/components/comm/StudentInbox";
+import { StudyFileTab } from "@/components/portal/tabs/StudyFileTab";
 
 // Tab loaders for preloading
 const loadProfileTab = () => import("@/components/portal/tabs/ProfileTab");
@@ -78,6 +79,7 @@ const ReadinessTab = lazy(() => loadReadinessTab().then(m => ({ default: m.Readi
 
 // Tab loaders map for hover preload
 const tabLoaders: Record<string, () => Promise<any>> = {
+  'study-file': loadProfileTab,
   profile: loadProfileTab,
   documents: loadDocumentsTab,
   shortlist: loadShortlistTab,
@@ -143,8 +145,8 @@ export default function AccountPage() {
   const programIdFromUrl = searchParams.get('program_id');
   
   // ✅ URL = Source of Truth for activeTab
-  const VALID_TABS = new Set(['overview', 'profile', 'readiness', 'documents', 'payments', 'shortlist', 'services', 'applications', 'case', 'wallet', 'settings', 'timeline', 'teacher-verification', 'teacher-documents', 'messages']);
-  const TAB_ORDER = ['overview', 'profile', 'readiness', 'shortlist', 'services', 'documents', 'applications', 'payments', 'case', 'wallet', 'settings'];
+  const VALID_TABS = new Set(['overview', 'study-file', 'profile', 'readiness', 'documents', 'payments', 'shortlist', 'services', 'applications', 'case', 'wallet', 'settings', 'timeline', 'teacher-verification', 'teacher-documents', 'messages']);
+  const TAB_ORDER = ['overview', 'study-file', 'shortlist', 'services', 'applications', 'payments', 'case', 'wallet', 'settings'];
   const urlTab = searchParams.get('tab') || 'overview';
   const activeTab = VALID_TABS.has(urlTab) ? urlTab : 'overview';
   
@@ -678,21 +680,28 @@ export default function AccountPage() {
             shortlistCount={shortlistCount}
             walletBalance={walletBalance}
             onNavigate={setActiveTab}
-            onEditProfile={() => setActiveTab('profile')}
+            onEditProfile={() => setActiveTab('study-file')}
             onAvatarUpdate={handleAvatarUpdate}
+          />
+        );
+      case 'study-file':
+      case 'profile':
+      case 'readiness':
+      case 'documents':
+        return (
+          <StudyFileTab
+            profile={profile!}
+            crmProfile={crmProfile}
+            onUpdate={updateCrmProfile}
+            onRefetch={refetchCrm}
+            onTabChange={setActiveTab}
             fileQuality={fileQuality}
           />
         );
-      case 'profile':
-        return <ProfileTab profile={profile!} crmProfile={crmProfile} onUpdate={updateCrmProfile} onRefetch={refetchCrm} onTabChange={setActiveTab} />;
-      case 'readiness':
-        return <ReadinessTab onTabChange={setActiveTab} />;
       case 'applications':
         return <ApplicationsTab crmProfile={crmProfile} onUpdate={updateCrmProfile} onTabChange={setActiveTab} />;
       case 'case':
         return <CaseStatusTab applicationId={searchParams.get('application_id') || undefined} />;
-      case 'documents':
-        return <DocumentsTab profile={profile} crmProfile={crmProfile} onUpdate={updateCrmProfile} onTabChange={setActiveTab} />;
       case 'payments':
         return <PaymentsTab />;
       case 'shortlist':
