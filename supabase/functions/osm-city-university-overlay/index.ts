@@ -305,20 +305,30 @@ async function queryOverpassBbox(lat: number, lon: number, radiusDeg: number): P
   const west = lon - radiusDeg;
   const east = lon + radiusDeg;
 
-  const query = `[out:json][timeout:25];(nwr["amenity"="university"](${south},${west},${north},${east});nwr["amenity"="college"](${south},${west},${north},${east}););out center tags;`;
+  const query = `[out:json][timeout:10];(nwr["amenity"="university"](${south},${west},${north},${east});nwr["amenity"="college"](${south},${west},${north},${east}););out center tags;`;
 
-  const resp = await fetch(OVERPASS_URL, {
-    method: "POST",
-    body: `data=${encodeURIComponent(query)}`,
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
 
-  if (!resp.ok) {
-    console.error(`Overpass bbox failed (${resp.status})`);
+  try {
+    const resp = await fetch(OVERPASS_URL, {
+      method: "POST",
+      body: `data=${encodeURIComponent(query)}`,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (!resp.ok) {
+      console.error(`Overpass bbox failed (${resp.status})`);
+      return [];
+    }
+    const data = await resp.json();
+    return (data.elements || []).filter(isValidUniversityPOI);
+  } catch {
+    clearTimeout(timer);
+    console.warn("[osm-overlay-v3] Overpass bbox timed out");
     return [];
   }
-  const data = await resp.json();
-  return (data.elements || []).filter(isValidUniversityPOI);
 }
 
 /* ── Main handler ── */
