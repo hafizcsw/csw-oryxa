@@ -414,6 +414,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const tileRef = useRef<L.TileLayer[]>([]);
+  const refLabelsRef = useRef<L.TileLayer | null>(null);
   const markersRef = useRef<L.LayerGroup>(L.layerGroup());
   const bordersRef = useRef<L.GeoJSON | null>(null);
   const countryLabelsRef = useRef<L.LayerGroup>(L.layerGroup());
