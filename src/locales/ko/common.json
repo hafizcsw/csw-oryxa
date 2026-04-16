@@ -264,6 +264,7 @@
         "selectCountryTitle": "국가 선택",
         "selectCountrySubtitle": "색상으로 표시된 국가를 클릭해 도시와 대학을 확인하세요",
         "topCountries": "상위 국가"
+        "searchCountryPlaceholder": "국가 검색...",
       },
       "filters": {
         "region": "지역",

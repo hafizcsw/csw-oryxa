@@ -303,6 +303,7 @@
         "selectCountryTitle": "Select a country",
         "selectCountrySubtitle": "Click any colored country to see its cities & universities",
         "topCountries": "Top Countries"
+        "searchCountryPlaceholder": "Search for a country...",
       },
       "filters": {
         "region": "Region",

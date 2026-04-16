@@ -264,6 +264,7 @@
         "selectCountryTitle": "একটি দেশ নির্বাচন করুন",
         "selectCountrySubtitle": "যেকোনো রঙিন দেশে ক্লিক করে তার শহর ও বিশ্ববিদ্যালয় দেখুন",
         "topCountries": "শীর্ষ দেশসমূহ"
+        "searchCountryPlaceholder": "দেশ অনুসন্ধান করুন...",
       },
       "filters": {
         "region": "অঞ্চল",

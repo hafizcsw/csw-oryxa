@@ -265,6 +265,7 @@
         "selectCountryTitle": "选择一个国家",
         "selectCountrySubtitle": "点击任意高亮国家即可查看其城市和大学",
         "topCountries": "热门国家"
+        "searchCountryPlaceholder": "搜索国家...",
       },
       "filters": {
         "region": "地区",

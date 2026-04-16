@@ -264,6 +264,7 @@
         "selectCountryTitle": "Selecione um país",
         "selectCountrySubtitle": "Clique em qualquer país colorido para ver suas cidades e universidades",
         "topCountries": "Principais países"
+        "searchCountryPlaceholder": "Pesquisar um país...",
       },
       "filters": {
         "region": "Região",

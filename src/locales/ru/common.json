@@ -266,6 +266,7 @@
         "selectCountryTitle": "Выберите страну",
         "selectCountrySubtitle": "Нажмите на любую выделенную страну, чтобы увидеть её города и университеты",
         "topCountries": "Топ стран"
+        "searchCountryPlaceholder": "Найти страну...",
       },
       "filters": {
         "region": "Регион",
