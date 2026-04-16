@@ -54,7 +54,7 @@ const CASE_A: Fixture = {
     'Issuing Authority: MINISTRY OF INTERIOR',
     '',
     'P<JORALKHALIDI<<AHMAD<MOHAMMED<<<<<<<<<<<<<<',
-    'N12345671JOR9503127M3003110<<<<<<<<<<<<<<04',
+    'N1234567<1JOR9503127M3003110<<<<<<<<<<<<<<04',
   ].join('\n'),
 };
 
