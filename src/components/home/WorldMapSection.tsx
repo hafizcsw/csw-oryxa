@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, memo, useEffect, useRef } from "react";
-import { WorldMapLeaflet, type LeafletMapHandle } from "./WorldMapLeaflet";
+import { WorldMapLeaflet, type LeafletMapHandle, type MapViewport } from "./WorldMapLeaflet";
 import { MapUniversitySearch } from "./MapUniversitySearch";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -82,6 +82,8 @@ export const WorldMapSection = memo(function WorldMapSection() {
   const [drillLevel, setDrillLevel] = useState<DrillLevel>("world");
   const [showAllUnis, setShowAllUnis] = useState(false);
   const [viewMode] = useState<"flat">("flat");
+  const [mapViewport, setMapViewport] = useState<MapViewport | null>(null);
+  const [manualCitySelection, setManualCitySelection] = useState(false);
   const mapLeafletRef = useRef<LeafletMapHandle>(null);
   const getLocalizedValue = useCallback((record: Record<string, unknown>, keyPrefix: string) => {
     const byActiveLanguage = record[`${keyPrefix}_${language}`];
