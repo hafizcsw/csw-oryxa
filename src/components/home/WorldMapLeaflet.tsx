@@ -1045,7 +1045,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
 
         const pos: [number, number] = [resolved.lat, resolved.lon];
         pts.push(L.latLng(pos[0], pos[1]));
-        const m = L.marker(pos, { icon: cityDotIcon(city.universities_count, isDark) });
+        const m = L.marker(pos, { icon: cityDotIcon(city.universities_count, isDark, city.city) });
         m.bindTooltip(`
           <div style="font-family:system-ui;font-size:12px;direction:${isRtl ? 'rtl' : 'ltr'};text-align:${isRtl ? 'right' : 'left'}">
             <div style="font-weight:800;font-size:14px;margin-bottom:4px">${city.city}</div>
@@ -1073,7 +1073,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         const unknownPos: [number, number] = [CC[selectedCountryCode][0], CC[selectedCountryCode][1]];
         pts.push(L.latLng(unknownPos[0], unknownPos[1]));
         const unknownCityLabel = mapText.unknownCity;
-        const unknownMarker = L.marker(unknownPos, { icon: cityDotIcon(unknownUniversitiesCount, isDark) });
+        const unknownMarker = L.marker(unknownPos, { icon: cityDotIcon(unknownUniversitiesCount, isDark, unknownCityLabel) });
         unknownMarker.bindTooltip(`
           <div style="font-family:system-ui;font-size:12px;direction:${isRtl ? 'rtl' : 'ltr'};text-align:${isRtl ? 'right' : 'left'}">
             <div style="font-weight:800;font-size:14px;margin-bottom:4px">${unknownCityLabel}</div>
@@ -1233,7 +1233,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
               : null;
         if (fallbackPos) {
           // Do NOT push into pts — fallback marker must not distort map bounds
-          const fallbackMarker = L.marker(fallbackPos, { icon: cityDotIcon(universitiesWithoutCoords, isDark) });
+          const fallbackMarker = L.marker(fallbackPos, { icon: cityDotIcon(universitiesWithoutCoords, isDark, mapText.universitiesWithoutExactCity) });
           fallbackMarker.bindTooltip(`
             <div style="font-family:system-ui;font-size:12px;direction:${isRtl ? 'rtl' : 'ltr'};text-align:${isRtl ? 'right' : 'left'}">
               <div style="font-weight:800;font-size:14px;margin-bottom:4px">${mapText.universitiesWithoutExactCity}</div>
