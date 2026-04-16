@@ -122,12 +122,27 @@ export async function analyzeDocument(params: {
 
     // ── Step 3: Extract fields based on classification ─────
     let extractedFields: Record<string, ExtractedField> = {};
+    let mrzFound = false;
+    const laneStrength: 'passport_strong' | 'passport_weak' | null =
+      classification.passport_strength ?? null;
 
     if (classification.best === 'passport') {
       const mrzResult = parseMrz(textContent);
+      mrzFound = mrzResult.found;
+
       if (mrzResult.found) {
+        // Strong evidence path: MRZ is the primary truth source.
         extractedFields = extractPassportFields(mrzResult);
         analysis.parser_type = 'mrz';
+      } else if (laneStrength === 'passport_strong') {
+        // No MRZ but classifier saw strong passport text evidence.
+        // Allow weak text fallback — these fields are tagged
+        // 'regex_heuristic' and the promotion layer will refuse auto-accept.
+        extractedFields = extractPassportTextFallback(textContent);
+      } else {
+        // PASSPORT LANE GATE: weak classification + no MRZ ⇒ no fake success.
+        // Do not extract identity fields from weak/ambiguous text.
+        extractedFields = {};
       }
     } else if (classification.best === 'graduation_certificate') {
       extractedFields = extractGraduationFields(textContent);
@@ -144,11 +159,18 @@ export async function analyzeDocument(params: {
 
     // ── Step 4: Assess usefulness ────────────────────────────
     // Honesty: a 'degraded' artifact never gets clean 'useful' status.
+    // Honesty: a weak passport classification with no MRZ never gets 'useful'.
     const fieldCount = Object.keys(extractedFields).length;
+    const passportWeakNoMrz =
+      classification.best === 'passport' && laneStrength === 'passport_weak' && !mrzFound;
+
     if (classification.best === 'unsupported') {
       analysis.usefulness_status = 'not_useful';
       analysis.rejection_reason = 'Unsupported file type';
     } else if (classification.best === 'unknown' && fieldCount === 0) {
+      analysis.usefulness_status = 'unknown';
+    } else if (passportWeakNoMrz) {
+      // Weak passport classification without MRZ is never a clean success.
       analysis.usefulness_status = 'unknown';
     } else if (fieldCount > 0) {
       analysis.usefulness_status = artifact.readability === 'degraded' ? 'unknown' : 'useful';
@@ -174,7 +196,11 @@ export async function analyzeDocument(params: {
         conflictWithCurrent: conflict,
       });
 
-      proposal = applyPromotionRules(proposal, { readability: artifact.readability });
+      proposal = applyPromotionRules(proposal, {
+        readability: artifact.readability,
+        parser_source: extracted.parser_source,
+        lane_strength: classification.best === 'passport' ? laneStrength : null,
+      });
       proposals.push(proposal);
     }
 
