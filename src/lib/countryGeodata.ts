@@ -139,6 +139,18 @@ const GEODATA_MAP: Record<string, GeoDataLoader> = {
 // Cache loaded geodata
 const cache = new Map<string, GeoJSON.FeatureCollection>();
 
+function normalizeGeodataCountryCode(countryCode: string): string {
+  const requestedCode = countryCode.toUpperCase();
+  return requestedCode === "PS" ? "IL" : requestedCode;
+}
+
+export function getCachedCountryGeodata(
+  countryCode: string
+): GeoJSON.FeatureCollection | null {
+  const code = normalizeGeodataCountryCode(countryCode);
+  return cache.get(code) ?? null;
+}
+
 /**
  * Load subdivision geodata for a country (cached, code-split).
  * Returns null if country not supported.
@@ -147,7 +159,7 @@ export async function loadCountryGeodata(
   countryCode: string
 ): Promise<GeoJSON.FeatureCollection | null> {
   const requestedCode = countryCode.toUpperCase();
-  const code = requestedCode === "PS" ? "IL" : requestedCode;
+  const code = normalizeGeodataCountryCode(countryCode);
   if (cache.has(code)) return cache.get(code)!;
 
   const loader = GEODATA_MAP[code];
@@ -166,6 +178,5 @@ export async function loadCountryGeodata(
 
 /** Check if subdivision geodata is available for a country */
 export function hasCountryGeodata(countryCode: string): boolean {
-  const requestedCode = countryCode.toUpperCase();
-  return !!GEODATA_MAP[requestedCode === "PS" ? "IL" : requestedCode];
+  return !!GEODATA_MAP[normalizeGeodataCountryCode(countryCode)];
 }
