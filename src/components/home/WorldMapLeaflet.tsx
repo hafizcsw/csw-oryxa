@@ -520,6 +520,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     regionSummaries, visibleCountryCodes,
     citySummaries, cityUniversities, regionCities,
     osmOverlay, osmOverlayLoading, countryMeta,
+    onCountryHover,
   } = props;
 
   const { resolvedTheme } = useTheme();
