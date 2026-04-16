@@ -1849,7 +1849,27 @@
         "readability_degraded": "частично читаемый",
         "readability_unreadable": "нечитаемый",
         "legacy_reader": "временный читатель",
-        "legacy_reader_hint": "Временный читатель в браузере (pdf.js + Tesseract.js). Будет заменён."
+        "legacy_reader_hint": "Временный читатель в браузере (pdf.js + Tesseract.js). Будет заменён.",
+        "ocr_label": "OCR",
+        "ocr_quality_good": "хорошо",
+        "ocr_quality_partial": "частично",
+        "ocr_quality_garbage": "мусор"
+      },
+      "in_canonical_truth": "в канонической истине",
+      "canonical_truth": "каноническая истина",
+      "filename_only_no_ocr": "только имя файла — без OCR",
+      "reanalyze": "Повторный анализ",
+      "remove_all_canonical": "Удалить все из канонической истины",
+      "remove_from_canonical": "Удалить из канонической истины",
+      "usefulness_useful": "полезно",
+      "usefulness_not_useful": "бесполезно",
+      "usefulness_unknown": "неизвестно",
+      "proposal_status": {
+        "proposed": "предложено",
+        "auto_accepted": "авто принято",
+        "pending_review": "на проверке",
+        "rejected": "отклонено",
+        "superseded": "заменено"
       }
     }
   },

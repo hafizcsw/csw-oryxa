@@ -1900,7 +1900,27 @@
         "readability_degraded": "部分可读",
         "readability_unreadable": "不可读",
         "legacy_reader": "临时读取器",
-        "legacy_reader_hint": "浏览器内临时读取器(pdf.js + Tesseract.js),将被替换。"
+        "legacy_reader_hint": "浏览器内临时读取器(pdf.js + Tesseract.js),将被替换。",
+        "ocr_label": "OCR",
+        "ocr_quality_good": "良好",
+        "ocr_quality_partial": "部分",
+        "ocr_quality_garbage": "无法识别"
+      },
+      "in_canonical_truth": "位于规范真相",
+      "canonical_truth": "规范真相",
+      "filename_only_no_ocr": "仅文件名 — 无 OCR",
+      "reanalyze": "重新分析",
+      "remove_all_canonical": "从规范真相移除全部",
+      "remove_from_canonical": "从规范真相移除",
+      "usefulness_useful": "有用",
+      "usefulness_not_useful": "无用",
+      "usefulness_unknown": "未知",
+      "proposal_status": {
+        "proposed": "已提议",
+        "auto_accepted": "自动接受",
+        "pending_review": "待审核",
+        "rejected": "已拒绝",
+        "superseded": "已取代"
       }
     }
   },

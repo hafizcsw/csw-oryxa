@@ -1867,7 +1867,27 @@
         "readability_degraded": "आंशिक रूप से पठनीय",
         "readability_unreadable": "अपठनीय",
         "legacy_reader": "अस्थायी रीडर",
-        "legacy_reader_hint": "ब्राउज़र में अस्थायी रीडर (pdf.js + Tesseract.js)। इसे बदला जाएगा।"
+        "legacy_reader_hint": "ब्राउज़र में अस्थायी रीडर (pdf.js + Tesseract.js)। इसे बदला जाएगा।",
+        "ocr_label": "OCR",
+        "ocr_quality_good": "अच्छा",
+        "ocr_quality_partial": "आंशिक",
+        "ocr_quality_garbage": "अपठनीय"
+      },
+      "in_canonical_truth": "विहित सत्य में",
+      "canonical_truth": "विहित सत्य",
+      "filename_only_no_ocr": "केवल फ़ाइल नाम — OCR नहीं",
+      "reanalyze": "पुनः विश्लेषण",
+      "remove_all_canonical": "विहित सत्य से सब हटाएँ",
+      "remove_from_canonical": "विहित सत्य से हटाएँ",
+      "usefulness_useful": "उपयोगी",
+      "usefulness_not_useful": "अनुपयोगी",
+      "usefulness_unknown": "अज्ञात",
+      "proposal_status": {
+        "proposed": "प्रस्तावित",
+        "auto_accepted": "स्वतः स्वीकृत",
+        "pending_review": "समीक्षा लंबित",
+        "rejected": "अस्वीकृत",
+        "superseded": "प्रतिस्थापित"
       }
     }
   },

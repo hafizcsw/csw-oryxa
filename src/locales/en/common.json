@@ -1489,7 +1489,27 @@
         "readability_degraded": "degraded",
         "readability_unreadable": "unreadable",
         "legacy_reader": "legacy reader",
-        "legacy_reader_hint": "Temporary in-browser reader (pdf.js + Tesseract.js). Will be replaced."
+        "legacy_reader_hint": "Temporary in-browser reader (pdf.js + Tesseract.js). Will be replaced.",
+        "ocr_label": "OCR",
+        "ocr_quality_good": "good",
+        "ocr_quality_partial": "partial",
+        "ocr_quality_garbage": "garbage"
+      },
+      "in_canonical_truth": "in canonical truth",
+      "canonical_truth": "canonical truth",
+      "filename_only_no_ocr": "filename only — no OCR",
+      "reanalyze": "Re-analyze",
+      "remove_all_canonical": "Remove all from canonical truth",
+      "remove_from_canonical": "Remove from canonical truth",
+      "usefulness_useful": "useful",
+      "usefulness_not_useful": "not useful",
+      "usefulness_unknown": "unknown",
+      "proposal_status": {
+        "proposed": "proposed",
+        "auto_accepted": "auto accepted",
+        "pending_review": "pending review",
+        "rejected": "rejected",
+        "superseded": "superseded"
       }
     },
     "nav": {

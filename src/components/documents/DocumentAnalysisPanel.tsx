@@ -103,7 +103,7 @@ export function DocumentAnalysisPanel({
           {totalPromoted > 0 && (
             <span className="flex items-center gap-1 text-primary font-medium">
               <ShieldCheck className="h-3.5 w-3.5" />
-              {totalPromoted} in canonical truth
+              {totalPromoted} {t('portal.analysis.in_canonical_truth')}
             </span>
           )}
         </div>
@@ -157,19 +157,19 @@ export function DocumentAnalysisPanel({
                   </span>
                   {analysis.parser_type === 'filename_only' && analysis.readability_status === 'unknown' && (
                     <span className="text-[9px] text-amber-500 italic">
-                      filename only — no OCR
+                      {t('portal.analysis.filename_only_no_ocr')}
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5">
                   {analysis.readability_status !== 'unknown' && (
                     <Badge variant="outline" className="text-[9px]">
-                      {analysis.readability_status}
+                      {t(`portal.analysis.artifact.readability_${analysis.readability_status}`)}
                     </Badge>
                   )}
                   {analysis.usefulness_status !== 'unknown' && (
                     <Badge variant="outline" className="text-[9px]">
-                      {analysis.usefulness_status}
+                      {t(`portal.analysis.usefulness_${analysis.usefulness_status}`)}
                     </Badge>
                   )}
                   {/* Re-analyze button */}
@@ -179,7 +179,8 @@ export function DocumentAnalysisPanel({
                       size="icon"
                       className="h-5 w-5 text-muted-foreground hover:text-primary"
                       onClick={() => onReanalyze(analysis.document_id)}
-                      title="Re-analyze"
+                      title={t('portal.analysis.reanalyze')}
+                      aria-label={t('portal.analysis.reanalyze')}
                     >
                       <RefreshCw className="h-3 w-3" />
                     </Button>
@@ -191,7 +192,8 @@ export function DocumentAnalysisPanel({
                       size="icon"
                       className="h-5 w-5 text-muted-foreground hover:text-destructive"
                       onClick={() => onRemovePromotedFieldsForDocument(analysis.document_id)}
-                      title="Remove all from canonical truth"
+                      title={t('portal.analysis.remove_all_canonical')}
+                      aria-label={t('portal.analysis.remove_all_canonical')}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -250,7 +252,7 @@ export function DocumentAnalysisPanel({
                     )}
                     {artifact.ocr_quality && (
                       <Badge variant="outline" className="text-[9px] font-mono">
-                        OCR: {artifact.ocr_quality.quality_label}
+                        {t('portal.analysis.artifact.ocr_label')}: {t(`portal.analysis.artifact.ocr_quality_${artifact.ocr_quality.quality_label}`)}
                       </Badge>
                     )}
                   </div>
@@ -305,14 +307,14 @@ export function DocumentAnalysisPanel({
                             variant="outline"
                             className="text-[9px] bg-primary/10 text-primary border-primary/30"
                           >
-                            canonical truth
+                            {t('portal.analysis.canonical_truth')}
                           </Badge>
                         ) : (
                           <Badge
                             variant="outline"
                             className={`text-[9px] ${proposalStatusBadge(proposal.proposal_status)}`}
                           >
-                            {proposal.proposal_status.replace('_', ' ')}
+                            {t(`portal.analysis.proposal_status.${proposal.proposal_status}`)}
                           </Badge>
                         )}
                         <span className="text-[9px] text-muted-foreground font-mono">
@@ -325,7 +327,8 @@ export function DocumentAnalysisPanel({
                             size="icon"
                             className="h-5 w-5 text-muted-foreground hover:text-destructive"
                             onClick={() => onRemovePromotedField(proposal.proposal_id)}
-                            title="Remove from canonical truth"
+                            title={t('portal.analysis.remove_from_canonical')}
+                            aria-label={t('portal.analysis.remove_from_canonical')}
                           >
                             <XCircle className="h-3 w-3" />
                           </Button>

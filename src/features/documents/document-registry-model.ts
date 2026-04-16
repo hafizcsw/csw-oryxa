@@ -35,7 +35,7 @@ export type ProcessingStatus =
   | 'cancelled';       // user cancelled
 
 // ── Simple statuses (no AI claims) ───────────────────────────
-export type ReadabilityStatus = 'unknown' | 'readable' | 'unreadable';
+export type ReadabilityStatus = 'unknown' | 'readable' | 'degraded' | 'unreadable';
 export type UsefulnessStatus = 'unknown' | 'useful' | 'not_useful';
 export type DuplicateStatus = 'unknown' | 'unique' | 'duplicate';
 

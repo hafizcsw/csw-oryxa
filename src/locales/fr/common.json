@@ -1838,7 +1838,27 @@
         "readability_degraded": "partiellement lisible",
         "readability_unreadable": "illisible",
         "legacy_reader": "lecteur temporaire",
-        "legacy_reader_hint": "Lecteur temporaire dans le navigateur (pdf.js + Tesseract.js). Sera remplacé."
+        "legacy_reader_hint": "Lecteur temporaire dans le navigateur (pdf.js + Tesseract.js). Sera remplacé.",
+        "ocr_label": "OCR",
+        "ocr_quality_good": "bon",
+        "ocr_quality_partial": "partiel",
+        "ocr_quality_garbage": "illisible"
+      },
+      "in_canonical_truth": "dans la vérité canonique",
+      "canonical_truth": "vérité canonique",
+      "filename_only_no_ocr": "nom de fichier uniquement — pas d'OCR",
+      "reanalyze": "Réanalyser",
+      "remove_all_canonical": "Tout retirer de la vérité canonique",
+      "remove_from_canonical": "Retirer de la vérité canonique",
+      "usefulness_useful": "utile",
+      "usefulness_not_useful": "inutile",
+      "usefulness_unknown": "inconnu",
+      "proposal_status": {
+        "proposed": "proposé",
+        "auto_accepted": "accepté auto",
+        "pending_review": "en attente",
+        "rejected": "rejeté",
+        "superseded": "remplacé"
       }
     }
   },
