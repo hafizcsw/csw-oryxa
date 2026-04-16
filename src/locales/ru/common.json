@@ -1832,6 +1832,25 @@
         "teacher_education": "Teaching certificate, diploma, or degree.",
         "teacher_supporting": "Any additional supporting documents (optional)."
       }
+    },
+    "analysis": {
+      "artifact": {
+        "failure": {
+          "unsupported_file_type": "Неподдерживаемый тип файла",
+          "unreadable_scan": "Не удалось прочитать скан",
+          "low_ocr_quality": "Слишком низкое качество OCR",
+          "reader_crashed": "Читатель упал",
+          "empty_document": "Документ пуст"
+        },
+        "route": "маршрут",
+        "parser": "парсер",
+        "readability": "читаемость",
+        "readability_readable": "читаемый",
+        "readability_degraded": "частично читаемый",
+        "readability_unreadable": "нечитаемый",
+        "legacy_reader": "временный читатель",
+        "legacy_reader_hint": "Временный читатель в браузере (pdf.js + Tesseract.js). Будет заменён."
+      }
     }
   },
   "compare_action": "+ Сравнить",

@@ -1840,6 +1840,25 @@
         "teacher_education": "Teaching certificate, diploma, or degree.",
         "teacher_supporting": "Any additional supporting documents (optional)."
       }
+    },
+    "analysis": {
+      "artifact": {
+        "failure": {
+          "unsupported_file_type": "サポートされていないファイル形式",
+          "unreadable_scan": "このスキャンを読み取れませんでした",
+          "low_ocr_quality": "OCR品質が低すぎます",
+          "reader_crashed": "リーダーがクラッシュしました",
+          "empty_document": "ドキュメントが空です"
+        },
+        "route": "ルート",
+        "parser": "パーサー",
+        "readability": "可読性",
+        "readability_readable": "読み取り可能",
+        "readability_degraded": "部分的に読み取り可能",
+        "readability_unreadable": "読み取り不能",
+        "legacy_reader": "仮リーダー",
+        "legacy_reader_hint": "ブラウザ内の仮リーダー(pdf.js + Tesseract.js)。後で置き換えられます。"
+      }
     }
   },
   "studio": {

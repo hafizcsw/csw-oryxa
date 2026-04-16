@@ -1840,6 +1840,25 @@
         "teacher_education": "Teaching certificate, diploma, or degree.",
         "teacher_supporting": "Any additional supporting documents (optional)."
       }
+    },
+    "analysis": {
+      "artifact": {
+        "failure": {
+          "unsupported_file_type": "অসমর্থিত ফাইল প্রকার",
+          "unreadable_scan": "এই স্ক্যান পড়া যায়নি",
+          "low_ocr_quality": "OCR মান অতি নিম্ন",
+          "reader_crashed": "রিডার ক্র্যাশ হয়েছে",
+          "empty_document": "নথিটি খালি"
+        },
+        "route": "রুট",
+        "parser": "পার্সার",
+        "readability": "পঠনযোগ্যতা",
+        "readability_readable": "পঠনযোগ্য",
+        "readability_degraded": "আংশিকভাবে পঠনযোগ্য",
+        "readability_unreadable": "অপঠনযোগ্য",
+        "legacy_reader": "অস্থায়ী রিডার",
+        "legacy_reader_hint": "ব্রাউজারে অস্থায়ী রিডার (pdf.js + Tesseract.js)। এটি প্রতিস্থাপিত হবে।"
+      }
     }
   },
   "studio": {

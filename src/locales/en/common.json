@@ -1473,7 +1473,24 @@
       "accepted": "accepted",
       "pending": "pending",
       "rejected": "rejected",
-      "no_fields_extracted": "No fields could be extracted from this document"
+      "no_fields_extracted": "No fields could be extracted from this document",
+      "artifact": {
+        "failure": {
+          "unsupported_file_type": "Unsupported file type",
+          "unreadable_scan": "Could not read this scan",
+          "low_ocr_quality": "OCR quality too low to trust",
+          "reader_crashed": "Reader crashed",
+          "empty_document": "Document was opened but contained no text"
+        },
+        "route": "route",
+        "parser": "parser",
+        "readability": "readability",
+        "readability_readable": "readable",
+        "readability_degraded": "degraded",
+        "readability_unreadable": "unreadable",
+        "legacy_reader": "legacy reader",
+        "legacy_reader_hint": "Temporary in-browser reader (pdf.js + Tesseract.js). Will be replaced."
+      }
     },
     "nav": {
       "sections": "Sections"
