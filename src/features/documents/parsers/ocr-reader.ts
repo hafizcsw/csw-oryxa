@@ -1,8 +1,10 @@
 // ═══════════════════════════════════════════════════════════════
 // OCR Reader — Door 1: Tesseract.js-based text extraction
 // ═══════════════════════════════════════════════════════════════
-// Handles image files and scanned PDF pages via Tesseract.js.
-// Returns structured PageReading[] for the reading artifact.
+// TEMPORARY: Client-side OCR via Tesseract.js in the browser.
+// This is NOT the final internal engine. A server-side OCR worker
+// (edge function or dedicated service) will replace this path.
+// This exists to prove the routing + artifact pipeline end-to-end.
 // ═══════════════════════════════════════════════════════════════
 
 import type { PageReading, TextBlock } from '../reading-artifact-model';
