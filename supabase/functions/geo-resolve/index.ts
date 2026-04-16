@@ -44,7 +44,6 @@ Deno.serve(async (req) => {
 
     // ── Authentication ──
     const authHeader = req.headers.get('authorization') || '';
-    const apiKeyHeader = req.headers.get('apikey') || '';
     const token = authHeader.replace('Bearer ', '');
 
     // Service-role client for DB operations
@@ -55,26 +54,23 @@ Deno.serve(async (req) => {
     let isServiceRole = false;
     let isAdmin = false;
 
-    // Check if caller is using service role key directly
-    if (token === serviceKey || apiKeyHeader === serviceKey) {
+    if (token === serviceKey) {
       isServiceRole = true;
     } else if (token && token !== anonKey) {
-      // Validate user JWT
+      // Try to validate as user JWT
       const anonClient = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } },
       });
-      const { data: { user }, error: authError } = await anonClient.auth.getUser();
-      if (authError || !user) {
-        return json({ ok: false, error: 'Invalid authentication' }, 401);
+      const { data: { user } } = await anonClient.auth.getUser();
+      if (user) {
+        userId = user.id;
+        const { data: adminCheck } = await srv.rpc('is_admin', { _user_id: user.id as any });
+        isAdmin = !!adminCheck;
       }
-      userId = user.id;
-      // Check admin
-      const { data: adminCheck } = await srv.rpc('is_admin', { _user_id: user.id as any });
-      isAdmin = !!adminCheck;
-    } else if (!apiKeyHeader && !token) {
-      return json({ ok: false, error: 'Authentication required' }, 401);
+      // If user validation fails, still allow as anonymous for lookup/resolve
     }
-    // If token === anonKey or apiKeyHeader === anonKey → anonymous frontend caller (allowed for lookup + resolve)
+    // Anonymous callers (anon key or no auth) are allowed for lookup + resolve
+    // Rate limiting protects against abuse
 
     // ── Mode-specific access control ──
     if (mode === 'warmup' && !isServiceRole && !isAdmin) {
