@@ -14,7 +14,7 @@ const corsHeaders = {
 
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 const CACHE_TTL_DAYS = 30;
-const BBOX_FALLBACK_DEG = 0.35;
+const BBOX_FALLBACK_DEG = 0.25;
 const MATCH_THRESHOLD = 55;
 const AMBIGUOUS_GAP = 15;
 
