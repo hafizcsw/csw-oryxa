@@ -29,6 +29,9 @@ const BORN_DIGITAL_PAGE_RATIO = 0.4;
 /** Minimum average text items per page (font-embedded glyphs) */
 const BORN_DIGITAL_ITEMS_THRESHOLD = 5;
 
+/** Per-page item count for density check */
+interface PageItemStats { page: number; itemCount: number; }
+
 /**
  * Extract text from a PDF file using pdf.js.
  * Returns structured page readings and born-digital detection.
