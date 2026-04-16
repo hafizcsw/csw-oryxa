@@ -430,6 +430,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
     setMapViewport(viewport);
   }, []);
 
+  return (
     <section className="relative">
       {/* ── Visual Separator + Section Header ── */}
       <div className="relative z-[1010] bg-gradient-to-b from-muted/60 via-background/80 to-background border-t border-border/50 shadow-[0_-4px_20px_-6px_rgba(0,0,0,0.1)]">
