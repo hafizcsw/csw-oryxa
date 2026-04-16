@@ -125,6 +125,7 @@ export interface LeafletMapHandle {
 export interface MapViewport {
   zoom: number;
   bounds: L.LatLngBounds;
+  activeCountryCode: string | null;
 }
 
 export interface LeafletMapProps {
@@ -262,6 +263,83 @@ function getCountryCode(feature: GeoJSON.Feature): string | null {
     const upper = adm.toUpperCase();
     if (upper === "ISR" || upper === "PSE" || upper === "PSX") return "PS";
     if (ISO3_TO_ISO2[upper]) return ISO3_TO_ISO2[upper];
+  }
+
+  return null;
+}
+
+function normalizeLngAroundReference(lng: number, reference: number): number {
+  let adjusted = lng;
+  while (adjusted - reference > 180) adjusted -= 360;
+  while (adjusted - reference < -180) adjusted += 360;
+  return adjusted;
+}
+
+function isPointInsideRing(lat: number, lng: number, ring: GeoJSON.Position[]): boolean {
+  let inside = false;
+
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [lngI, latI] = ring[i] as [number, number];
+    const [lngJ, latJ] = ring[j] as [number, number];
+    const adjustedLngI = normalizeLngAroundReference(lngI, lng);
+    const adjustedLngJ = normalizeLngAroundReference(lngJ, lng);
+    const latDelta = latJ - latI;
+
+    const intersects =
+      (latI > lat) !== (latJ > lat) &&
+      lng < (((adjustedLngJ - adjustedLngI) * (lat - latI)) / (latDelta || Number.EPSILON)) + adjustedLngI;
+
+    if (intersects) inside = !inside;
+  }
+
+  return inside;
+}
+
+function isPointInsidePolygon(lat: number, lng: number, polygon: GeoJSON.Position[][]): boolean {
+  if (polygon.length === 0) return false;
+  if (!isPointInsideRing(lat, lng, polygon[0])) return false;
+
+  for (let i = 1; i < polygon.length; i += 1) {
+    if (isPointInsideRing(lat, lng, polygon[i])) return false;
+  }
+
+  return true;
+}
+
+function featureContainsLatLng(feature: GeoJSON.Feature, latlng: L.LatLng): boolean {
+  const geometry = feature.geometry;
+  if (!geometry) return false;
+
+  if (geometry.type === "Polygon") {
+    return isPointInsidePolygon(latlng.lat, latlng.lng, geometry.coordinates as GeoJSON.Position[][]);
+  }
+
+  if (geometry.type === "MultiPolygon") {
+    return (geometry.coordinates as GeoJSON.Position[][][]).some((polygon) =>
+      isPointInsidePolygon(latlng.lat, latlng.lng, polygon)
+    );
+  }
+
+  return false;
+}
+
+function resolveViewportCountryCode(
+  latlng: L.LatLng,
+  worldGeo: GeoJSON.FeatureCollection | null,
+  countryStats: Record<string, { universities_count: number }> | undefined,
+): string | null {
+  if (!worldGeo || !countryStats) return null;
+
+  for (const feature of worldGeo.features) {
+    const code = getCountryCode(feature);
+    if (!code) continue;
+
+    const stats = countryStats[code];
+    if (!stats || stats.universities_count === 0) continue;
+
+    if (featureContainsLatLng(feature, latlng)) {
+      return code;
+    }
   }
 
   return null;
@@ -564,15 +642,23 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     if (!map || !onViewportChange) return;
 
     const emitViewport = () => {
-      onViewportChange({ zoom: map.getZoom(), bounds: map.getBounds() });
+      onViewportChange({
+        zoom: map.getZoom(),
+        bounds: map.getBounds(),
+        activeCountryCode: resolveViewportCountryCode(map.getCenter(), worldGeo, countryStats),
+      });
     };
 
     // Emit initial viewport
     emitViewport();
 
     map.on('moveend', emitViewport);
-    return () => { map.off('moveend', emitViewport); };
-  }, [onViewportChange]);
+    map.on('zoomend', emitViewport);
+    return () => {
+      map.off('moveend', emitViewport);
+      map.off('zoomend', emitViewport);
+    };
+  }, [onViewportChange, worldGeo, countryStats]);
 
   // Update tile layers
   useEffect(() => {

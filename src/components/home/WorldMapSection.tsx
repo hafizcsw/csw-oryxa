@@ -404,73 +404,27 @@ export const WorldMapSection = memo(function WorldMapSection() {
     return items;
   }, [selectedCountryInfo, selectedCity, drillLevel, getLocalizedValue, handleBackToWorld, handleBackToCountry]);
 
-  // ── Auto-select country when zooming in at world level ──
+  // ── Let the map drive the active country from the real geometry under the viewport ──
   useEffect(() => {
-    if (drillLevel !== "world" || !mapViewport || !countryStats) return;
-    if (mapViewport.zoom < 5) return; // Not zoomed in enough
+    if (manualCitySelection || !mapViewport || !countryStats) return;
+    if (mapViewport.zoom < 5) return;
 
-    // Find countries with data whose center is within bounds
-    const CC: Record<string, [number, number]> = {
-      AF:[33,65],AL:[41,20],DZ:[28,3],AO:[-12.5,18.5],AR:[-34,-64],AM:[40,45],AU:[-25,134],AT:[47.5,14],AZ:[40.5,47.5],
-      BH:[26,50.5],BD:[24,90],BY:[53.5,28],BE:[50.8,4.3],BA:[44,17.8],BW:[-22.3,24],BR:[-10,-55],BG:[43,25],KH:[12.5,105],
-      CM:[6,12.5],CA:[56,-96],CL:[-33.5,-71],CN:[35,105],CO:[4,-72],HR:[45.2,15.5],CU:[22,-79.5],CY:[35,33],CZ:[49.7,15.5],
-      DK:[56,10],DO:[19,-70.7],EC:[-1.5,-78.5],EG:[27,30],EE:[59,25.5],ET:[8,38],FI:[64,26],FR:[46.5,2.5],GE:[42,43.5],
-      DE:[51,10],GH:[7.9,-1.2],GR:[39,22],GT:[15.5,-90.3],HN:[14.7,-86.3],HU:[47,19],IS:[65,-18],IN:[22,78.5],ID:[-2.5,118],
-      IR:[32.5,53.5],IQ:[33.2,43.7],IE:[53.4,-8],PS:[31.9,35.2],IT:[42.5,12.5],JM:[18.1,-77.3],JP:[36,138],JO:[31.2,36.5],
-      KZ:[48,67.5],KE:[0.5,38],KR:[36,128],KW:[29.3,47.5],KG:[41,75],LV:[57,25],LB:[33.8,35.8],LY:[27,17],LT:[55.5,24],
-      LU:[49.8,6.1],MY:[4.2,101.8],ML:[17.5,-4],MT:[35.9,14.4],MX:[23,-102],MD:[47,29],MN:[47.5,105],ME:[42.5,19.3],
-      MA:[32,-6],MZ:[-18.7,35.5],MM:[21,96],NA:[-22,17],NP:[28,84],NL:[52.3,5.7],NZ:[-41,174],NG:[9.1,8.7],NO:[62,10],
-      OM:[21,57],PK:[30,69],PA:[9,-80],PY:[-23,-58],PE:[-10,-76],PH:[12.8,122],PL:[52,20],PT:[39.5,-8],QA:[25.5,51.2],
-      RO:[46,25],RU:[62,96],RW:[-2,29.5],SA:[24,44.5],SN:[14.5,-14.5],RS:[44,21],SG:[1.35,103.8],SK:[48.7,19.5],
-      SI:[46.1,14.8],ZA:[-29,25],ES:[40,-4],LK:[7.5,80.5],SD:[15.5,30],SE:[62,15],CH:[47,8.2],SY:[35,38.5],
-      TW:[23.5,121],TJ:[38.5,71],TZ:[-6.5,35],TH:[15,100],TN:[34,9.5],TR:[39,35],TM:[39,59.5],UG:[1.5,32.5],
-      UA:[49,32],AE:[24,54],GB:[54,-2],US:[39.5,-98.5],UY:[-33,-56],UZ:[41.5,64.5],VE:[8,-66],VN:[16,106],
-      YE:[15.5,48],ZM:[-13,28.5],ZW:[-19.8,29.9],CD:[-2.5,23.6],CI:[7.5,-5.5],BO:[-17,-65],MR:[20.2,-10.4],LA:[18.2,103.8],
-    };
+    const activeCountryCode = mapViewport.activeCountryCode;
+    if (!activeCountryCode) return;
 
-    const visibleDataCountries = Object.keys(countryStats).filter(code => {
-      if (!countryStats[code] || countryStats[code].universities_count === 0) return false;
-      const center = CC[code];
-      if (!center) return false;
-      return mapViewport.bounds.contains(center as [number, number]);
-    });
+    const activeCountryStats = countryStats[activeCountryCode];
+    if (!activeCountryStats || activeCountryStats.universities_count === 0) return;
 
-    if (visibleDataCountries.length === 1) {
-      setSelectedCountryCode(visibleDataCountries[0]);
-      setDrillLevel("country");
-      setManualCitySelection(false);
-    } else if (visibleDataCountries.length > 1 && mapViewport.zoom >= 5) {
-      // Score each country: combine distance-to-center with university count weight
-      // This prevents large countries with far-away centers (like Russia) from losing
-      // to smaller neighbors when the user is clearly zoomed over the large country
-      const center = mapViewport.bounds.getCenter();
-      let best: string | null = null;
-      let bestScore = -Infinity;
-      
-      const maxUnis = Math.max(...visibleDataCountries.map(c => countryStats[c]?.universities_count || 0));
-      
-      for (const code of visibleDataCountries) {
-        const cc = CC[code];
-        if (!cc) continue;
-        const dist = Math.sqrt(Math.pow(cc[0] - center.lat, 2) + Math.pow(cc[1] - center.lng, 2));
-        const unis = countryStats[code]?.universities_count || 0;
-        // Normalize: lower distance = better, higher unis = better
-        // Distance penalty (0-1 range based on max ~60 degrees spread)
-        const distScore = 1 - Math.min(dist / 60, 1);
-        // University weight (0-1 range)
-        const uniScore = maxUnis > 0 ? unis / maxUnis : 0;
-        // Combined: 40% distance, 60% university count
-        const score = distScore * 0.4 + uniScore * 0.6;
-        if (score > bestScore) { bestScore = score; best = code; }
-      }
-      
-      if (best && bestScore > 0.3) {
-        setSelectedCountryCode(best);
-        setDrillLevel("country");
-        setManualCitySelection(false);
-      }
-    }
-  }, [mapViewport, drillLevel, countryStats]);
+    const countryChanged = selectedCountryCode !== activeCountryCode;
+    const shouldSyncCountry = drillLevel === "world" || countryChanged;
+
+    if (!shouldSyncCountry) return;
+
+    setSelectedCountryCode(activeCountryCode);
+    setSelectedCity(null);
+    setDrillLevel("country");
+    setShowAllUnis(false);
+  }, [mapViewport, countryStats, manualCitySelection, selectedCountryCode, drillLevel]);
 
   // ── Viewport-based visible cities filtering ──
   const visibleCities = useMemo(() => {
