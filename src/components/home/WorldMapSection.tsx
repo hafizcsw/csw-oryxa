@@ -23,7 +23,11 @@ import {
   type CitySummary,
 } from "@/hooks/useMapData";
 import { useOsmCityOverlay } from "@/hooks/useOsmCityOverlay";
-import { loadCountryGeodata, hasCountryGeodata } from "@/lib/countryGeodata";
+import {
+  getCachedCountryGeodata,
+  loadCountryGeodata,
+  hasCountryGeodata,
+} from "@/lib/countryGeodata";
 import { useGeoCacheResolver } from "@/hooks/useGeoCacheResolver";
 import { useUniversityGeoResolver } from "@/hooks/useUniversityGeoResolver";
 import { cityKey, uniKey } from "@/lib/geoResolver";
@@ -232,7 +236,22 @@ export const WorldMapSection = memo(function WorldMapSection() {
       setLoadingGeodata(false);
       return;
     }
+
+    if (!hasCountryGeodata(selectedCountryCode)) {
+      setSubdivisionGeodata(null);
+      setLoadingGeodata(false);
+      return;
+    }
+
+    const cachedGeodata = getCachedCountryGeodata(selectedCountryCode);
+    if (cachedGeodata) {
+      setSubdivisionGeodata(cachedGeodata);
+      setLoadingGeodata(false);
+      return;
+    }
+
     let cancelled = false;
+    setSubdivisionGeodata(null);
     setLoadingGeodata(true);
     loadCountryGeodata(selectedCountryCode).then((data) => {
       if (!cancelled) {
