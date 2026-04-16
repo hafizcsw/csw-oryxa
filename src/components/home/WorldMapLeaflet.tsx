@@ -133,6 +133,8 @@ export interface LeafletMapProps {
   onCountrySelect: (code: string | null) => void;
   onRegionSelect: (regionId: string) => void;
   onCitySelect?: (cityName: string) => void;
+  onBackToCountry?: () => void;
+  onBackToWorld?: () => void;
   selectedCountryCode: string | null;
   selectedRegionId: string | null;
   drillLevel: "world" | "country" | "region";
