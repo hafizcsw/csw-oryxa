@@ -121,6 +121,15 @@ export async function analyzeDocument(params: {
       // ── PDF lane: try text extraction first ──
       const pdfResult = await extractPdfText(file);
 
+      // Log detection signals for born-digital heuristic transparency
+      if (pdfResult.detection_signals) {
+        console.info('[Door1:PdfDetection]', {
+          file: file.name,
+          is_born_digital: pdfResult.is_born_digital,
+          ...pdfResult.detection_signals,
+        });
+      }
+
       if (pdfResult.ok && pdfResult.is_born_digital) {
         // Born-digital PDF — text extraction succeeded
         artifact.chosen_route = 'born_digital_pdf';
