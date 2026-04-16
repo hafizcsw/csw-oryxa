@@ -1,8 +1,9 @@
 // ═══════════════════════════════════════════════════════════════
-// Content Classifier — Door 3: Internal document classification
+// Content Classifier — Door 1: Internal document classification
 // ═══════════════════════════════════════════════════════════════
 // Classifies documents based on text content + filename heuristics.
 // No external LLM. Pure regex/pattern matching.
+// Fixed MIME gate: checks actual MIME type properly.
 // ═══════════════════════════════════════════════════════════════
 
 import type { DocumentSlotType } from '../document-registry-model';
@@ -13,12 +14,23 @@ export interface ClassificationScore {
   evidence: string[];   // keywords/patterns that matched
 }
 
-interface ClassificationOutput {
+export interface ClassificationOutput {
   best: DocumentSlotType;
   confidence: number;
   scores: ClassificationScore[];
   evidence: string[];
 }
+
+// ── Supported MIME types ─────────────────────────────────────
+const SUPPORTED_MIMES = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+]);
 
 // ── Keyword patterns per document type ───────────────────────
 
@@ -102,6 +114,7 @@ function scorePatterns(text: string, patterns: RegExp[]): { score: number; evide
 /**
  * Classify document content into a slot type.
  * Uses both filename and extracted text content.
+ * MIME gate now checks exact MIME type against supported set.
  */
 export function classifyDocument(params: {
   fileName: string;
@@ -111,15 +124,8 @@ export function classifyDocument(params: {
   const { fileName, textContent, mimeType } = params;
   const combined = `${fileName}\n${textContent}`;
 
-  // Check for unsupported types
-  const supportedMimes = [
-    'application/pdf',
-    'image/jpeg', 'image/png', 'image/webp', 'image/jpg',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  ];
-  
-  if (mimeType && !supportedMimes.some(m => mimeType.startsWith(m.split('/')[0]))) {
+  // Fixed MIME gate: check exact MIME type
+  if (mimeType && !SUPPORTED_MIMES.has(mimeType)) {
     return {
       best: 'unsupported',
       confidence: 1.0,
