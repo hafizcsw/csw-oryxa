@@ -627,6 +627,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
               }}
               onBackToCountry={handleBackToCountry}
               onBackToWorld={handleBackToWorld}
+              onViewportChange={handleViewportChange}
               selectedCountryCode={selectedCountryCode}
               selectedRegionId={selectedRegionForCity?.regionId || null}
               drillLevel={drillLevel === "city" ? "region" : drillLevel}
