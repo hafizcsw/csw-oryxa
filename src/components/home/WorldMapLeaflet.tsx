@@ -1229,15 +1229,17 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         }
       }
 
-      if (pts.length === 1) {
-        map.flyTo(pts[0], 12, { animate: true, duration: 0.9 });
-      } else if (pts.length > 1) {
-        map.fitBounds(L.latLngBounds(pts).pad(0.24), { animate: true, maxZoom: 12 });
-      } else if (selectedCitySummary?.city_lat != null && selectedCitySummary?.city_lon != null) {
-        map.flyTo([selectedCitySummary.city_lat, selectedCitySummary.city_lon], 11, {
-          animate: true,
-          duration: 0.9,
-        });
+      if (shouldZoom) {
+        if (pts.length === 1) {
+          map.flyTo(pts[0], 12, { animate: true, duration: 0.9 });
+        } else if (pts.length > 1) {
+          map.fitBounds(L.latLngBounds(pts).pad(0.24), { animate: true, maxZoom: 12 });
+        } else if (selectedCitySummary?.city_lat != null && selectedCitySummary?.city_lon != null) {
+          map.flyTo([selectedCitySummary.city_lat, selectedCitySummary.city_lon], 11, {
+            animate: true,
+            duration: 0.9,
+          });
+        }
       }
     }
   }, [drillLevel, countryStats, visibleCountryCodes, citySummaries, cityUniversities, regionCities, regionSummaries, selectedCountryCode, isDark, isRtl, mapText, getLocalizedValue, onCountrySelect, onRegionSelect, onCitySelect, worldGeo, osmOverlay, countryMeta]);
