@@ -218,8 +218,16 @@ function dormMarkerIcon(isDark: boolean): L.DivIcon {
   });
 }
 
-/* ── GeoJSON cache ── */
+/* ── GeoJSON cache (module + sessionStorage) ── */
 let geoJsonCache: GeoJSON.FeatureCollection | null = null;
+
+// Try to restore from sessionStorage on module load
+try {
+  const stored = sessionStorage.getItem('csw-world-geojson');
+  if (stored) {
+    geoJsonCache = JSON.parse(stored) as GeoJSON.FeatureCollection;
+  }
+} catch { /* ignore */ }
 
 /** Resolve ISO A2 code from feature properties (handles multiple GeoJSON schemas) */
 function getCountryCode(feature: GeoJSON.Feature): string | null {
@@ -346,6 +354,8 @@ async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
     };
   }
 
+  // Persist to sessionStorage for instant reload
+  try { sessionStorage.setItem('csw-world-geojson', JSON.stringify(geoJsonCache)); } catch { /* quota */ }
   console.log("[Map] Loaded world geodata:", geoJsonCache.features.length, "features");
   const codes = geoJsonCache.features.slice(0, 5).map(f => ({
     ISO_A2: f.properties?.ISO_A2,

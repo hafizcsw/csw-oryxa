@@ -248,6 +248,15 @@ Deno.serve(async (req) => {
             }, { onConflict: 'city_name,country_code' }).select();
           }
 
+          // Write resolved coordinates back to universities table for permanent storage
+          if (entry.entity_type === 'university' && entry.entity_id && cacheEntry.lat !== 0) {
+            await srv.from('universities').update({
+              geo_lat: cacheEntry.lat,
+              geo_lon: cacheEntry.lon,
+              geo_source: cacheEntry.source,
+            }).eq('id', entry.entity_id);
+          }
+
           resolved.push({ key: queryKey, ...cacheEntry, from_cache: false });
 
           // Polite delay for Nominatim
