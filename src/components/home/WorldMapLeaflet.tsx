@@ -704,6 +704,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     }
 
     // Only show reference labels in satellite mode when drilled into a country/region
+    // Use reduced opacity at country level since we render our own city labels
     if (activeLayer === "satellite" && drillLevel !== "world") {
       refLabelsRef.current = L.tileLayer(TILES.referenceLabels, {
         detectRetina: false,
@@ -715,6 +716,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         crossOrigin: true,
         maxZoom: 18,
         minZoom: 5,
+        opacity: drillLevel === "country" ? 0.3 : 0.7,
         pane: 'overlayPane',
       }).addTo(map);
     }
