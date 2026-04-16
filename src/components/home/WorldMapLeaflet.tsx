@@ -567,16 +567,22 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     tileRef.current.forEach(t => map.removeLayer(t));
     tileRef.current = [];
     if (activeLayer === "satellite") {
-      tileRef.current = [
+      const satLayers: L.TileLayer[] = [
         L.tileLayer(TILES.satellite, { ...hdTileOptions, maxZoom: 18, className: isDark ? "map-layer--satellite-dark" : "map-layer--satellite-light" }).addTo(map),
-        L.tileLayer(TILES.referenceLabels, { ...hdTileOptions, maxZoom: 18, pane: 'overlayPane' }).addTo(map),
       ];
+      // Only add reference labels (cities) when drilled into a country/region — prevents duplicate country names at world level
+      if (drillLevel !== "world") {
+        satLayers.push(
+          L.tileLayer(TILES.referenceLabels, { ...hdTileOptions, maxZoom: 18, minZoom: 6, pane: 'overlayPane' }).addTo(map),
+        );
+      }
+      tileRef.current = satLayers;
     } else if (activeLayer === "streets") {
       tileRef.current = [L.tileLayer(isDark ? TILES.streetsDark : TILES.streetsLight, { ...hdTileOptions, maxZoom: 20, subdomains: 'abcd' }).addTo(map)];
     } else {
       tileRef.current = [L.tileLayer(TILES.topo, { ...hdTileOptions, maxZoom: 17, className: isDark ? "map-layer--topo-dark" : "map-layer--topo-light" }).addTo(map)];
     }
-  }, [activeLayer, isDark]);
+  }, [activeLayer, isDark, drillLevel]);
 
   // ── Country name labels from GeoJSON (replaces external label tiles) ──
   useEffect(() => {
