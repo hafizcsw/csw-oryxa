@@ -122,6 +122,11 @@ export interface LeafletMapHandle {
   flyTo: (lat: number, lon: number, zoom?: number) => void;
 }
 
+export interface MapViewport {
+  zoom: number;
+  bounds: L.LatLngBounds;
+}
+
 export interface LeafletMapProps {
   countryStats: Record<string, {
     country_name_ar: string;
@@ -136,6 +141,7 @@ export interface LeafletMapProps {
   onCitySelect?: (cityName: string) => void;
   onBackToCountry?: () => void;
   onBackToWorld?: () => void;
+  onViewportChange?: (viewport: MapViewport) => void;
   selectedCountryCode: string | null;
   selectedRegionId: string | null;
   drillLevel: "world" | "country" | "region";
@@ -375,7 +381,7 @@ async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
 export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(function WorldMapLeaflet(props, ref) {
   const {
     countryStats, onCountrySelect, onRegionSelect, onCitySelect,
-    onBackToCountry, onBackToWorld,
+    onBackToCountry, onBackToWorld, onViewportChange,
     selectedCountryCode, drillLevel, isRtl,
     regionSummaries, visibleCountryCodes,
     citySummaries, cityUniversities, regionCities,
