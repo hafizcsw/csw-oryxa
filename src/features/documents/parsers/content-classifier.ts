@@ -294,4 +294,3 @@ export function classifyDocument(params: {
     passport_mrz_pattern_in_text: passportEval.mrz_pattern_in_text,
   };
 }
-}
