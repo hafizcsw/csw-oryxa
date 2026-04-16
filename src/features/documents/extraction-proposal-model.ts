@@ -96,8 +96,25 @@ const LOW_RISK_FIELDS = new Set([
 /** Minimum confidence for auto-accept */
 const AUTO_ACCEPT_THRESHOLD = 0.85;
 
-/** Apply truth promotion rules to a proposal */
-export function applyPromotionRules(proposal: ExtractionProposal): ExtractionProposal {
+/** Context required to apply promotion rules honestly. */
+export interface PromotionContext {
+  /** Reading-stage readability of the source artifact. */
+  readability?: 'readable' | 'degraded' | 'unreadable';
+}
+
+/**
+ * Apply truth promotion rules to a proposal.
+ *
+ * HONESTY GATE (Door 1):
+ *   A proposal sourced from a 'degraded' artifact can NEVER be auto_accepted,
+ *   regardless of field risk class or confidence. It is forced to
+ *   pending_review with auto_apply_candidate=false. This guard runs at the
+ *   engine/promotion layer — UI cannot bypass it.
+ */
+export function applyPromotionRules(
+  proposal: ExtractionProposal,
+  context: PromotionContext = {},
+): ExtractionProposal {
   const updated = { ...proposal, updated_at: new Date().toISOString() };
 
   // Rule: reject if value is null/empty
@@ -110,6 +127,15 @@ export function applyPromotionRules(proposal: ExtractionProposal): ExtractionPro
 
   // Rule: if conflict exists → always pending_review
   if (updated.conflict_with_current) {
+    updated.proposal_status = 'pending_review';
+    updated.requires_review = true;
+    updated.auto_apply_candidate = false;
+    return updated;
+  }
+
+  // HONESTY GATE: degraded artifacts cannot produce auto_accepted proposals.
+  // Extraction is allowed to continue, but every proposal is pending_review.
+  if (context.readability === 'degraded') {
     updated.proposal_status = 'pending_review';
     updated.requires_review = true;
     updated.auto_apply_candidate = false;
