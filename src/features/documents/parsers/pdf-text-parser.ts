@@ -2,23 +2,20 @@
 // PDF Text Parser — Door 1: Extract raw text from PDF files
 // ═══════════════════════════════════════════════════════════════
 // Uses pdf.js (pdfjs-dist) to extract text content from PDFs.
-// Now returns structured PageReading[] and detects born-digital
-// vs scanned (low/no text) PDFs.
+// Returns structured PageReading[] and detects born-digital
+// vs scanned (low/no text) PDFs using a 3-signal heuristic.
 // ═══════════════════════════════════════════════════════════════
 
 import type { PageReading, TextBlock } from '../reading-artifact-model';
 
 export interface PdfTextResult {
   ok: boolean;
-  /** Structured page readings */
   pages: PageReading[];
-  /** Total pages in document */
   pageCount: number;
-  /** True if enough text was extracted to consider it born-digital */
   is_born_digital: boolean;
-  /** Error message if failed */
+  /** Detection signals for transparency */
+  detection_signals?: { avgChars: number; contentRatio: number; avgItems: number };
   error?: string;
-  /** Processing time ms */
   processing_time_ms: number;
 }
 
@@ -28,9 +25,6 @@ const BORN_DIGITAL_CHAR_THRESHOLD = 50;
 const BORN_DIGITAL_PAGE_RATIO = 0.4;
 /** Minimum average text items per page (font-embedded glyphs) */
 const BORN_DIGITAL_ITEMS_THRESHOLD = 5;
-
-/** Per-page item count for density check */
-interface PageItemStats { page: number; itemCount: number; }
 
 /**
  * Extract text from a PDF file using pdf.js.
@@ -47,16 +41,15 @@ export async function extractPdfText(file: File, maxPages = 10): Promise<PdfText
 
     const pagesToProcess = Math.min(pdf.numPages, maxPages);
     const pages: PageReading[] = [];
+    const itemCounts: number[] = [];
 
     for (let i = 1; i <= pagesToProcess; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
 
-      // Build blocks from text items — group by vertical position (approximate lines)
       const blocks: TextBlock[] = [];
       let currentLine = '';
       let lastY: number | null = null;
-
       let textItemCount = 0;
 
       for (const item of content.items) {
@@ -67,11 +60,7 @@ export async function extractPdfText(file: File, maxPages = 10): Promise<PdfText
         const y = textItem.transform?.[5];
         if (lastY !== null && y !== undefined && Math.abs(y - lastY) > 3) {
           if (currentLine.trim()) {
-            blocks.push({
-              page: i,
-              text: currentLine.trim(),
-              type: 'line',
-            });
+            blocks.push({ page: i, text: currentLine.trim(), type: 'line' });
           }
           currentLine = textItem.str;
         } else {
@@ -79,13 +68,8 @@ export async function extractPdfText(file: File, maxPages = 10): Promise<PdfText
         }
         if (y !== undefined) lastY = y;
       }
-      // Push last line
       if (currentLine.trim()) {
-        blocks.push({
-          page: i,
-          text: currentLine.trim(),
-          type: 'line',
-        });
+        blocks.push({ page: i, text: currentLine.trim(), type: 'line' });
       }
 
       const pageText = blocks.map(b => b.text).join('\n');
@@ -96,28 +80,32 @@ export async function extractPdfText(file: File, maxPages = 10): Promise<PdfText
         char_count: pageText.length,
         has_content: pageText.trim().length > 10,
       });
+      itemCounts.push(textItemCount);
     }
 
-    // ── Born-digital detection (multi-signal) ──────────────────
-    // A single char-count threshold is too weak. We combine:
-    //   1. Average chars per page (content density)
-    //   2. Ratio of pages that have real content
-    // A scanned PDF typically has 0 chars or just OCR noise (<20 chars).
-    // A born-digital PDF has font-embedded text → high char counts.
+    // ── Born-digital detection (3-signal) ──────────────────────
+    // 1. avgChars  — average characters per page
+    // 2. contentRatio — ratio of pages with >10 chars
+    // 3. avgItems — average pdf.js text items per page (font glyphs)
+    // All three must pass. Scanned PDFs score 0 on all three.
     const totalChars = pages.reduce((sum, p) => sum + p.char_count, 0);
     const avgChars = pagesToProcess > 0 ? totalChars / pagesToProcess : 0;
     const pagesWithContent = pages.filter(p => p.has_content).length;
     const contentRatio = pagesToProcess > 0 ? pagesWithContent / pagesToProcess : 0;
+    const totalItems = itemCounts.reduce((sum, c) => sum + c, 0);
+    const avgItems = pagesToProcess > 0 ? totalItems / pagesToProcess : 0;
 
     const is_born_digital =
       avgChars >= BORN_DIGITAL_CHAR_THRESHOLD &&
-      contentRatio >= BORN_DIGITAL_PAGE_RATIO;
+      contentRatio >= BORN_DIGITAL_PAGE_RATIO &&
+      avgItems >= BORN_DIGITAL_ITEMS_THRESHOLD;
 
     return {
       ok: true,
       pages,
       pageCount: pdf.numPages,
       is_born_digital,
+      detection_signals: { avgChars, contentRatio, avgItems },
       processing_time_ms: performance.now() - start,
     };
   } catch (err) {
