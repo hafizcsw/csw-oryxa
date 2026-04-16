@@ -120,7 +120,8 @@ export function useMapCountrySummary(rpcParams: MapRpcParams) {
 
       return map;
     },
-    staleTime: 60_000,
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
   });
 }
 
@@ -145,7 +146,8 @@ export function useMapCitySummary(countryCode: string | null, rpcParams: MapRpcP
     },
     enabled: !!canonicalCountryCode,
     retry: 0,
-    staleTime: 60_000,
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
   });
 }
 
