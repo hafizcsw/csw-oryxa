@@ -23,7 +23,11 @@ export interface PdfTextResult {
 }
 
 /** Minimum average chars per page to consider PDF born-digital */
-const BORN_DIGITAL_THRESHOLD = 30;
+const BORN_DIGITAL_CHAR_THRESHOLD = 50;
+/** Minimum ratio of pages with real content */
+const BORN_DIGITAL_PAGE_RATIO = 0.4;
+/** Minimum average text items per page (font-embedded glyphs) */
+const BORN_DIGITAL_ITEMS_THRESHOLD = 5;
 
 /**
  * Extract text from a PDF file using pdf.js.
