@@ -558,6 +558,22 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     return () => { map.off('zoomend', onZoomEnd); };
   }, [drillLevel, onBackToCountry, onBackToWorld]);
 
+  // ── Emit viewport changes to parent ──
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !onViewportChange) return;
+
+    const emitViewport = () => {
+      onViewportChange({ zoom: map.getZoom(), bounds: map.getBounds() });
+    };
+
+    // Emit initial viewport
+    emitViewport();
+
+    map.on('moveend', emitViewport);
+    return () => { map.off('moveend', emitViewport); };
+  }, [onViewportChange]);
+
   // Update tile layers
   useEffect(() => {
     const map = mapRef.current;
