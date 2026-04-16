@@ -1821,6 +1821,25 @@
         "teacher_education": "Teaching certificate, diploma, or degree.",
         "teacher_supporting": "Any additional supporting documents (optional)."
       }
+    },
+    "analysis": {
+      "artifact": {
+        "failure": {
+          "unsupported_file_type": "Type de fichier non pris en charge",
+          "unreadable_scan": "Impossible de lire ce scan",
+          "low_ocr_quality": "Qualité OCR trop faible",
+          "reader_crashed": "Le lecteur a planté",
+          "empty_document": "Le document est vide"
+        },
+        "route": "route",
+        "parser": "parseur",
+        "readability": "lisibilité",
+        "readability_readable": "lisible",
+        "readability_degraded": "partiellement lisible",
+        "readability_unreadable": "illisible",
+        "legacy_reader": "lecteur temporaire",
+        "legacy_reader_hint": "Lecteur temporaire dans le navigateur (pdf.js + Tesseract.js). Sera remplacé."
+      }
     }
   },
   "compare_action": "+ Comparer",

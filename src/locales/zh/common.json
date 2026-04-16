@@ -1883,6 +1883,25 @@
         "teacher_education": "Teaching certificate, diploma, or degree.",
         "teacher_supporting": "Any additional supporting documents (optional)."
       }
+    },
+    "analysis": {
+      "artifact": {
+        "failure": {
+          "unsupported_file_type": "不支持的文件类型",
+          "unreadable_scan": "无法读取此扫描件",
+          "low_ocr_quality": "OCR 质量过低",
+          "reader_crashed": "读取器崩溃",
+          "empty_document": "文档为空"
+        },
+        "route": "路径",
+        "parser": "解析器",
+        "readability": "可读性",
+        "readability_readable": "可读",
+        "readability_degraded": "部分可读",
+        "readability_unreadable": "不可读",
+        "legacy_reader": "临时读取器",
+        "legacy_reader_hint": "浏览器内临时读取器(pdf.js + Tesseract.js),将被替换。"
+      }
     }
   },
   "compare_action": "+ 对比",

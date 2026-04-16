@@ -1,14 +1,12 @@
 // ═══════════════════════════════════════════════════════════════
 // Document Analysis Engine — Door 1+: Orchestrator
 // ═══════════════════════════════════════════════════════════════
-// Takes a file + document_id, runs reading → classification →
-// extraction → proposals.
+// Reads via the DocumentReader contract (no direct parser
+// imports), then runs classification → extraction → proposals.
 //
-// Door 1 routing:
-//   born_digital_pdf → pdfjs text extraction
-//   scanned_pdf      → pdfjs render → Tesseract OCR
-//   image            → Tesseract OCR
-//   unsupported      → skip
+// The reading stage is now FULLY isolated. Swapping the legacy
+// browser reader for a server-side worker requires zero changes
+// in this file.
 // ═══════════════════════════════════════════════════════════════
 
 import type { DocumentSlotType } from './document-registry-model';
@@ -22,16 +20,8 @@ import {
   createProposal,
   applyPromotionRules,
 } from './extraction-proposal-model';
-import {
-  type ReadingArtifact,
-  createEmptyArtifact,
-  resolveReadingRoute,
-  assembleFullText,
-  calculateReadingConfidence,
-  assessOcrQuality,
-} from './reading-artifact-model';
-import { extractPdfText } from './parsers/pdf-text-parser';
-import { ocrImageFile, ocrPdfPages } from './parsers/ocr-reader';
+import type { ReadingArtifact } from './reading-artifact-model';
+import { readDocumentArtifact } from './document-reader-contract';
 import { parseMrz } from './parsers/mrz-parser';
 import { classifyDocument } from './parsers/content-classifier';
 import {
@@ -64,7 +54,7 @@ function getCanonicalValue(file: CanonicalStudentFile | null, fieldKey: string):
 
 /**
  * Run the full analysis pipeline on a file.
- * Door 1: read → Door 2 classify → Door 2 extract → proposals.
+ * Door 1: read (via contract) → Door 2 classify → Door 2 extract → proposals.
  */
 export async function analyzeDocument(params: {
   file: File;
@@ -78,111 +68,46 @@ export async function analyzeDocument(params: {
   const proposals: ExtractionProposal[] = [];
   const startTime = performance.now();
 
-  // ── Step 0: Determine reading route ──
-  const route = resolveReadingRoute(file.type);
-  const artifact = createEmptyArtifact(file.name, file.type, route);
+  // ── Step 1: Read the document via the reading contract ───
+  analysis.analysis_status = 'analyzing';
+  const artifact = await readDocumentArtifact(file);
+
+  // Mirror reading verdict onto analysis surface
+  if (artifact.parser_used === 'pdfjs_text') {
+    analysis.parser_type = 'pdf_text';
+  } else if (artifact.parser_used === 'tesseract_ocr' || artifact.parser_used === 'pdfjs_render_ocr') {
+    analysis.parser_type = 'image_ocr';
+  } else {
+    analysis.parser_type = 'none';
+  }
+
+  // ── Honesty gate ─────────────────────────────────────────
+  // unreadable artifacts MUST NOT flow downstream as a normal success.
+  if (artifact.readability === 'unreadable') {
+    analysis.readability_status = 'unreadable';
+    analysis.usefulness_status = 'not_useful';
+    analysis.rejection_reason = artifact.failure_reason ?? 'unreadable_scan';
+    analysis.analysis_status = artifact.failure_reason === 'unsupported_file_type' ? 'skipped' : 'failed';
+    analysis.summary_message_internal = [
+      `Route: ${artifact.chosen_route}`,
+      `Parser: ${artifact.parser_used}`,
+      `Reader: ${artifact.reader_implementation}`,
+      `Failure: ${artifact.failure_reason}`,
+      artifact.failure_detail ? `Detail: ${artifact.failure_detail}` : null,
+    ].filter(Boolean).join(' | ');
+    analysis.updated_at = new Date().toISOString();
+    logArtifact(artifact, analysis);
+    return { analysis, proposals, artifact };
+  }
+
+  // readable | degraded → continue, but mark surface honestly
+  analysis.readability_status = 'readable';
+  if (artifact.full_text.trim().length > 0) {
+    analysis.text_content = artifact.full_text;
+  }
 
   try {
-    analysis.analysis_status = 'analyzing';
-
-    // ── Step 1: Read the document ──
-    if (route === 'unsupported') {
-      artifact.failure_reason = `Unsupported MIME type: ${file.type}`;
-      analysis.analysis_status = 'skipped';
-      analysis.parser_type = 'none';
-      analysis.readability_status = 'unreadable';
-      analysis.usefulness_status = 'not_useful';
-      analysis.rejection_reason = 'Unsupported file type';
-      artifact.processing_time_ms = performance.now() - startTime;
-      return { analysis, proposals, artifact };
-    }
-
-    if (route === 'image') {
-      // ── Image → OCR lane ──
-      const ocrResult = await ocrImageFile(file);
-      artifact.parser_used = 'tesseract_ocr';
-      artifact.processing_time_ms = ocrResult.processing_time_ms;
-
-      if (ocrResult.ok && ocrResult.pages.length > 0) {
-        artifact.pages = ocrResult.pages;
-        artifact.pages_processed = ocrResult.pages.length;
-        artifact.total_page_count = 1;
-        artifact.full_text = assembleFullText(ocrResult.pages);
-        artifact.confidence = calculateReadingConfidence(ocrResult.pages);
-        // OCR quality gate — don't trust length alone
-        const ocrQuality = assessOcrQuality(artifact.full_text);
-        artifact.ocr_quality = ocrQuality;
-        artifact.is_readable = ocrQuality.is_coherent;
-        artifact.confidence = ocrQuality.is_coherent ? artifact.confidence : artifact.confidence * 0.3;
-        analysis.parser_type = 'image_ocr';
-        analysis.readability_status = ocrQuality.is_coherent
-          ? (ocrQuality.quality_label === 'good' ? 'readable' : 'readable')
-          : 'unreadable';
-      } else {
-        artifact.failure_reason = ocrResult.error || 'OCR produced no text';
-        artifact.is_readable = false;
-        analysis.parser_type = 'image_ocr';
-        analysis.readability_status = 'unreadable';
-      }
-    } else {
-      // ── PDF lane: try text extraction first ──
-      const pdfResult = await extractPdfText(file);
-
-      // Log detection signals for born-digital heuristic transparency
-      if (pdfResult.detection_signals) {
-        console.info('[Door1:PdfDetection]', {
-          file: file.name,
-          is_born_digital: pdfResult.is_born_digital,
-          ...pdfResult.detection_signals,
-        });
-      }
-
-      if (pdfResult.ok && pdfResult.is_born_digital) {
-        // Born-digital PDF — text extraction succeeded
-        artifact.chosen_route = 'born_digital_pdf';
-        artifact.parser_used = 'pdfjs_text';
-        artifact.pages = pdfResult.pages;
-        artifact.total_page_count = pdfResult.pageCount;
-        artifact.pages_processed = pdfResult.pages.length;
-        artifact.full_text = assembleFullText(pdfResult.pages);
-        artifact.confidence = calculateReadingConfidence(pdfResult.pages);
-        artifact.is_readable = true;
-        artifact.processing_time_ms = pdfResult.processing_time_ms;
-        analysis.parser_type = 'pdf_text';
-        analysis.readability_status = 'readable';
-      } else {
-        // Scanned PDF — fall through to OCR
-        artifact.chosen_route = 'scanned_pdf';
-        const ocrResult = await ocrPdfPages(file);
-        artifact.parser_used = 'pdfjs_render_ocr';
-        artifact.processing_time_ms = (pdfResult.processing_time_ms || 0) + ocrResult.processing_time_ms;
-
-        if (ocrResult.ok && ocrResult.pages.length > 0) {
-          artifact.pages = ocrResult.pages;
-          artifact.total_page_count = pdfResult.pageCount || ocrResult.pages.length;
-          artifact.pages_processed = ocrResult.pages.length;
-          artifact.full_text = assembleFullText(ocrResult.pages);
-          artifact.confidence = calculateReadingConfidence(ocrResult.pages);
-          // OCR quality gate — detect garbage text
-          const ocrQuality = assessOcrQuality(artifact.full_text);
-          artifact.ocr_quality = ocrQuality;
-          artifact.is_readable = ocrQuality.is_coherent;
-          artifact.confidence = ocrQuality.is_coherent ? artifact.confidence : artifact.confidence * 0.3;
-          if (!ocrQuality.is_coherent) {
-            artifact.failure_reason = `OCR quality: ${ocrQuality.quality_label} (char_quality: ${(ocrQuality.char_quality * 100).toFixed(0)}%, word_coherence: ${(ocrQuality.word_coherence * 100).toFixed(0)}%)`;
-          }
-          analysis.parser_type = 'image_ocr';
-          analysis.readability_status = ocrQuality.is_coherent ? 'readable' : 'unreadable';
-        } else {
-          artifact.failure_reason = ocrResult.error || 'Scanned PDF OCR produced no text';
-          artifact.is_readable = false;
-          analysis.parser_type = 'image_ocr';
-          analysis.readability_status = 'unreadable';
-        }
-      }
-    }
-
-    // ── Step 2: Classify ──
+    // ── Step 2: Classify ─────────────────────────────────────
     const textContent = artifact.full_text;
     const classification = classifyDocument({
       fileName: file.name,
@@ -193,7 +118,7 @@ export async function analyzeDocument(params: {
     analysis.classification_result = classification.best;
     analysis.classification_confidence = classification.confidence;
 
-    // ── Step 3: Extract fields based on classification ──
+    // ── Step 3: Extract fields based on classification ─────
     let extractedFields: Record<string, ExtractedField> = {};
 
     if (classification.best === 'passport') {
@@ -215,7 +140,8 @@ export async function analyzeDocument(params: {
       Object.entries(extractedFields).map(([k, v]) => [k, v.confidence])
     );
 
-    // ── Step 4: Assess usefulness ──
+    // ── Step 4: Assess usefulness ────────────────────────────
+    // Honesty: a 'degraded' artifact never gets clean 'useful' status.
     const fieldCount = Object.keys(extractedFields).length;
     if (classification.best === 'unsupported') {
       analysis.usefulness_status = 'not_useful';
@@ -223,12 +149,12 @@ export async function analyzeDocument(params: {
     } else if (classification.best === 'unknown' && fieldCount === 0) {
       analysis.usefulness_status = 'unknown';
     } else if (fieldCount > 0) {
-      analysis.usefulness_status = 'useful';
+      analysis.usefulness_status = artifact.readability === 'degraded' ? 'unknown' : 'useful';
     } else {
       analysis.usefulness_status = 'unknown';
     }
 
-    // ── Step 5: Build proposals ──
+    // ── Step 5: Build proposals ──────────────────────────────
     for (const [fieldKey, extracted] of Object.entries(extractedFields)) {
       if (extracted.value == null) continue;
 
@@ -250,7 +176,7 @@ export async function analyzeDocument(params: {
       proposals.push(proposal);
     }
 
-    // ── Step 6: Internal summary ──
+    // ── Step 6: Internal summary ─────────────────────────────
     const accepted = proposals.filter(p => p.proposal_status === 'auto_accepted').length;
     const pending = proposals.filter(p => p.proposal_status === 'pending_review').length;
     const rejected = proposals.filter(p => p.proposal_status === 'rejected').length;
@@ -258,40 +184,40 @@ export async function analyzeDocument(params: {
     analysis.summary_message_internal = [
       `Route: ${artifact.chosen_route}`,
       `Parser: ${artifact.parser_used}`,
+      `Reader: ${artifact.reader_implementation}`,
+      `Readability: ${artifact.readability}`,
       `Classification: ${classification.best} (${(classification.confidence * 100).toFixed(0)}%)`,
       `Fields: ${fieldCount}`,
       `Proposals: ${accepted} auto, ${pending} pending, ${rejected} rejected`,
       `Pages: ${artifact.pages_processed}/${artifact.total_page_count}`,
-      `Evidence: ${classification.evidence.join(', ')}`,
     ].join(' | ');
-
-    if (textContent.trim().length > 0) {
-      analysis.text_content = textContent;
-    }
 
     analysis.analysis_status = 'completed';
     analysis.updated_at = new Date().toISOString();
-
   } catch (err) {
     analysis.analysis_status = 'failed';
     analysis.rejection_reason = err instanceof Error ? err.message : 'Analysis failed';
-    artifact.failure_reason = err instanceof Error ? err.message : 'Analysis failed';
     analysis.updated_at = new Date().toISOString();
   }
 
-  artifact.processing_time_ms = performance.now() - startTime;
+  logArtifact(artifact, analysis);
+  console.info('[Door1:TotalMs]', Math.round(performance.now() - startTime));
+  return { analysis, proposals, artifact };
+}
 
-  // Door 1 runtime proof — always log the reading artifact
+function logArtifact(artifact: ReadingArtifact, analysis: DocumentAnalysis): void {
   const textPreview = artifact.full_text.substring(0, 200).replace(/\n/g, ' ');
   console.log('[Door1:ReadingArtifact]', JSON.stringify({
     file: artifact.input_filename,
+    reader: artifact.reader_implementation,
     route: artifact.chosen_route,
     parser: artifact.parser_used,
+    readability: artifact.readability,
+    failure_reason: artifact.failure_reason,
+    failure_detail: artifact.failure_detail,
     pages: `${artifact.pages_processed}/${artifact.total_page_count}`,
     chars: artifact.full_text.length,
     confidence: artifact.confidence,
-    is_readable: artifact.is_readable,
-    failure: artifact.failure_reason,
     ms: Math.round(artifact.processing_time_ms),
     ocr_quality: artifact.ocr_quality ? {
       char_quality: `${(artifact.ocr_quality.char_quality * 100).toFixed(0)}%`,
@@ -306,7 +232,6 @@ export async function analyzeDocument(params: {
     confidence: analysis.classification_confidence,
     fields: Object.keys(analysis.extracted_fields || {}),
     readability: analysis.readability_status,
+    usefulness: analysis.usefulness_status,
   }, null, 2));
-
-  return { analysis, proposals, artifact };
 }

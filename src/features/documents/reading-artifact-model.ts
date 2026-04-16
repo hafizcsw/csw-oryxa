@@ -19,6 +19,32 @@ export type ReaderParser =
   | 'pdfjs_render_ocr'   // PDF rendered to canvas → OCR
   | 'none';              // no parser could run
 
+// ── Reader implementation tag ────────────────────────────────
+// Identifies WHICH reader produced this artifact.
+// Today: only legacy_browser (pdf.js + tesseract.js in-browser).
+// Tomorrow: server_worker, paddle_ocr, etc.
+// This makes repo truth honest — current path is REPLACEABLE.
+export type ReaderImplementation =
+  | 'legacy_browser'     // TEMP: in-browser pdf.js + Tesseract.js
+  | 'none';
+
+// ── Reading-stage failure taxonomy ───────────────────────────
+// Every reading failure MUST land in one of these buckets.
+// "Vague success" is no longer allowed.
+export type ReadingFailureReason =
+  | 'unsupported_file_type'  // MIME type has no reading lane
+  | 'unreadable_scan'        // PDF/image produced no usable text
+  | 'low_ocr_quality'        // OCR ran but output is garbage
+  | 'reader_crashed'         // parser threw
+  | 'empty_document'         // file opened but contained nothing
+  | null;                    // no failure
+
+// ── Readability status (honesty gate) ────────────────────────
+// readable  : full downstream success allowed
+// degraded  : text exists but quality is poor — downstream must be cautious
+// unreadable: NO downstream success semantics allowed
+export type ArtifactReadability = 'readable' | 'degraded' | 'unreadable';
+
 // ── Text block (preserves structure) ─────────────────────────
 export interface TextBlock {
   /** Page number (1-indexed) */
@@ -63,6 +89,8 @@ export interface ReadingArtifact {
   chosen_route: ReadingRoute;
   /** Which parser actually ran */
   parser_used: ReaderParser;
+  /** Which reader implementation produced this artifact (truth surface) */
+  reader_implementation: ReaderImplementation;
   /** Per-page reading results */
   pages: PageReading[];
   /** Total page count in original document */
@@ -73,10 +101,14 @@ export interface ReadingArtifact {
   full_text: string;
   /** Overall reading confidence 0.0–1.0 */
   confidence: number;
-  /** True if document has usable text */
+  /** Honest readability verdict (the gate) */
+  readability: ArtifactReadability;
+  /** Backwards-compat boolean = (readability === 'readable') */
   is_readable: boolean;
-  /** Failure reason if reading failed */
-  failure_reason: string | null;
+  /** Explicit failure bucket. null when nothing failed. */
+  failure_reason: ReadingFailureReason;
+  /** Optional human-readable detail (debug only — UI uses i18n on failure_reason) */
+  failure_detail: string | null;
   /** Processing time in ms */
   processing_time_ms: number;
   /** MIME type of input */
@@ -97,13 +129,16 @@ export function createEmptyArtifact(
   return {
     chosen_route: route,
     parser_used: 'none',
+    reader_implementation: 'none',
     pages: [],
     total_page_count: 0,
     pages_processed: 0,
     full_text: '',
     confidence: 0,
+    readability: 'unreadable',
     is_readable: false,
     failure_reason: null,
+    failure_detail: null,
     processing_time_ms: 0,
     input_mime: mime,
     input_filename: filename,
@@ -178,13 +213,10 @@ export function assessOcrQuality(text: string): OcrQualityMetrics {
     return { word_coherence: 0, char_quality: 0, avg_token_length: 0, is_coherent: false, quality_label: 'garbage' };
   }
 
-  // 1. Character quality: meaningful chars / total chars
-  // Meaningful = Latin letters, digits, Arabic/Hebrew chars, common punctuation
   const totalChars = text.length;
   const meaningfulChars = (text.match(/[\p{L}\p{N}\s.,;:!?()\-\/]/gu) || []).length;
   const char_quality = meaningfulChars / totalChars;
 
-  // 2. Word coherence: split into tokens, check how many are real words
   const tokens = text
     .toLowerCase()
     .split(/[\s\n\r\t,;:!?()[\]{}<>=+*&^%$#@~`"|\\]+/)
@@ -199,20 +231,16 @@ export function assessOcrQuality(text: string): OcrQualityMetrics {
 
   for (const token of tokens) {
     totalLength += token.length;
-    // Check against known words
     if (COHERENCE_WORDS.has(token)) {
       coherentCount++;
       continue;
     }
-    // Check if token looks like a real word (3+ consecutive letters)
     if (/^[\p{L}]{3,}$/u.test(token)) {
-      // Additional check: not too many consonant clusters (garbage indicator)
       const consonantClusters = token.match(/[^aeiouأإاوي\s]{4,}/gi) || [];
       if (consonantClusters.length === 0) {
         coherentCount++;
       }
     }
-    // Numbers and dates are coherent
     if (/^\d{1,4}([.\-\/]\d{1,4}){0,2}$/.test(token)) {
       coherentCount++;
     }
@@ -221,10 +249,6 @@ export function assessOcrQuality(text: string): OcrQualityMetrics {
   const word_coherence = coherentCount / tokens.length;
   const avg_token_length = totalLength / tokens.length;
 
-  // Quality thresholds:
-  // good: char_quality > 0.85 AND word_coherence > 0.4
-  // partial: char_quality > 0.7 AND word_coherence > 0.2
-  // garbage: everything else
   let quality_label: OcrQualityMetrics['quality_label'];
   let is_coherent: boolean;
 
@@ -233,7 +257,7 @@ export function assessOcrQuality(text: string): OcrQualityMetrics {
     is_coherent = true;
   } else if (char_quality > 0.7 && word_coherence > 0.2) {
     quality_label = 'partial';
-    is_coherent = true; // partial is still usable
+    is_coherent = true; // partial is still usable — but engine marks as 'degraded'
   } else {
     quality_label = 'garbage';
     is_coherent = false;

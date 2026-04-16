@@ -1475,7 +1475,24 @@
       "accepted": "مقبول",
       "pending": "قيد المراجعة",
       "rejected": "مرفوض",
-      "no_fields_extracted": "لم يتم استخراج أي حقول من هذا المستند"
+      "no_fields_extracted": "لم يتم استخراج أي حقول من هذا المستند",
+      "artifact": {
+        "failure": {
+          "unsupported_file_type": "نوع ملف غير مدعوم",
+          "unreadable_scan": "تعذر قراءة هذه الصورة الممسوحة",
+          "low_ocr_quality": "جودة التعرّف الضوئي منخفضة جداً",
+          "reader_crashed": "تعطّل القارئ",
+          "empty_document": "تم فتح الملف لكنه لا يحتوي على نص"
+        },
+        "route": "المسار",
+        "parser": "القارئ",
+        "readability": "القابلية للقراءة",
+        "readability_readable": "مقروء",
+        "readability_degraded": "مقروء جزئياً",
+        "readability_unreadable": "غير مقروء",
+        "legacy_reader": "قارئ مؤقت",
+        "legacy_reader_hint": "قارئ مؤقت داخل المتصفح (pdf.js + Tesseract.js). سيتم استبداله."
+      }
     },
     "nav": {
       "sections": "الأقسام"

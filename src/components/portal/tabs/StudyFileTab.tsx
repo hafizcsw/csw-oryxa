@@ -240,6 +240,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
             analyses={analysisHook.analyses}
             proposals={analysisHook.proposals}
             promotedFields={analysisHook.promotedFields}
+            artifacts={analysisHook.artifacts}
             isAnalyzing={analysisHook.isAnalyzing}
             onAcceptProposal={analysisHook.acceptProposal}
             onRejectProposal={analysisHook.rejectProposal}

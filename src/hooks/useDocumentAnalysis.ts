@@ -14,6 +14,7 @@ import type {
   ProposalStatus,
 } from '@/features/documents/extraction-proposal-model';
 import { analyzeDocument, type AnalysisResult } from '@/features/documents/analysis-engine';
+import type { ReadingArtifact } from '@/features/documents/reading-artifact-model';
 import type { CanonicalStudentFile } from '@/features/student-file/canonical-model';
 import type { FieldProvenance, FieldSourceType } from '@/features/student-file/canonical-model';
 import type { DocumentSlotType } from '@/features/documents/document-registry-model';
@@ -38,6 +39,8 @@ interface UseDocumentAnalysisResult {
   proposals: ExtractionProposal[];
   /** Fields promoted to canonical truth */
   promotedFields: PromotedField[];
+  /** Reading artifacts keyed by document_id (truth surface for Door 1) */
+  artifacts: Record<string, ReadingArtifact>;
   /** True when any analysis is running */
   isAnalyzing: boolean;
   /** Run analysis on a file */
@@ -69,6 +72,7 @@ export function useDocumentAnalysis({
   const [analyses, setAnalyses] = useState<DocumentAnalysis[]>([]);
   const [proposals, setProposals] = useState<ExtractionProposal[]>([]);
   const [promotedFields, setPromotedFields] = useState<PromotedField[]>([]);
+  const [artifacts, setArtifacts] = useState<Record<string, ReadingArtifact>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const analyzingCount = useRef(0);
   /** Cache File objects for re-analysis */
@@ -113,6 +117,9 @@ export function useDocumentAnalysis({
         const filtered = prev.filter(p => p.document_id !== documentId);
         return [...filtered, ...result.proposals];
       });
+
+      // Store reading artifact (Door 1 truth surface)
+      setArtifacts(prev => ({ ...prev, [documentId]: result.artifact }));
 
       // Auto-promote accepted proposals
       const autoAccepted = result.proposals.filter(p => p.proposal_status === 'auto_accepted');
@@ -218,6 +225,10 @@ export function useDocumentAnalysis({
     setAnalyses(prev => prev.filter(a => a.document_id !== documentId));
     setProposals(prev => prev.filter(p => p.document_id !== documentId));
     setPromotedFields(prev => prev.filter(pf => pf.documentId !== documentId));
+    setArtifacts(prev => {
+      const { [documentId]: _, ...rest } = prev;
+      return rest;
+    });
   }, []);
 
   const removePromotedField = useCallback((proposalId: string) => {
@@ -243,12 +254,14 @@ export function useDocumentAnalysis({
     setAnalyses([]);
     setProposals([]);
     setPromotedFields([]);
+    setArtifacts({});
   }, []);
 
   return {
     analyses,
     proposals,
     promotedFields,
+    artifacts,
     isAnalyzing,
     analyzeFile,
     reanalyzeFile,
