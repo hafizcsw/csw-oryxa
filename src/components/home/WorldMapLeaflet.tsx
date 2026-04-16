@@ -804,6 +804,15 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     const map = mapRef.current;
     if (!map) return;
 
+    // Compute zoom target key — only zoom when drill target actually changes
+    const zoomTargetKey = `${drillLevel}|${selectedCountryCode}|${regionCities?.join(',') ?? ''}|${visibleCountryCodes ? [...visibleCountryCodes].sort().join(',') : 'all'}`;
+    const shouldZoom = zoomTargetKey !== lastZoomTargetRef.current;
+    if (shouldZoom) {
+      lastZoomTargetRef.current = zoomTargetKey;
+      // Mark programmatic zoom so zoomend listener doesn't trigger drill transitions
+      userZoomingRef.current = true;
+    }
+
     // Clear previous
     const group = markersRef.current;
     group.clearLayers();
