@@ -404,7 +404,32 @@ export const WorldMapSection = memo(function WorldMapSection() {
     return items;
   }, [selectedCountryInfo, selectedCity, drillLevel, getLocalizedValue, handleBackToWorld, handleBackToCountry]);
 
-  return (
+  // ── Viewport-based visible cities filtering ──
+  const visibleCities = useMemo(() => {
+    if (!mapViewport || drillLevel !== "country") return geoEnrichedCities;
+    if (mapViewport.zoom < 4) return geoEnrichedCities; // Too zoomed out, show all
+    return geoEnrichedCities.filter(city => {
+      if (city.city_lat == null || city.city_lon == null) return true; // Keep cities without coords visible
+      return mapViewport.bounds.contains([city.city_lat, city.city_lon] as [number, number]);
+    });
+  }, [geoEnrichedCities, mapViewport, drillLevel]);
+
+  // ── Auto-drill to city when zoomed in close and only 1 city visible ──
+  useEffect(() => {
+    if (drillLevel !== "country" || manualCitySelection) return;
+    if (!mapViewport || mapViewport.zoom < 10) return;
+    const candidateCities = visibleCities.filter(c => c.city !== "__unknown__");
+    if (candidateCities.length === 1) {
+      setSelectedCity(candidateCities[0].city);
+      setDrillLevel("city");
+    }
+  }, [mapViewport, visibleCities, drillLevel, manualCitySelection]);
+
+  // ── Viewport change handler (stable ref) ──
+  const handleViewportChange = useCallback((viewport: MapViewport) => {
+    setMapViewport(viewport);
+  }, []);
+
     <section className="relative">
       {/* ── Visual Separator + Section Header ── */}
       <div className="relative z-[1010] bg-gradient-to-b from-muted/60 via-background/80 to-background border-t border-border/50 shadow-[0_-4px_20px_-6px_rgba(0,0,0,0.1)]">
