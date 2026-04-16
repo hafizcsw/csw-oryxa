@@ -7,7 +7,7 @@ import { CurrencySelector } from "@/components/CurrencySelector";
 import { Footer } from "./Footer";
 import { CompareFloatingButton } from "@/components/CompareFloatingButton";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Shield, Heart, Building2, GraduationCap, Search, MessageCircle, Calendar } from "lucide-react";
+import { Shield, Heart, Building2, GraduationCap, Search, MessageCircle, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -166,6 +166,10 @@ export function Layout({
               </button>
               <button onClick={() => navigate("/orx-rank")} className="px-3 py-1.5 rounded-lg text-foreground/80 hover:text-primary hover:bg-primary/5 dark:text-foreground/90 dark:hover:text-primary dark:hover:bg-primary/10 transition-all font-bold">
                 {t("orx.nav.orxRank")}
+              </button>
+              <button onClick={() => navigate("/community")} className="px-3 py-1.5 rounded-lg text-foreground/80 hover:text-primary hover:bg-primary/5 dark:text-foreground/90 dark:hover:text-primary dark:hover:bg-primary/10 transition-all flex items-center gap-1">
+                <Users className="w-3.5 h-3.5" />
+                {t("nav.community") || (t("nav.home") === "الرئيسية" ? "المجتمع" : "Community")}
               </button>
             </nav>
           ) : null}
