@@ -169,7 +169,8 @@ export function useMapCityUniversities(
       return (data as CityUniversity[]) || [];
     },
     enabled: !!canonicalCountryCode && !!city,
-    staleTime: 60_000,
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
   });
 }
 
@@ -198,6 +199,7 @@ export function useMapCountryUniversities(
       return (data as CityUniversity[]) || [];
     },
     enabled: !!canonicalCountryCode && enabled,
-    staleTime: 60_000,
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
   });
 }

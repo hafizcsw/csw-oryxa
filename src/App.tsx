@@ -190,7 +190,13 @@ const StaffEditorLanding = lazy(() => import("./pages/staff/StaffEditorLanding")
 const StaffContentLanding = lazy(() => import("./pages/staff/StaffContentLanding"));
 
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function LegacyStudyInRedirect() {
   const { countrySlug, locale } = useParams<{ countrySlug: string; locale?: string }>();
