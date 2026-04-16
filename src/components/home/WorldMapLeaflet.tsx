@@ -133,6 +133,8 @@ export interface LeafletMapProps {
   onCountrySelect: (code: string | null) => void;
   onRegionSelect: (regionId: string) => void;
   onCitySelect?: (cityName: string) => void;
+  onBackToCountry?: () => void;
+  onBackToWorld?: () => void;
   selectedCountryCode: string | null;
   selectedRegionId: string | null;
   drillLevel: "world" | "country" | "region";
@@ -372,6 +374,7 @@ async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
 export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(function WorldMapLeaflet(props, ref) {
   const {
     countryStats, onCountrySelect, onRegionSelect, onCitySelect,
+    onBackToCountry, onBackToWorld,
     selectedCountryCode, drillLevel, isRtl,
     regionSummaries, visibleCountryCodes,
     citySummaries, cityUniversities, regionCities,
@@ -416,6 +419,11 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
 
   // Highlight marker ref for search
   const highlightRef = useRef<L.CircleMarker | null>(null);
+
+  // Zoom guard: prevents re-zoom when non-drill dependencies change (e.g. OSM overlay, theme)
+  const lastZoomTargetRef = useRef<string>('');
+  // Track whether user is manually zooming (to avoid fighting with auto-zoom)
+  const userZoomingRef = useRef(false);
 
   // Expose flyTo to parent
   useImperativeHandle(ref, () => ({
@@ -519,6 +527,28 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
       map.remove(); mapRef.current = null;
     };
   }, []);
+
+  // ── Zoom-based automatic drill transitions ──
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const onZoomEnd = () => {
+      if (userZoomingRef.current) {
+        userZoomingRef.current = false;
+        return;
+      }
+      const z = map.getZoom();
+      if (drillLevel === 'region' && z < 8) {
+        onBackToCountry?.();
+      } else if (drillLevel === 'country' && z < 4) {
+        onBackToWorld?.();
+      }
+    };
+
+    map.on('zoomend', onZoomEnd);
+    return () => { map.off('zoomend', onZoomEnd); };
+  }, [drillLevel, onBackToCountry, onBackToWorld]);
 
   // Update tile layers
   useEffect(() => {
@@ -774,6 +804,15 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     const map = mapRef.current;
     if (!map) return;
 
+    // Compute zoom target key — only zoom when drill target actually changes
+    const zoomTargetKey = `${drillLevel}|${selectedCountryCode}|${regionCities?.join(',') ?? ''}|${visibleCountryCodes ? [...visibleCountryCodes].sort().join(',') : 'all'}`;
+    const shouldZoom = zoomTargetKey !== lastZoomTargetRef.current;
+    if (shouldZoom) {
+      lastZoomTargetRef.current = zoomTargetKey;
+      // Mark programmatic zoom so zoomend listener doesn't trigger drill transitions
+      userZoomingRef.current = true;
+    }
+
     // Clear previous
     const group = markersRef.current;
     group.clearLayers();
@@ -958,21 +997,22 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         if (bestKey && bestRatio >= 0.6) activeRegionKey = bestKey;
       }
 
-      if (activeRegionKey && CONTINENT_BOUNDS[activeRegionKey]) {
-        const [sw, ne] = CONTINENT_BOUNDS[activeRegionKey];
-        map.fitBounds(L.latLngBounds(L.latLng(sw[0], sw[1]), L.latLng(ne[0], ne[1])), { animate: true, padding: [50, 50] });
-      } else if (visibleCountryCodes) {
-        // For dynamic bounds, exclude countries that span too far
-        const excludeSet = activeRegionKey ? BOUNDS_EXCLUDE[activeRegionKey] : undefined;
-        const activeCodes = [...activeCountries].filter(c => visibleCountryCodes.has(c) && CC[c] && !(excludeSet?.has(c)));
-        const fitCodes = activeCodes.length > 0 ? activeCodes : Object.keys(countryStats).filter(c => visibleCountryCodes.has(c) && CC[c] && !(excludeSet?.has(c)));
-        if (fitCodes.length > 0) {
-          const pts = fitCodes.map(c => L.latLng(CC[c][0], CC[c][1]));
-          map.fitBounds(L.latLngBounds(pts).pad(0.3), { animate: true, maxZoom: 4, padding: [40, 40] });
+      if (shouldZoom) {
+        if (activeRegionKey && CONTINENT_BOUNDS[activeRegionKey]) {
+          const [sw, ne] = CONTINENT_BOUNDS[activeRegionKey];
+          map.fitBounds(L.latLngBounds(L.latLng(sw[0], sw[1]), L.latLng(ne[0], ne[1])), { animate: true, padding: [50, 50] });
+        } else if (visibleCountryCodes) {
+          const excludeSet = activeRegionKey ? BOUNDS_EXCLUDE[activeRegionKey] : undefined;
+          const activeCodes = [...activeCountries].filter(c => visibleCountryCodes.has(c) && CC[c] && !(excludeSet?.has(c)));
+          const fitCodes = activeCodes.length > 0 ? activeCodes : Object.keys(countryStats).filter(c => visibleCountryCodes.has(c) && CC[c] && !(excludeSet?.has(c)));
+          if (fitCodes.length > 0) {
+            const pts = fitCodes.map(c => L.latLng(CC[c][0], CC[c][1]));
+            map.fitBounds(L.latLngBounds(pts).pad(0.3), { animate: true, maxZoom: 4, padding: [40, 40] });
+          }
+        } else {
+          const worldBounds = L.latLngBounds([[-60, -170], [75, 170]]);
+          map.fitBounds(worldBounds, { animate: true, padding: [10, 10] });
         }
-      } else {
-        const worldBounds = L.latLngBounds([[-60, -170], [75, 170]]);
-        map.fitBounds(worldBounds, { animate: true, padding: [10, 10] });
       }
     }
 
@@ -1032,22 +1072,23 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
       }
 
       // Country-level zoom must target the country boundary itself (not city cluster)
-      const countryBounds = bordersRef.current?.getBounds();
-      if (countryBounds?.isValid()) {
-        map.fitBounds(countryBounds.pad(0.08), {
-          animate: true,
-          padding: [40, 40],
-          maxZoom: 6,
-        });
-      } else if (pts.length > 0) {
-        // Fallback only when boundary is unavailable
-        map.fitBounds(L.latLngBounds(pts).pad(0.2), {
-          animate: true,
-          maxZoom: 7,
-          padding: [50, 50],
-        });
-      } else if (selectedCountryCode && CC[selectedCountryCode]) {
-        map.flyTo(CC[selectedCountryCode], 5, { animate: true });
+      if (shouldZoom) {
+        const countryBounds = bordersRef.current?.getBounds();
+        if (countryBounds?.isValid()) {
+          map.fitBounds(countryBounds.pad(0.08), {
+            animate: true,
+            padding: [40, 40],
+            maxZoom: 6,
+          });
+        } else if (pts.length > 0) {
+          map.fitBounds(L.latLngBounds(pts).pad(0.2), {
+            animate: true,
+            maxZoom: 7,
+            padding: [50, 50],
+          });
+        } else if (selectedCountryCode && CC[selectedCountryCode]) {
+          map.flyTo(CC[selectedCountryCode], 5, { animate: true });
+        }
       }
     }
 
@@ -1188,15 +1229,17 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         }
       }
 
-      if (pts.length === 1) {
-        map.flyTo(pts[0], 12, { animate: true, duration: 0.9 });
-      } else if (pts.length > 1) {
-        map.fitBounds(L.latLngBounds(pts).pad(0.24), { animate: true, maxZoom: 12 });
-      } else if (selectedCitySummary?.city_lat != null && selectedCitySummary?.city_lon != null) {
-        map.flyTo([selectedCitySummary.city_lat, selectedCitySummary.city_lon], 11, {
-          animate: true,
-          duration: 0.9,
-        });
+      if (shouldZoom) {
+        if (pts.length === 1) {
+          map.flyTo(pts[0], 12, { animate: true, duration: 0.9 });
+        } else if (pts.length > 1) {
+          map.fitBounds(L.latLngBounds(pts).pad(0.24), { animate: true, maxZoom: 12 });
+        } else if (selectedCitySummary?.city_lat != null && selectedCitySummary?.city_lon != null) {
+          map.flyTo([selectedCitySummary.city_lat, selectedCitySummary.city_lon], 11, {
+            animate: true,
+            duration: 0.9,
+          });
+        }
       }
     }
   }, [drillLevel, countryStats, visibleCountryCodes, citySummaries, cityUniversities, regionCities, regionSummaries, selectedCountryCode, isDark, isRtl, mapText, getLocalizedValue, onCountrySelect, onRegionSelect, onCitySelect, worldGeo, osmOverlay, countryMeta]);
