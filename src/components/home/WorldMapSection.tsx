@@ -406,6 +406,8 @@ export const WorldMapSection = memo(function WorldMapSection() {
       handleCityClick(region.cities[0]);
     }
   }, [regionSummaries, handleCityClick]);
+
+  const selectedCountryInfo = selectedCountryCode ? countryStats?.[selectedCountryCode] : null;
   const selectedMeta = selectedCountryCode ? countryMeta?.[selectedCountryCode] : null;
 
   // Find region for selected city (for map compat)
