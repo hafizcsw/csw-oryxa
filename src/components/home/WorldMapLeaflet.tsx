@@ -187,7 +187,6 @@ function cityDotIcon(count: number, isDark: boolean, cityName?: string): L.DivIc
     iconSize: [size, size + (cityName ? 18 : 0)],
     iconAnchor: [size / 2, size / 2],
   });
-  });
 }
 
 /* ── University marker with logo ── */
