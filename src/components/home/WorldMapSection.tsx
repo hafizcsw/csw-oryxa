@@ -347,6 +347,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
     setDrillLevel("country");
     setShowAllUnis(false);
     setManualCitySelection(false);
+    setCountrySearch("");
   }, [hasData, selectedCountryCode, drillLevel]);
 
   const handleCityClick = useCallback((cityName: string) => {
