@@ -26,7 +26,8 @@ import {
 import { useOsmCityOverlay } from "@/hooks/useOsmCityOverlay";
 import { loadCountryGeodata, hasCountryGeodata } from "@/lib/countryGeodata";
 import { useGeoCacheResolver } from "@/hooks/useGeoCacheResolver";
-import { cityKey } from "@/lib/geoResolver";
+import { useUniversityGeoResolver } from "@/hooks/useUniversityGeoResolver";
+import { cityKey, uniKey } from "@/lib/geoResolver";
 import {
   mapCitiesToRegions,
   buildRegionSummaries,
