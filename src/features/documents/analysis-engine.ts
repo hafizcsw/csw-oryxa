@@ -257,5 +257,25 @@ export async function analyzeDocument(params: {
   }
 
   artifact.processing_time_ms = performance.now() - startTime;
+
+  // Door 1 runtime proof — always log the reading artifact
+  console.info('[Door1:ReadingArtifact]', {
+    file: artifact.input_filename,
+    route: artifact.chosen_route,
+    parser: artifact.parser_used,
+    pages: `${artifact.pages_processed}/${artifact.total_page_count}`,
+    chars: artifact.full_text.length,
+    confidence: artifact.confidence,
+    is_readable: artifact.is_readable,
+    failure: artifact.failure_reason,
+    ms: Math.round(artifact.processing_time_ms),
+  });
+  console.info('[Door1:Classification]', {
+    best: analysis.classification_result,
+    confidence: analysis.classification_confidence,
+    fields: Object.keys(analysis.extracted_fields || {}),
+    readability: analysis.readability_status,
+  });
+
   return { analysis, proposals, artifact };
 }
