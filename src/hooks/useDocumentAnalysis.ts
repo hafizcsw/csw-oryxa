@@ -46,6 +46,10 @@ interface UseDocumentAnalysisResult {
   acceptProposal: (proposalId: string) => void;
   /** Manually reject a proposal */
   rejectProposal: (proposalId: string) => void;
+  /** Remove a single promoted field from canonical truth */
+  removePromotedField: (proposalId: string) => void;
+  /** Remove all promoted fields for a document */
+  removePromotedFieldsForDocument: (documentId: string) => void;
   /** Get proposals for a specific document */
   getProposalsForDocument: (documentId: string) => ExtractionProposal[];
   /** Get analysis for a specific document */
