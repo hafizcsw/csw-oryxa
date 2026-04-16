@@ -997,21 +997,22 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         if (bestKey && bestRatio >= 0.6) activeRegionKey = bestKey;
       }
 
-      if (activeRegionKey && CONTINENT_BOUNDS[activeRegionKey]) {
-        const [sw, ne] = CONTINENT_BOUNDS[activeRegionKey];
-        map.fitBounds(L.latLngBounds(L.latLng(sw[0], sw[1]), L.latLng(ne[0], ne[1])), { animate: true, padding: [50, 50] });
-      } else if (visibleCountryCodes) {
-        // For dynamic bounds, exclude countries that span too far
-        const excludeSet = activeRegionKey ? BOUNDS_EXCLUDE[activeRegionKey] : undefined;
-        const activeCodes = [...activeCountries].filter(c => visibleCountryCodes.has(c) && CC[c] && !(excludeSet?.has(c)));
-        const fitCodes = activeCodes.length > 0 ? activeCodes : Object.keys(countryStats).filter(c => visibleCountryCodes.has(c) && CC[c] && !(excludeSet?.has(c)));
-        if (fitCodes.length > 0) {
-          const pts = fitCodes.map(c => L.latLng(CC[c][0], CC[c][1]));
-          map.fitBounds(L.latLngBounds(pts).pad(0.3), { animate: true, maxZoom: 4, padding: [40, 40] });
+      if (shouldZoom) {
+        if (activeRegionKey && CONTINENT_BOUNDS[activeRegionKey]) {
+          const [sw, ne] = CONTINENT_BOUNDS[activeRegionKey];
+          map.fitBounds(L.latLngBounds(L.latLng(sw[0], sw[1]), L.latLng(ne[0], ne[1])), { animate: true, padding: [50, 50] });
+        } else if (visibleCountryCodes) {
+          const excludeSet = activeRegionKey ? BOUNDS_EXCLUDE[activeRegionKey] : undefined;
+          const activeCodes = [...activeCountries].filter(c => visibleCountryCodes.has(c) && CC[c] && !(excludeSet?.has(c)));
+          const fitCodes = activeCodes.length > 0 ? activeCodes : Object.keys(countryStats).filter(c => visibleCountryCodes.has(c) && CC[c] && !(excludeSet?.has(c)));
+          if (fitCodes.length > 0) {
+            const pts = fitCodes.map(c => L.latLng(CC[c][0], CC[c][1]));
+            map.fitBounds(L.latLngBounds(pts).pad(0.3), { animate: true, maxZoom: 4, padding: [40, 40] });
+          }
+        } else {
+          const worldBounds = L.latLngBounds([[-60, -170], [75, 170]]);
+          map.fitBounds(worldBounds, { animate: true, padding: [10, 10] });
         }
-      } else {
-        const worldBounds = L.latLngBounds([[-60, -170], [75, 170]]);
-        map.fitBounds(worldBounds, { animate: true, padding: [10, 10] });
       }
     }
 
