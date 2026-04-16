@@ -1062,7 +1062,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
       map.off("moveend", renderLabels);
       countryLabelsRef.current.clearLayers();
     };
-  }, [worldGeo, activeLayer]);
+  }, [worldGeo, activeLayer, language]);
 
   // Background
   useEffect(() => {
