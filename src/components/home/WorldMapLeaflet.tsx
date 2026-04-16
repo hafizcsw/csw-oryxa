@@ -587,6 +587,11 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     const labelsPane = map.createPane('countryLabelsPane');
     labelsPane.style.zIndex = '460';
     labelsPane.style.pointerEvents = 'none';
+
+    // Create pane for city name labels (above country labels, below tooltips)
+    const cityLabelsPane = map.createPane('cityLabelsPane');
+    cityLabelsPane.style.zIndex = '465';
+    cityLabelsPane.style.pointerEvents = 'none';
     
     mapRef.current = map;
     markersRef.current.addTo(map);
