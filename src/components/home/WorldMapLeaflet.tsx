@@ -20,6 +20,11 @@ import {
   isCityFallback,
   type ResolvedLocation,
 } from "@/lib/geoResolver";
+import {
+  detectWorldGeoFetchSource,
+  getCachedWorldGeo,
+  setCachedWorldGeo,
+} from "@/lib/worldGeoCache";
 
 /* ── Fix default marker icons ── */
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -229,57 +234,16 @@ function dormMarkerIcon(isDark: boolean): L.DivIcon {
   });
 }
 
-/* ── GeoJSON cache (module + sessionStorage + IndexedDB) ── */
+/* ── World GeoJSON hot cache + diagnostics ── */
 let geoJsonCache: GeoJSON.FeatureCollection | null = null;
 
-// Try to restore from sessionStorage on module load (fastest)
-try {
-  const stored = sessionStorage.getItem('csw-world-geojson');
-  if (stored) {
-    geoJsonCache = JSON.parse(stored) as GeoJSON.FeatureCollection;
-  }
-} catch { /* ignore */ }
-
-// Async restore from IndexedDB if sessionStorage missed (survives hard refresh)
-const WORLD_GEO_IDB_KEY = "world-geojson-v1";
-async function idbGetWorldGeo(): Promise<GeoJSON.FeatureCollection | null> {
-  try {
-    const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const req = indexedDB.open("csw-spatial-cache", 1);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    return new Promise((resolve) => {
-      const tx = db.transaction("geo_resolutions", "readonly");
-      const req = tx.objectStore("geo_resolutions").get(WORLD_GEO_IDB_KEY);
-      req.onsuccess = () => {
-        const entry = req.result;
-        if (entry?.data && entry.schema_version === 1) {
-          resolve(entry.data as GeoJSON.FeatureCollection);
-        } else {
-          resolve(null);
-        }
-      };
-      req.onerror = () => resolve(null);
-    });
-  } catch { return null; }
-}
-
-async function idbSetWorldGeo(geo: GeoJSON.FeatureCollection): Promise<void> {
-  try {
-    const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const req = indexedDB.open("csw-spatial-cache", 1);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    const tx = db.transaction("geo_resolutions", "readwrite");
-    tx.objectStore("geo_resolutions").put({
-      key: WORLD_GEO_IDB_KEY,
-      data: geo,
-      cached_at: Date.now(),
-      schema_version: 1,
-    });
-  } catch { /* non-critical */ }
+function logWorldGeoEvent(
+  level: "info" | "error",
+  message: string,
+  details: Record<string, unknown>
+) {
+  const logger = level === "error" ? console.error : console.info;
+  logger(message, details);
 }
 
 /** Resolve ISO A2 code from feature properties (handles multiple GeoJSON schemas) */
@@ -397,46 +361,59 @@ function resolveViewportCountryCode(
 }
 
 async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
-  if (geoJsonCache) return geoJsonCache;
-
-  // Try IndexedDB before network (survives hard refresh / new tab)
-  const idbCached = await idbGetWorldGeo();
-  if (idbCached) {
-    geoJsonCache = idbCached;
-    // Populate sessionStorage for same-tab speed
-    try { sessionStorage.setItem('csw-world-geojson', JSON.stringify(geoJsonCache)); } catch { /* quota */ }
-    console.log("[Map] Restored world geodata from IndexedDB:", geoJsonCache.features.length, "features");
+  if (geoJsonCache && Array.isArray(geoJsonCache.features) && geoJsonCache.features.length > 0) {
+    logWorldGeoEvent("info", "[Map] World GeoJSON ready", {
+      source: "memory",
+      featureCount: geoJsonCache.features.length,
+    });
     return geoJsonCache;
   }
 
+  const cached = await getCachedWorldGeo();
+  if (cached.data) {
+    geoJsonCache = cached.data;
+    logWorldGeoEvent("info", "[Map] World GeoJSON ready", {
+      source: cached.source,
+      featureCount: geoJsonCache.features.length,
+    });
+    return geoJsonCache;
+  }
+
+  const fetchSource = await detectWorldGeoFetchSource(WORLD_GEOJSON_URL);
   const res = await fetch(WORLD_GEOJSON_URL);
   if (!res.ok) {
-    throw new Error(`[Map] Failed to fetch geodata (${res.status})`);
+    const reason = `[Map] Failed to fetch geodata (${res.status})`;
+    logWorldGeoEvent("error", "[Map] World GeoJSON load failed", {
+      source: fetchSource,
+      featureCount: 0,
+      reason,
+      status: res.status,
+    });
+    throw new Error(reason);
   }
 
   const data = await res.json();
 
   if (USE_TOPOJSON && data?.type === "Topology") {
-    const objects = data?.objects && typeof data.objects === 'object' ? data.objects as Record<string, unknown> : null;
+    const objects = data?.objects && typeof data.objects === "object" ? data.objects as Record<string, unknown> : null;
     const objectNames = objects ? Object.keys(objects) : [];
     const objectName = objectNames[0];
 
     if (!objectName || !objects?.[objectName]) {
-      throw new Error('[Map] Invalid Topology payload: missing objects[0]');
+      throw new Error("[Map] Invalid Topology payload: missing objects[0]");
     }
 
     const converted = topojson.feature(data, objects[objectName] as never) as unknown as GeoJSON.FeatureCollection;
     if (!converted || !Array.isArray(converted.features)) {
-      throw new Error('[Map] Topology conversion returned invalid FeatureCollection');
+      throw new Error("[Map] Topology conversion returned invalid FeatureCollection");
     }
     geoJsonCache = converted;
-  } else if (data?.type === 'FeatureCollection' && Array.isArray(data?.features)) {
+  } else if (data?.type === "FeatureCollection" && Array.isArray(data?.features)) {
     geoJsonCache = data as GeoJSON.FeatureCollection;
   } else {
-    throw new Error('[Map] Invalid geodata payload shape');
+    throw new Error("[Map] Invalid geodata payload shape");
   }
 
-  // Normalize Palestine into a single source feature and remove the separate Israel feature
   const palestineSourceFeatures = geoJsonCache.features.filter((feature) => {
     const p = feature.properties as Record<string, unknown> | null | undefined;
     const a2 = `${p?.ISO_A2 ?? p?.iso_a2 ?? p?.["ISO3166-1-Alpha-2"] ?? ""}`.toUpperCase();
@@ -458,7 +435,6 @@ async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
   });
 
   if (palestineSourceFeatures.length > 0) {
-    // Merge ALL polygons from all matching features into one MultiPolygon
     const allPolygons: number[][][] = [];
     for (const feature of palestineSourceFeatures) {
       const geom = feature.geometry;
@@ -502,17 +478,28 @@ async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
     };
   }
 
-  // Persist to sessionStorage (same-tab speed) + IndexedDB (cross-tab/session persistence)
-  try { sessionStorage.setItem('csw-world-geojson', JSON.stringify(geoJsonCache)); } catch { /* quota */ }
-  idbSetWorldGeo(geoJsonCache).catch(() => {});
-  console.log("[Map] Loaded world geodata:", geoJsonCache.features.length, "features");
-  const codes = geoJsonCache.features.slice(0, 5).map(f => ({
+  if (!geoJsonCache.features.length) {
+    const reason = "[Map] Invalid geodata payload: zero features";
+    logWorldGeoEvent("error", "[Map] World GeoJSON load failed", {
+      source: fetchSource,
+      featureCount: 0,
+      reason,
+    });
+    throw new Error(reason);
+  }
+
+  await setCachedWorldGeo(geoJsonCache, WORLD_GEOJSON_URL);
+  logWorldGeoEvent("info", "[Map] World GeoJSON ready", {
+    source: fetchSource,
+    featureCount: geoJsonCache.features.length,
+  });
+  const codes = geoJsonCache.features.slice(0, 5).map((f) => ({
     ISO_A2: f.properties?.ISO_A2,
     ISO_A3: f.properties?.ISO_A3,
     name: f.properties?.name || f.properties?.NAME,
     resolved: getCountryCode(f),
   }));
-  console.log("[Map] Sample codes:", codes);
+  console.info("[Map] Sample codes:", codes);
 
   return geoJsonCache;
 }
@@ -615,12 +602,24 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
 
   // Load world GeoJSON once
   useEffect(() => {
+    let cancelled = false;
+
     loadWorldGeoJSON()
-      .then(setWorldGeo)
+      .then((data) => {
+        if (!cancelled) setWorldGeo(data);
+      })
       .catch((err) => {
-        console.error('[Map] loadWorldGeoJSON failed:', err);
-        setWorldGeo({ type: 'FeatureCollection', features: [] });
+        const reason = err instanceof Error ? err.message : String(err);
+        console.error("[Map] Interactive world layer unavailable", {
+          reason,
+          url: WORLD_GEOJSON_URL,
+        });
+        if (!cancelled) setWorldGeo(null);
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Initialize map once
@@ -1212,7 +1211,8 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
           // Has data + visible → white/light border (Google Maps style), gold only on hover
           if (hasData && isVisible) {
             return {
-              fillOpacity: 0,
+              fillOpacity: isDark ? 0.26 : 0.16,
+              fillColor: isDark ? GOLD.fillDark : GOLD.fillLight,
               color: isDark ? BORDER.defaultDark : BORDER.defaultLight,
               weight: 0.8,
             };
@@ -1270,7 +1270,8 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
             mouseover: (e: L.LeafletMouseEvent) => {
               const l = e.target;
               l.setStyle({
-                fillOpacity: 0,
+                fillOpacity: isDark ? 0.34 : 0.24,
+                fillColor: isDark ? GOLD.fillDarkHover : GOLD.fillLightHover,
                 color: isDark ? GOLD.strokeDarkHover : GOLD.strokeLightHover,
                 weight: 2.5,
               });
