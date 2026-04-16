@@ -240,16 +240,11 @@ function scoreNameMatch(ourNames: string[], osmNames: string[]): MatchResult {
             score += 20;
           }
 
-          // LCS ratio (+15) — only when there's some token overlap
-          const lcs = longestCommonSubstring(our.norm, osm.norm);
-          const lcsRatio = lcs / Math.max(our.norm.length, osm.norm.length);
-          if (lcsRatio >= 0.6) score += 15;
-          else if (lcsRatio >= 0.4) score += 8;
-
-          // High token overlap (+10)
+          // High token overlap (+15)
           const overlapCount = [...ourTokens].filter(t => osmTokens.has(t)).length;
           const overlapRatio = overlapCount / Math.max(ourTokens.size, 1);
-          if (overlapRatio >= 0.6) score += 10;
+          if (overlapRatio >= 0.6) score += 15;
+          else if (overlapRatio >= 0.4) score += 8;
         }
       }
 
@@ -395,7 +390,13 @@ Deno.serve(async (req) => {
     const cachedMap = new Map<string, any>();
     for (const c of cached || []) cachedMap.set(c.university_id, c);
 
-    const uncachedUnis = universities.filter(u => !cachedMap.has(u.id));
+    const uncachedAll = universities.filter(u => !cachedMap.has(u.id));
+    // Cap per invocation to avoid CPU timeout on large cities
+    const MAX_UNCACHED = 40;
+    const uncachedUnis = uncachedAll.slice(0, MAX_UNCACHED);
+    if (uncachedAll.length > MAX_UNCACHED) {
+      console.log(`[osm-overlay-v3] Capped: processing ${MAX_UNCACHED} of ${uncachedAll.length} uncached`);
+    }
     const newMatches: any[] = [];
 
     if (uncachedUnis.length > 0) {
