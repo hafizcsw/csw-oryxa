@@ -25862,7 +25862,19 @@ export type Database = {
         Returns: boolean
       }
       is_site_readonly: { Args: never; Returns: boolean }
+      is_university_admin: {
+        Args: { _university_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_university_page_staff: {
+        Args: { _university_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_university_publisher: {
+        Args: { _university_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_university_staff: {
         Args: { _university_id: string; _user_id: string }
         Returns: boolean
       }
