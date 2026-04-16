@@ -6,7 +6,7 @@
 // No report. No eligibility. No improvement plan.
 // ═══════════════════════════════════════════════════════════════
 
-import { CheckCircle2, XCircle, Clock, AlertTriangle, FileSearch, Loader2, ShieldCheck, Trash2, X } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, AlertTriangle, FileSearch, Loader2, ShieldCheck, Trash2, X, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -21,6 +21,9 @@ interface DocumentAnalysisPanelProps {
   isAnalyzing: boolean;
   onAcceptProposal: (proposalId: string) => void;
   onRejectProposal: (proposalId: string) => void;
+  onRemovePromotedField?: (proposalId: string) => void;
+  onRemovePromotedFieldsForDocument?: (documentId: string) => void;
+  onReanalyze?: (documentId: string) => void;
   onDismissAnalysis?: (documentId: string) => void;
   onClearAll?: () => void;
 }
@@ -58,6 +61,9 @@ export function DocumentAnalysisPanel({
   isAnalyzing,
   onAcceptProposal,
   onRejectProposal,
+  onRemovePromotedField,
+  onRemovePromotedFieldsForDocument,
+  onReanalyze,
   onDismissAnalysis,
   onClearAll,
 }: DocumentAnalysisPanelProps) {
@@ -116,6 +122,7 @@ export function DocumentAnalysisPanel({
           const docProposals = groupedProposals.get(analysis.document_id) || [];
           const isCompleted = analysis.analysis_status === 'completed';
           const isFailed = analysis.analysis_status === 'failed';
+          const docPromotedCount = promotedFields.filter(pf => pf.documentId === analysis.document_id).length;
 
           return (
             <div
@@ -156,6 +163,30 @@ export function DocumentAnalysisPanel({
                     <Badge variant="outline" className="text-[9px]">
                       {analysis.usefulness_status}
                     </Badge>
+                  )}
+                  {/* Re-analyze button */}
+                  {onReanalyze && !isAnalyzing && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5 text-muted-foreground hover:text-primary"
+                      onClick={() => onReanalyze(analysis.document_id)}
+                      title="Re-analyze"
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                    </Button>
+                  )}
+                  {/* Remove all promoted fields for this document */}
+                  {onRemovePromotedFieldsForDocument && docPromotedCount > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5 text-muted-foreground hover:text-destructive"
+                      onClick={() => onRemovePromotedFieldsForDocument(analysis.document_id)}
+                      title="Remove all from canonical truth"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
                   )}
                   {onDismissAnalysis && (
                     <Button
@@ -221,6 +252,18 @@ export function DocumentAnalysisPanel({
                         <span className="text-[9px] text-muted-foreground font-mono">
                           {(proposal.confidence * 100).toFixed(0)}%
                         </span>
+                        {/* Delete promoted field */}
+                        {isPromoted && onRemovePromotedField && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 text-muted-foreground hover:text-destructive"
+                            onClick={() => onRemovePromotedField(proposal.proposal_id)}
+                            title="Remove from canonical truth"
+                          >
+                            <XCircle className="h-3 w-3" />
+                          </Button>
+                        )}
                         {/* Actions for pending proposals */}
                         {proposal.proposal_status === 'pending_review' && (
                           <div className="flex gap-1 ml-1">

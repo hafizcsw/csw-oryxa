@@ -46,6 +46,12 @@ interface UseDocumentAnalysisResult {
   acceptProposal: (proposalId: string) => void;
   /** Manually reject a proposal */
   rejectProposal: (proposalId: string) => void;
+  /** Remove a single promoted field from canonical truth */
+  removePromotedField: (proposalId: string) => void;
+  /** Remove all promoted fields for a document */
+  removePromotedFieldsForDocument: (documentId: string) => void;
+  /** Re-analyze a previously analyzed document */
+  reanalyzeFile: (documentId: string) => Promise<AnalysisResult | null>;
   /** Get proposals for a specific document */
   getProposalsForDocument: (documentId: string) => ExtractionProposal[];
   /** Get analysis for a specific document */
@@ -65,6 +71,8 @@ export function useDocumentAnalysis({
   const [promotedFields, setPromotedFields] = useState<PromotedField[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const analyzingCount = useRef(0);
+  /** Cache File objects for re-analysis */
+  const fileCache = useRef(new Map<string, { file: File; slotHint: DocumentSlotType | null }>());
 
   const analyzeFile = useCallback(async (
     file: File,
@@ -72,6 +80,9 @@ export function useDocumentAnalysis({
     slotHint: DocumentSlotType | null,
   ): Promise<AnalysisResult | null> => {
     if (!studentId) return null;
+
+    // Cache file for potential re-analysis
+    fileCache.current.set(documentId, { file, slotHint });
 
     analyzingCount.current++;
     setIsAnalyzing(true);
@@ -152,6 +163,20 @@ export function useDocumentAnalysis({
     }
   }, [studentId, canonicalFile]);
 
+  /** Re-analyze a previously analyzed document using cached File object */
+  const reanalyzeFile = useCallback(async (documentId: string) => {
+    const cached = fileCache.current.get(documentId);
+    if (!cached) {
+      console.warn('[Door1:Reanalyze] No cached file for', documentId);
+      return null;
+    }
+    // Clear old promoted fields for this document before re-analysis
+    setPromotedFields(prev => prev.filter(pf => pf.documentId !== documentId));
+    setProposals(prev => prev.filter(p => p.document_id !== documentId));
+    // Re-run analysis
+    return analyzeFile(cached.file, documentId, cached.slotHint);
+  }, [analyzeFile]);
+
   const acceptProposal = useCallback((proposalId: string) => {
     setProposals(prev => prev.map(p => {
       if (p.proposal_id !== proposalId) return p;
@@ -195,6 +220,25 @@ export function useDocumentAnalysis({
     setPromotedFields(prev => prev.filter(pf => pf.documentId !== documentId));
   }, []);
 
+  const removePromotedField = useCallback((proposalId: string) => {
+    setPromotedFields(prev => prev.filter(pf => pf.proposalId !== proposalId));
+    // Reset the proposal back to pending so it can be re-accepted
+    setProposals(prev => prev.map(p => {
+      if (p.proposal_id !== proposalId) return p;
+      return { ...p, proposal_status: 'pending_review' as ProposalStatus, updated_at: new Date().toISOString() };
+    }));
+  }, []);
+
+  const removePromotedFieldsForDocument = useCallback((documentId: string) => {
+    const toRemove = new Set(promotedFields.filter(pf => pf.documentId === documentId).map(pf => pf.proposalId));
+    setPromotedFields(prev => prev.filter(pf => pf.documentId !== documentId));
+    // Reset those proposals back to pending
+    setProposals(prev => prev.map(p => {
+      if (!toRemove.has(p.proposal_id)) return p;
+      return { ...p, proposal_status: 'pending_review' as ProposalStatus, updated_at: new Date().toISOString() };
+    }));
+  }, [promotedFields]);
+
   const clearAllAnalyses = useCallback(() => {
     setAnalyses([]);
     setProposals([]);
@@ -207,8 +251,11 @@ export function useDocumentAnalysis({
     promotedFields,
     isAnalyzing,
     analyzeFile,
+    reanalyzeFile,
     acceptProposal,
     rejectProposal,
+    removePromotedField,
+    removePromotedFieldsForDocument,
     getProposalsForDocument,
     getAnalysis,
     dismissAnalysis,
