@@ -23,7 +23,11 @@ export interface PdfTextResult {
 }
 
 /** Minimum average chars per page to consider PDF born-digital */
-const BORN_DIGITAL_THRESHOLD = 30;
+const BORN_DIGITAL_CHAR_THRESHOLD = 50;
+/** Minimum ratio of pages with real content */
+const BORN_DIGITAL_PAGE_RATIO = 0.4;
+/** Minimum average text items per page (font-embedded glyphs) */
+const BORN_DIGITAL_ITEMS_THRESHOLD = 5;
 
 /**
  * Extract text from a PDF file using pdf.js.
@@ -50,13 +54,15 @@ export async function extractPdfText(file: File, maxPages = 10): Promise<PdfText
       let currentLine = '';
       let lastY: number | null = null;
 
+      let textItemCount = 0;
+
       for (const item of content.items) {
         const textItem = item as any;
         if (!textItem.str) continue;
+        textItemCount++;
 
         const y = textItem.transform?.[5];
         if (lastY !== null && y !== undefined && Math.abs(y - lastY) > 3) {
-          // New line
           if (currentLine.trim()) {
             blocks.push({
               page: i,
@@ -89,10 +95,20 @@ export async function extractPdfText(file: File, maxPages = 10): Promise<PdfText
       });
     }
 
-    // Determine if born-digital: average chars across processed pages
+    // ── Born-digital detection (multi-signal) ──────────────────
+    // A single char-count threshold is too weak. We combine:
+    //   1. Average chars per page (content density)
+    //   2. Ratio of pages that have real content
+    // A scanned PDF typically has 0 chars or just OCR noise (<20 chars).
+    // A born-digital PDF has font-embedded text → high char counts.
     const totalChars = pages.reduce((sum, p) => sum + p.char_count, 0);
     const avgChars = pagesToProcess > 0 ? totalChars / pagesToProcess : 0;
-    const is_born_digital = avgChars >= BORN_DIGITAL_THRESHOLD;
+    const pagesWithContent = pages.filter(p => p.has_content).length;
+    const contentRatio = pagesToProcess > 0 ? pagesWithContent / pagesToProcess : 0;
+
+    const is_born_digital =
+      avgChars >= BORN_DIGITAL_CHAR_THRESHOLD &&
+      contentRatio >= BORN_DIGITAL_PAGE_RATIO;
 
     return {
       ok: true,
