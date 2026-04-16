@@ -1,120 +1,145 @@
 // ═══════════════════════════════════════════════════════════════
-// Content Classifier — Door 1: Internal document classification
+// Content Classifier — Door 2: Document classification
 // ═══════════════════════════════════════════════════════════════
-// Classifies documents based on text content + filename heuristics.
-// No external LLM. Pure regex/pattern matching.
-// Fixed MIME gate: checks actual MIME type properly.
-// ═══════════════════════════════════════════════════════════════
+// Classifies extracted text into document slot types.
+// Uses pattern matching with weighted scoring.
 
 import type { DocumentSlotType } from '../document-registry-model';
 
 export interface ClassificationScore {
-  slot: DocumentSlotType;
-  score: number;        // 0.0–1.0
-  evidence: string[];   // keywords/patterns that matched
+  slot: DocumentSlotType | 'unknown' | 'unsupported';
+  score: number;
+  evidence: string[];
 }
 
 export interface ClassificationOutput {
-  best: DocumentSlotType;
+  best: DocumentSlotType | 'unknown' | 'unsupported';
   confidence: number;
   scores: ClassificationScore[];
   evidence: string[];
 }
 
-// ── Supported MIME types ─────────────────────────────────────
-// Must match resolveReadingRoute in reading-artifact-model.ts exactly.
-// DOC/DOCX are NOT supported — no reading lane exists for them.
+// MIME types that the analysis pipeline can process
 const SUPPORTED_MIMES = new Set([
   'application/pdf',
-  'image/jpeg',
-  'image/jpg',
-  'image/png',
-  'image/webp',
+  'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/tiff',
 ]);
 
-// ── Keyword patterns per document type ───────────────────────
+// ── Patterns with weights ────────────────────────────────────
+// Each pattern has a weight: higher = stronger signal for that category
 
-const PASSPORT_PATTERNS = [
-  /passport/i,
-  /machine.?readable/i,
-  /P<[A-Z]{3}/,            // MRZ line 1
-  /\b[A-Z0-9]{9}\d\b/,     // passport number pattern
-  /nationality/i,
-  /date.?of.?birth/i,
-  /issuing.?authority/i,
-  /جواز/,                   // Arabic: passport
-  /سفر/,                    // Arabic: travel
+interface WeightedPattern {
+  pattern: RegExp;
+  weight: number;
+}
+
+const PASSPORT_PATTERNS: WeightedPattern[] = [
+  { pattern: /passport/i, weight: 3 },
+  { pattern: /P<[A-Z]{3}/, weight: 5 },           // MRZ line 1 — very strong
+  { pattern: /\b[A-Z0-9]{9}\d\b/, weight: 2 },    // passport number
+  { pattern: /nationality/i, weight: 1.5 },
+  { pattern: /date.?of.?birth/i, weight: 1 },
+  { pattern: /issuing.?authority/i, weight: 2 },
+  { pattern: /جواز/i, weight: 3 },                 // Arabic: passport
+  { pattern: /سفر/i, weight: 2 },                  // Arabic: travel
+  { pattern: /place.?of.?birth/i, weight: 1.5 },
+  { pattern: /expiry|expiration/i, weight: 1.5 },
 ];
 
-const GRADUATION_CERT_PATTERNS = [
-  /graduation/i,
-  /certificate/i,
-  /diploma/i,
-  /degree/i,
-  /bachelor/i,
-  /master/i,
-  /awarded/i,
-  /conferred/i,
-  /university/i,
-  /faculty/i,
-  /شهادة/,                  // Arabic: certificate
-  /تخرج/,                   // Arabic: graduation
-  /جامعة/,                  // Arabic: university
-  /كلية/,                   // Arabic: faculty
-  /بكالوريوس/,              // Arabic: bachelor
-  /ماجستير/,                // Arabic: master
+const GRADUATION_CERT_PATTERNS: WeightedPattern[] = [
+  // Strong signals — specific to graduation certificates
+  { pattern: /graduation\s*certificate/i, weight: 5 },
+  { pattern: /شهادة\s*(?:ال)?تخرج/i, weight: 5 },     // شهادة تخرج / شهادة التخرج
+  { pattern: /شهادة\s*(?:ال)?بكالوريوس/i, weight: 5 }, // شهادة البكالوريوس
+  { pattern: /شهادة\s*(?:ال)?ماجستير/i, weight: 5 },
+  { pattern: /شهادة\s*(?:ال)?دكتوراه/i, weight: 5 },
+  { pattern: /conferred/i, weight: 3 },
+  { pattern: /awarded\s*(?:the\s*)?degree/i, weight: 4 },
+  { pattern: /hereby\s*certif/i, weight: 3 },
+  { pattern: /بموجب\s*هذ/i, weight: 3 },               // بموجب هذا — hereby
+  { pattern: /منح/i, weight: 2 },                      // granted/awarded
+  // Medium signals
+  { pattern: /graduation/i, weight: 2 },
+  { pattern: /diploma/i, weight: 2 },
+  { pattern: /degree/i, weight: 2 },
+  { pattern: /bachelor/i, weight: 2.5 },
+  { pattern: /master/i, weight: 1.5 },
+  { pattern: /certificate/i, weight: 1 },              // low — too generic
+  { pattern: /university/i, weight: 1 },
+  { pattern: /faculty/i, weight: 1 },
+  { pattern: /شهادة/i, weight: 1.5 },
+  { pattern: /تخرج/i, weight: 2 },
+  { pattern: /جامعة/i, weight: 1 },
+  { pattern: /كلية/i, weight: 1 },
+  { pattern: /بكالوريوس/i, weight: 2.5 },
+  { pattern: /ماجستير/i, weight: 2 },
+  { pattern: /دكتوراه/i, weight: 2 },
+  { pattern: /التقدير/i, weight: 1.5 },                // grade/honor
+  { pattern: /بتقدير/i, weight: 2 },                   // with grade of
+  { pattern: /نجح/i, weight: 1.5 },                    // passed
+  { pattern: /اجتاز/i, weight: 1.5 },                  // completed/passed
 ];
 
-const TRANSCRIPT_PATTERNS = [
-  /transcript/i,
-  /academic.?record/i,
-  /course/i,
-  /credit/i,
-  /grade/i,
-  /semester/i,
-  /gpa/i,
-  /cumulative/i,
-  /cgpa/i,
-  /mark.?sheet/i,
-  /كشف.?درجات/,
-  /سجل.?أكاديمي/,
-  /معدل/,                   // Arabic: GPA
+const TRANSCRIPT_PATTERNS: WeightedPattern[] = [
+  // Strong — unique to transcripts
+  { pattern: /transcript/i, weight: 4 },
+  { pattern: /academic.?record/i, weight: 4 },
+  { pattern: /كشف\s*(?:ال)?درجات/i, weight: 5 },       // كشف درجات
+  { pattern: /سجل\s*أكاديمي/i, weight: 5 },
+  { pattern: /mark.?sheet/i, weight: 4 },
+  // Medium — shared with certificates but weighted lower
+  { pattern: /semester/i, weight: 2 },
+  { pattern: /cumulative/i, weight: 2 },
+  { pattern: /cgpa/i, weight: 2 },
+  { pattern: /credit\s*hours?/i, weight: 2 },
+  { pattern: /course\s*(?:code|name|title)/i, weight: 2 },
+  // Weak — too generic alone
+  { pattern: /gpa/i, weight: 1 },
+  { pattern: /grade/i, weight: 0.5 },
+  { pattern: /course/i, weight: 0.5 },
+  { pattern: /credit/i, weight: 0.5 },
+  { pattern: /معدل/i, weight: 1 },
 ];
 
-const LANGUAGE_CERT_PATTERNS = [
-  /ielts/i,
-  /toefl/i,
-  /duolingo/i,
-  /pte.?academic/i,
-  /english.?proficiency/i,
-  /band.?score/i,
-  /overall.?score/i,
-  /listening/i,
-  /speaking/i,
-  /reading/i,
-  /writing/i,
-  /test.?report/i,
-  /candidate/i,
-  /test.?date/i,
+const LANGUAGE_CERT_PATTERNS: WeightedPattern[] = [
+  { pattern: /ielts/i, weight: 5 },
+  { pattern: /toefl/i, weight: 5 },
+  { pattern: /duolingo/i, weight: 5 },
+  { pattern: /pte.?academic/i, weight: 5 },
+  { pattern: /english.?proficiency/i, weight: 3 },
+  { pattern: /band.?score/i, weight: 3 },
+  { pattern: /listening/i, weight: 1 },
+  { pattern: /speaking/i, weight: 1 },
+  { pattern: /writing/i, weight: 0.5 },
+  { pattern: /test.?report/i, weight: 2 },
+  { pattern: /candidate/i, weight: 0.5 },
+  { pattern: /test.?date/i, weight: 1 },
 ];
 
-function scorePatterns(text: string, patterns: RegExp[]): { score: number; evidence: string[] } {
+function scoreWeightedPatterns(text: string, patterns: WeightedPattern[]): { score: number; evidence: string[] } {
   const evidence: string[] = [];
-  let hits = 0;
+  let totalWeight = 0;
+  let maxPossible = 0;
+
   for (const p of patterns) {
-    const match = text.match(p);
+    maxPossible += p.weight;
+    const match = text.match(p.pattern);
     if (match) {
-      hits++;
+      totalWeight += p.weight;
       evidence.push(match[0]);
     }
   }
-  return { score: Math.min(hits / Math.max(patterns.length * 0.3, 3), 1.0), evidence };
+
+  // Normalize: score = weighted hits / (maxPossible * 0.25)
+  // A document matching ~25% of max weight = score 1.0
+  const threshold = maxPossible * 0.25;
+  return { score: Math.min(totalWeight / Math.max(threshold, 1), 1.0), evidence };
 }
 
 /**
  * Classify document content into a slot type.
  * Uses both filename and extracted text content.
- * MIME gate now checks exact MIME type against supported set.
+ * Weighted pattern scoring with disambiguation.
  */
 export function classifyDocument(params: {
   fileName: string;
@@ -135,10 +160,10 @@ export function classifyDocument(params: {
   }
 
   const scores: ClassificationScore[] = [
-    { slot: 'passport', ...scorePatterns(combined, PASSPORT_PATTERNS) },
-    { slot: 'graduation_certificate', ...scorePatterns(combined, GRADUATION_CERT_PATTERNS) },
-    { slot: 'transcript', ...scorePatterns(combined, TRANSCRIPT_PATTERNS) },
-    { slot: 'language_certificate', ...scorePatterns(combined, LANGUAGE_CERT_PATTERNS) },
+    { slot: 'passport', ...scoreWeightedPatterns(combined, PASSPORT_PATTERNS) },
+    { slot: 'graduation_certificate', ...scoreWeightedPatterns(combined, GRADUATION_CERT_PATTERNS) },
+    { slot: 'transcript', ...scoreWeightedPatterns(combined, TRANSCRIPT_PATTERNS) },
+    { slot: 'language_certificate', ...scoreWeightedPatterns(combined, LANGUAGE_CERT_PATTERNS) },
   ];
 
   // Sort by score descending
@@ -154,6 +179,22 @@ export function classifyDocument(params: {
       scores,
       evidence: ['No strong pattern match'],
     };
+  }
+
+  // Disambiguation: if graduation_certificate and transcript are close,
+  // prefer graduation_certificate (transcripts almost always have tabular data)
+  const gradScore = scores.find(s => s.slot === 'graduation_certificate');
+  const transScore = scores.find(s => s.slot === 'transcript');
+  if (gradScore && transScore && top.slot === 'transcript') {
+    // If graduation is within 30% of transcript score, prefer graduation
+    if (gradScore.score >= transScore.score * 0.7) {
+      return {
+        best: 'graduation_certificate',
+        confidence: gradScore.score,
+        scores,
+        evidence: [...gradScore.evidence, '[disambiguated: grad preferred over transcript]'],
+      };
+    }
   }
 
   // Check if top two are too close (ambiguous)
