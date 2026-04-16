@@ -37,6 +37,7 @@ import {
   filterUniversitiesByRegion,
   type RegionSummary,
 } from "@/lib/regionMapping";
+import { getLocalizedCountryName } from "@/lib/countryDisplayName";
 
 /* ── Region grouping (visual filter only) ── */
 const REGIONS: Record<string, { labelKey: string; codes: string[] }> = {
