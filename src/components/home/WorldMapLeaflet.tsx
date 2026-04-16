@@ -1335,51 +1335,70 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         group.addLayer(unknownMarker);
       }
 
-      // Country-level zoom must target the country boundary itself (not city cluster)
+      // Country-level zoom — build bounds from selectedCountryFeatures directly
       if (shouldZoom) {
-        // Detect antimeridian-crossing countries (e.g. Russia, Fiji)
-        // by checking if the GeoJSON longitudes span > 180°
-        const crossesAntimeridian = (() => {
-          if (!selectedCountryCode || !selectedCountryFeatures.length) return false;
-          let minLng = Infinity, maxLng = -Infinity;
-          const extractLngs = (coords: any) => {
-            if (typeof coords[0] === 'number') {
-              // [lng, lat] position
-              const lng = coords[0] as number;
-              if (lng < minLng) minLng = lng;
-              if (lng > maxLng) maxLng = lng;
-            } else {
-              for (const c of coords) extractLngs(c);
-            }
-          };
-          for (const f of selectedCountryFeatures) {
-            const geom = f.geometry as any;
-            if (geom?.coordinates) extractLngs(geom.coordinates);
-          }
-          return (maxLng - minLng) > 180;
-        })();
+        // Explicit antimeridian fallback set — these countries have geometries
+        // that cross ±180° and produce broken Leaflet bounds
+        const ANTIMERIDIAN_COUNTRIES = new Set(["RU", "FJ", "NZ"]);
+        const useAntimeridianFallback = selectedCountryCode && ANTIMERIDIAN_COUNTRIES.has(selectedCountryCode);
 
-        if (crossesAntimeridian && selectedCountryCode && CC[selectedCountryCode]) {
-          // For antimeridian-crossing countries, flyTo center instead of fitBounds
-          map.flyTo(CC[selectedCountryCode], 3, { animate: true, duration: 1 });
-        } else {
-          const countryBounds = bordersRef.current?.getBounds();
-          if (countryBounds?.isValid()) {
-            map.fitBounds(countryBounds.pad(0.08), {
-              animate: true,
-              padding: [40, 40],
-              maxZoom: 6,
-            });
-          } else if (pts.length > 0) {
-            map.fitBounds(L.latLngBounds(pts).pad(0.2), {
-              animate: true,
-              maxZoom: 7,
-              padding: [50, 50],
-            });
-          } else if (selectedCountryCode && CC[selectedCountryCode]) {
-            map.flyTo(CC[selectedCountryCode], 5, { animate: true });
-          }
+        // Build bounds from the selected country features directly (not bordersRef which may contain other layers)
+        let featureBounds: L.LatLngBounds | null = null;
+        if (!useAntimeridianFallback && selectedCountryFeatures.length > 0) {
+          try {
+            const tempLayer = L.geoJSON({
+              type: "FeatureCollection",
+              features: selectedCountryFeatures,
+            } as GeoJSON.FeatureCollection);
+            const b = tempLayer.getBounds();
+            if (b.isValid()) featureBounds = b;
+          } catch { /* skip */ }
         }
+
+        // Determine zoom path
+        let zoomPath: string;
+        if (useAntimeridianFallback) {
+          if (selectedCountryCode && CC[selectedCountryCode]) {
+            map.flyTo(CC[selectedCountryCode], 3, { animate: true, duration: 1 });
+            zoomPath = 'flyTo:antimeridian';
+          } else {
+            // No CC entry — last resort world view (should not happen for RU/FJ/NZ)
+            map.flyTo([0, 0], 2, { animate: true });
+            zoomPath = 'flyTo:antimeridian:no-CC';
+          }
+        } else if (featureBounds) {
+          map.fitBounds(featureBounds.pad(0.08), {
+            animate: true,
+            padding: [40, 40],
+            maxZoom: 6,
+          });
+          zoomPath = 'fitBounds:featureGeometry';
+        } else if (pts.length > 0) {
+          map.fitBounds(L.latLngBounds(pts).pad(0.2), {
+            animate: true,
+            maxZoom: 7,
+            padding: [50, 50],
+          });
+          zoomPath = 'fitBounds:cityPoints';
+        } else if (selectedCountryCode && CC[selectedCountryCode]) {
+          map.flyTo(CC[selectedCountryCode], 5, { animate: true });
+          zoomPath = 'flyTo:CC-fallback';
+        } else {
+          zoomPath = 'none:no-data';
+        }
+
+        // Runtime evidence log
+        setTimeout(() => {
+          const c = map.getCenter();
+          console.log('[Map:CountryZoom]', {
+            selectedCountryCode,
+            antimeridianFallback: !!useAntimeridianFallback,
+            featureBoundsValid: !!featureBounds,
+            path: zoomPath,
+            finalCenter: { lat: c.lat.toFixed(2), lng: c.lng.toFixed(2) },
+            finalZoom: map.getZoom().toFixed(2),
+          });
+        }, 1200);
       }
     }
 
