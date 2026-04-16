@@ -61,23 +61,71 @@ export default function Community() {
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
-    let q = supabase
+
+    // Fetch community_posts
+    let communityQ = supabase
       .from("community_posts")
       .select("*")
       .order("is_pinned", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(50);
 
-    if (filter !== "all") {
-      q = q.eq("author_type", filter);
+    if (filter === "student") {
+      communityQ = communityQ.eq("author_type", "student");
     }
 
-    const { data } = await q;
-    if (!data) { setLoading(false); return; }
+    // Fetch university_posts (published only)
+    const uniPostsQ = supabase
+      .from("university_posts")
+      .select("id, university_id, post_type, title, body, status, pinned, published_at, attachments, created_at")
+      .eq("status", "published")
+      .order("pinned", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    const [communityRes, uniPostsRes] = await Promise.all([
+      filter !== "university" ? communityQ : { data: [] },
+      filter !== "student" ? uniPostsQ : { data: [] },
+    ]);
+
+    const communityData = (communityRes.data || []) as any[];
+    const uniPostsData = (uniPostsRes.data || []) as any[];
+
+    // Normalize university_posts into the same shape
+    const normalizedUniPosts = uniPostsData.map(p => ({
+      id: p.id,
+      author_type: "university" as const,
+      author_user_id: null,
+      university_id: p.university_id,
+      content: [p.title, p.body].filter(Boolean).join("\n\n"),
+      image_url: (() => {
+        try {
+          const atts = p.attachments as any[];
+          const img = atts?.find((a: any) => a.type === "image");
+          return img?.url || null;
+        } catch { return null; }
+      })(),
+      tags: [] as string[],
+      likes_count: 0,
+      comments_count: 0,
+      is_pinned: p.pinned || false,
+      created_at: p.published_at || p.created_at,
+    }));
+
+    // Merge & deduplicate (university_posts id vs community_posts id)
+    const seenIds = new Set<string>();
+    const merged = [...communityData, ...normalizedUniPosts]
+      .filter(p => { if (seenIds.has(p.id)) return false; seenIds.add(p.id); return true; })
+      .sort((a, b) => {
+        // pinned first, then by date
+        if (a.is_pinned && !b.is_pinned) return -1;
+        if (!a.is_pinned && b.is_pinned) return 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
 
     // Enrich with author info
-    const userIds = data.filter(p => p.author_user_id).map(p => p.author_user_id!);
-    const uniIds = data.filter(p => p.university_id).map(p => p.university_id!);
+    const userIds = merged.filter(p => p.author_user_id).map(p => p.author_user_id!);
+    const uniIds = merged.filter(p => p.university_id).map(p => p.university_id!);
 
     const [profilesRes, unisRes, likesRes] = await Promise.all([
       userIds.length > 0
@@ -87,7 +135,7 @@ export default function Community() {
         ? supabase.from("universities").select("id, name, name_ar, logo_url, slug").in("id", uniIds)
         : { data: [] },
       userId
-        ? supabase.from("community_post_likes").select("post_id").eq("user_id", userId).in("post_id", data.map(p => p.id))
+        ? supabase.from("community_post_likes").select("post_id").eq("user_id", userId).in("post_id", merged.map(p => p.id))
         : { data: [] },
     ]);
 
@@ -95,7 +143,7 @@ export default function Community() {
     const uniMap = new Map((unisRes.data || []).map(u => [u.id, u]));
     const likedSet = new Set((likesRes.data || []).map(l => l.post_id));
 
-    const enriched: CommunityPost[] = data.map(p => {
+    const enriched: CommunityPost[] = merged.map(p => {
       const profile = p.author_user_id ? profileMap.get(p.author_user_id) : null;
       const uni = p.university_id ? uniMap.get(p.university_id) : null;
       return {
