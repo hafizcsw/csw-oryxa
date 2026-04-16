@@ -864,7 +864,9 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         const maxFontFromWidth = Math.floor(targetLabelW / Math.max(info.name.length * charWidth, 2));
         const maxFontFromHeight = Math.floor(screenH * 0.2);
         let fontSize = Math.min(maxFontFromWidth, maxFontFromHeight);
-        fontSize = Math.max(7, Math.min(fontSize, 14)); // clamp 7–14px
+        // Scale max font with zoom: at z≤4 cap at 14, grows up to 32 at z≥10
+        const maxFont = zoom <= 4 ? 14 : Math.min(14 + (zoom - 4) * 3, 32);
+        fontSize = Math.max(7, Math.min(fontSize, maxFont));
 
         const letterSpacing = fontSize >= 13 ? 2 : fontSize >= 10 ? 1 : 0;
         let labelWidth = Math.round(info.name.length * fontSize * charWidth + (info.name.length - 1) * letterSpacing + 8);
