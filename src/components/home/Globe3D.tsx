@@ -253,7 +253,7 @@ export function Globe3DView({
 }: Globe3DViewProps) {
   const { t } = useTranslation();
   const [hoveredCode, setHoveredCode] = useState<string | null>(null);
-  const size = 320;
+  const size = 160;
 
   const hovered = hoveredCode ? countryStats.find(c => c.code === hoveredCode) : null;
 
