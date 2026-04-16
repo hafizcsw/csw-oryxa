@@ -26,6 +26,7 @@ import { parseMrz } from './parsers/mrz-parser';
 import { classifyDocument } from './parsers/content-classifier';
 import {
   extractPassportFields,
+  extractPassportTextFallback,
   extractGraduationFields,
   extractTranscriptFields,
   extractLanguageCertFields,
@@ -121,12 +122,27 @@ export async function analyzeDocument(params: {
 
     // ── Step 3: Extract fields based on classification ─────
     let extractedFields: Record<string, ExtractedField> = {};
+    let mrzFound = false;
+    const laneStrength: 'passport_strong' | 'passport_weak' | null =
+      classification.passport_strength ?? null;
 
     if (classification.best === 'passport') {
       const mrzResult = parseMrz(textContent);
+      mrzFound = mrzResult.found;
+
       if (mrzResult.found) {
+        // Strong evidence path: MRZ is the primary truth source.
         extractedFields = extractPassportFields(mrzResult);
         analysis.parser_type = 'mrz';
+      } else if (laneStrength === 'passport_strong') {
+        // No MRZ but classifier saw strong passport text evidence.
+        // Allow weak text fallback — these fields are tagged
+        // 'regex_heuristic' and the promotion layer will refuse auto-accept.
+        extractedFields = extractPassportTextFallback(textContent);
+      } else {
+        // PASSPORT LANE GATE: weak classification + no MRZ ⇒ no fake success.
+        // Do not extract identity fields from weak/ambiguous text.
+        extractedFields = {};
       }
     } else if (classification.best === 'graduation_certificate') {
       extractedFields = extractGraduationFields(textContent);
@@ -143,11 +159,18 @@ export async function analyzeDocument(params: {
 
     // ── Step 4: Assess usefulness ────────────────────────────
     // Honesty: a 'degraded' artifact never gets clean 'useful' status.
+    // Honesty: a weak passport classification with no MRZ never gets 'useful'.
     const fieldCount = Object.keys(extractedFields).length;
+    const passportWeakNoMrz =
+      classification.best === 'passport' && laneStrength === 'passport_weak' && !mrzFound;
+
     if (classification.best === 'unsupported') {
       analysis.usefulness_status = 'not_useful';
       analysis.rejection_reason = 'Unsupported file type';
     } else if (classification.best === 'unknown' && fieldCount === 0) {
+      analysis.usefulness_status = 'unknown';
+    } else if (passportWeakNoMrz) {
+      // Weak passport classification without MRZ is never a clean success.
       analysis.usefulness_status = 'unknown';
     } else if (fieldCount > 0) {
       analysis.usefulness_status = artifact.readability === 'degraded' ? 'unknown' : 'useful';
@@ -173,7 +196,11 @@ export async function analyzeDocument(params: {
         conflictWithCurrent: conflict,
       });
 
-      proposal = applyPromotionRules(proposal, { readability: artifact.readability });
+      proposal = applyPromotionRules(proposal, {
+        readability: artifact.readability,
+        parser_source: extracted.parser_source,
+        lane_strength: classification.best === 'passport' ? laneStrength : null,
+      });
       proposals.push(proposal);
     }
 
@@ -192,6 +219,34 @@ export async function analyzeDocument(params: {
       `Proposals: ${accepted} auto, ${pending} pending, ${rejected} rejected`,
       `Pages: ${artifact.pages_processed}/${artifact.total_page_count}`,
     ].join(' | ');
+
+    // ── PassportLane proof log (Order 1) ─────────────────────
+    // Always emit when classification.best === 'passport' so live runtime
+    // proof can be grepped from the console.
+    if (classification.best === 'passport') {
+      console.log('[Order1:PassportLane]', JSON.stringify({
+        file: file.name,
+        classification: classification.best,
+        classification_confidence: Number(classification.confidence.toFixed(3)),
+        lane_strength: laneStrength,
+        mrz_found: mrzFound,
+        mrz_pattern_in_text: classification.passport_mrz_pattern_in_text,
+        passport_text_evidence: classification.passport_text_evidence,
+        readability: artifact.readability,
+        usefulness: analysis.usefulness_status,
+        extracted_fields: Object.entries(extractedFields).map(([k, v]) => ({
+          field: k,
+          parser_source: v.parser_source,
+          confidence: Number(v.confidence.toFixed(3)),
+        })),
+        proposals: proposals.map(p => ({
+          field: p.field_key,
+          status: p.proposal_status,
+          auto_apply_candidate: p.auto_apply_candidate,
+          confidence: Number(p.confidence.toFixed(3)),
+        })),
+      }, null, 2));
+    }
 
     analysis.analysis_status = 'completed';
     analysis.updated_at = new Date().toISOString();

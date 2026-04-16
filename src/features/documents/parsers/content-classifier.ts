@@ -12,11 +12,27 @@ export interface ClassificationScore {
   evidence: string[];
 }
 
+/**
+ * Passport lane classification strength.
+ *  - 'passport_strong' : MRZ pattern present OR ≥2 independent high-signal
+ *    passport evidence items present in extracted text (not just filename).
+ *  - 'passport_weak'   : classifier fired only on filename / single weak
+ *    text fragment. Engine MUST NOT treat this as clean passport success.
+ *  - null              : not classified as passport.
+ */
+export type PassportLaneStrength = 'passport_strong' | 'passport_weak' | null;
+
 export interface ClassificationOutput {
   best: DocumentSlotType | 'unknown' | 'unsupported';
   confidence: number;
   scores: ClassificationScore[];
   evidence: string[];
+  /** Set only when best === 'passport'. Used by engine to gate the lane. */
+  passport_strength: PassportLaneStrength;
+  /** Evidence items observed inside extracted text (filename excluded). */
+  passport_text_evidence: string[];
+  /** True iff the MRZ start pattern (P<XXX) was seen anywhere in text. */
+  passport_mrz_pattern_in_text: boolean;
 }
 
 // MIME types that the analysis pipeline can process
@@ -137,6 +153,62 @@ function scoreWeightedPatterns(text: string, patterns: WeightedPattern[]): { sco
 }
 
 /**
+ * High-signal passport evidence patterns that must appear inside the
+ * EXTRACTED TEXT (not the filename) for the passport lane to be considered
+ * 'passport_strong' without an MRZ pattern.
+ *
+ * Filename and slot hint are intentionally excluded from this list — they
+ * cannot upgrade lane strength on their own.
+ */
+const PASSPORT_HIGH_SIGNAL_TEXT_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
+  { pattern: /passport\s*(?:no|number|n[°o]\.?)/i, label: 'passport_number_label' },
+  { pattern: /\bissuing\s*(?:authority|country|state)\b/i, label: 'issuing_authority' },
+  { pattern: /\bdate\s*of\s*(?:birth|expiry|issue)\b/i, label: 'passport_date_label' },
+  { pattern: /\bplace\s*of\s*birth\b/i, label: 'place_of_birth' },
+  { pattern: /\bnationality\b/i, label: 'nationality_label' },
+  { pattern: /جواز\s*(?:ال)?سفر/i, label: 'arabic_passport' },
+  { pattern: /رقم\s*(?:ال)?جواز/i, label: 'arabic_passport_number' },
+  { pattern: /تاريخ\s*(?:الميلاد|الانتهاء|الإصدار)/i, label: 'arabic_passport_date' },
+  { pattern: /جهة\s*الإصدار/i, label: 'arabic_issuing_authority' },
+];
+
+/** MRZ start pattern — TD3 line-1 prefix. Strongest possible passport signal. */
+const MRZ_PATTERN_RE = /P[A-Z<][A-Z<]{3}/;
+
+/**
+ * Compute passport lane strength.
+ *
+ * Strong iff:
+ *   (a) MRZ-start pattern present in extracted text, OR
+ *   (b) ≥2 distinct high-signal passport text evidence items present.
+ *
+ * Weak otherwise (e.g. classifier fired only because filename contains
+ * "passport" or because of one isolated weak fragment).
+ *
+ * Filename and slot hint NEVER count toward strength.
+ */
+function evaluatePassportStrength(textContent: string): {
+  strength: 'passport_strong' | 'passport_weak';
+  text_evidence: string[];
+  mrz_pattern_in_text: boolean;
+} {
+  const text = textContent || '';
+  const mrz_pattern_in_text = MRZ_PATTERN_RE.test(text);
+
+  const text_evidence: string[] = [];
+  for (const { pattern, label } of PASSPORT_HIGH_SIGNAL_TEXT_PATTERNS) {
+    if (pattern.test(text)) text_evidence.push(label);
+  }
+
+  const strong = mrz_pattern_in_text || text_evidence.length >= 2;
+  return {
+    strength: strong ? 'passport_strong' : 'passport_weak',
+    text_evidence,
+    mrz_pattern_in_text,
+  };
+}
+
+/**
  * Classify document content into a slot type.
  * Uses both filename and extracted text content.
  * Weighted pattern scoring with disambiguation.
@@ -156,6 +228,9 @@ export function classifyDocument(params: {
       confidence: 1.0,
       scores: [],
       evidence: [`Unsupported MIME: ${mimeType}`],
+      passport_strength: null,
+      passport_text_evidence: [],
+      passport_mrz_pattern_in_text: false,
     };
   }
 
@@ -170,7 +245,10 @@ export function classifyDocument(params: {
   scores.sort((a, b) => b.score - a.score);
 
   const top = scores[0];
-  
+
+  // Compute passport-lane strength up-front (used in any return that lands on passport)
+  const passportEval = evaluatePassportStrength(textContent);
+
   // Require minimum score to classify
   if (top.score < 0.15) {
     return {
@@ -178,6 +256,9 @@ export function classifyDocument(params: {
       confidence: 0,
       scores,
       evidence: ['No strong pattern match'],
+      passport_strength: null,
+      passport_text_evidence: passportEval.text_evidence,
+      passport_mrz_pattern_in_text: passportEval.mrz_pattern_in_text,
     };
   }
 
@@ -186,13 +267,15 @@ export function classifyDocument(params: {
   const gradScore = scores.find(s => s.slot === 'graduation_certificate');
   const transScore = scores.find(s => s.slot === 'transcript');
   if (gradScore && transScore && top.slot === 'transcript') {
-    // If graduation is within 30% of transcript score, prefer graduation
     if (gradScore.score >= transScore.score * 0.7) {
       return {
         best: 'graduation_certificate',
         confidence: gradScore.score,
         scores,
         evidence: [...gradScore.evidence, '[disambiguated: grad preferred over transcript]'],
+        passport_strength: null,
+        passport_text_evidence: passportEval.text_evidence,
+        passport_mrz_pattern_in_text: passportEval.mrz_pattern_in_text,
       };
     }
   }
@@ -206,5 +289,8 @@ export function classifyDocument(params: {
     confidence: ambiguous ? top.score * 0.7 : top.score,
     scores,
     evidence: top.evidence,
+    passport_strength: top.slot === 'passport' ? passportEval.strength : null,
+    passport_text_evidence: passportEval.text_evidence,
+    passport_mrz_pattern_in_text: passportEval.mrz_pattern_in_text,
   };
 }

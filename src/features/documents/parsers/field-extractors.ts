@@ -38,6 +38,59 @@ export function extractPassportFields(mrz: MrzResult): Fields {
   return f;
 }
 
+// ── Passport TEXT FALLBACK (NO MRZ) ───────────────────────────
+// Used only when MRZ is absent. Returns weak-evidence fields tagged
+// 'regex_heuristic' so the promotion layer can refuse auto-accept.
+//
+// IMPORTANT: this lane is intentionally conservative. It must NOT
+// produce identity fields without an explicit nearby label — bare
+// numbers / bare names in arbitrary OCR noise are NOT enough.
+export function extractPassportTextFallback(text: string): Fields {
+  const f: Fields = {};
+  if (!text || text.trim().length === 0) return f;
+  const p: ParserType = 'regex_heuristic';
+  const lowConf = 0.45; // capped well below AUTO_ACCEPT_THRESHOLD
+
+  // Passport number (must be near explicit label)
+  const numMatch = text.match(
+    /(?:passport\s*(?:no|number|n[°o]\.?)|رقم\s*(?:ال)?جواز)\s*:?\s*([A-Z0-9]{6,12})/i,
+  );
+  if (numMatch) {
+    f['identity.passport_number'] = field(numMatch[1].toUpperCase(), numMatch[0], lowConf, p, numMatch[0]);
+  }
+
+  // Date of birth (must be near explicit label)
+  const dobMatch = text.match(
+    /(?:date\s*of\s*birth|d\.?o\.?b\.?|تاريخ\s*الميلاد)\s*:?\s*([0-9]{1,2}[\s\/\-\.][0-9A-Za-z]{1,9}[\s\/\-\.][0-9]{2,4}|\d{4}[\-\/]\d{2}[\-\/]\d{2})/i,
+  );
+  if (dobMatch) {
+    f['identity.date_of_birth'] = field(dobMatch[1].trim(), dobMatch[0], lowConf, p, dobMatch[0]);
+  }
+
+  // Expiry date (must be near explicit label)
+  const expMatch = text.match(
+    /(?:date\s*of\s*expiry|expiry|expires?|تاريخ\s*الانتهاء)\s*:?\s*([0-9]{1,2}[\s\/\-\.][0-9A-Za-z]{1,9}[\s\/\-\.][0-9]{2,4}|\d{4}[\-\/]\d{2}[\-\/]\d{2})/i,
+  );
+  if (expMatch) {
+    f['identity.passport_expiry_date'] = field(expMatch[1].trim(), expMatch[0], lowConf, p, expMatch[0]);
+  }
+
+  // Gender (must be near explicit label)
+  const genderMatch = text.match(/(?:sex|gender|الجنس)\s*:?\s*([MFmf])\b/);
+  if (genderMatch) {
+    const v = genderMatch[1].toUpperCase();
+    f['identity.gender'] = field(v, genderMatch[0], lowConf, p, genderMatch[0]);
+  }
+
+  // Nationality (must be near explicit label)
+  const natMatch = text.match(/(?:nationality|الجنسية)\s*:?\s*([A-Z]{3}|[A-Za-z\u0600-\u06FF\s]{3,40})/);
+  if (natMatch) {
+    f['identity.citizenship'] = field(natMatch[1].trim(), natMatch[0], lowConf, p, natMatch[0]);
+  }
+
+  return f;
+}
+
 // ── Graduation certificate fields from text ──────────────────
 export function extractGraduationFields(text: string): Fields {
   const f: Fields = {};
