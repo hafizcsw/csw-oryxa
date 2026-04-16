@@ -2,68 +2,65 @@
 
 ## المشكلة
 
-البنية التحتية للكاش موجودة بالفعل (`geo_cache` + edge function `geo-resolve`) لكنها تعمل فقط على **المدن** (385 مدخل). الجامعات (36,960 بدون إحداثيات) لا يتم حلها أو تخزينها أبداً. عند تصفح الخريطة، كل عميل يجلب نفس البيانات من الصفر.
+ثلاث مشاكل في تفاعل الخريطة:
 
-## الحل: كاش دائم على مستوى السيرفر (مشترك بين جميع العملاء)
+1. **الطرد عند التقريب**: الـ `useEffect` الرئيسي (سطر 773) يعيد تشغيل `fitBounds`/`flyTo` كلما تغيرت أي تبعية (OSM overlay, geo enrichment, إلخ) — مما يعيد ضبط الزوم ويطردك للخلف
+2. **التثبيت عند الابتعاد**: لا يوجد ربط بين مستوى الزوم و`drillLevel` — الابتعاد يدوياً لا يغيّر المستوى من "city" إلى "country" أو من "country" إلى "world"
+3. **لا تزامن**: الشريط الجانبي والخريطة غير متزامنين عند التنقل
 
-### 1. تفعيل حل إحداثيات الجامعات تلقائياً عند التصفح
+## الحل
 
-**ملف: `src/hooks/useGeoCacheResolver.ts`** — توسيعه ليحل إحداثيات الجامعات أيضاً وليس المدن فقط:
+### 1. منع إعادة الزوم عند تغييرات غير جوهرية
 
-- عند دخول مدينة وظهور جامعات بدون `geo_lat/geo_lon`، يتم إرسالها للـ edge function `geo-resolve` مع `entity_type: 'university'`
-- النتائج تُحفظ في `geo_cache` (الجدول الموجود) — أول عميل يزور المدينة يحل الإحداثيات، كل عميل بعده يجدها جاهزة فوراً
+**ملف: `src/components/home/WorldMapLeaflet.tsx`**
 
-### 2. كتابة الإحداثيات المحلولة للجامعات في جدول `universities`
+- فصل الـ `useEffect` الكبير إلى جزئين:
+  - **جزء الرسم** (markers, borders): يعاد تشغيله مع كل تغيير بيانات
+  - **جزء الزوم** (`fitBounds`/`flyTo`): يعاد تشغيله **فقط** عند تغيير `drillLevel` أو `selectedCountryCode` أو `regionCities` — باستخدام `useRef` لتتبع آخر قيم تم الزوم عليها
+- إضافة `ref` يحفظ `{ drillLevel, countryCode, regionCities }` — إذا لم تتغير، لا يتم استدعاء `fitBounds`
 
-**ملف: `supabase/functions/geo-resolve/index.ts`** — عند حل إحداثيات جامعة:
+### 2. إضافة انتقال تلقائي عند الزوم يدوياً
 
-```
-// بعد حفظها في geo_cache، أيضاً حدّث جدول universities
-if (entry.entity_type === 'university' && entry.entity_id && lat !== 0) {
-  await srv.from('universities').update({
-    geo_lat: lat, geo_lon: lon, geo_source: source
-  }).eq('id', entry.entity_id);
-}
-```
+**ملف: `src/components/home/WorldMapLeaflet.tsx`**
 
-هذا يعني أن المرة القادمة، الـ RPC `rpc_map_city_universities` يرجع الإحداثيات مباشرة بدون الحاجة للكاش.
+- إضافة حدث `zoomend` يتحقق من مستوى الزوم:
+  - إذا كان `drillLevel === "region"` (city) والزوم أقل من 8 → استدعاء `onBackToCountry()`
+  - إذا كان `drillLevel === "country"` والزوم أقل من 4 → استدعاء `onBackToWorld()`
+- إضافة خاصيتين جديدتين للـ props: `onBackToCountry` و `onBackToWorld`
 
-### 3. تمديد صلاحية كاش React Query
+**ملف: `src/components/home/WorldMapSection.tsx`**
 
-**ملف: `src/hooks/useMapData.ts`** — تغيير `staleTime` من `60_000` إلى `30 * 60_000` وإضافة `gcTime: 60 * 60_000`:
+- تمرير `handleBackToCountry` و `handleBackToWorld` كـ props للخريطة
 
-- البيانات تبقى في ذاكرة المتصفح 30 دقيقة بدون إعادة جلب
-- تبقى في الذاكرة 60 دقيقة حتى بعد مغادرة صفحة الخريطة
-- هذا كاش محلي إضافي فقط — مصدر الحقيقة هو قاعدة البيانات
+### 3. تزامن الشريط الجانبي مع الخريطة
 
-### 4. إيقاف إعادة الجلب عند العودة للتبويب
+**ملف: `src/components/home/WorldMapSection.tsx`**
 
-**ملف: `src/App.tsx`** — إضافة `refetchOnWindowFocus: false` في إعدادات `QueryClient`
+- عند النقر على جامعة في الشريط الجانبي، استدعاء `mapLeafletRef.current.flyTo()` (موجود بالفعل)
+- عند النقر على "الرجوع" في الشريط الجانبي، تأكد أن الخريطة تعيد الزوم بشكل متزامن (يحدث تلقائياً بعد إصلاح #1)
 
-### 5. كاش GeoJSON في `sessionStorage`
-
-**ملف: `src/components/home/WorldMapLeaflet.tsx`** — حفظ حدود الدول (GeoJSON) في `sessionStorage` بدل تحميلها كل مرة
-
-## الخلاصة
+## التفاصيل التقنية
 
 ```text
-العميل الأول يزور موسكو:
-  → يجلب 478 جامعة من RPC
-  → 461 بدون إحداثيات → يرسلها لـ geo-resolve
-  → Nominatim يحل → تُحفظ في geo_cache + universities table
-  → العرض يكتمل
+// Zoom guard ref (prevents re-zoom on non-drill changes)
+const lastZoomTarget = useRef({ drillLevel: '', countryCode: '', city: '' });
 
-العميل الثاني يزور موسكو:
-  → يجلب 478 جامعة من RPC → الإحداثيات موجودة مسبقاً
-  → لا حاجة لـ geo-resolve → عرض فوري
+// In the render effect — only call fitBounds when target actually changed:
+const newTarget = `${drillLevel}|${selectedCountryCode}|${regionCities?.join(',')}`;
+if (newTarget !== lastZoomTarget.current) {
+  lastZoomTarget.current = newTarget;
+  // ... fitBounds / flyTo logic here
+}
+
+// Zoom-based drill transitions
+map.on('zoomend', () => {
+  const z = map.getZoom();
+  if (drillLevel === 'region' && z < 8) onBackToCountry?.();
+  if (drillLevel === 'country' && z < 4) onBackToWorld?.();
+});
 ```
 
-**الملفات المتغيرة:**
-- `src/hooks/useGeoCacheResolver.ts` — إضافة حل الجامعات
-- `supabase/functions/geo-resolve/index.ts` — كتابة النتائج في `universities` table
-- `src/hooks/useMapData.ts` — تمديد `staleTime` + `gcTime`
-- `src/App.tsx` — `refetchOnWindowFocus: false`
-- `src/components/home/WorldMapLeaflet.tsx` — كاش GeoJSON
-
-**لا جداول جديدة** — كل شيء يستخدم البنية الموجودة (`geo_cache` + `universities.geo_lat/geo_lon`).
+## الملفات المتغيرة
+- `src/components/home/WorldMapLeaflet.tsx` — فصل زوم عن رسم + حدث zoomend
+- `src/components/home/WorldMapSection.tsx` — تمرير props جديدة
 
