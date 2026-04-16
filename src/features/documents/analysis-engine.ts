@@ -268,7 +268,8 @@ export async function analyzeDocument(params: {
   artifact.processing_time_ms = performance.now() - startTime;
 
   // Door 1 runtime proof — always log the reading artifact
-  console.info('[Door1:ReadingArtifact]', {
+  const textPreview = artifact.full_text.substring(0, 200).replace(/\n/g, ' ');
+  console.log('[Door1:ReadingArtifact]', JSON.stringify({
     file: artifact.input_filename,
     route: artifact.chosen_route,
     parser: artifact.parser_used,
@@ -278,13 +279,14 @@ export async function analyzeDocument(params: {
     is_readable: artifact.is_readable,
     failure: artifact.failure_reason,
     ms: Math.round(artifact.processing_time_ms),
-  });
-  console.info('[Door1:Classification]', {
+    text_preview: textPreview || '(empty)',
+  }, null, 2));
+  console.log('[Door1:Classification]', JSON.stringify({
     best: analysis.classification_result,
     confidence: analysis.classification_confidence,
     fields: Object.keys(analysis.extracted_fields || {}),
     readability: analysis.readability_status,
-  });
+  }, null, 2));
 
   return { analysis, proposals, artifact };
 }
