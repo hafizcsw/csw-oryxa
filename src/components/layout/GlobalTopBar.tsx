@@ -6,6 +6,7 @@ import { useSwUpdateBadge } from "@/hooks/useSwUpdateBadge";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { idbDeleteDatabase } from "@/lib/spatialCache";
+import { clearWorldGeoCache } from "@/lib/worldGeoCache";
 
 // Build ID for cache verification
 const BUILD_ID = import.meta.env.VITE_BUILD_ID || new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
