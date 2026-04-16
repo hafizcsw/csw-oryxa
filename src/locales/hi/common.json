@@ -263,8 +263,8 @@
         "selectCountryOrUseFilters": "मानचित्र से देश चुनें या परिणाम सीमित करने के लिए फ़िल्टर उपयोग करें",
         "selectCountryTitle": "कोई देश चुनें",
         "selectCountrySubtitle": "उसकी शहरों और विश्वविद्यालयों को देखने के लिए किसी रंगीन देश पर क्लिक करें",
-        "topCountries": "शीर्ष देश"
-        "searchCountryPlaceholder": "देश खोजें...",
+        "topCountries": "शीर्ष देश",
+        "searchCountryPlaceholder": "देश खोजें..."
       },
       "filters": {
         "region": "क्षेत्र",
