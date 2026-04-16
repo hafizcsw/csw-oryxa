@@ -1,60 +1,52 @@
 
 
-## Goal
-Hover over a country on the big map → 3D sidebar globe rotates instantly to that country. Moving across countries updates live. Click/selection behavior unchanged. Hover is transient preview only.
+## Approved narrow patch — implementation plan
 
-## Constraints applied
-- Hover signal = **country code only**, not polygon bounds center.
-- Globe resolves country code → coordinates internally (it already does this for selection).
-- Small delayed clear on `mouseout` (~80 ms), cancelled by next `mouseover` → no flicker between adjacent countries.
-- Hover never touches drill level, never touches selected country, never triggers refetch.
+### 1. `package.json` — heap bump only
+Prefix `build:dev` (and `build` if identical OOM) with `NODE_OPTIONS=--max-old-space-size=4096`. No other script changes.
 
-## Changes
+### 2. `src/components/home/WorldMapSection.tsx` — stabilize boundary callbacks
+Wrap these in `useCallback` with correct deps before passing to `<WorldMapLeaflet>`:
+- `onCountrySelect`
+- `onRegionSelect`
+- `onCitySelect`
+- `onBackToCountry`
+- `onBackToWorld`
 
-### 1. `src/components/home/WorldMapLeaflet.tsx`
-- Add optional prop: `onCountryHover?: (code: string | null) => void`.
-- In the existing per-country `layer.on({ mouseover, mouseout })` block:
-  - `mouseover`: `onCountryHover?.(code)` (alongside existing fill style change).
-  - `mouseout`: `onCountryHover?.(null)` (alongside existing reset).
-- No bounds math, no city hover, no other changes.
+No other changes in this file.
 
-### 2. `src/components/home/WorldMapSection.tsx`
-- Add state: `const [hoveredCountryCode, setHoveredCountryCode] = useState<string | null>(null)`.
-- Add a `useRef<number | null>(null)` for a delayed-clear timer.
-- Handler passed to map:
-  ```ts
-  const handleCountryHover = (code: string | null) => {
-    if (code) {
-      if (clearTimer.current) { clearTimeout(clearTimer.current); clearTimer.current = null; }
-      setHoveredCountryCode(code);
-    } else {
-      if (clearTimer.current) clearTimeout(clearTimer.current);
-      clearTimer.current = window.setTimeout(() => setHoveredCountryCode(null), 80);
-    }
-  };
-  ```
-- Cleanup timer on unmount.
-- Pass `onCountryHover={handleCountryHover}` to `<WorldMapLeaflet>`.
+### 3. `src/components/home/WorldMapLeaflet.tsx` — callbacksRef + deps trim + animation tuning
 
-### 3. Feed globe (same file, ~lines 984–1000)
-- Change to: `focusCountryCode={hoveredCountryCode ?? selectedCountryCode}`.
-- Drop the previously-planned `hoveredLatLon`. Globe resolves coords from the country code via its existing lookup path (same one used for selection today).
-- `focusLatLon` keeps current selection-based value (unchanged), used only when no hovered country and a city is selected.
+**callbacksRef pattern:**
+- Add `const callbacksRef = useRef({ onCountrySelect, onRegionSelect, onCitySelect })`.
+- Tiny `useEffect` syncs it each render.
+- Replace direct `onCountrySelect(...)` / `onRegionSelect(...)` / `onCitySelect(...)` calls inside the giant effect with `callbacksRef.current.X(...)`.
 
-### 4. `Globe3D.tsx`
-- No logic change. It already reacts to `focusCountryCode` changes via its `useEffect` + LERP rotation. Hover just feeds it a different code more often.
+**Deps array (giant effect, ~line 1640) — remove ONLY:**
+- `onCountrySelect`
+- `onRegionSelect`
+- `onCitySelect`
 
-## Why this satisfies every constraint
-- **Live hover preview**: state flips on `mouseover` synchronously → globe `useEffect` fires same tick → smooth LERP starts immediately.
-- **No flicker**: 80 ms delayed clear is cancelled the moment the cursor enters the next country polygon, so the globe never sees a `null` between adjacent countries.
-- **Selection untouched**: `selectedCountryCode`, drill level, and city selection are never written by hover code paths.
-- **Narrow scope**: only country-level hover; no city hover, no new deps, no bounds geometry, no refetches.
-- **Reliability**: country code is a stable, single-value signal — no issues with multi-part countries (US, Russia, France) that bounds-center would mishandle.
+**Keep unchanged:** `mapText`, `getLocalizedValue`, `language`, `isDark`, `isRtl`, `countryMeta`, `osmOverlay`, `worldGeo`, `drillLevel`, `countryStats`, `visibleCountryCodes`, `citySummaries`, `cityUniversities`, `regionCities`, `regionSummaries`, `selectedCountryCode`.
 
-## Files touched
-1. `src/components/home/WorldMapLeaflet.tsx` — add prop + 2 lines in existing handlers.
-2. `src/components/home/WorldMapSection.tsx` — hover state, delayed-clear handler, globe prop swap.
+**Animation tuning (conservative):**
+- `flyTo` (~line 1629): `{ duration: 0.65, easeLinearity: 0.35 }`
+- `flyTo` (~line 1633): `{ duration: 0.65, easeLinearity: 0.35 }`
+- `fitBounds` (~line 1631): `{ animate: true, duration: 0.55, easeLinearity: 0.35, maxZoom: 12 }`
+- `flyTo` search-highlight (~line 584): `{ duration: 0.7, easeLinearity: 0.35 }`
 
-## Out of scope
-City hover, globe internals, map styling, caching, drill logic, selection logic.
+## Out of scope (not touched)
+Globe3D architecture, lazy-loading WorldMapLeaflet, splitting the giant effect, hover/globe sync, tooltip HTML generation, drill/back logic, GeoJSON/caching flow, any other deps.
+
+## Files edited
+1. `package.json`
+2. `src/components/home/WorldMapSection.tsx`
+3. `src/components/home/WorldMapLeaflet.tsx`
+
+## Proof obligations
+- Build succeeds with heap bump.
+- Country→country zoom transitions feel ~650ms, smooth, no white flash, borders + markers persist.
+- Language switch (EN↔AR): tooltips render translated text on next hover.
+- Theme switch: borders recolor.
+- Drill / back behavior unchanged.
 
