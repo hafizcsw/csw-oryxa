@@ -1,6 +1,7 @@
-import { useState, useMemo, useCallback, memo, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, memo, useEffect, useRef, lazy, Suspense } from "react";
 import { MapResultsRail } from "./MapResultsRail";
 import { WorldMapLeaflet, type LeafletMapHandle, type MapViewport } from "./WorldMapLeaflet";
+const Globe3DView = lazy(() => import("./Globe3D").then(m => ({ default: m.Globe3DView })));
 import { MapUniversitySearch } from "./MapUniversitySearch";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -973,11 +974,31 @@ export const WorldMapSection = memo(function WorldMapSection() {
           {/* ── WORLD LEVEL: Top countries ── */}
           {drillLevel === "world" && (
             <div className="flex flex-col h-full">
-              {/* Hero area with gradient bg */}
-              <div className="relative text-center space-y-3 py-10 px-6 bg-gradient-to-b from-primary/5 to-transparent">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-accent/10 border border-primary/20 flex items-center justify-center shadow-[0_0_25px_-5px_hsl(var(--primary)/0.3)]">
-                  <Globe className="h-8 w-8 text-primary animate-[spin_25s_linear_infinite]" />
-                </div>
+              {/* Hero area: real 3D globe synced to the map below */}
+              <div className="relative text-center space-y-3 py-4 px-4 bg-gradient-to-b from-primary/5 to-transparent">
+                <Suspense fallback={
+                  <div className="w-[320px] h-[320px] mx-auto flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+                  </div>
+                }>
+                  <Globe3DView
+                    countryStats={Object.entries(countryStats || {})
+                      .filter(([, v]) => v.universities_count > 0)
+                      .map(([code, v]) => ({
+                        code,
+                        name: countryDisplayName(code, v as unknown as Record<string, unknown>),
+                        count: v.universities_count,
+                      }))}
+                    onCountrySelect={handleCountryClick}
+                    language={language}
+                    focusCountryCode={selectedCountryCode}
+                    focusLatLon={
+                      selectedCitySummary?.city_lat != null && selectedCitySummary?.city_lon != null
+                        ? { lat: selectedCitySummary.city_lat, lon: selectedCitySummary.city_lon }
+                        : null
+                    }
+                  />
+                </Suspense>
                 <h3 className="font-bold text-lg text-foreground">{t("home.worldMap.section.selectCountryTitle")}</h3>
                 <p className="text-sm text-muted-foreground max-w-[240px] mx-auto">{t("home.worldMap.section.selectCountrySubtitle")}</p>
               </div>
