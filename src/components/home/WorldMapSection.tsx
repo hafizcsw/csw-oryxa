@@ -833,15 +833,20 @@ export const WorldMapSection = memo(function WorldMapSection() {
               <div className="flex-1 overflow-y-auto">
                 {countryLevelLoading ? (
                   <div className="flex items-center justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-                ) : geoEnrichedCities.length > 0 ? (
+                ) : visibleCities.length > 0 ? (
                   <>
                     <div className="px-5 py-3 border-b border-border/50">
                       <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                         <MapPin className="h-3.5 w-3.5 text-primary/60" />
-                        {t("home.worldMap.stats.citiesCount", { count: geoEnrichedCities.length })}
+                        {t("home.worldMap.stats.citiesCount", { count: visibleCities.length })}
+                        {visibleCities.length < geoEnrichedCities.length && (
+                          <span className="text-muted-foreground/50 font-normal normal-case">
+                            / {geoEnrichedCities.length}
+                          </span>
+                        )}
                       </p>
                     </div>
-                    {[...geoEnrichedCities]
+                    {[...visibleCities]
                       .sort((a, b) => b.universities_count - a.universities_count)
                       .map((city, idx) => (
                         city.city === "__unknown__" ? (
