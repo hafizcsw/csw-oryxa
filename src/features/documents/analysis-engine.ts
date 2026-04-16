@@ -121,6 +121,15 @@ export async function analyzeDocument(params: {
       // ── PDF lane: try text extraction first ──
       const pdfResult = await extractPdfText(file);
 
+      // Log detection signals for born-digital heuristic transparency
+      if (pdfResult.detection_signals) {
+        console.info('[Door1:PdfDetection]', {
+          file: file.name,
+          is_born_digital: pdfResult.is_born_digital,
+          ...pdfResult.detection_signals,
+        });
+      }
+
       if (pdfResult.ok && pdfResult.is_born_digital) {
         // Born-digital PDF — text extraction succeeded
         artifact.chosen_route = 'born_digital_pdf';
@@ -257,5 +266,25 @@ export async function analyzeDocument(params: {
   }
 
   artifact.processing_time_ms = performance.now() - startTime;
+
+  // Door 1 runtime proof — always log the reading artifact
+  console.info('[Door1:ReadingArtifact]', {
+    file: artifact.input_filename,
+    route: artifact.chosen_route,
+    parser: artifact.parser_used,
+    pages: `${artifact.pages_processed}/${artifact.total_page_count}`,
+    chars: artifact.full_text.length,
+    confidence: artifact.confidence,
+    is_readable: artifact.is_readable,
+    failure: artifact.failure_reason,
+    ms: Math.round(artifact.processing_time_ms),
+  });
+  console.info('[Door1:Classification]', {
+    best: analysis.classification_result,
+    confidence: analysis.classification_confidence,
+    fields: Object.keys(analysis.extracted_fields || {}),
+    readability: analysis.readability_status,
+  });
+
   return { analysis, proposals, artifact };
 }
