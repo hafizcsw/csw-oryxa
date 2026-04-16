@@ -118,6 +118,9 @@ export function useDocumentAnalysis({
         return [...filtered, ...result.proposals];
       });
 
+      // Store reading artifact (Door 1 truth surface)
+      setArtifacts(prev => ({ ...prev, [documentId]: result.artifact }));
+
       // Auto-promote accepted proposals
       const autoAccepted = result.proposals.filter(p => p.proposal_status === 'auto_accepted');
       if (autoAccepted.length > 0) {
@@ -222,6 +225,10 @@ export function useDocumentAnalysis({
     setAnalyses(prev => prev.filter(a => a.document_id !== documentId));
     setProposals(prev => prev.filter(p => p.document_id !== documentId));
     setPromotedFields(prev => prev.filter(pf => pf.documentId !== documentId));
+    setArtifacts(prev => {
+      const { [documentId]: _, ...rest } = prev;
+      return rest;
+    });
   }, []);
 
   const removePromotedField = useCallback((proposalId: string) => {
@@ -247,12 +254,14 @@ export function useDocumentAnalysis({
     setAnalyses([]);
     setProposals([]);
     setPromotedFields([]);
+    setArtifacts({});
   }, []);
 
   return {
     analyses,
     proposals,
     promotedFields,
+    artifacts,
     isAnalyzing,
     analyzeFile,
     reanalyzeFile,
