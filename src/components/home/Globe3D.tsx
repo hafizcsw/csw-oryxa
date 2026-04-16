@@ -10,10 +10,11 @@
  * Uses semantic design tokens via CSS variables (resolved at runtime to hex).
  */
 import { useRef, useMemo, useEffect, useState, useCallback, Suspense } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Sphere, Html } from "@react-three/drei";
+import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber";
+import { Sphere } from "@react-three/drei";
 import * as THREE from "three";
 import { useTranslation } from "react-i18next";
+import earthTextureUrl from "@/assets/earth-texture.jpg";
 
 interface CountryStat {
   code: string;
@@ -162,27 +163,33 @@ function GlobeScene({
       });
   }, [countryStats]);
 
+  // Load Earth texture (continents + oceans). Suspends until ready.
+  const earthTexture = useLoader(THREE.TextureLoader, earthTextureUrl);
+  useEffect(() => {
+    if (earthTexture) {
+      earthTexture.colorSpace = THREE.SRGBColorSpace;
+      earthTexture.anisotropy = 8;
+    }
+  }, [earthTexture]);
+
   return (
     <group ref={globeRef}>
-      {/* Globe core */}
+      {/* Earth sphere with continents texture */}
       <Sphere args={[GLOBE_RADIUS, 64, 64]}>
         <meshPhongMaterial
-          color={colors.background}
-          emissive={colors.primary}
-          emissiveIntensity={0.08}
-          shininess={20}
-          transparent
-          opacity={0.92}
+          map={earthTexture}
+          shininess={8}
+          specular={new THREE.Color(0x222233)}
         />
       </Sphere>
 
-      {/* Wireframe overlay = latitude/longitude grid */}
-      <Sphere args={[GLOBE_RADIUS * 1.001, 24, 16]}>
+      {/* Subtle wireframe overlay = lat/lon grid */}
+      <Sphere args={[GLOBE_RADIUS * 1.002, 24, 16]}>
         <meshBasicMaterial
           color={colors.primary}
           wireframe
           transparent
-          opacity={0.18}
+          opacity={0.08}
         />
       </Sphere>
 
@@ -191,7 +198,7 @@ function GlobeScene({
         <meshBasicMaterial
           color={colors.primary}
           transparent
-          opacity={0.06}
+          opacity={0.12}
           side={THREE.BackSide}
         />
       </Sphere>
