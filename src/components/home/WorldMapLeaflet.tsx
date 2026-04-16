@@ -253,18 +253,26 @@ function getCountryCode(feature: GeoJSON.Feature): string | null {
   }
 
   const a3 = p.ISO_A3 || p.iso_a3 || p["ISO3166-1-Alpha-3"];
-  if (a3) {
+  if (a3 && a3 !== "-99" && a3 !== "-1") {
     const upper = a3.toUpperCase();
     if (upper === "ISR" || upper === "PSE") return "PS";
     if (ISO3_TO_ISO2[upper]) return ISO3_TO_ISO2[upper];
   }
 
   const adm = p.ADM0_A3 || p.adm0_a3;
-  if (adm) {
+  if (adm && adm !== "-99" && adm !== "-1") {
     const upper = adm.toUpperCase();
     if (upper === "ISR" || upper === "PSE" || upper === "PSX") return "PS";
     if (ISO3_TO_ISO2[upper]) return ISO3_TO_ISO2[upper];
   }
+
+  // Name-based fallback for countries with all -99 codes (e.g. Norway in Natural Earth)
+  const featureName = (p.NAME || p.name || p.ADMIN || "").trim().toLowerCase();
+  const NAME_TO_CODE: Record<string, string> = {
+    norway: "NO", "northern cyprus": "CY", somaliland: "SO",
+    kosovo: "XK", "western sahara": "EH",
+  };
+  if (NAME_TO_CODE[featureName]) return NAME_TO_CODE[featureName];
 
   return null;
 }
