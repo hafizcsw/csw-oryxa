@@ -184,6 +184,14 @@ export async function analyzeDocument(params: {
     }
 
     // ── Step 5: Build proposals ──────────────────────────────
+    const sourceLane:
+      | 'passport' | 'transcript' | 'graduation' | 'language' | 'unknown' =
+        classification.best === 'passport' ? 'passport'
+        : classification.best === 'transcript' ? 'transcript'
+        : classification.best === 'graduation_certificate' ? 'graduation'
+        : classification.best === 'language_certificate' ? 'language'
+        : 'unknown';
+
     for (const [fieldKey, extracted] of Object.entries(extractedFields)) {
       if (extracted.value == null) continue;
 
@@ -205,6 +213,7 @@ export async function analyzeDocument(params: {
         readability: artifact.readability,
         parser_source: extracted.parser_source,
         lane_strength: classification.best === 'passport' ? laneStrength : null,
+        source_lane: sourceLane,
       });
       proposals.push(proposal);
     }
@@ -223,7 +232,8 @@ export async function analyzeDocument(params: {
       `Fields: ${fieldCount}`,
       `Proposals: ${accepted} auto, ${pending} pending, ${rejected} rejected`,
       `Pages: ${artifact.pages_processed}/${artifact.total_page_count}`,
-    ].join(' | ');
+      transcriptIntermediate ? `Transcript: ${transcriptIntermediate.evidence_summary}` : null,
+    ].filter(Boolean).join(' | ');
 
     // ── PassportLane proof log (Order 1) ─────────────────────
     // Always emit when classification.best === 'passport' so live runtime
@@ -239,6 +249,58 @@ export async function analyzeDocument(params: {
         passport_text_evidence: classification.passport_text_evidence,
         readability: artifact.readability,
         usefulness: analysis.usefulness_status,
+        extracted_fields: Object.entries(extractedFields).map(([k, v]) => ({
+          field: k,
+          parser_source: v.parser_source,
+          confidence: Number(v.confidence.toFixed(3)),
+        })),
+        proposals: proposals.map(p => ({
+          field: p.field_key,
+          status: p.proposal_status,
+          auto_apply_candidate: p.auto_apply_candidate,
+          confidence: Number(p.confidence.toFixed(3)),
+        })),
+      }, null, 2));
+    }
+
+    // ── TranscriptLane proof log (Order 2) ───────────────────
+    // Emit when classifier landed on transcript OR when grad-preferred
+    // disambiguation flipped a near-miss transcript away. Both are
+    // observable proof events for Order 2 closure.
+    if (
+      classification.best === 'transcript' ||
+      classification.transcript_lane_strength === 'graduation_preferred'
+    ) {
+      console.log('[Order2:TranscriptLane]', JSON.stringify({
+        file: file.name,
+        classification: classification.best,
+        classification_confidence: Number(classification.confidence.toFixed(3)),
+        transcript_lane_strength: classification.transcript_lane_strength,
+        disambiguation_reason: classification.transcript_disambiguation_reason,
+        readability: artifact.readability,
+        usefulness: analysis.usefulness_status,
+        intermediate: transcriptIntermediate ? {
+          partial: transcriptIntermediate.partial,
+          coverage: transcriptIntermediate.coverage,
+          signals: transcriptIntermediate.signals,
+          header: {
+            institution_name: transcriptIntermediate.header.institution_name?.value ?? null,
+            degree_program: transcriptIntermediate.header.degree_program?.value ?? null,
+            gpa_raw: transcriptIntermediate.header.gpa_raw?.value ?? null,
+            gpa_scale: transcriptIntermediate.header.gpa_scale?.value ?? null,
+            grading_system_hint: transcriptIntermediate.header.grading_system_hint?.value ?? null,
+          },
+          rows_count: transcriptIntermediate.rows.length,
+          sample_rows: transcriptIntermediate.rows.slice(0, 3).map(r => ({
+            subject: r.subject_raw,
+            code: r.course_code,
+            grade: r.grade_raw,
+            credits: r.credits_raw,
+            missing: r.missing_columns,
+            confidence: Number(r.confidence.toFixed(2)),
+          })),
+          evidence_summary: transcriptIntermediate.evidence_summary,
+        } : null,
         extracted_fields: Object.entries(extractedFields).map(([k, v]) => ({
           field: k,
           parser_source: v.parser_source,
