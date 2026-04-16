@@ -1053,7 +1053,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
           const meta = code ? countryMeta?.[code] : null;
           const imgUrl = meta?.image_url || null;
           const imgHtml = imgUrl
-            ? `<img src="${imgUrl}" alt="" style="width:100%;height:56px;object-fit:cover;display:block;" onerror="this.style.display='none'" />`
+            ? `<img src="${imgUrl}" alt="" style="width:100%;height:90px;object-fit:cover;display:block;border-radius:6px 6px 0 0;" onerror="this.style.display='none'" />`
             : '';
           const ic = (d: string, c: string) => `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-${isRtl?'left':'right'}:4px"><path d="${d}"/></svg>`;
           const uniIcon = ic('M2 20h20M4 20V9l8-5 8 5v11M9 20v-5h6v5', isDark ? '#60a5fa' : '#3b82f6');
