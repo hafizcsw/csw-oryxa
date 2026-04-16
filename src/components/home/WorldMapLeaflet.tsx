@@ -1337,21 +1337,47 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
 
       // Country-level zoom must target the country boundary itself (not city cluster)
       if (shouldZoom) {
-        const countryBounds = bordersRef.current?.getBounds();
-        if (countryBounds?.isValid()) {
-          map.fitBounds(countryBounds.pad(0.08), {
-            animate: true,
-            padding: [40, 40],
-            maxZoom: 6,
-          });
-        } else if (pts.length > 0) {
-          map.fitBounds(L.latLngBounds(pts).pad(0.2), {
-            animate: true,
-            maxZoom: 7,
-            padding: [50, 50],
-          });
-        } else if (selectedCountryCode && CC[selectedCountryCode]) {
-          map.flyTo(CC[selectedCountryCode], 5, { animate: true });
+        // Detect antimeridian-crossing countries (e.g. Russia, Fiji)
+        // by checking if the GeoJSON longitudes span > 180°
+        const crossesAntimeridian = (() => {
+          if (!selectedCountryCode || !selectedCountryFeatures.length) return false;
+          let minLng = Infinity, maxLng = -Infinity;
+          const extractLngs = (coords: any) => {
+            if (typeof coords[0] === 'number') {
+              // [lng, lat] position
+              const lng = coords[0] as number;
+              if (lng < minLng) minLng = lng;
+              if (lng > maxLng) maxLng = lng;
+            } else {
+              for (const c of coords) extractLngs(c);
+            }
+          };
+          for (const f of selectedCountryFeatures) {
+            if (f.geometry?.coordinates) extractLngs(f.geometry.coordinates);
+          }
+          return (maxLng - minLng) > 180;
+        })();
+
+        if (crossesAntimeridian && selectedCountryCode && CC[selectedCountryCode]) {
+          // For antimeridian-crossing countries, flyTo center instead of fitBounds
+          map.flyTo(CC[selectedCountryCode], 3, { animate: true, duration: 1 });
+        } else {
+          const countryBounds = bordersRef.current?.getBounds();
+          if (countryBounds?.isValid()) {
+            map.fitBounds(countryBounds.pad(0.08), {
+              animate: true,
+              padding: [40, 40],
+              maxZoom: 6,
+            });
+          } else if (pts.length > 0) {
+            map.fitBounds(L.latLngBounds(pts).pad(0.2), {
+              animate: true,
+              maxZoom: 7,
+              padding: [50, 50],
+            });
+          } else if (selectedCountryCode && CC[selectedCountryCode]) {
+            map.flyTo(CC[selectedCountryCode], 5, { animate: true });
+          }
         }
       }
     }
