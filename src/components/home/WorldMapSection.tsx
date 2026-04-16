@@ -436,10 +436,26 @@ export const WorldMapSection = memo(function WorldMapSection() {
     });
 
     if (visibleDataCountries.length === 1) {
-      const code = visibleDataCountries[0];
-      setSelectedCountryCode(code);
+      setSelectedCountryCode(visibleDataCountries[0]);
       setDrillLevel("country");
       setManualCitySelection(false);
+    } else if (visibleDataCountries.length > 1 && mapViewport.zoom >= 5) {
+      // Pick the country whose center is closest to viewport center
+      const center = mapViewport.bounds.getCenter();
+      let closest: string | null = null;
+      let minDist = Infinity;
+      for (const code of visibleDataCountries) {
+        const cc = CC[code];
+        if (!cc) continue;
+        const d = Math.pow(cc[0] - center.lat, 2) + Math.pow(cc[1] - center.lng, 2);
+        if (d < minDist) { minDist = d; closest = code; }
+      }
+      // Only auto-select if the closest country center is reasonably near viewport center
+      if (closest && minDist < 400) {
+        setSelectedCountryCode(closest);
+        setDrillLevel("country");
+        setManualCitySelection(false);
+      }
     }
   }, [mapViewport, drillLevel, countryStats]);
 
