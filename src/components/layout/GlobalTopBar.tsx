@@ -51,8 +51,8 @@ export function GlobalTopBar() {
       } catch (e) {
         console.warn("[ForceRefresh] storage clear failed:", e);
       }
-      // Clear IndexedDB spatial cache (fire-and-forget)
-      try { await idbDeleteDatabase(); } catch { /* best effort */ }
+      // Clear IndexedDB caches: spatial cache + world geo cache
+      try { await Promise.all([idbDeleteDatabase(), clearWorldGeoCache()]); } catch { /* best effort */ }
     } catch (e) {
       console.warn("[ForceRefresh] soft-failed:", e);
     }
