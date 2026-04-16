@@ -374,6 +374,7 @@ async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
 export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(function WorldMapLeaflet(props, ref) {
   const {
     countryStats, onCountrySelect, onRegionSelect, onCitySelect,
+    onBackToCountry, onBackToWorld,
     selectedCountryCode, drillLevel, isRtl,
     regionSummaries, visibleCountryCodes,
     citySummaries, cityUniversities, regionCities,
@@ -418,6 +419,11 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
 
   // Highlight marker ref for search
   const highlightRef = useRef<L.CircleMarker | null>(null);
+
+  // Zoom guard: prevents re-zoom when non-drill dependencies change (e.g. OSM overlay, theme)
+  const lastZoomTargetRef = useRef<string>('');
+  // Track whether user is manually zooming (to avoid fighting with auto-zoom)
+  const userZoomingRef = useRef(false);
 
   // Expose flyTo to parent
   useImperativeHandle(ref, () => ({
