@@ -100,13 +100,6 @@ export const WorldMapSection = memo(function WorldMapSection() {
     return "";
   }, [language]);
 
-  /** 12-language country name via Intl.DisplayNames + DB fallback */
-  const countryDisplayName = useCallback((code: string, stats?: Record<string, unknown> | null) => {
-    const ar = (stats as any)?.country_name_ar ?? countryMeta?.[code]?.name_ar;
-    const en = (stats as any)?.country_name_en ?? countryMeta?.[code]?.name_en;
-    return getLocalizedCountryName(code, language, ar, en);
-  }, [language, countryMeta]);
-
   // Geodata state (kept for map borders)
   const [subdivisionGeodata, setSubdivisionGeodata] = useState<GeoJSON.FeatureCollection | null>(null);
   const [loadingGeodata, setLoadingGeodata] = useState(false);
