@@ -502,6 +502,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
   const markersRef = useRef<L.LayerGroup>(L.layerGroup());
   const bordersRef = useRef<L.GeoJSON | null>(null);
   const countryLabelsRef = useRef<L.LayerGroup>(L.layerGroup());
+  const cityLabelsRef = useRef<L.LayerGroup>(L.layerGroup());
 
   // Highlight marker ref for search
   const highlightRef = useRef<L.CircleMarker | null>(null);
@@ -586,6 +587,11 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     const labelsPane = map.createPane('countryLabelsPane');
     labelsPane.style.zIndex = '460';
     labelsPane.style.pointerEvents = 'none';
+
+    // Create pane for city name labels (above country labels, below tooltips)
+    const cityLabelsPane = map.createPane('cityLabelsPane');
+    cityLabelsPane.style.zIndex = '465';
+    cityLabelsPane.style.pointerEvents = 'none';
     
     mapRef.current = map;
     markersRef.current.addTo(map);
@@ -698,6 +704,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     }
 
     // Only show reference labels in satellite mode when drilled into a country/region
+    // Use reduced opacity at country level since we render our own city labels
     if (activeLayer === "satellite" && drillLevel !== "world") {
       refLabelsRef.current = L.tileLayer(TILES.referenceLabels, {
         detectRetina: false,
@@ -709,12 +716,129 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         crossOrigin: true,
         maxZoom: 18,
         minZoom: 5,
+        opacity: drillLevel === "country" ? 0.3 : 0.7,
         pane: 'overlayPane',
       }).addTo(map);
     }
   }, [activeLayer, drillLevel]);
 
-  // ── Country name labels from GeoJSON (replaces external label tiles) ──
+  // ── Custom city name labels (rendered from citySummaries data) ──
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    cityLabelsRef.current.clearLayers();
+
+    // Only render when drilled into a country
+    if (drillLevel !== "country" || !citySummaries || citySummaries.length === 0) {
+      return;
+    }
+
+    cityLabelsRef.current.addTo(map);
+
+    type ScreenRect = { x: number; y: number; width: number; height: number };
+
+    const overlaps = (a: ScreenRect, b: ScreenRect) => !(
+      a.x + a.width <= b.x || b.x + b.width <= a.x ||
+      a.y + a.height <= b.y || b.y + b.height <= a.y
+    );
+
+    const renderCityLabels = () => {
+      cityLabelsRef.current.clearLayers();
+      const zoom = map.getZoom();
+      const viewBounds = map.getBounds().pad(0.05);
+      const placedRects: ScreenRect[] = [];
+
+      // Sort cities by university count (largest first for priority)
+      const sorted = [...citySummaries]
+        .filter(c => c.city && c.city !== '__unknown__')
+        .sort((a, b) => b.universities_count - a.universities_count);
+
+      sorted.forEach((city) => {
+        const resolved = resolveCityLocation(city);
+        if (!resolved) return;
+
+        const pos: L.LatLngExpression = [resolved.lat, resolved.lon];
+        if (!viewBounds.contains(pos)) return;
+
+        // Dynamic font size based on zoom level
+        let fontSize: number;
+        if (zoom >= 10) fontSize = 22;
+        else if (zoom >= 8) fontSize = 20;
+        else if (zoom >= 7) fontSize = 18;
+        else if (zoom >= 6) fontSize = 16;
+        else if (zoom >= 5) fontSize = 14;
+        else fontSize = 13;
+
+        // Boost font for cities with more universities
+        if (city.universities_count >= 10) fontSize += 2;
+
+        const charWidth = 0.65;
+        const letterSpacing = fontSize >= 18 ? 2 : 1;
+        const cityName = city.city || '';
+        const labelWidth = Math.round(cityName.length * fontSize * charWidth + (cityName.length - 1) * letterSpacing + 12);
+        const labelHeight = Math.round(fontSize * 1.5);
+
+        // Position label below the city dot
+        const point = map.project(pos, zoom);
+        const dotOffset = 20;
+        const rect: ScreenRect = {
+          x: point.x - labelWidth / 2,
+          y: point.y + dotOffset,
+          width: labelWidth,
+          height: labelHeight,
+        };
+
+        if (placedRects.some((existing) => overlaps(existing, rect))) return;
+        placedRects.push(rect);
+
+        // Offset the marker position to place label below the dot
+        const offsetLatLng = map.unproject(
+          L.point(point.x, point.y + dotOffset + labelHeight / 2),
+          zoom
+        );
+
+        const label = L.marker([offsetLatLng.lat, offsetLatLng.lng], {
+          icon: L.divIcon({
+            className: "city-name-label",
+            html: `<div style="
+              width:${labelWidth}px;
+              height:${labelHeight}px;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              font-family:'Arial','Helvetica Neue',sans-serif;
+              font-size:${fontSize}px;
+              font-weight:800;
+              letter-spacing:${letterSpacing}px;
+              color:rgba(255,255,255,0.97);
+              text-shadow:0 0 4px rgba(0,0,0,1),0 0 8px rgba(0,0,0,0.9),0 1px 3px rgba(0,0,0,0.95),1px 0 3px rgba(0,0,0,0.8),-1px 0 3px rgba(0,0,0,0.8),0 2px 6px rgba(0,0,0,0.6);
+              white-space:nowrap;
+              pointer-events:none;
+              text-align:center;
+            ">${cityName}</div>`,
+            iconSize: [labelWidth, labelHeight],
+            iconAnchor: [labelWidth / 2, labelHeight / 2],
+          }),
+          interactive: false,
+          pane: "cityLabelsPane",
+        });
+        cityLabelsRef.current.addLayer(label);
+      });
+    };
+
+    renderCityLabels();
+    map.on("zoomend", renderCityLabels);
+    map.on("moveend", renderCityLabels);
+
+    return () => {
+      map.off("zoomend", renderCityLabels);
+      map.off("moveend", renderCityLabels);
+      cityLabelsRef.current.clearLayers();
+    };
+  }, [drillLevel, citySummaries]);
+
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !worldGeo) return;
