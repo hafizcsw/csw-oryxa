@@ -96,7 +96,9 @@ export function createEmptyArtifact(
 
 // ── Helpers ──────────────────────────────────────────────────
 
-/** Determine reading route from MIME type */
+/** Determine reading route from MIME type.
+ *  Must stay in sync with SUPPORTED_MIMES in content-classifier.ts.
+ *  DOC/DOCX are NOT supported — no reading lane exists. */
 export function resolveReadingRoute(mimeType: string): ReadingRoute {
   if (mimeType === 'application/pdf') {
     // Route will be refined to born_digital or scanned after text extraction attempt
