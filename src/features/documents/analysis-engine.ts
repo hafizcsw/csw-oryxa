@@ -28,9 +28,10 @@ import {
   extractPassportFields,
   extractPassportTextFallback,
   extractGraduationFields,
-  extractTranscriptFields,
   extractLanguageCertFields,
 } from './parsers/field-extractors';
+import { parseTranscript } from './parsers/transcript-parser';
+import type { TranscriptIntermediate } from './parsers/transcript-structure';
 import type { CanonicalStudentFile } from '../student-file/canonical-model';
 
 export interface AnalysisResult {
@@ -123,6 +124,7 @@ export async function analyzeDocument(params: {
     // ── Step 3: Extract fields based on classification ─────
     let extractedFields: Record<string, ExtractedField> = {};
     let mrzFound = false;
+    let transcriptIntermediate: TranscriptIntermediate | null = null;
     const laneStrength: 'passport_strong' | 'passport_weak' | null =
       classification.passport_strength ?? null;
 
@@ -147,7 +149,10 @@ export async function analyzeDocument(params: {
     } else if (classification.best === 'graduation_certificate') {
       extractedFields = extractGraduationFields(textContent);
     } else if (classification.best === 'transcript') {
-      extractedFields = extractTranscriptFields(textContent);
+      // Order 2: structured parser + truthful partial intermediate.
+      const result = parseTranscript(textContent);
+      transcriptIntermediate = result.intermediate;
+      extractedFields = result.header_fields;
     } else if (classification.best === 'language_certificate') {
       extractedFields = extractLanguageCertFields(textContent);
     }
