@@ -1012,11 +1012,10 @@ export const WorldMapSection = memo(function WorldMapSection() {
                     if (v.universities_count === 0) return false;
                     if (filteredCodes && !filteredCodes.has(code)) return false;
                     if (searchLower) {
+                      const localizedName = countryDisplayName(code, v as unknown as Record<string, unknown>);
                       const nameAr = (v as any).country_name_ar || "";
                       const nameEn = (v as any).country_name_en || "";
-                      const metaAr = countryMeta?.[code]?.name_ar || "";
-                      const metaEn = countryMeta?.[code]?.name_en || "";
-                      const allNames = `${nameAr} ${nameEn} ${metaAr} ${metaEn} ${code}`.toLowerCase();
+                      const allNames = `${localizedName} ${nameAr} ${nameEn} ${code}`.toLowerCase();
                       if (!allNames.includes(searchLower)) return false;
                     }
                     return true;
