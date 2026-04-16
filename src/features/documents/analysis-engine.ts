@@ -28,6 +28,7 @@ import {
   resolveReadingRoute,
   assembleFullText,
   calculateReadingConfidence,
+  assessOcrQuality,
 } from './reading-artifact-model';
 import { extractPdfText } from './parsers/pdf-text-parser';
 import { ocrImageFile, ocrPdfPages } from './parsers/ocr-reader';
@@ -108,9 +109,15 @@ export async function analyzeDocument(params: {
         artifact.total_page_count = 1;
         artifact.full_text = assembleFullText(ocrResult.pages);
         artifact.confidence = calculateReadingConfidence(ocrResult.pages);
-        artifact.is_readable = artifact.full_text.trim().length > 20;
+        // OCR quality gate — don't trust length alone
+        const ocrQuality = assessOcrQuality(artifact.full_text);
+        artifact.ocr_quality = ocrQuality;
+        artifact.is_readable = ocrQuality.is_coherent;
+        artifact.confidence = ocrQuality.is_coherent ? artifact.confidence : artifact.confidence * 0.3;
         analysis.parser_type = 'image_ocr';
-        analysis.readability_status = artifact.is_readable ? 'readable' : 'unreadable';
+        analysis.readability_status = ocrQuality.is_coherent
+          ? (ocrQuality.quality_label === 'good' ? 'readable' : 'readable')
+          : 'unreadable';
       } else {
         artifact.failure_reason = ocrResult.error || 'OCR produced no text';
         artifact.is_readable = false;
@@ -156,9 +163,16 @@ export async function analyzeDocument(params: {
           artifact.pages_processed = ocrResult.pages.length;
           artifact.full_text = assembleFullText(ocrResult.pages);
           artifact.confidence = calculateReadingConfidence(ocrResult.pages);
-          artifact.is_readable = artifact.full_text.trim().length > 20;
+          // OCR quality gate — detect garbage text
+          const ocrQuality = assessOcrQuality(artifact.full_text);
+          artifact.ocr_quality = ocrQuality;
+          artifact.is_readable = ocrQuality.is_coherent;
+          artifact.confidence = ocrQuality.is_coherent ? artifact.confidence : artifact.confidence * 0.3;
+          if (!ocrQuality.is_coherent) {
+            artifact.failure_reason = `OCR quality: ${ocrQuality.quality_label} (char_quality: ${(ocrQuality.char_quality * 100).toFixed(0)}%, word_coherence: ${(ocrQuality.word_coherence * 100).toFixed(0)}%)`;
+          }
           analysis.parser_type = 'image_ocr';
-          analysis.readability_status = artifact.is_readable ? 'readable' : 'unreadable';
+          analysis.readability_status = ocrQuality.is_coherent ? 'readable' : 'unreadable';
         } else {
           artifact.failure_reason = ocrResult.error || 'Scanned PDF OCR produced no text';
           artifact.is_readable = false;
@@ -279,6 +293,12 @@ export async function analyzeDocument(params: {
     is_readable: artifact.is_readable,
     failure: artifact.failure_reason,
     ms: Math.round(artifact.processing_time_ms),
+    ocr_quality: artifact.ocr_quality ? {
+      char_quality: `${(artifact.ocr_quality.char_quality * 100).toFixed(0)}%`,
+      word_coherence: `${(artifact.ocr_quality.word_coherence * 100).toFixed(0)}%`,
+      avg_token_len: artifact.ocr_quality.avg_token_length.toFixed(1),
+      label: artifact.ocr_quality.quality_label,
+    } : null,
     text_preview: textPreview || '(empty)',
   }, null, 2));
   console.log('[Door1:Classification]', JSON.stringify({

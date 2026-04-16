@@ -43,6 +43,20 @@ export interface PageReading {
   has_content: boolean;
 }
 
+// ── OCR Quality Metrics ──────────────────────────────────────
+export interface OcrQualityMetrics {
+  /** Ratio of real words to total tokens (0.0–1.0) */
+  word_coherence: number;
+  /** Ratio of meaningful chars (letters/digits/Arabic) to total chars */
+  char_quality: number;
+  /** Average token length */
+  avg_token_length: number;
+  /** Whether text passes quality threshold */
+  is_coherent: boolean;
+  /** Human-readable quality label */
+  quality_label: 'good' | 'partial' | 'garbage';
+}
+
 // ── The Reading Artifact ─────────────────────────────────────
 export interface ReadingArtifact {
   /** Which route was chosen */
@@ -69,6 +83,8 @@ export interface ReadingArtifact {
   input_mime: string;
   /** Original file name */
   input_filename: string;
+  /** OCR quality metrics (only for OCR routes) */
+  ocr_quality?: OcrQualityMetrics;
 }
 
 // ── Factory ──────────────────────────────────────────────────
@@ -128,4 +144,100 @@ export function calculateReadingConfidence(pages: PageReading[]): number {
   if (pages.length === 0) return 0;
   const readable = pages.filter(p => p.has_content).length;
   return readable / pages.length;
+}
+
+// ── OCR Quality Scoring ─────────────────────────────────────
+// Detects garbage OCR output by measuring text coherence.
+// Works for both English and Arabic text.
+
+// Common short words that prove coherence (EN + AR)
+const COHERENCE_WORDS = new Set([
+  // English
+  'the', 'of', 'and', 'in', 'to', 'for', 'is', 'on', 'at', 'by',
+  'with', 'from', 'or', 'an', 'be', 'this', 'that', 'are', 'was',
+  'has', 'have', 'had', 'not', 'but', 'all', 'can', 'her', 'his',
+  'name', 'date', 'number', 'no', 'yes', 'mr', 'mrs', 'dr',
+  'university', 'certificate', 'degree', 'passport', 'student',
+  'faculty', 'department', 'college', 'school', 'year', 'grade',
+  // Arabic common
+  'من', 'في', 'على', 'إلى', 'هذا', 'هذه', 'أن', 'عن', 'مع',
+  'لا', 'ما', 'هو', 'هي', 'كل', 'بعد', 'قبل', 'بين', 'حتى',
+  'جامعة', 'كلية', 'شهادة', 'طالب', 'اسم', 'تاريخ', 'رقم',
+  'بكالوريوس', 'ماجستير', 'تخرج', 'معدل', 'درجة', 'قسم',
+]);
+
+/**
+ * Assess OCR text quality. Detects garbage output from bad OCR.
+ * Uses multiple signals:
+ * 1. char_quality: ratio of meaningful chars (letters, digits, Arabic) to total
+ * 2. word_coherence: ratio of recognized words to total tokens
+ * 3. avg_token_length: garbage tends to produce very short or very long tokens
+ */
+export function assessOcrQuality(text: string): OcrQualityMetrics {
+  if (!text || text.trim().length < 10) {
+    return { word_coherence: 0, char_quality: 0, avg_token_length: 0, is_coherent: false, quality_label: 'garbage' };
+  }
+
+  // 1. Character quality: meaningful chars / total chars
+  // Meaningful = Latin letters, digits, Arabic/Hebrew chars, common punctuation
+  const totalChars = text.length;
+  const meaningfulChars = (text.match(/[\p{L}\p{N}\s.,;:!?()\-\/]/gu) || []).length;
+  const char_quality = meaningfulChars / totalChars;
+
+  // 2. Word coherence: split into tokens, check how many are real words
+  const tokens = text
+    .toLowerCase()
+    .split(/[\s\n\r\t,;:!?()[\]{}<>=+*&^%$#@~`"|\\]+/)
+    .filter(t => t.length >= 2);
+
+  if (tokens.length === 0) {
+    return { word_coherence: 0, char_quality, avg_token_length: 0, is_coherent: false, quality_label: 'garbage' };
+  }
+
+  let coherentCount = 0;
+  let totalLength = 0;
+
+  for (const token of tokens) {
+    totalLength += token.length;
+    // Check against known words
+    if (COHERENCE_WORDS.has(token)) {
+      coherentCount++;
+      continue;
+    }
+    // Check if token looks like a real word (3+ consecutive letters)
+    if (/^[\p{L}]{3,}$/u.test(token)) {
+      // Additional check: not too many consonant clusters (garbage indicator)
+      const consonantClusters = token.match(/[^aeiouأإاوي\s]{4,}/gi) || [];
+      if (consonantClusters.length === 0) {
+        coherentCount++;
+      }
+    }
+    // Numbers and dates are coherent
+    if (/^\d{1,4}([.\-\/]\d{1,4}){0,2}$/.test(token)) {
+      coherentCount++;
+    }
+  }
+
+  const word_coherence = coherentCount / tokens.length;
+  const avg_token_length = totalLength / tokens.length;
+
+  // Quality thresholds:
+  // good: char_quality > 0.85 AND word_coherence > 0.4
+  // partial: char_quality > 0.7 AND word_coherence > 0.2
+  // garbage: everything else
+  let quality_label: OcrQualityMetrics['quality_label'];
+  let is_coherent: boolean;
+
+  if (char_quality > 0.85 && word_coherence > 0.4) {
+    quality_label = 'good';
+    is_coherent = true;
+  } else if (char_quality > 0.7 && word_coherence > 0.2) {
+    quality_label = 'partial';
+    is_coherent = true; // partial is still usable
+  } else {
+    quality_label = 'garbage';
+    is_coherent = false;
+  }
+
+  return { word_coherence, char_quality, avg_token_length, is_coherent, quality_label };
 }
