@@ -229,16 +229,58 @@ function dormMarkerIcon(isDark: boolean): L.DivIcon {
   });
 }
 
-/* ── GeoJSON cache (module + sessionStorage) ── */
+/* ── GeoJSON cache (module + sessionStorage + IndexedDB) ── */
 let geoJsonCache: GeoJSON.FeatureCollection | null = null;
 
-// Try to restore from sessionStorage on module load
+// Try to restore from sessionStorage on module load (fastest)
 try {
   const stored = sessionStorage.getItem('csw-world-geojson');
   if (stored) {
     geoJsonCache = JSON.parse(stored) as GeoJSON.FeatureCollection;
   }
 } catch { /* ignore */ }
+
+// Async restore from IndexedDB if sessionStorage missed (survives hard refresh)
+const WORLD_GEO_IDB_KEY = "world-geojson-v1";
+async function idbGetWorldGeo(): Promise<GeoJSON.FeatureCollection | null> {
+  try {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const req = indexedDB.open("csw-spatial-cache", 1);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    return new Promise((resolve) => {
+      const tx = db.transaction("geo_resolutions", "readonly");
+      const req = tx.objectStore("geo_resolutions").get(WORLD_GEO_IDB_KEY);
+      req.onsuccess = () => {
+        const entry = req.result;
+        if (entry?.data && entry.schema_version === 1) {
+          resolve(entry.data as GeoJSON.FeatureCollection);
+        } else {
+          resolve(null);
+        }
+      };
+      req.onerror = () => resolve(null);
+    });
+  } catch { return null; }
+}
+
+async function idbSetWorldGeo(geo: GeoJSON.FeatureCollection): Promise<void> {
+  try {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const req = indexedDB.open("csw-spatial-cache", 1);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const tx = db.transaction("geo_resolutions", "readwrite");
+    tx.objectStore("geo_resolutions").put({
+      key: WORLD_GEO_IDB_KEY,
+      data: geo,
+      cached_at: Date.now(),
+      schema_version: 1,
+    });
+  } catch { /* non-critical */ }
+}
 
 /** Resolve ISO A2 code from feature properties (handles multiple GeoJSON schemas) */
 function getCountryCode(feature: GeoJSON.Feature): string | null {
@@ -357,6 +399,16 @@ function resolveViewportCountryCode(
 async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
   if (geoJsonCache) return geoJsonCache;
 
+  // Try IndexedDB before network (survives hard refresh / new tab)
+  const idbCached = await idbGetWorldGeo();
+  if (idbCached) {
+    geoJsonCache = idbCached;
+    // Populate sessionStorage for same-tab speed
+    try { sessionStorage.setItem('csw-world-geojson', JSON.stringify(geoJsonCache)); } catch { /* quota */ }
+    console.log("[Map] Restored world geodata from IndexedDB:", geoJsonCache.features.length, "features");
+    return geoJsonCache;
+  }
+
   const res = await fetch(WORLD_GEOJSON_URL);
   if (!res.ok) {
     throw new Error(`[Map] Failed to fetch geodata (${res.status})`);
@@ -450,8 +502,9 @@ async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
     };
   }
 
-  // Persist to sessionStorage for instant reload
+  // Persist to sessionStorage (same-tab speed) + IndexedDB (cross-tab/session persistence)
   try { sessionStorage.setItem('csw-world-geojson', JSON.stringify(geoJsonCache)); } catch { /* quota */ }
+  idbSetWorldGeo(geoJsonCache).catch(() => {});
   console.log("[Map] Loaded world geodata:", geoJsonCache.features.length, "features");
   const codes = geoJsonCache.features.slice(0, 5).map(f => ({
     ISO_A2: f.properties?.ISO_A2,
