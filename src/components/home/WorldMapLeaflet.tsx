@@ -1353,7 +1353,8 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
             }
           };
           for (const f of selectedCountryFeatures) {
-            if (f.geometry?.coordinates) extractLngs(f.geometry.coordinates);
+            const geom = f.geometry as any;
+            if (geom?.coordinates) extractLngs(geom.coordinates);
           }
           return (maxLng - minLng) > 180;
         })();
