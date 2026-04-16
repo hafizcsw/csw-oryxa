@@ -162,6 +162,7 @@ export interface LeafletMapProps {
   osmOverlay?: Map<string, OsmOverlayMatch>;
   osmOverlayLoading?: boolean;
   countryMeta?: Record<string, { slug: string; name_ar: string; name_en: string | null; image_url: string | null }>;
+  onCountryHover?: (code: string | null) => void;
 }
 
 /* ── City dot icon with country flag + university count badge ── */
