@@ -5,6 +5,7 @@
 // Uses pattern matching with weighted scoring.
 
 import type { DocumentSlotType } from '../document-registry-model';
+import { computeTranscriptSignals } from './transcript-parser';
 
 export interface ClassificationScore {
   slot: DocumentSlotType | 'unknown' | 'unsupported';
@@ -33,6 +34,21 @@ export interface ClassificationOutput {
   passport_text_evidence: string[];
   /** True iff the MRZ start pattern (P<XXX) was seen anywhere in text. */
   passport_mrz_pattern_in_text: boolean;
+  /**
+   * Order-2 transcript-lane disambiguation strength (set only when best is
+   * 'transcript' or 'graduation_certificate', otherwise null).
+   *  - 'transcript_strong'  : multi-signal evidence (vocab + GPA/credit/row-like)
+   *  - 'transcript_weak'    : transcript fired but on thin evidence; engine
+   *                            must treat extracted fields as low-trust only
+   *  - 'graduation_preferred': disambiguation flipped to graduation
+   */
+  transcript_lane_strength:
+    | 'transcript_strong'
+    | 'transcript_weak'
+    | 'graduation_preferred'
+    | null;
+  /** Compact reasoning trace for the transcript-vs-graduation decision. */
+  transcript_disambiguation_reason: string | null;
 }
 
 // MIME types that the analysis pipeline can process
