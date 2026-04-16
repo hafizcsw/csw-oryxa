@@ -150,42 +150,27 @@ export interface LeafletMapProps {
   countryMeta?: Record<string, { slug: string; name_ar: string; name_en: string | null; image_url: string | null }>;
 }
 
-/* ── City dot icon with university count badge + city name label ── */
-function cityDotIcon(count: number, isDark: boolean, cityName?: string): L.DivIcon {
+/* ── City dot icon with university count badge ── */
+function cityDotIcon(count: number, isDark: boolean): L.DivIcon {
   const size = Math.min(46, Math.max(30, 22 + count * 2));
   const bg = isDark
     ? "linear-gradient(135deg, rgba(52,211,153,0.95), rgba(16,185,129,0.9))"
     : "linear-gradient(135deg, rgba(5,150,105,0.95), rgba(4,120,87,0.9))";
-  const labelColor = isDark ? "rgba(255,255,255,0.95)" : "rgba(30,41,59,0.95)";
-  const labelShadow = isDark
-    ? "0 1px 4px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.5)"
-    : "0 1px 3px rgba(255,255,255,0.9), 0 0 2px rgba(255,255,255,0.7)";
-  const nameLabel = cityName
-    ? `<div style="
-        position:absolute;top:${size + 2}px;left:50%;transform:translateX(-50%);
-        white-space:nowrap;font-size:11px;font-weight:700;color:${labelColor};
-        font-family:system-ui;text-shadow:${labelShadow};
-        pointer-events:none;letter-spacing:0.2px;
-      ">${cityName}</div>`
-    : "";
   return L.divIcon({
     className: "",
-    html: `<div style="position:relative;display:inline-flex;flex-direction:column;align-items:center;">
-      <div style="
-        width:${size}px;height:${size}px;border-radius:50%;
-        background:${bg};
-        border:2.5px solid ${isDark ? 'rgba(167,243,208,0.7)' : 'rgba(255,255,255,0.9)'};
-        box-shadow:0 0 14px ${isDark ? 'rgba(52,211,153,0.5)' : 'rgba(5,150,105,0.4)'}, 0 2px 8px rgba(0,0,0,0.3);
-        cursor:pointer;transition:all 0.2s ease;
-        display:flex;align-items:center;justify-content:center;
-        font-size:${size > 34 ? 14 : 12}px;font-weight:800;color:white;
-        font-family:system-ui;letter-spacing:-0.5px;
-      " onmouseenter="this.style.transform='scale(1.25)'" onmouseleave="this.style.transform='scale(1)'">
-        ${count}
-      </div>
-      ${nameLabel}
+    html: `<div style="
+      width:${size}px;height:${size}px;border-radius:50%;
+      background:${bg};
+      border:2.5px solid ${isDark ? 'rgba(167,243,208,0.7)' : 'rgba(255,255,255,0.9)'};
+      box-shadow:0 0 14px ${isDark ? 'rgba(52,211,153,0.5)' : 'rgba(5,150,105,0.4)'}, 0 2px 8px rgba(0,0,0,0.3);
+      cursor:pointer;transition:all 0.2s ease;
+      display:flex;align-items:center;justify-content:center;
+      font-size:${size > 34 ? 14 : 12}px;font-weight:800;color:white;
+      font-family:system-ui;letter-spacing:-0.5px;
+    " onmouseenter="this.style.transform='scale(1.25)'" onmouseleave="this.style.transform='scale(1)'">
+      ${count}
     </div>`,
-    iconSize: [size, size + (cityName ? 18 : 0)],
+    iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
 }
@@ -1045,7 +1030,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
 
         const pos: [number, number] = [resolved.lat, resolved.lon];
         pts.push(L.latLng(pos[0], pos[1]));
-        const m = L.marker(pos, { icon: cityDotIcon(city.universities_count, isDark, city.city) });
+        const m = L.marker(pos, { icon: cityDotIcon(city.universities_count, isDark) });
         m.bindTooltip(`
           <div style="font-family:system-ui;font-size:12px;direction:${isRtl ? 'rtl' : 'ltr'};text-align:${isRtl ? 'right' : 'left'}">
             <div style="font-weight:800;font-size:14px;margin-bottom:4px">${city.city}</div>
@@ -1073,7 +1058,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         const unknownPos: [number, number] = [CC[selectedCountryCode][0], CC[selectedCountryCode][1]];
         pts.push(L.latLng(unknownPos[0], unknownPos[1]));
         const unknownCityLabel = mapText.unknownCity;
-        const unknownMarker = L.marker(unknownPos, { icon: cityDotIcon(unknownUniversitiesCount, isDark, unknownCityLabel) });
+        const unknownMarker = L.marker(unknownPos, { icon: cityDotIcon(unknownUniversitiesCount, isDark) });
         unknownMarker.bindTooltip(`
           <div style="font-family:system-ui;font-size:12px;direction:${isRtl ? 'rtl' : 'ltr'};text-align:${isRtl ? 'right' : 'left'}">
             <div style="font-weight:800;font-size:14px;margin-bottom:4px">${unknownCityLabel}</div>
@@ -1233,7 +1218,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
               : null;
         if (fallbackPos) {
           // Do NOT push into pts — fallback marker must not distort map bounds
-          const fallbackMarker = L.marker(fallbackPos, { icon: cityDotIcon(universitiesWithoutCoords, isDark, mapText.universitiesWithoutExactCity) });
+          const fallbackMarker = L.marker(fallbackPos, { icon: cityDotIcon(universitiesWithoutCoords, isDark) });
           fallbackMarker.bindTooltip(`
             <div style="font-family:system-ui;font-size:12px;direction:${isRtl ? 'rtl' : 'ltr'};text-align:${isRtl ? 'right' : 'left'}">
               <div style="font-weight:800;font-size:14px;margin-bottom:4px">${mapText.universitiesWithoutExactCity}</div>
