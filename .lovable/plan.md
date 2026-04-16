@@ -1,48 +1,39 @@
 
 
-# Upgrade Brain SVG to Realistic Top-View Design
-
 ## Problem
-The current brain is drawn with crude geometric segments that look nothing like a real brain. The user wants a design matching the reference image: a **top-down view** of a brain with two hemispheres, visible cerebral folds (gyri/sulci), and a clean line-art style with a subtle glow.
 
-## What Changes
+When drilling into a city (e.g. Moscow), universities without precise geo coordinates are placed at the **country center** (`[62, 96]` for Russia — deep in Siberia). This causes:
+1. The "318 unverified" dot appears thousands of km from Moscow
+2. The map zooms out to fit both Moscow and Siberia, making it confusing
 
-### 1. Replace Brain SVG with Realistic Top-Down Brain
-- Replace the 8 crude `BRAIN_SEGMENTS` paths with a proper anatomical top-view brain drawn using detailed Bézier curves
-- **Left hemisphere**: Outer contour + 5-6 internal fold curves (sulci) showing gyri patterns
-- **Right hemisphere**: Mirror of left with its own fold curves
-- Central fissure (longitudinal fissure) dividing the two hemispheres
-- Brain stem hint at the bottom
-- Style: Clean line-art with thin strokes (like the reference image), light purple/lavender fill with subtle gradient, soft glow halo behind
+## Root Cause
 
-### 2. Progressive Illumination (Preserved but Improved)
-- Instead of 8 crude filled segments, the folds themselves will progressively illuminate
-- Each fold line transitions from dim to glowing as files are added
-- The hemisphere fill opacity increases progressively (0 files = very faint outline, 8 files = fully glowing)
-- Sparkle/glow particles appear around lit areas
+In `WorldMapLeaflet.tsx` lines 1160-1171, the fallback position for universities without coordinates uses `CC[selectedCountryCode]` (country center). It should use the **selected city's coordinates** instead.
 
-### 3. Document Icons Matching Reference Image
-- Larger, cleaner documents with visible text lines and dark header blocks (matching the reference)
-- Page curl effect on the document corners
-- Documents positioned on left and right sides (not orbiting)
-- Multiple arrow lines from each document's text blocks pointing toward the brain (like the reference shows specific content sections feeding into the brain)
+## Fix
 
-### 4. Flow Lines Matching Reference
-- Multiple parallel arrow lines from document sections to the brain (not single curved paths)
-- Small dark rectangles on the arrow lines (representing data blocks being transferred, as shown in reference)
-- Clean, straight-to-slightly-curved lines with arrowheads
-- Animated dash-offset to show data flowing
+**File: `src/components/home/WorldMapLeaflet.tsx`**
 
-## Technical Approach
+1. **Change fallback marker position** (lines 1160-1171): Instead of `CC[selectedCountryCode]`, use the selected city's lat/lon (`selectedCitySummary.city_lat/city_lon`) as the fallback position. Only fall back to country center if city coordinates are also unavailable.
 
-**Single file edit**: `src/components/documents/CentralUploadHub.tsx`
+2. **Exclude fallback point from bounds calculation**: Remove `pts.push(...)` for the fallback marker so it doesn't distort the map zoom. The fallback marker will still be visible but won't pull the camera away from the actual city.
 
-- Replace `BRAIN_SEGMENTS` array with detailed SVG paths for a top-down brain view (left/right hemisphere outlines + internal sulci curves)
-- New gradients: soft lavender/purple `radialGradient` for brain fill, matching the reference image's color palette
-- Refactor `MiniDoc` component to match reference: larger white documents with dark header blocks, multiple text line placeholders, page curl
-- Replace curved Bézier flow paths with multiple parallel horizontal arrows from document sections to brain, with small data-block rectangles on them
-- Keep progressive illumination logic but apply to fold lines and fill opacity instead of segments
-- Keep neural network overlay, pulse rings, and particle effects
+These are ~10 lines changed in a single file. No new files needed.
 
-No new dependencies. Pure SVG.
+## Technical Detail
+
+```
+// Before (broken):
+const fallbackPos = [CC[selectedCountryCode][0], CC[selectedCountryCode][1]];
+pts.push(L.latLng(fallbackPos[0], fallbackPos[1]));
+
+// After (fixed):
+const cityCenter = selectedCitySummary;
+const fallbackPos = cityCenter?.city_lat != null && cityCenter?.city_lon != null
+  ? [cityCenter.city_lat, cityCenter.city_lon]
+  : CC[selectedCountryCode]
+    ? [CC[selectedCountryCode][0], CC[selectedCountryCode][1]]
+    : null;
+// Do NOT push fallbackPos into pts (don't distort bounds)
+```
 
