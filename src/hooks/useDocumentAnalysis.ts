@@ -84,6 +84,8 @@ export function useDocumentAnalysis({
 
     analyzingCount.current++;
     setIsAnalyzing(true);
+
+    try {
       const result = await analyzeDocument({
         file,
         documentId,
