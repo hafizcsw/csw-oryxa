@@ -14,3 +14,4 @@ Door 3 (Document Understanding + Proposals) is OPEN — internal parsers, extrac
 - [Program Intelligence freeze](mem://constraints/program-intelligence-freeze) — Lane closed, explicit tech debt recorded
 - [Canonical Student File](mem://features/canonical-student-file) — Door 1 CLOSED. Runtime hook + visible consumer + AccountContentHeader canonical-first name. Phone NOT canonical-first.
 - [Door 3 analysis](mem://features/door3-document-analysis) — Internal document understanding: PDF text + MRZ + regex. Proposal lifecycle with auto-accept/pending/reject. No external LLM.
+- [Door 4 transcript lane](mem://features/door4-transcript-lane) — Order 2: structured partial transcript parser, intermediate non-canonical rows, multi-signal disambiguation, HONESTY GATE 3 (review-first only)
