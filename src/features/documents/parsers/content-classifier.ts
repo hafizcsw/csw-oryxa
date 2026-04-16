@@ -258,6 +258,8 @@ export function classifyDocument(params: {
       passport_strength: null,
       passport_text_evidence: [],
       passport_mrz_pattern_in_text: false,
+      transcript_lane_strength: null,
+      transcript_disambiguation_reason: null,
     };
   }
 
@@ -275,6 +277,15 @@ export function classifyDocument(params: {
 
   // Compute passport-lane strength up-front (used in any return that lands on passport)
   const passportEval = evaluatePassportStrength(textContent);
+  // Order-2: compute transcript multi-signal evidence (NOT tabular-only).
+  // Used for transcript ↔ graduation disambiguation and lane strength.
+  const transcriptSignals = computeTranscriptSignals(textContent || '');
+  const transcriptEvidenceCount =
+    transcriptSignals.vocabulary_hits.length * 2 +
+    transcriptSignals.gpa_signals.length +
+    (transcriptSignals.grade_pattern_hits >= 3 ? 2 : transcriptSignals.grade_pattern_hits) +
+    (transcriptSignals.credit_pattern_hits >= 2 ? 2 : transcriptSignals.credit_pattern_hits) +
+    (transcriptSignals.row_like_lines >= 3 ? 2 : transcriptSignals.row_like_lines >= 1 ? 1 : 0);
 
   // Require minimum score to classify
   if (top.score < 0.15) {
@@ -286,25 +297,52 @@ export function classifyDocument(params: {
       passport_strength: null,
       passport_text_evidence: passportEval.text_evidence,
       passport_mrz_pattern_in_text: passportEval.mrz_pattern_in_text,
+      transcript_lane_strength: null,
+      transcript_disambiguation_reason: null,
     };
   }
 
-  // Disambiguation: if graduation_certificate and transcript are close,
-  // prefer graduation_certificate (transcripts almost always have tabular data)
+  // ── Order-2 disambiguation: transcript vs graduation (multi-signal) ──
+  //
+  // Old rule "tabular = transcript only" is REMOVED. We now use a basket
+  // of independent signals: transcript vocabulary, GPA/CGPA/cumulative
+  // hits, grade pattern density, credit-system hits, AND row-like lines.
+  // Any 2+ baskets present → keep transcript even if grad weight is high.
+  // Otherwise, if grad evidence is comparable, prefer graduation.
   const gradScore = scores.find(s => s.slot === 'graduation_certificate');
   const transScore = scores.find(s => s.slot === 'transcript');
-  if (gradScore && transScore && top.slot === 'transcript') {
-    if (gradScore.score >= transScore.score * 0.7) {
+
+  let transcriptLaneStrength: ClassificationOutput['transcript_lane_strength'] = null;
+  let disambiguationReason: string | null = null;
+
+  if (top.slot === 'transcript' && gradScore && transScore) {
+    const transcriptStrong = transcriptEvidenceCount >= 4;
+    const gradComparable = gradScore.score >= transScore.score * 0.7;
+
+    if (transcriptStrong) {
+      transcriptLaneStrength = 'transcript_strong';
+      disambiguationReason = `transcript_evidence=${transcriptEvidenceCount} (vocab/gpa/grade/credit/rows)`;
+    } else if (gradComparable) {
+      transcriptLaneStrength = 'graduation_preferred';
+      disambiguationReason = `weak_transcript_evidence=${transcriptEvidenceCount}; grad_score=${gradScore.score.toFixed(2)} comparable`;
       return {
         best: 'graduation_certificate',
         confidence: gradScore.score,
         scores,
-        evidence: [...gradScore.evidence, '[disambiguated: grad preferred over transcript]'],
+        evidence: [...gradScore.evidence, '[disambiguated: grad preferred over weak transcript]'],
         passport_strength: null,
         passport_text_evidence: passportEval.text_evidence,
         passport_mrz_pattern_in_text: passportEval.mrz_pattern_in_text,
+        transcript_lane_strength: 'graduation_preferred',
+        transcript_disambiguation_reason: disambiguationReason,
       };
+    } else {
+      transcriptLaneStrength = 'transcript_weak';
+      disambiguationReason = `low_transcript_evidence=${transcriptEvidenceCount}; grad_not_comparable`;
     }
+  } else if (top.slot === 'transcript') {
+    transcriptLaneStrength = transcriptEvidenceCount >= 4 ? 'transcript_strong' : 'transcript_weak';
+    disambiguationReason = `solo_transcript evidence=${transcriptEvidenceCount}`;
   }
 
   // Check if top two are too close (ambiguous)
@@ -319,5 +357,7 @@ export function classifyDocument(params: {
     passport_strength: top.slot === 'passport' ? passportEval.strength : null,
     passport_text_evidence: passportEval.text_evidence,
     passport_mrz_pattern_in_text: passportEval.mrz_pattern_in_text,
+    transcript_lane_strength: top.slot === 'transcript' ? transcriptLaneStrength : null,
+    transcript_disambiguation_reason: top.slot === 'transcript' ? disambiguationReason : null,
   };
 }
