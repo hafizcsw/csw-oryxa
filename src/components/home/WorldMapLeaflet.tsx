@@ -414,6 +414,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const tileRef = useRef<L.TileLayer[]>([]);
+  const refLabelsRef = useRef<L.TileLayer | null>(null);
   const markersRef = useRef<L.LayerGroup>(L.layerGroup());
   const bordersRef = useRef<L.GeoJSON | null>(null);
   const countryLabelsRef = useRef<L.LayerGroup>(L.layerGroup());
@@ -567,22 +568,41 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     tileRef.current.forEach(t => map.removeLayer(t));
     tileRef.current = [];
     if (activeLayer === "satellite") {
-      const satLayers: L.TileLayer[] = [
+      tileRef.current = [
         L.tileLayer(TILES.satellite, { ...hdTileOptions, maxZoom: 18, className: isDark ? "map-layer--satellite-dark" : "map-layer--satellite-light" }).addTo(map),
       ];
-      // Only add reference labels (cities) when drilled into a country/region — prevents duplicate country names at world level
-      if (drillLevel !== "world") {
-        satLayers.push(
-          L.tileLayer(TILES.referenceLabels, { ...hdTileOptions, maxZoom: 18, minZoom: 6, pane: 'overlayPane' }).addTo(map),
-        );
-      }
-      tileRef.current = satLayers;
     } else if (activeLayer === "streets") {
       tileRef.current = [L.tileLayer(isDark ? TILES.streetsDark : TILES.streetsLight, { ...hdTileOptions, maxZoom: 20, subdomains: 'abcd' }).addTo(map)];
     } else {
       tileRef.current = [L.tileLayer(TILES.topo, { ...hdTileOptions, maxZoom: 17, className: isDark ? "map-layer--topo-dark" : "map-layer--topo-light" }).addTo(map)];
     }
-  }, [activeLayer, isDark, drillLevel]);
+  }, [activeLayer, isDark]);
+
+  // ── Reference labels layer (cities) — separate effect to avoid tile rebuild on drill change ──
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    // Remove old reference labels if any
+    if (refLabelsRef.current) {
+      map.removeLayer(refLabelsRef.current);
+      refLabelsRef.current = null;
+    }
+
+    // Only show reference labels in satellite mode when drilled into a country/region
+    if (activeLayer === "satellite" && drillLevel !== "world") {
+      refLabelsRef.current = L.tileLayer(TILES.referenceLabels, {
+        detectRetina: true,
+        updateWhenZooming: false,
+        updateWhenIdle: true,
+        keepBuffer: 4,
+        crossOrigin: true,
+        maxZoom: 18,
+        minZoom: 6,
+        pane: 'overlayPane',
+      }).addTo(map);
+    }
+  }, [activeLayer, drillLevel]);
 
   // ── Country name labels from GeoJSON (replaces external label tiles) ──
   useEffect(() => {
