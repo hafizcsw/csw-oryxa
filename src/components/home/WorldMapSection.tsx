@@ -345,7 +345,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
     setSelectedCity(null);
     setDrillLevel("world");
     setShowAllUnis(false);
-    // viewMode stays flat
+    setManualCitySelection(false);
   }, []);
 
   const handleCountryClick = useCallback((code: string) => {
@@ -357,20 +357,21 @@ export const WorldMapSection = memo(function WorldMapSection() {
     setSelectedCountryCode(code);
     setDrillLevel("country");
     setShowAllUnis(false);
-    // Switch to flat map for drill-down
-    // viewMode stays flat
+    setManualCitySelection(false);
   }, [hasData, selectedCountryCode, drillLevel]);
 
   const handleCityClick = useCallback((cityName: string) => {
     setSelectedCity(cityName);
     setDrillLevel("city");
     setShowAllUnis(false);
+    setManualCitySelection(true);
   }, []);
 
   const handleBackToCountry = useCallback(() => {
     setSelectedCity(null);
     setDrillLevel("country");
     setShowAllUnis(false);
+    setManualCitySelection(false);
   }, []);
 
   const selectedCountryInfo = selectedCountryCode ? countryStats?.[selectedCountryCode] : null;
