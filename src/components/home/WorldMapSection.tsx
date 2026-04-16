@@ -376,6 +376,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
   // ── Let the map drive the active country from the real geometry under the viewport ──
   useEffect(() => {
     if (manualCitySelection || !mapViewport || !countryStats) return;
+    if (drillLevel !== "world") return;
     if (mapViewport.zoom < 5) return;
 
     const activeCountryCode = mapViewport.activeCountryCode;
@@ -384,10 +385,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
     const activeCountryStats = countryStats[activeCountryCode];
     if (!activeCountryStats || activeCountryStats.universities_count === 0) return;
 
-    const countryChanged = selectedCountryCode !== activeCountryCode;
-    const shouldSyncCountry = drillLevel === "world" || countryChanged;
-
-    if (!shouldSyncCountry) return;
+    if (selectedCountryCode === activeCountryCode) return;
 
     setSelectedCountryCode(activeCountryCode);
     setSelectedCity(null);
