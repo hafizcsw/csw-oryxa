@@ -118,32 +118,32 @@ export function useDocumentAnalysis({
         setPromotedFields(prev => [...prev, ...newPromoted]);
       }
 
-      if (import.meta.env.DEV) {
-        const artifact = result.artifact;
-        console.log('[Door1:ReadingArtifact]', {
-          chosen_route: artifact.chosen_route,
-          parser_used: artifact.parser_used,
-          pages_processed: artifact.pages_processed,
-          total_page_count: artifact.total_page_count,
-          full_text_length: artifact.full_text.length,
-          confidence: artifact.confidence,
-          is_readable: artifact.is_readable,
-          failure_reason: artifact.failure_reason,
-          processing_time_ms: Math.round(artifact.processing_time_ms),
-        });
-        console.log('[Door1:Analysis]', {
-          documentId,
-          classification: result.analysis.classification_result,
-          classification_confidence: result.analysis.classification_confidence,
-          parser_type: result.analysis.parser_type,
-          readability: result.analysis.readability_status,
-          fieldsExtracted: Object.keys(result.analysis.extracted_fields).length,
-          proposals: result.proposals.length,
-          autoAccepted: result.proposals.filter(p => p.proposal_status === 'auto_accepted').length,
-          pendingReview: result.proposals.filter(p => p.proposal_status === 'pending_review').length,
-          summary: result.analysis.summary_message_internal,
-        });
-      }
+      // Always log artifact — Door 1 is not closed, we need runtime proof
+      const artifact = result.artifact;
+      console.log('[Door1:ReadingArtifact]', {
+        chosen_route: artifact.chosen_route,
+        parser_used: artifact.parser_used,
+        pages_processed: artifact.pages_processed,
+        total_page_count: artifact.total_page_count,
+        full_text_length: artifact.full_text.length,
+        full_text_preview: artifact.full_text.slice(0, 300),
+        confidence: artifact.confidence,
+        is_readable: artifact.is_readable,
+        failure_reason: artifact.failure_reason,
+        processing_time_ms: Math.round(artifact.processing_time_ms),
+        input_mime: artifact.input_mime,
+        input_filename: artifact.input_filename,
+      });
+      console.log('[Door1:Classification]', {
+        documentId,
+        classification: result.analysis.classification_result,
+        classification_confidence: result.analysis.classification_confidence,
+        parser_type: result.analysis.parser_type,
+        readability: result.analysis.readability_status,
+        fieldsExtracted: Object.keys(result.analysis.extracted_fields).length,
+        proposals: result.proposals.length,
+        summary: result.analysis.summary_message_internal,
+      });
 
       return result;
     } finally {

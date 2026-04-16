@@ -22,14 +22,14 @@ export interface ClassificationOutput {
 }
 
 // ── Supported MIME types ─────────────────────────────────────
+// Must match resolveReadingRoute in reading-artifact-model.ts exactly.
+// DOC/DOCX are NOT supported — no reading lane exists for them.
 const SUPPORTED_MIMES = new Set([
   'application/pdf',
   'image/jpeg',
   'image/jpg',
   'image/png',
   'image/webp',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ]);
 
 // ── Keyword patterns per document type ───────────────────────
