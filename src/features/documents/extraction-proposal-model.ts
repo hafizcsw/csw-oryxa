@@ -114,6 +114,12 @@ export interface PromotionContext {
    * for identity.* fields with high textual confidence.
    */
   lane_strength?: 'passport_strong' | 'passport_weak' | null;
+  /**
+   * Order-2: indicates this proposal originated from the transcript lane.
+   * Used by HONESTY GATE 3 to force pending_review on every transcript
+   * field in V1 — no auto-accept on transcripts, ever.
+   */
+  source_lane?: 'passport' | 'transcript' | 'graduation' | 'language' | 'unknown';
 }
 
 /** Identity fields that are part of the passport lane. */
@@ -185,6 +191,17 @@ export function applyPromotionRules(
       updated.auto_apply_candidate = false;
       return updated;
     }
+  }
+
+  // HONESTY GATE 3: transcript lane is review-first only in V1.
+  // No transcript-derived field can ever auto-accept — even high-confidence
+  // header fields like institution_name. Transcripts are partial/structured
+  // and require human review before entering canonical truth.
+  if (context.source_lane === 'transcript') {
+    updated.proposal_status = 'pending_review';
+    updated.requires_review = true;
+    updated.auto_apply_candidate = false;
+    return updated;
   }
 
   // Rule: auto-accept if low-risk + high confidence + no conflict
