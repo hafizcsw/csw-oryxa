@@ -44,7 +44,6 @@ Deno.serve(async (req) => {
 
     // ── Authentication ──
     const authHeader = req.headers.get('authorization') || '';
-    const apiKeyHeader = req.headers.get('apikey') || '';
     const token = authHeader.replace('Bearer ', '');
 
     // Service-role client for DB operations
@@ -55,35 +54,31 @@ Deno.serve(async (req) => {
     let isServiceRole = false;
     let isAdmin = false;
 
-    // Check if caller is using service role key directly
-    if (token === serviceKey || apiKeyHeader === serviceKey) {
+    if (token === serviceKey) {
       isServiceRole = true;
     } else if (token && token !== anonKey) {
-      // Validate user JWT
+      // Try to validate as user JWT
       const anonClient = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } },
       });
-      const { data: { user }, error: authError } = await anonClient.auth.getUser();
-      if (authError || !user) {
-        return json({ ok: false, error: 'Invalid authentication' }, 401);
+      const { data: { user } } = await anonClient.auth.getUser();
+      if (user) {
+        userId = user.id;
+        const { data: adminCheck } = await srv.rpc('is_admin', { _user_id: user.id as any });
+        isAdmin = !!adminCheck;
       }
-      userId = user.id;
-      // Check admin
-      const { data: adminCheck } = await srv.rpc('is_admin', { _user_id: user.id as any });
-      isAdmin = !!adminCheck;
-    } else if (!apiKeyHeader && !token) {
-      return json({ ok: false, error: 'Authentication required' }, 401);
+      // If user validation fails, still allow as anonymous for lookup/resolve
     }
-    // If only apiKeyHeader === anonKey, allow lookup only (anonymous frontend)
+    // Anonymous callers (anon key or no auth) are allowed for lookup + resolve
+    // Rate limiting protects against abuse
 
     // ── Mode-specific access control ──
     if (mode === 'warmup' && !isServiceRole && !isAdmin) {
       return json({ ok: false, error: 'Warmup mode requires admin or service-role access' }, 403);
     }
 
-    if (mode === 'resolve' && !userId && !isServiceRole && !isAdmin) {
-      return json({ ok: false, error: 'Resolve mode requires authenticated user' }, 401);
-    }
+    // resolve mode: allow anonymous callers (anon key) for public map geocoding
+    // Rate limiting still applies to prevent abuse
 
     // ── Durable rate limiting via rate_limits table ──
     const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
