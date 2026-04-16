@@ -349,7 +349,6 @@ export const WorldMapSection = memo(function WorldMapSection() {
   const handleCountryClick = useCallback((code: string) => {
     if (!hasData(code)) return;
     if (selectedCountryCode === code && drillLevel === "country") {
-      handleBackToWorld();
       return;
     }
     setSelectedCity(null);
@@ -358,7 +357,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
     setShowAllUnis(false);
     // Switch to flat map for drill-down
     // viewMode stays flat
-  }, [hasData, selectedCountryCode, drillLevel, handleBackToWorld]);
+  }, [hasData, selectedCountryCode, drillLevel]);
 
   const handleCityClick = useCallback((cityName: string) => {
     setSelectedCity(cityName);
@@ -585,8 +584,6 @@ export const WorldMapSection = memo(function WorldMapSection() {
               countryStats={countryStats}
               onCountrySelect={(code) => {
                 if (!code) {
-                  handleBackToWorld();
-                } else if (code === selectedCountryCode && drillLevel === "country") {
                   handleBackToWorld();
                 } else {
                   handleCountryClick(code);
