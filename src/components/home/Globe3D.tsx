@@ -10,10 +10,11 @@
  * Uses semantic design tokens via CSS variables (resolved at runtime to hex).
  */
 import { useRef, useMemo, useEffect, useState, useCallback, Suspense } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Sphere, Html } from "@react-three/drei";
+import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber";
+import { Sphere } from "@react-three/drei";
 import * as THREE from "three";
 import { useTranslation } from "react-i18next";
+import earthTextureUrl from "@/assets/earth-texture.jpg";
 
 interface CountryStat {
   code: string;
