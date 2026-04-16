@@ -862,13 +862,13 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         const targetLabelW = screenW * 0.6;
         const charWidth = 0.68;
         const maxFontFromWidth = Math.floor(targetLabelW / Math.max(info.name.length * charWidth, 2));
-        const maxFontFromHeight = Math.floor(screenH * 0.2);
+        const maxFontFromHeight = Math.floor(screenH * 0.3);
         let fontSize = Math.min(maxFontFromWidth, maxFontFromHeight);
         // Scale max font with zoom: at z≤4 cap at 14, grows up to 32 at z≥10
-        const maxFont = zoom <= 4 ? 14 : Math.min(14 + (zoom - 4) * 3, 32);
+        const maxFont = zoom <= 4 ? 14 : Math.min(14 + (zoom - 4) * 4, 48);
         fontSize = Math.max(7, Math.min(fontSize, maxFont));
 
-        const letterSpacing = fontSize >= 13 ? 2 : fontSize >= 10 ? 1 : 0;
+        const letterSpacing = fontSize >= 20 ? 4 : fontSize >= 13 ? 2 : fontSize >= 10 ? 1 : 0;
         let labelWidth = Math.round(info.name.length * fontSize * charWidth + (info.name.length - 1) * letterSpacing + 8);
 
         // Clamp: label must never exceed 85% of country screen width
