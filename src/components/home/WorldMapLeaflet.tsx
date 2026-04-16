@@ -631,9 +631,9 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         return;
       }
       const z = map.getZoom();
-      if (drillLevel === 'region' && z < 8) {
+      if (drillLevel === 'region' && z < 9) {
         onBackToCountry?.();
-      } else if (drillLevel === 'country' && z < 4) {
+      } else if (drillLevel === 'country' && z < 4.5) {
         onBackToWorld?.();
       }
     };
