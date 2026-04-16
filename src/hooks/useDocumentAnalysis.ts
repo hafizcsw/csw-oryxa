@@ -251,6 +251,7 @@ export function useDocumentAnalysis({
     promotedFields,
     isAnalyzing,
     analyzeFile,
+    reanalyzeFile,
     acceptProposal,
     rejectProposal,
     removePromotedField,
