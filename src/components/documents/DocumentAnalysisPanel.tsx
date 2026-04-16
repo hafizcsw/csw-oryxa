@@ -127,6 +127,7 @@ export function DocumentAnalysisPanel({
           const isCompleted = analysis.analysis_status === 'completed';
           const isFailed = analysis.analysis_status === 'failed';
           const docPromotedCount = promotedFields.filter(pf => pf.documentId === analysis.document_id).length;
+          const artifact = artifacts?.[analysis.document_id];
 
           return (
             <div
@@ -134,6 +135,9 @@ export function DocumentAnalysisPanel({
               className="rounded-lg border border-border bg-card p-3"
               data-analysis-id={analysis.document_id}
               data-analysis-status={analysis.analysis_status}
+              data-readability={artifact?.readability ?? 'unknown'}
+              data-failure-reason={artifact?.failure_reason ?? ''}
+              data-reader-impl={artifact?.reader_implementation ?? 'none'}
             >
               {/* Document header */}
               <div className="flex items-center justify-between mb-2">
@@ -210,6 +214,64 @@ export function DocumentAnalysisPanel({
                 <p className="text-[10px] text-destructive mb-2">
                   {analysis.rejection_reason}
                 </p>
+              )}
+
+              {/* ── Door 1: Reading artifact truth strip ── */}
+              {artifact && (
+                <div
+                  className="mt-1 mb-2 rounded-md border border-border/60 bg-muted/30 p-2 space-y-1.5"
+                  data-artifact-strip="true"
+                >
+                  <div className="flex flex-wrap items-center gap-1.5 text-[9px]">
+                    <Badge variant="outline" className="text-[9px] font-mono">
+                      {t('portal.analysis.artifact.route')}: {artifact.chosen_route}
+                    </Badge>
+                    <Badge variant="outline" className="text-[9px] font-mono">
+                      {t('portal.analysis.artifact.parser')}: {artifact.parser_used}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={`text-[9px] font-mono ${
+                        artifact.readability === 'readable' ? 'border-emerald-500/30 text-emerald-600' :
+                        artifact.readability === 'degraded' ? 'border-amber-500/30 text-amber-600' :
+                        'border-destructive/30 text-destructive'
+                      }`}
+                    >
+                      {t('portal.analysis.artifact.readability')}: {t(`portal.analysis.artifact.readability_${artifact.readability}`)}
+                    </Badge>
+                    {artifact.reader_implementation === 'legacy_browser' && (
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] font-mono border-amber-500/30 text-amber-600"
+                        title={t('portal.analysis.artifact.legacy_reader_hint')}
+                      >
+                        {t('portal.analysis.artifact.legacy_reader')}
+                      </Badge>
+                    )}
+                    {artifact.ocr_quality && (
+                      <Badge variant="outline" className="text-[9px] font-mono">
+                        OCR: {artifact.ocr_quality.quality_label}
+                      </Badge>
+                    )}
+                  </div>
+                  {artifact.failure_reason && (
+                    <p className="text-[10px] text-destructive">
+                      ⚠ {t(`portal.analysis.artifact.failure.${artifact.failure_reason}`)}
+                      {artifact.failure_detail && (
+                        <span className="text-muted-foreground font-mono ml-1">— {artifact.failure_detail}</span>
+                      )}
+                    </p>
+                  )}
+                  {artifact.full_text && artifact.full_text.trim().length > 0 && (
+                    <div className="flex items-start gap-1.5">
+                      <Eye className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
+                      <p className="text-[10px] text-muted-foreground font-mono line-clamp-2 break-all">
+                        {artifact.full_text.trim().slice(0, 240)}
+                        {artifact.full_text.length > 240 ? '…' : ''}
+                      </p>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Proposals */}
