@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, memo, useEffect, useRef } from "react";
+import { MapResultsRail } from "./MapResultsRail";
 import { WorldMapLeaflet, type LeafletMapHandle, type MapViewport } from "./WorldMapLeaflet";
 import { MapUniversitySearch } from "./MapUniversitySearch";
 import { useNavigate } from "react-router-dom";
@@ -1072,6 +1073,23 @@ export const WorldMapSection = memo(function WorldMapSection() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* ── Live Results Rail — inside the map section ── */}
+      <div className="max-w-7xl mx-auto mb-6">
+        <MapResultsRail
+          drillLevel={drillLevel}
+          countryStats={countryStats}
+          visibleCities={visibleCities}
+          cityUniversities={cityUniversities}
+          selectedCountryCode={selectedCountryCode}
+          selectedCity={selectedCity}
+          countryMeta={countryMeta}
+          filteredCodes={filteredCodes}
+          onCountryClick={handleCountryClick}
+          onCityClick={handleCityClick}
+          countryDisplayName={countryDisplayName}
+        />
       </div>
     </section>
   );
