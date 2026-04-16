@@ -102,7 +102,7 @@ export function emptyIntermediate(parser: ParserType = 'regex_heuristic'): Trans
       grading_system_hint: null,
     },
     rows: [],
-    coverage: { candidate_lines: 0, rows_reconstructed: 0, coverage_estimate: 0, partial: true },
+    coverage: { inspected_lines: 0, row_like_candidates: 0, rows_reconstructed: 0, coverage_estimate: 0, partial: true },
     signals: {
       vocabulary_hits: [],
       gpa_signals: [],
