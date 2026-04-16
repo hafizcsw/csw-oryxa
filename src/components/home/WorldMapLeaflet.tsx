@@ -528,6 +528,28 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     };
   }, []);
 
+  // ── Zoom-based automatic drill transitions ──
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const onZoomEnd = () => {
+      if (userZoomingRef.current) {
+        userZoomingRef.current = false;
+        return;
+      }
+      const z = map.getZoom();
+      if (drillLevel === 'region' && z < 8) {
+        onBackToCountry?.();
+      } else if (drillLevel === 'country' && z < 4) {
+        onBackToWorld?.();
+      }
+    };
+
+    map.on('zoomend', onZoomEnd);
+    return () => { map.off('zoomend', onZoomEnd); };
+  }, [drillLevel, onBackToCountry, onBackToWorld]);
+
   // Update tile layers
   useEffect(() => {
     const map = mapRef.current;
