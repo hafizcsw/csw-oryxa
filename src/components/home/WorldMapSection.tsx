@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, memo, useEffect, useRef } from "react";
-import { WorldMapLeaflet, type LeafletMapHandle } from "./WorldMapLeaflet";
+import { WorldMapLeaflet, type LeafletMapHandle, type MapViewport } from "./WorldMapLeaflet";
 import { MapUniversitySearch } from "./MapUniversitySearch";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -82,6 +82,8 @@ export const WorldMapSection = memo(function WorldMapSection() {
   const [drillLevel, setDrillLevel] = useState<DrillLevel>("world");
   const [showAllUnis, setShowAllUnis] = useState(false);
   const [viewMode] = useState<"flat">("flat");
+  const [mapViewport, setMapViewport] = useState<MapViewport | null>(null);
+  const [manualCitySelection, setManualCitySelection] = useState(false);
   const mapLeafletRef = useRef<LeafletMapHandle>(null);
   const getLocalizedValue = useCallback((record: Record<string, unknown>, keyPrefix: string) => {
     const byActiveLanguage = record[`${keyPrefix}_${language}`];
@@ -343,7 +345,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
     setSelectedCity(null);
     setDrillLevel("world");
     setShowAllUnis(false);
-    // viewMode stays flat
+    setManualCitySelection(false);
   }, []);
 
   const handleCountryClick = useCallback((code: string) => {
@@ -355,20 +357,21 @@ export const WorldMapSection = memo(function WorldMapSection() {
     setSelectedCountryCode(code);
     setDrillLevel("country");
     setShowAllUnis(false);
-    // Switch to flat map for drill-down
-    // viewMode stays flat
+    setManualCitySelection(false);
   }, [hasData, selectedCountryCode, drillLevel]);
 
   const handleCityClick = useCallback((cityName: string) => {
     setSelectedCity(cityName);
     setDrillLevel("city");
     setShowAllUnis(false);
+    setManualCitySelection(true);
   }, []);
 
   const handleBackToCountry = useCallback(() => {
     setSelectedCity(null);
     setDrillLevel("country");
     setShowAllUnis(false);
+    setManualCitySelection(false);
   }, []);
 
   const selectedCountryInfo = selectedCountryCode ? countryStats?.[selectedCountryCode] : null;
@@ -400,6 +403,32 @@ export const WorldMapSection = memo(function WorldMapSection() {
     }
     return items;
   }, [selectedCountryInfo, selectedCity, drillLevel, getLocalizedValue, handleBackToWorld, handleBackToCountry]);
+
+  // ── Viewport-based visible cities filtering ──
+  const visibleCities = useMemo(() => {
+    if (!mapViewport || drillLevel !== "country") return geoEnrichedCities;
+    if (mapViewport.zoom < 4) return geoEnrichedCities; // Too zoomed out, show all
+    return geoEnrichedCities.filter(city => {
+      if (city.city_lat == null || city.city_lon == null) return true; // Keep cities without coords visible
+      return mapViewport.bounds.contains([city.city_lat, city.city_lon] as [number, number]);
+    });
+  }, [geoEnrichedCities, mapViewport, drillLevel]);
+
+  // ── Auto-drill to city when zoomed in close and only 1 city visible ──
+  useEffect(() => {
+    if (drillLevel !== "country" || manualCitySelection) return;
+    if (!mapViewport || mapViewport.zoom < 10) return;
+    const candidateCities = visibleCities.filter(c => c.city !== "__unknown__");
+    if (candidateCities.length === 1) {
+      setSelectedCity(candidateCities[0].city);
+      setDrillLevel("city");
+    }
+  }, [mapViewport, visibleCities, drillLevel, manualCitySelection]);
+
+  // ── Viewport change handler (stable ref) ──
+  const handleViewportChange = useCallback((viewport: MapViewport) => {
+    setMapViewport(viewport);
+  }, []);
 
   return (
     <section className="relative">
@@ -598,6 +627,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
               }}
               onBackToCountry={handleBackToCountry}
               onBackToWorld={handleBackToWorld}
+              onViewportChange={handleViewportChange}
               selectedCountryCode={selectedCountryCode}
               selectedRegionId={selectedRegionForCity?.regionId || null}
               drillLevel={drillLevel === "city" ? "region" : drillLevel}
@@ -803,15 +833,20 @@ export const WorldMapSection = memo(function WorldMapSection() {
               <div className="flex-1 overflow-y-auto">
                 {countryLevelLoading ? (
                   <div className="flex items-center justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-                ) : geoEnrichedCities.length > 0 ? (
+                ) : visibleCities.length > 0 ? (
                   <>
                     <div className="px-5 py-3 border-b border-border/50">
                       <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                         <MapPin className="h-3.5 w-3.5 text-primary/60" />
-                        {t("home.worldMap.stats.citiesCount", { count: geoEnrichedCities.length })}
+                        {t("home.worldMap.stats.citiesCount", { count: visibleCities.length })}
+                        {visibleCities.length < geoEnrichedCities.length && (
+                          <span className="text-muted-foreground/50 font-normal normal-case">
+                            / {geoEnrichedCities.length}
+                          </span>
+                        )}
                       </p>
                     </div>
-                    {[...geoEnrichedCities]
+                    {[...visibleCities]
                       .sort((a, b) => b.universities_count - a.universities_count)
                       .map((city, idx) => (
                         city.city === "__unknown__" ? (
