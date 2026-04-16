@@ -1,39 +1,69 @@
 
 
-## Problem
+## المشكلة
 
-When drilling into a city (e.g. Moscow), universities without precise geo coordinates are placed at the **country center** (`[62, 96]` for Russia — deep in Siberia). This causes:
-1. The "318 unverified" dot appears thousands of km from Moscow
-2. The map zooms out to fit both Moscow and Siberia, making it confusing
+البنية التحتية للكاش موجودة بالفعل (`geo_cache` + edge function `geo-resolve`) لكنها تعمل فقط على **المدن** (385 مدخل). الجامعات (36,960 بدون إحداثيات) لا يتم حلها أو تخزينها أبداً. عند تصفح الخريطة، كل عميل يجلب نفس البيانات من الصفر.
 
-## Root Cause
+## الحل: كاش دائم على مستوى السيرفر (مشترك بين جميع العملاء)
 
-In `WorldMapLeaflet.tsx` lines 1160-1171, the fallback position for universities without coordinates uses `CC[selectedCountryCode]` (country center). It should use the **selected city's coordinates** instead.
+### 1. تفعيل حل إحداثيات الجامعات تلقائياً عند التصفح
 
-## Fix
+**ملف: `src/hooks/useGeoCacheResolver.ts`** — توسيعه ليحل إحداثيات الجامعات أيضاً وليس المدن فقط:
 
-**File: `src/components/home/WorldMapLeaflet.tsx`**
+- عند دخول مدينة وظهور جامعات بدون `geo_lat/geo_lon`، يتم إرسالها للـ edge function `geo-resolve` مع `entity_type: 'university'`
+- النتائج تُحفظ في `geo_cache` (الجدول الموجود) — أول عميل يزور المدينة يحل الإحداثيات، كل عميل بعده يجدها جاهزة فوراً
 
-1. **Change fallback marker position** (lines 1160-1171): Instead of `CC[selectedCountryCode]`, use the selected city's lat/lon (`selectedCitySummary.city_lat/city_lon`) as the fallback position. Only fall back to country center if city coordinates are also unavailable.
+### 2. كتابة الإحداثيات المحلولة للجامعات في جدول `universities`
 
-2. **Exclude fallback point from bounds calculation**: Remove `pts.push(...)` for the fallback marker so it doesn't distort the map zoom. The fallback marker will still be visible but won't pull the camera away from the actual city.
-
-These are ~10 lines changed in a single file. No new files needed.
-
-## Technical Detail
+**ملف: `supabase/functions/geo-resolve/index.ts`** — عند حل إحداثيات جامعة:
 
 ```
-// Before (broken):
-const fallbackPos = [CC[selectedCountryCode][0], CC[selectedCountryCode][1]];
-pts.push(L.latLng(fallbackPos[0], fallbackPos[1]));
-
-// After (fixed):
-const cityCenter = selectedCitySummary;
-const fallbackPos = cityCenter?.city_lat != null && cityCenter?.city_lon != null
-  ? [cityCenter.city_lat, cityCenter.city_lon]
-  : CC[selectedCountryCode]
-    ? [CC[selectedCountryCode][0], CC[selectedCountryCode][1]]
-    : null;
-// Do NOT push fallbackPos into pts (don't distort bounds)
+// بعد حفظها في geo_cache، أيضاً حدّث جدول universities
+if (entry.entity_type === 'university' && entry.entity_id && lat !== 0) {
+  await srv.from('universities').update({
+    geo_lat: lat, geo_lon: lon, geo_source: source
+  }).eq('id', entry.entity_id);
+}
 ```
+
+هذا يعني أن المرة القادمة، الـ RPC `rpc_map_city_universities` يرجع الإحداثيات مباشرة بدون الحاجة للكاش.
+
+### 3. تمديد صلاحية كاش React Query
+
+**ملف: `src/hooks/useMapData.ts`** — تغيير `staleTime` من `60_000` إلى `30 * 60_000` وإضافة `gcTime: 60 * 60_000`:
+
+- البيانات تبقى في ذاكرة المتصفح 30 دقيقة بدون إعادة جلب
+- تبقى في الذاكرة 60 دقيقة حتى بعد مغادرة صفحة الخريطة
+- هذا كاش محلي إضافي فقط — مصدر الحقيقة هو قاعدة البيانات
+
+### 4. إيقاف إعادة الجلب عند العودة للتبويب
+
+**ملف: `src/App.tsx`** — إضافة `refetchOnWindowFocus: false` في إعدادات `QueryClient`
+
+### 5. كاش GeoJSON في `sessionStorage`
+
+**ملف: `src/components/home/WorldMapLeaflet.tsx`** — حفظ حدود الدول (GeoJSON) في `sessionStorage` بدل تحميلها كل مرة
+
+## الخلاصة
+
+```text
+العميل الأول يزور موسكو:
+  → يجلب 478 جامعة من RPC
+  → 461 بدون إحداثيات → يرسلها لـ geo-resolve
+  → Nominatim يحل → تُحفظ في geo_cache + universities table
+  → العرض يكتمل
+
+العميل الثاني يزور موسكو:
+  → يجلب 478 جامعة من RPC → الإحداثيات موجودة مسبقاً
+  → لا حاجة لـ geo-resolve → عرض فوري
+```
+
+**الملفات المتغيرة:**
+- `src/hooks/useGeoCacheResolver.ts` — إضافة حل الجامعات
+- `supabase/functions/geo-resolve/index.ts` — كتابة النتائج في `universities` table
+- `src/hooks/useMapData.ts` — تمديد `staleTime` + `gcTime`
+- `src/App.tsx` — `refetchOnWindowFocus: false`
+- `src/components/home/WorldMapLeaflet.tsx` — كاش GeoJSON
+
+**لا جداول جديدة** — كل شيء يستخدم البنية الموجودة (`geo_cache` + `universities.geo_lat/geo_lon`).
 
