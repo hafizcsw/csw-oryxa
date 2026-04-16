@@ -1072,22 +1072,23 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
       }
 
       // Country-level zoom must target the country boundary itself (not city cluster)
-      const countryBounds = bordersRef.current?.getBounds();
-      if (countryBounds?.isValid()) {
-        map.fitBounds(countryBounds.pad(0.08), {
-          animate: true,
-          padding: [40, 40],
-          maxZoom: 6,
-        });
-      } else if (pts.length > 0) {
-        // Fallback only when boundary is unavailable
-        map.fitBounds(L.latLngBounds(pts).pad(0.2), {
-          animate: true,
-          maxZoom: 7,
-          padding: [50, 50],
-        });
-      } else if (selectedCountryCode && CC[selectedCountryCode]) {
-        map.flyTo(CC[selectedCountryCode], 5, { animate: true });
+      if (shouldZoom) {
+        const countryBounds = bordersRef.current?.getBounds();
+        if (countryBounds?.isValid()) {
+          map.fitBounds(countryBounds.pad(0.08), {
+            animate: true,
+            padding: [40, 40],
+            maxZoom: 6,
+          });
+        } else if (pts.length > 0) {
+          map.fitBounds(L.latLngBounds(pts).pad(0.2), {
+            animate: true,
+            maxZoom: 7,
+            padding: [50, 50],
+          });
+        } else if (selectedCountryCode && CC[selectedCountryCode]) {
+          map.flyTo(CC[selectedCountryCode], 5, { animate: true });
+        }
       }
     }
 
