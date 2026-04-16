@@ -26,6 +26,7 @@ import { parseMrz } from './parsers/mrz-parser';
 import { classifyDocument } from './parsers/content-classifier';
 import {
   extractPassportFields,
+  extractPassportTextFallback,
   extractGraduationFields,
   extractTranscriptFields,
   extractLanguageCertFields,
