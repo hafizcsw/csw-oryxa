@@ -552,6 +552,13 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
   const [activeLayer, setActiveLayer] = useState<"satellite" | "streets" | "topo">("satellite");
   const [worldGeo, setWorldGeo] = useState<GeoJSON.FeatureCollection | null>(null);
 
+  // Stable refs for boundary callbacks — read inside the giant effect via callbacksRef.current
+  // so callback identity changes don't trigger full GeoJSON/marker rebuilds.
+  const callbacksRef = useRef({ onCountrySelect, onRegionSelect, onCitySelect });
+  useEffect(() => {
+    callbacksRef.current = { onCountrySelect, onRegionSelect, onCitySelect };
+  }, [onCountrySelect, onRegionSelect, onCitySelect]);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const tileRef = useRef<L.TileLayer[]>([]);
@@ -581,7 +588,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         highlightRef.current = null;
       }
 
-      map.flyTo([lat, lon], zoom, { animate: true, duration: 1.5 });
+      map.flyTo([lat, lon], zoom, { animate: true, duration: 0.7, easeLinearity: 0.35 });
       
       // Add pulsing highlight circle after fly animation
       setTimeout(() => {
@@ -1626,18 +1633,19 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
 
       if (shouldZoom) {
         if (pts.length === 1) {
-          map.flyTo(pts[0], 12, { animate: true, duration: 0.9 });
+          map.flyTo(pts[0], 12, { animate: true, duration: 0.65, easeLinearity: 0.35 });
         } else if (pts.length > 1) {
-          map.fitBounds(L.latLngBounds(pts).pad(0.24), { animate: true, maxZoom: 12 });
+          map.fitBounds(L.latLngBounds(pts).pad(0.24), { animate: true, duration: 0.55, easeLinearity: 0.35, maxZoom: 12 });
         } else if (selectedCitySummary?.city_lat != null && selectedCitySummary?.city_lon != null) {
           map.flyTo([selectedCitySummary.city_lat, selectedCitySummary.city_lon], 11, {
             animate: true,
-            duration: 0.9,
+            duration: 0.65,
+            easeLinearity: 0.35,
           });
         }
       }
     }
-  }, [drillLevel, countryStats, visibleCountryCodes, citySummaries, cityUniversities, regionCities, regionSummaries, selectedCountryCode, isDark, isRtl, mapText, getLocalizedValue, onCountrySelect, onRegionSelect, onCitySelect, worldGeo, osmOverlay, countryMeta]);
+  }, [drillLevel, countryStats, visibleCountryCodes, citySummaries, cityUniversities, regionCities, regionSummaries, selectedCountryCode, isDark, isRtl, mapText, getLocalizedValue, worldGeo, osmOverlay, countryMeta]);
 
   return (
     <div className="relative w-full h-full">
