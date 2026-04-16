@@ -263,7 +263,8 @@
         "selectCountryOrUseFilters": "地図から国を選ぶか、フィルターで結果を絞り込んでください",
         "selectCountryTitle": "国を選択",
         "selectCountrySubtitle": "色付きの国をクリックして都市と大学を表示",
-        "topCountries": "人気の国"
+        "topCountries": "人気の国",
+        "searchCountryPlaceholder": "国を検索..."
       },
       "filters": {
         "region": "地域",

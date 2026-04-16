@@ -263,7 +263,8 @@
         "selectCountryOrUseFilters": "Selecciona un país en el mapa o usa filtros para acotar resultados",
         "selectCountryTitle": "Selecciona un país",
         "selectCountrySubtitle": "Haz clic en cualquier país coloreado para ver sus ciudades y universidades",
-        "topCountries": "Países principales"
+        "topCountries": "Países principales",
+        "searchCountryPlaceholder": "Buscar un país..."
       },
       "filters": {
         "region": "Región",

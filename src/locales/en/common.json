@@ -302,7 +302,8 @@
         "selectCountryOrUseFilters": "Select a country from the map or use filters to narrow results",
         "selectCountryTitle": "Select a country",
         "selectCountrySubtitle": "Click any colored country to see its cities & universities",
-        "topCountries": "Top Countries"
+        "topCountries": "Top Countries",
+        "searchCountryPlaceholder": "Search for a country..."
       },
       "filters": {
         "region": "Region",

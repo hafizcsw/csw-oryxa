@@ -84,6 +84,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [drillLevel, setDrillLevel] = useState<DrillLevel>("world");
   const [showAllUnis, setShowAllUnis] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
   const [viewMode] = useState<"flat">("flat");
   const [mapViewport, setMapViewport] = useState<MapViewport | null>(null);
   const [manualCitySelection, setManualCitySelection] = useState(false);
@@ -346,6 +347,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
     setDrillLevel("country");
     setShowAllUnis(false);
     setManualCitySelection(false);
+    setCountrySearch("");
   }, [hasData, selectedCountryCode, drillLevel]);
 
   const handleCityClick = useCallback((cityName: string) => {
@@ -971,13 +973,48 @@ export const WorldMapSection = memo(function WorldMapSection() {
                 <p className="text-sm text-muted-foreground max-w-[240px] mx-auto">{t("home.worldMap.section.selectCountrySubtitle")}</p>
               </div>
               <div className="flex-1 overflow-y-auto border-t border-border">
-                <div className="px-5 py-3">
+                {/* Country search input */}
+                <div className="px-4 pt-3 pb-1">
+                  <div className="relative">
+                    <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                    <input
+                      type="text"
+                      value={countrySearch}
+                      onChange={(e) => setCountrySearch(e.target.value)}
+                      placeholder={t("home.worldMap.section.searchCountryPlaceholder")}
+                      className="w-full ps-9 pe-8 py-2 text-sm rounded-lg bg-muted/50 border border-border focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none placeholder:text-muted-foreground/60 text-foreground transition-colors"
+                    />
+                    {countrySearch && (
+                      <button
+                        onClick={() => setCountrySearch("")}
+                        className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="px-5 py-2">
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("home.worldMap.section.topCountries")}</p>
                 </div>
-                {Object.entries(countryStats || {})
-                  .filter(([code]) => !filteredCodes || filteredCodes.has(code))
+                {(() => {
+                  const searchLower = countrySearch.toLowerCase().trim();
+                  return Object.entries(countryStats || {})
+                  .filter(([code, v]) => {
+                    if (v.universities_count === 0) return false;
+                    if (filteredCodes && !filteredCodes.has(code)) return false;
+                    if (searchLower) {
+                      const nameAr = (v as any).country_name_ar || "";
+                      const nameEn = (v as any).country_name_en || "";
+                      const metaAr = countryMeta?.[code]?.name_ar || "";
+                      const metaEn = countryMeta?.[code]?.name_en || "";
+                      const allNames = `${nameAr} ${nameEn} ${metaAr} ${metaEn} ${code}`.toLowerCase();
+                      if (!allNames.includes(searchLower)) return false;
+                    }
+                    return true;
+                  })
                   .sort(([, a], [, b]) => b.universities_count - a.universities_count)
-                  .slice(0, 12)
+                  .slice(0, countrySearch ? 50 : 12)
                   .map(([code, info], idx) => {
                     const rankColors = ['bg-warning text-warning-foreground', 'bg-muted text-muted-foreground', 'bg-accent text-accent-foreground'];
                     return (
@@ -1022,7 +1059,8 @@ export const WorldMapSection = memo(function WorldMapSection() {
                         </span>
                       </button>
                     );
-                  })}
+                  });
+                })()}
               </div>
             </div>
           )}

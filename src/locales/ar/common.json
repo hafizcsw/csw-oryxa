@@ -302,7 +302,8 @@
         "selectCountryOrUseFilters": "اختر دولة من الخريطة أو استخدم الفلاتر لتضييق النتائج",
         "selectCountryTitle": "اختر دولة من الخريطة",
         "selectCountrySubtitle": "اضغط على أي دولة ملوّنة لعرض مدنها وجامعاتها",
-        "topCountries": "أكثر الدول جامعات"
+        "topCountries": "أكثر الدول جامعات",
+        "searchCountryPlaceholder": "ابحث عن دولة..."
       },
       "filters": {
         "region": "المنطقة",

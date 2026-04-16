@@ -263,7 +263,8 @@
         "selectCountryOrUseFilters": "মানচিত্র থেকে দেশ নির্বাচন করুন বা ফিল্টার ব্যবহার করে ফল সংকুচিত করুন",
         "selectCountryTitle": "একটি দেশ নির্বাচন করুন",
         "selectCountrySubtitle": "যেকোনো রঙিন দেশে ক্লিক করে তার শহর ও বিশ্ববিদ্যালয় দেখুন",
-        "topCountries": "শীর্ষ দেশসমূহ"
+        "topCountries": "শীর্ষ দেশসমূহ",
+        "searchCountryPlaceholder": "দেশ অনুসন্ধান করুন..."
       },
       "filters": {
         "region": "অঞ্চল",
