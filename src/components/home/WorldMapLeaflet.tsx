@@ -162,6 +162,7 @@ export interface LeafletMapProps {
   osmOverlay?: Map<string, OsmOverlayMatch>;
   osmOverlayLoading?: boolean;
   countryMeta?: Record<string, { slug: string; name_ar: string; name_en: string | null; image_url: string | null }>;
+  onCountryHover?: (code: string | null) => void;
 }
 
 /* ── City dot icon with country flag + university count badge ── */
@@ -519,6 +520,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     regionSummaries, visibleCountryCodes,
     citySummaries, cityUniversities, regionCities,
     osmOverlay, osmOverlayLoading, countryMeta,
+    onCountryHover,
   } = props;
 
   const { resolvedTheme } = useTheme();
@@ -1282,9 +1284,11 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
                 weight: 2.5,
               });
               l.bringToFront();
+              if (code) onCountryHover?.(code);
             },
             mouseout: (e: L.LeafletMouseEvent) => {
               geoLayer.resetStyle(e.target);
+              onCountryHover?.(null);
             },
             click: () => {
               if (code) onCountrySelect(code);

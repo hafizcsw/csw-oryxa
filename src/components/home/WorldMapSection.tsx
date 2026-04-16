@@ -90,6 +90,22 @@ export const WorldMapSection = memo(function WorldMapSection() {
   const [countrySearch, setCountrySearch] = useState("");
   const [viewMode] = useState<"flat">("flat");
   const [mapViewport, setMapViewport] = useState<MapViewport | null>(null);
+  const [hoveredCountryCode, setHoveredCountryCode] = useState<string | null>(null);
+  const hoverClearTimer = useRef<number | null>(null);
+
+  const handleCountryHover = useCallback((code: string | null) => {
+    if (code) {
+      if (hoverClearTimer.current) { clearTimeout(hoverClearTimer.current); hoverClearTimer.current = null; }
+      setHoveredCountryCode(code);
+    } else {
+      if (hoverClearTimer.current) clearTimeout(hoverClearTimer.current);
+      hoverClearTimer.current = window.setTimeout(() => setHoveredCountryCode(null), 80);
+    }
+  }, []);
+
+  useEffect(() => () => {
+    if (hoverClearTimer.current) clearTimeout(hoverClearTimer.current);
+  }, []);
   const [manualCitySelection, setManualCitySelection] = useState(false);
   const mapLeafletRef = useRef<LeafletMapHandle>(null);
   const getLocalizedValue = useCallback((record: Record<string, unknown>, keyPrefix: string) => {
@@ -661,6 +677,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
                osmOverlay={osmOverlay}
                osmOverlayLoading={osmOverlayLoading}
                countryMeta={countryMeta}
+               onCountryHover={handleCountryHover}
             />
 
           {/* Loading indicator for geodata */}
@@ -991,7 +1008,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
                       }))}
                     onCountrySelect={handleCountryClick}
                     language={language}
-                    focusCountryCode={selectedCountryCode}
+                    focusCountryCode={hoveredCountryCode ?? selectedCountryCode}
                     focusLatLon={
                       selectedCitySummary?.city_lat != null && selectedCitySummary?.city_lon != null
                         ? { lat: selectedCitySummary.city_lat, lon: selectedCitySummary.city_lon }
