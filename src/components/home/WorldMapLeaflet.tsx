@@ -582,7 +582,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     } else {
       tileRef.current = [L.tileLayer(TILES.topo, { ...hdTileOptions, maxZoom: 17, className: isDark ? "map-layer--topo-dark" : "map-layer--topo-light" }).addTo(map)];
     }
-  }, [activeLayer, isDark]);
+  }, [activeLayer, isDark, drillLevel]);
 
   // ── Country name labels from GeoJSON (replaces external label tiles) ──
   useEffect(() => {
