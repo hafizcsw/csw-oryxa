@@ -11,10 +11,19 @@
  */
 import { useRef, useMemo, useEffect, useState, useCallback, Suspense } from "react";
 import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber";
-import { Sphere } from "@react-three/drei";
 import * as THREE from "three";
 import { useTranslation } from "react-i18next";
 import earthTextureUrl from "@/assets/earth-texture.jpg";
+
+// Lightweight inline replacement for drei's <Sphere> (avoids pulling drei's full bundle).
+function Sphere({ args, children }: { args: [number, number, number]; children?: React.ReactNode }) {
+  return (
+    <mesh>
+      <sphereGeometry args={args} />
+      {children}
+    </mesh>
+  );
+}
 
 interface CountryStat {
   code: string;
