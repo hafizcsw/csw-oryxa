@@ -220,6 +220,34 @@ export async function analyzeDocument(params: {
       `Pages: ${artifact.pages_processed}/${artifact.total_page_count}`,
     ].join(' | ');
 
+    // ── PassportLane proof log (Order 1) ─────────────────────
+    // Always emit when classification.best === 'passport' so live runtime
+    // proof can be grepped from the console.
+    if (classification.best === 'passport') {
+      console.log('[Order1:PassportLane]', JSON.stringify({
+        file: file.name,
+        classification: classification.best,
+        classification_confidence: Number(classification.confidence.toFixed(3)),
+        lane_strength: laneStrength,
+        mrz_found: mrzFound,
+        mrz_pattern_in_text: classification.passport_mrz_pattern_in_text,
+        passport_text_evidence: classification.passport_text_evidence,
+        readability: artifact.readability,
+        usefulness: analysis.usefulness_status,
+        extracted_fields: Object.entries(extractedFields).map(([k, v]) => ({
+          field: k,
+          parser_source: v.parser_source,
+          confidence: Number(v.confidence.toFixed(3)),
+        })),
+        proposals: proposals.map(p => ({
+          field: p.field_key,
+          status: p.proposal_status,
+          auto_apply_candidate: p.auto_apply_candidate,
+          confidence: Number(p.confidence.toFixed(3)),
+        })),
+      }, null, 2));
+    }
+
     analysis.analysis_status = 'completed';
     analysis.updated_at = new Date().toISOString();
   } catch (err) {
