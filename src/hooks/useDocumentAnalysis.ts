@@ -50,6 +50,8 @@ interface UseDocumentAnalysisResult {
   removePromotedField: (proposalId: string) => void;
   /** Remove all promoted fields for a document */
   removePromotedFieldsForDocument: (documentId: string) => void;
+  /** Re-analyze a previously analyzed document */
+  reanalyzeFile: (documentId: string) => Promise<AnalysisResult | null>;
   /** Get proposals for a specific document */
   getProposalsForDocument: (documentId: string) => ExtractionProposal[];
   /** Get analysis for a specific document */
