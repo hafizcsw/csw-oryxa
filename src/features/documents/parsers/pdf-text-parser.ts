@@ -54,6 +54,8 @@ export async function extractPdfText(file: File, maxPages = 10): Promise<PdfText
       let currentLine = '';
       let lastY: number | null = null;
 
+      let textItemCount = 0;
+
       for (const item of content.items) {
         const textItem = item as any;
         if (!textItem.str) continue;
