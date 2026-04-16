@@ -100,16 +100,47 @@ const AUTO_ACCEPT_THRESHOLD = 0.85;
 export interface PromotionContext {
   /** Reading-stage readability of the source artifact. */
   readability?: 'readable' | 'degraded' | 'unreadable';
+  /**
+   * Which parser produced the value of THIS proposal.
+   * Used by the passport lane gate: identity.* fields can only auto-accept
+   * when sourced from MRZ. Anything else (regex_heuristic on raw text,
+   * filename-only, etc.) is treated as weak evidence.
+   */
+  parser_source?: 'mrz' | 'pdf_text' | 'image_ocr' | 'regex_heuristic' | 'filename_only' | 'none';
+  /**
+   * Passport lane strength as decided by the classifier
+   * (see PassportLaneStrength). Pass through here so the promotion
+   * layer can refuse auto-accept on weak passport classifications even
+   * for identity.* fields with high textual confidence.
+   */
+  lane_strength?: 'passport_strong' | 'passport_weak' | null;
 }
+
+/** Identity fields that are part of the passport lane. */
+const PASSPORT_IDENTITY_FIELDS = new Set<string>([
+  'identity.passport_name',
+  'identity.passport_number',
+  'identity.date_of_birth',
+  'identity.gender',
+  'identity.citizenship',
+  'identity.passport_issue_date',
+  'identity.passport_expiry_date',
+  'identity.passport_issuing_country',
+]);
 
 /**
  * Apply truth promotion rules to a proposal.
  *
- * HONESTY GATE (Door 1):
- *   A proposal sourced from a 'degraded' artifact can NEVER be auto_accepted,
- *   regardless of field risk class or confidence. It is forced to
- *   pending_review with auto_apply_candidate=false. This guard runs at the
- *   engine/promotion layer — UI cannot bypass it.
+ * HONESTY GATES:
+ *   1. Degraded artifact  → never auto_accepted (engine-layer guard).
+ *   2. Passport lane gate → identity.* fields can only auto-accept when:
+ *        - parser_source === 'mrz'  (MRZ is the only strong evidence
+ *          source for passport identity), AND
+ *        - lane_strength !== 'passport_weak' (classifier saw strong
+ *          passport evidence in the text, not just filename/slot hint).
+ *      Identity fields produced by regex_heuristic on raw text are
+ *      ALWAYS routed to pending_review, even at high confidence and
+ *      even for low-risk fields.
  */
 export function applyPromotionRules(
   proposal: ExtractionProposal,
@@ -133,13 +164,27 @@ export function applyPromotionRules(
     return updated;
   }
 
-  // HONESTY GATE: degraded artifacts cannot produce auto_accepted proposals.
-  // Extraction is allowed to continue, but every proposal is pending_review.
+  // HONESTY GATE 1: degraded artifacts cannot produce auto_accepted proposals.
   if (context.readability === 'degraded') {
     updated.proposal_status = 'pending_review';
     updated.requires_review = true;
     updated.auto_apply_candidate = false;
     return updated;
+  }
+
+  // HONESTY GATE 2: passport lane discipline.
+  // For any identity.* field belonging to the passport lane:
+  //   - Source must be MRZ; weak text-heuristic fallback can never auto-accept.
+  //   - Classification must be passport_strong; passport_weak can never auto-accept.
+  if (PASSPORT_IDENTITY_FIELDS.has(updated.field_key)) {
+    const fromMrz = context.parser_source === 'mrz';
+    const strong = context.lane_strength !== 'passport_weak';
+    if (!fromMrz || !strong) {
+      updated.proposal_status = 'pending_review';
+      updated.requires_review = true;
+      updated.auto_apply_candidate = false;
+      return updated;
+    }
   }
 
   // Rule: auto-accept if low-risk + high confidence + no conflict
