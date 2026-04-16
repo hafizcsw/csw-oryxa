@@ -352,6 +352,119 @@
         "master": "Master's",
         "phd": "PhD"
       }
+    },
+    "howItWorks": {
+      "badge": "Simple Steps",
+      "title": "How It Works",
+      "subtitle": "Your journey to study abroad starts here - just four simple steps",
+      "stepLabel": "STEP {{number}}",
+      "cta": "Start Your Journey",
+      "steps": {
+        "chat": {
+          "title": "Chat with Malak",
+          "description": "Our AI assistant helps you find the perfect program based on your preferences and budget."
+        },
+        "choose": {
+          "title": "Choose Your Program",
+          "description": "Browse universities and programs, compare options, and add favorites to your shortlist."
+        },
+        "submit": {
+          "title": "Submit Documents",
+          "description": "Upload your documents securely and let us handle the application process."
+        },
+        "travel": {
+          "title": "Travel & Study",
+          "description": "Get your visa, book your flight, and start your educational journey abroad!"
+        }
+      }
+    },
+    "cswCoin": {
+      "badge": "Coming Soon",
+      "title": "Coin",
+      "description": "Our exclusive digital currency for students. Get discounts and rewards when using our services.",
+      "features": {
+        "fast": {
+          "title": "Lightning Fast",
+          "desc": "Instant transactions"
+        },
+        "secure": {
+          "title": "Secure",
+          "desc": "Military-grade encryption"
+        },
+        "growth": {
+          "title": "Growth Potential",
+          "desc": "Early adopter benefits"
+        }
+      },
+      "waitlist": "Join the waitlist and get an exclusive bonus",
+      "emailPlaceholder": "Your email address",
+      "join": "Join",
+      "registered": "Over 2,500 already registered",
+      "successToast": "Successfully registered! We'll contact you soon",
+      "countdown": "Launch Countdown",
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Min",
+      "seconds": "Sec"
+    },
+    "moneyTransfer": {
+      "calculator": "Transfer Calculator",
+      "estimatedRate": "Estimated rate",
+      "youSend": "You Send",
+      "theyReceive": "They Receive",
+      "comingSoon": "Coming Very Soon!",
+      "comingSoonDesc": "Register your interest to be notified at launch",
+      "badge": "Russia Transfers",
+      "titlePart1": "Transfer Money",
+      "titlePart2": "to Russia Easily",
+      "description": "Send money to your family or cover your study expenses in Russia. Secure, fast, and with the best exchange rates.",
+      "features": {
+        "secure": {
+          "title": "Bank-Level Security",
+          "desc": "Your money is protected"
+        },
+        "fast": {
+          "title": "Fast Transfer",
+          "desc": "Within 24 hours"
+        },
+        "rates": {
+          "title": "Best Rates",
+          "desc": "Competitive exchange"
+        }
+      },
+      "notifyPrompt": "Enter your number to be notified at launch",
+      "phonePlaceholder": "WhatsApp number",
+      "notifyMe": "Notify Me",
+      "registered": "Over 1,200 already registered",
+      "successToast": "Number registered! We'll notify you when service launches"
+    },
+    "stats": {
+      "badge": "Our Achievements",
+      "title": "Numbers That Speak Success",
+      "subtitle": "We take pride in what we have achieved with our students over years of excellent service",
+      "items": {
+        "students": "Students Enrolled",
+        "universities": "Partner Universities",
+        "countries": "Countries",
+        "success": "Success Rate"
+      }
+    },
+    "community": {
+      "badge": "Community",
+      "title": "Student & University Community",
+      "subtitle": "Share your experience and connect with universities and students worldwide",
+      "joinTitle": "Join the Community",
+      "joinDesc": "Be the first to share! Sign in and start posting and interacting with universities and students",
+      "getStarted": "Get Started",
+      "explore": "Explore Community",
+      "student": "Student",
+      "university": "University",
+      "uniShort": "Uni",
+      "studentShort": "Student",
+      "now": "now",
+      "minAgo": "{{n}}m ago",
+      "hourAgo": "{{n}}h ago",
+      "dayAgo": "{{n}}d ago"
     }
   },
   "services": {

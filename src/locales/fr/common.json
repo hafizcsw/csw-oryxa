@@ -313,6 +313,119 @@
         "master": "Master",
         "phd": "Doctorat"
       }
+    },
+    "howItWorks": {
+      "badge": "Étapes Simples",
+      "title": "Comment ça marche",
+      "subtitle": "Votre parcours d'études à l'étranger commence ici - en quatre étapes simples",
+      "stepLabel": "ÉTAPE {{number}}",
+      "cta": "Commencez votre voyage",
+      "steps": {
+        "chat": {
+          "title": "Discutez avec Malak",
+          "description": "Notre assistant IA vous aide à trouver le programme idéal selon vos préférences et votre budget."
+        },
+        "choose": {
+          "title": "Choisissez votre programme",
+          "description": "Parcourez les universités et programmes, comparez et ajoutez aux favoris."
+        },
+        "submit": {
+          "title": "Soumettez vos documents",
+          "description": "Téléchargez vos documents en toute sécurité et laissez-nous gérer la candidature."
+        },
+        "travel": {
+          "title": "Voyagez et étudiez",
+          "description": "Obtenez votre visa, réservez votre vol et commencez votre voyage éducatif !"
+        }
+      }
+    },
+    "cswCoin": {
+      "badge": "Bientôt disponible",
+      "title": "Coin",
+      "description": "Notre monnaie numérique exclusive pour étudiants. Obtenez des remises et récompenses.",
+      "features": {
+        "fast": {
+          "title": "Ultra rapide",
+          "desc": "Transactions instantanées"
+        },
+        "secure": {
+          "title": "Sécurisé",
+          "desc": "Chiffrement militaire"
+        },
+        "growth": {
+          "title": "Potentiel de croissance",
+          "desc": "Avantages pour les premiers utilisateurs"
+        }
+      },
+      "waitlist": "Rejoignez la liste d'attente et recevez un bonus exclusif",
+      "emailPlaceholder": "Votre adresse e-mail",
+      "join": "Rejoindre",
+      "registered": "Plus de 2 500 déjà inscrits",
+      "successToast": "Inscription réussie ! Nous vous contacterons bientôt",
+      "countdown": "Compte à rebours du lancement",
+      "days": "Jours",
+      "hours": "Heures",
+      "minutes": "Min",
+      "seconds": "Sec"
+    },
+    "moneyTransfer": {
+      "calculator": "Calculatrice de transfert",
+      "estimatedRate": "Taux estimé",
+      "youSend": "Vous envoyez",
+      "theyReceive": "Ils reçoivent",
+      "comingSoon": "Très bientôt !",
+      "comingSoonDesc": "Inscrivez votre intérêt pour être notifié au lancement",
+      "badge": "Transferts Russie",
+      "titlePart1": "Transférez de l'argent",
+      "titlePart2": "vers la Russie facilement",
+      "description": "Envoyez de l'argent à votre famille ou pour vos frais d'études en Russie. Sûr, rapide et aux meilleurs taux.",
+      "features": {
+        "secure": {
+          "title": "Sécurité bancaire",
+          "desc": "Votre argent est protégé"
+        },
+        "fast": {
+          "title": "Transfert rapide",
+          "desc": "Sous 24 heures"
+        },
+        "rates": {
+          "title": "Meilleurs taux",
+          "desc": "Change compétitif"
+        }
+      },
+      "notifyPrompt": "Entrez votre numéro pour être notifié au lancement",
+      "phonePlaceholder": "Numéro WhatsApp",
+      "notifyMe": "M'avertir",
+      "registered": "Plus de 1 200 déjà inscrits",
+      "successToast": "Numéro enregistré ! Nous vous notifierons au lancement"
+    },
+    "stats": {
+      "badge": "Nos réalisations",
+      "title": "Des chiffres qui parlent de succès",
+      "subtitle": "Nous sommes fiers de ce que nous avons accompli avec nos étudiants",
+      "items": {
+        "students": "Étudiants inscrits",
+        "universities": "Universités partenaires",
+        "countries": "Pays",
+        "success": "Taux de réussite"
+      }
+    },
+    "community": {
+      "badge": "Communauté",
+      "title": "Communauté Étudiants & Universités",
+      "subtitle": "Partagez votre expérience et connectez-vous avec des universités et étudiants du monde entier",
+      "joinTitle": "Rejoignez la communauté",
+      "joinDesc": "Soyez le premier à partager ! Connectez-vous et commencez à publier",
+      "getStarted": "Commencer",
+      "explore": "Explorer la communauté",
+      "student": "Étudiant",
+      "university": "Université",
+      "uniShort": "Univ",
+      "studentShort": "Étudiant",
+      "now": "maintenant",
+      "minAgo": "il y a {{n}}m",
+      "hourAgo": "il y a {{n}}h",
+      "dayAgo": "il y a {{n}}j"
     }
   },
   "services": {

@@ -313,6 +313,119 @@
         "master": "修士",
         "phd": "博士"
       }
+    },
+    "howItWorks": {
+      "badge": "簡単なステップ",
+      "title": "仕組み",
+      "subtitle": "海外留学への旅はここから始まります - わずか4つのステップ",
+      "stepLabel": "ステップ {{number}}",
+      "cta": "旅を始める",
+      "steps": {
+        "chat": {
+          "title": "マラクとチャット",
+          "description": "AIアシスタントがあなたの好みと予算に合った完璧なプログラムを見つけます。"
+        },
+        "choose": {
+          "title": "プログラムを選択",
+          "description": "大学とプログラムを閲覧し、比較してお気に入りに追加。"
+        },
+        "submit": {
+          "title": "書類を提出",
+          "description": "書類を安全にアップロードし、申請プロセスをお任せください。"
+        },
+        "travel": {
+          "title": "旅と学び",
+          "description": "ビザを取得し、フライトを予約し、教育の旅を始めましょう!"
+        }
+      }
+    },
+    "cswCoin": {
+      "badge": "近日公開",
+      "title": "Coin",
+      "description": "学生限定のデジタル通貨。割引と報酬を獲得できます。",
+      "features": {
+        "fast": {
+          "title": "超高速",
+          "desc": "即時取引"
+        },
+        "secure": {
+          "title": "安全",
+          "desc": "軍用レベル暗号化"
+        },
+        "growth": {
+          "title": "成長の可能性",
+          "desc": "早期採用者特典"
+        }
+      },
+      "waitlist": "ウェイトリストに参加して限定ボーナスを獲得",
+      "emailPlaceholder": "メールアドレス",
+      "join": "参加",
+      "registered": "2,500人以上が既に登録",
+      "successToast": "登録成功!",
+      "countdown": "ローンチカウントダウン",
+      "days": "日",
+      "hours": "時間",
+      "minutes": "分",
+      "seconds": "秒"
+    },
+    "moneyTransfer": {
+      "calculator": "送金計算機",
+      "estimatedRate": "推定レート",
+      "youSend": "送金額",
+      "theyReceive": "受取額",
+      "comingSoon": "もうすぐ!",
+      "comingSoonDesc": "ローンチ時に通知を受けるには関心を登録してください",
+      "badge": "ロシアへの送金",
+      "titlePart1": "お金を送る",
+      "titlePart2": "ロシアへ簡単に",
+      "description": "ご家族への送金やロシアでの学費を簡単に。安全で迅速、最高のレート。",
+      "features": {
+        "secure": {
+          "title": "銀行レベルのセキュリティ",
+          "desc": "お金は保護されています"
+        },
+        "fast": {
+          "title": "高速送金",
+          "desc": "24時間以内"
+        },
+        "rates": {
+          "title": "最高のレート",
+          "desc": "競争力のある両替"
+        }
+      },
+      "notifyPrompt": "ローンチ時の通知用に番号を入力",
+      "phonePlaceholder": "WhatsApp番号",
+      "notifyMe": "通知する",
+      "registered": "1,200人以上が既に登録",
+      "successToast": "番号が登録されました!"
+    },
+    "stats": {
+      "badge": "私たちの実績",
+      "title": "成功を語る数字",
+      "subtitle": "学生と共に成し遂げたことを誇りに思います",
+      "items": {
+        "students": "在籍学生",
+        "universities": "提携大学",
+        "countries": "国",
+        "success": "成功率"
+      }
+    },
+    "community": {
+      "badge": "コミュニティ",
+      "title": "学生と大学のコミュニティ",
+      "subtitle": "あなたの経験を共有し、世界中の大学や学生とつながる",
+      "joinTitle": "コミュニティに参加",
+      "joinDesc": "最初に共有しましょう!サインインして投稿を始めましょう",
+      "getStarted": "始める",
+      "explore": "コミュニティを探索",
+      "student": "学生",
+      "university": "大学",
+      "uniShort": "大学",
+      "studentShort": "学生",
+      "now": "今",
+      "minAgo": "{{n}}分前",
+      "hourAgo": "{{n}}時間前",
+      "dayAgo": "{{n}}日前"
     }
   },
   "services": {
