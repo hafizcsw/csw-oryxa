@@ -502,6 +502,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
   const markersRef = useRef<L.LayerGroup>(L.layerGroup());
   const bordersRef = useRef<L.GeoJSON | null>(null);
   const countryLabelsRef = useRef<L.LayerGroup>(L.layerGroup());
+  const cityLabelsRef = useRef<L.LayerGroup>(L.layerGroup());
 
   // Highlight marker ref for search
   const highlightRef = useRef<L.CircleMarker | null>(null);
