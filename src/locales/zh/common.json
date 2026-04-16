@@ -314,6 +314,119 @@
         "master": "硕士",
         "phd": "博士"
       }
+    },
+    "howItWorks": {
+      "badge": "简单步骤",
+      "title": "运作方式",
+      "subtitle": "您的留学之旅从这里开始 - 只需四个简单步骤",
+      "stepLabel": "步骤 {{number}}",
+      "cta": "开始您的旅程",
+      "steps": {
+        "chat": {
+          "title": "与马拉克聊天",
+          "description": "我们的AI助手根据您的偏好和预算帮您找到完美的课程。"
+        },
+        "choose": {
+          "title": "选择课程",
+          "description": "浏览大学和课程,比较选项,添加到收藏。"
+        },
+        "submit": {
+          "title": "提交文件",
+          "description": "安全上传您的文件,让我们处理申请流程。"
+        },
+        "travel": {
+          "title": "旅行与学习",
+          "description": "获取签证,预订航班,开始您的海外教育之旅!"
+        }
+      }
+    },
+    "cswCoin": {
+      "badge": "即将推出",
+      "title": "Coin",
+      "description": "我们专为学生提供的独家数字货币。使用我们的服务获得折扣和奖励。",
+      "features": {
+        "fast": {
+          "title": "闪电般快速",
+          "desc": "即时交易"
+        },
+        "secure": {
+          "title": "安全",
+          "desc": "军用级加密"
+        },
+        "growth": {
+          "title": "增长潜力",
+          "desc": "早期采用者福利"
+        }
+      },
+      "waitlist": "加入候补名单,获得独家奖励",
+      "emailPlaceholder": "您的电子邮箱",
+      "join": "加入",
+      "registered": "已有2,500多人注册",
+      "successToast": "注册成功!我们将很快联系您",
+      "countdown": "发布倒计时",
+      "days": "天",
+      "hours": "时",
+      "minutes": "分",
+      "seconds": "秒"
+    },
+    "moneyTransfer": {
+      "calculator": "转账计算器",
+      "estimatedRate": "估算汇率",
+      "youSend": "您发送",
+      "theyReceive": "他们收到",
+      "comingSoon": "即将推出!",
+      "comingSoonDesc": "注册您的兴趣,以便在推出时收到通知",
+      "badge": "俄罗斯转账",
+      "titlePart1": "转账",
+      "titlePart2": "轻松到俄罗斯",
+      "description": "向家人汇款或支付在俄罗斯的学习费用。安全、快速、汇率最佳。",
+      "features": {
+        "secure": {
+          "title": "银行级安全",
+          "desc": "您的资金受保护"
+        },
+        "fast": {
+          "title": "快速转账",
+          "desc": "24小时内"
+        },
+        "rates": {
+          "title": "最佳汇率",
+          "desc": "有竞争力的兑换"
+        }
+      },
+      "notifyPrompt": "输入您的号码以便在推出时收到通知",
+      "phonePlaceholder": "WhatsApp号码",
+      "notifyMe": "通知我",
+      "registered": "已有1,200多人注册",
+      "successToast": "号码已注册!我们将在服务推出时通知您"
+    },
+    "stats": {
+      "badge": "我们的成就",
+      "title": "讲述成功的数字",
+      "subtitle": "我们为多年来与学生取得的成就感到自豪",
+      "items": {
+        "students": "已注册学生",
+        "universities": "合作大学",
+        "countries": "国家",
+        "success": "成功率"
+      }
+    },
+    "community": {
+      "badge": "社区",
+      "title": "学生与大学社区",
+      "subtitle": "分享您的经历,与世界各地的大学和学生联系",
+      "joinTitle": "加入社区",
+      "joinDesc": "成为第一个分享的人!登录并开始发布",
+      "getStarted": "开始",
+      "explore": "探索社区",
+      "student": "学生",
+      "university": "大学",
+      "uniShort": "大学",
+      "studentShort": "学生",
+      "now": "刚刚",
+      "minAgo": "{{n}}分钟前",
+      "hourAgo": "{{n}}小时前",
+      "dayAgo": "{{n}}天前"
     }
   },
   "services": {

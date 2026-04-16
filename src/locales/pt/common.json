@@ -313,6 +313,119 @@
         "master": "Mestrado",
         "phd": "Doutorado"
       }
+    },
+    "howItWorks": {
+      "badge": "Passos Simples",
+      "title": "Como Funciona",
+      "subtitle": "Sua jornada para estudar no exterior começa aqui - apenas quatro passos simples",
+      "stepLabel": "PASSO {{number}}",
+      "cta": "Comece sua jornada",
+      "steps": {
+        "chat": {
+          "title": "Converse com Malak",
+          "description": "Nosso assistente IA ajuda você a encontrar o programa perfeito."
+        },
+        "choose": {
+          "title": "Escolha seu programa",
+          "description": "Navegue por universidades, compare e adicione favoritos."
+        },
+        "submit": {
+          "title": "Envie documentos",
+          "description": "Carregue seus documentos com segurança."
+        },
+        "travel": {
+          "title": "Viaje e estude",
+          "description": "Obtenha seu visto, reserve seu voo e comece sua jornada educacional!"
+        }
+      }
+    },
+    "cswCoin": {
+      "badge": "Em breve",
+      "title": "Coin",
+      "description": "Nossa moeda digital exclusiva para estudantes. Descontos e recompensas.",
+      "features": {
+        "fast": {
+          "title": "Ultra rápido",
+          "desc": "Transações instantâneas"
+        },
+        "secure": {
+          "title": "Seguro",
+          "desc": "Criptografia militar"
+        },
+        "growth": {
+          "title": "Potencial de crescimento",
+          "desc": "Benefícios para usuários iniciais"
+        }
+      },
+      "waitlist": "Junte-se à lista de espera e receba um bônus exclusivo",
+      "emailPlaceholder": "Seu endereço de e-mail",
+      "join": "Entrar",
+      "registered": "Mais de 2.500 já registrados",
+      "successToast": "Registrado com sucesso!",
+      "countdown": "Contagem regressiva",
+      "days": "Dias",
+      "hours": "Horas",
+      "minutes": "Min",
+      "seconds": "Seg"
+    },
+    "moneyTransfer": {
+      "calculator": "Calculadora de transferência",
+      "estimatedRate": "Taxa estimada",
+      "youSend": "Você envia",
+      "theyReceive": "Eles recebem",
+      "comingSoon": "Muito em breve!",
+      "comingSoonDesc": "Registre seu interesse para ser notificado",
+      "badge": "Transferências para Rússia",
+      "titlePart1": "Transfira dinheiro",
+      "titlePart2": "para a Rússia facilmente",
+      "description": "Envie dinheiro para sua família ou cubra despesas de estudo na Rússia.",
+      "features": {
+        "secure": {
+          "title": "Segurança bancária",
+          "desc": "Seu dinheiro está protegido"
+        },
+        "fast": {
+          "title": "Transferência rápida",
+          "desc": "Em 24 horas"
+        },
+        "rates": {
+          "title": "Melhores taxas",
+          "desc": "Câmbio competitivo"
+        }
+      },
+      "notifyPrompt": "Digite seu número para ser notificado no lançamento",
+      "phonePlaceholder": "Número WhatsApp",
+      "notifyMe": "Notifique-me",
+      "registered": "Mais de 1.200 já registrados",
+      "successToast": "Número registrado!"
+    },
+    "stats": {
+      "badge": "Nossas conquistas",
+      "title": "Números que falam de sucesso",
+      "subtitle": "Temos orgulho do que conquistamos com nossos estudantes",
+      "items": {
+        "students": "Estudantes matriculados",
+        "universities": "Universidades parceiras",
+        "countries": "Países",
+        "success": "Taxa de sucesso"
+      }
+    },
+    "community": {
+      "badge": "Comunidade",
+      "title": "Comunidade de estudantes e universidades",
+      "subtitle": "Compartilhe sua experiência e conecte-se com universidades e estudantes do mundo todo",
+      "joinTitle": "Junte-se à comunidade",
+      "joinDesc": "Seja o primeiro a compartilhar! Entre e comece a postar",
+      "getStarted": "Começar",
+      "explore": "Explorar comunidade",
+      "student": "Estudante",
+      "university": "Universidade",
+      "uniShort": "Univ",
+      "studentShort": "Estudante",
+      "now": "agora",
+      "minAgo": "há {{n}}m",
+      "hourAgo": "há {{n}}h",
+      "dayAgo": "há {{n}}d"
     }
   },
   "services": {

@@ -313,6 +313,119 @@
         "master": "Master",
         "phd": "Promotion"
       }
+    },
+    "howItWorks": {
+      "badge": "Einfache Schritte",
+      "title": "So funktioniert's",
+      "subtitle": "Ihre Reise zum Studium im Ausland beginnt hier - nur vier einfache Schritte",
+      "stepLabel": "SCHRITT {{number}}",
+      "cta": "Starten Sie Ihre Reise",
+      "steps": {
+        "chat": {
+          "title": "Mit Malak chatten",
+          "description": "Unser KI-Assistent hilft Ihnen, das perfekte Programm zu finden."
+        },
+        "choose": {
+          "title": "Programm wählen",
+          "description": "Stöbern Sie in Universitäten, vergleichen Sie und fügen Sie Favoriten hinzu."
+        },
+        "submit": {
+          "title": "Dokumente einreichen",
+          "description": "Laden Sie Ihre Dokumente sicher hoch."
+        },
+        "travel": {
+          "title": "Reisen & Studieren",
+          "description": "Holen Sie Ihr Visum, buchen Sie Ihren Flug und beginnen Sie Ihre Reise!"
+        }
+      }
+    },
+    "cswCoin": {
+      "badge": "Demnächst",
+      "title": "Coin",
+      "description": "Unsere exklusive digitale Währung für Studierende. Rabatte und Belohnungen.",
+      "features": {
+        "fast": {
+          "title": "Blitzschnell",
+          "desc": "Sofortige Transaktionen"
+        },
+        "secure": {
+          "title": "Sicher",
+          "desc": "Militärische Verschlüsselung"
+        },
+        "growth": {
+          "title": "Wachstumspotenzial",
+          "desc": "Vorteile für Frühanwender"
+        }
+      },
+      "waitlist": "Treten Sie der Warteliste bei und erhalten Sie einen exklusiven Bonus",
+      "emailPlaceholder": "Ihre E-Mail-Adresse",
+      "join": "Beitreten",
+      "registered": "Über 2.500 bereits registriert",
+      "successToast": "Erfolgreich registriert!",
+      "countdown": "Startcountdown",
+      "days": "Tage",
+      "hours": "Stunden",
+      "minutes": "Min",
+      "seconds": "Sek"
+    },
+    "moneyTransfer": {
+      "calculator": "Überweisungsrechner",
+      "estimatedRate": "Geschätzter Kurs",
+      "youSend": "Sie senden",
+      "theyReceive": "Sie erhalten",
+      "comingSoon": "Sehr bald!",
+      "comingSoonDesc": "Registrieren Sie Ihr Interesse für Benachrichtigung",
+      "badge": "Russland-Überweisungen",
+      "titlePart1": "Geld überweisen",
+      "titlePart2": "einfach nach Russland",
+      "description": "Senden Sie Geld an Ihre Familie oder decken Sie Studienkosten in Russland.",
+      "features": {
+        "secure": {
+          "title": "Banksicherheit",
+          "desc": "Ihr Geld ist geschützt"
+        },
+        "fast": {
+          "title": "Schnelle Überweisung",
+          "desc": "Innerhalb von 24 Stunden"
+        },
+        "rates": {
+          "title": "Beste Kurse",
+          "desc": "Wettbewerbsfähiger Wechsel"
+        }
+      },
+      "notifyPrompt": "Geben Sie Ihre Nummer ein, um beim Start benachrichtigt zu werden",
+      "phonePlaceholder": "WhatsApp-Nummer",
+      "notifyMe": "Benachrichtigen",
+      "registered": "Über 1.200 bereits registriert",
+      "successToast": "Nummer registriert!"
+    },
+    "stats": {
+      "badge": "Unsere Erfolge",
+      "title": "Zahlen, die für Erfolg sprechen",
+      "subtitle": "Wir sind stolz auf das, was wir mit unseren Studierenden erreicht haben",
+      "items": {
+        "students": "Eingeschriebene Studierende",
+        "universities": "Partneruniversitäten",
+        "countries": "Länder",
+        "success": "Erfolgsquote"
+      }
+    },
+    "community": {
+      "badge": "Community",
+      "title": "Studierenden- und Universitäts-Community",
+      "subtitle": "Teilen Sie Ihre Erfahrung und vernetzen Sie sich mit Universitäten und Studierenden weltweit",
+      "joinTitle": "Community beitreten",
+      "joinDesc": "Seien Sie der Erste, der teilt! Melden Sie sich an",
+      "getStarted": "Loslegen",
+      "explore": "Community erkunden",
+      "student": "Student",
+      "university": "Universität",
+      "uniShort": "Uni",
+      "studentShort": "Student",
+      "now": "jetzt",
+      "minAgo": "vor {{n}} Min",
+      "hourAgo": "vor {{n}} Std",
+      "dayAgo": "vor {{n}} Tg"
     }
   },
   "services": {
