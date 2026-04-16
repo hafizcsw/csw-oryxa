@@ -84,6 +84,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [drillLevel, setDrillLevel] = useState<DrillLevel>("world");
   const [showAllUnis, setShowAllUnis] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
   const [viewMode] = useState<"flat">("flat");
   const [mapViewport, setMapViewport] = useState<MapViewport | null>(null);
   const [manualCitySelection, setManualCitySelection] = useState(false);
