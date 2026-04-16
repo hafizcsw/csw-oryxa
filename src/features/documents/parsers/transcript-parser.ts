@@ -304,19 +304,36 @@ export function parseTranscript(text: string): TranscriptParseResult {
     // grading hint stays in intermediate only (no canonical field for it).
   }
 
-  // Rows
+  // Rows — Order 2 honesty fix: separate inspected vs row-like candidates.
+  // A line is a row-like candidate iff it has subject-ish text AND at least one
+  // of: course code, grade-ish token (letter/percent/fraction), or credit token.
   const lines = text.split(/\r?\n/);
-  let candidate = 0;
+  let inspected = 0;
+  let rowLikeCandidates = 0;
   for (const line of lines) {
-    if (line.trim().length < 8) continue;
-    candidate++;
+    const trimmed = line.trim();
+    if (trimmed.length < 8) continue;
+    inspected++;
+    const subjectish = trimmed.replace(COURSE_CODE_RE, '').trim();
+    const hasSubjectText = /[A-Za-z\u0600-\u06FF]{4,}/.test(subjectish);
+    if (!hasSubjectText) continue;
+    const hasGradeish =
+      LETTER_GRADE_TOKEN_RE.test(trimmed) ||
+      PERCENT_TOKEN_RE.test(trimmed) ||
+      FRACTION_GRADE_RE.test(trimmed);
+    const hasCredit = /\b\d{1,2}(?:\.\d)?\s*(?:credit\s*hours?|cr\.?\s*hr|units?|ECTS|ساعات?)\b/i.test(trimmed);
+    const hasCode = COURSE_CODE_RE.test(trimmed);
+    if (!(hasGradeish || hasCredit || hasCode)) continue;
+    rowLikeCandidates++;
     const row = reconstructRow(line);
     if (row) intermediate.rows.push(row);
   }
   intermediate.coverage = {
-    candidate_lines: candidate,
+    inspected_lines: inspected,
+    row_like_candidates: rowLikeCandidates,
     rows_reconstructed: intermediate.rows.length,
-    coverage_estimate: candidate > 0 ? Math.min(intermediate.rows.length / candidate, 1) : 0,
+    coverage_estimate:
+      rowLikeCandidates > 0 ? Math.min(intermediate.rows.length / rowLikeCandidates, 1) : 0,
     partial: true, // V1 always treats transcript parse as partial truth.
   };
   intermediate.partial = true;
@@ -327,7 +344,7 @@ export function parseTranscript(text: string): TranscriptParseResult {
     `grade_hits=${intermediate.signals.grade_pattern_hits}`,
     `credit_hits=${intermediate.signals.credit_pattern_hits}`,
     `row_like=${intermediate.signals.row_like_lines}`,
-    `rows=${intermediate.rows.length}/${candidate}`,
+    `rows=${intermediate.rows.length}/${rowLikeCandidates} (inspected=${inspected})`,
     `coverage=${intermediate.coverage.coverage_estimate.toFixed(2)}`,
   ].join(' ');
 

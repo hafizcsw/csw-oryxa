@@ -44,13 +44,21 @@ export interface TranscriptHeader {
   grading_system_hint: { value: string; raw: string; confidence: number } | null;
 }
 
-/** Coverage estimate for the partial-truth contract. */
+/** Coverage estimate for the partial-truth contract.
+ *  Order 2 honesty fix: separate "inspected" (all non-empty lines we looked at)
+ *  from "row_like_candidates" (lines that actually carry row-like signal:
+ *  course code OR grade-ish token OR credit token + subject text).
+ *  coverage_estimate is grounded ONLY on row_like_candidates so the metric
+ *  matches its name.
+ */
 export interface TranscriptCoverage {
-  /** Total non-empty lines that looked row-like. */
-  candidate_lines: number;
+  /** All non-empty lines we inspected (broad denominator, diagnostic only). */
+  inspected_lines: number;
+  /** Lines that exhibited row-like signal before reconstruction. */
+  row_like_candidates: number;
   /** Lines we actually reconstructed into a TranscriptRow. */
   rows_reconstructed: number;
-  /** rows_reconstructed / candidate_lines, clamped 0..1. 0 when no candidates. */
+  /** rows_reconstructed / row_like_candidates, clamped 0..1. 0 when no row-like candidates. */
   coverage_estimate: number;
   /** True iff parser returned anything but cannot guarantee completeness. */
   partial: boolean;
@@ -94,7 +102,7 @@ export function emptyIntermediate(parser: ParserType = 'regex_heuristic'): Trans
       grading_system_hint: null,
     },
     rows: [],
-    coverage: { candidate_lines: 0, rows_reconstructed: 0, coverage_estimate: 0, partial: true },
+    coverage: { inspected_lines: 0, row_like_candidates: 0, rows_reconstructed: 0, coverage_estimate: 0, partial: true },
     signals: {
       vocabulary_hits: [],
       gpa_signals: [],
