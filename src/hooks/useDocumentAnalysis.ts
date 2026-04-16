@@ -161,6 +161,20 @@ export function useDocumentAnalysis({
     }
   }, [studentId, canonicalFile]);
 
+  /** Re-analyze a previously analyzed document using cached File object */
+  const reanalyzeFile = useCallback(async (documentId: string) => {
+    const cached = fileCache.current.get(documentId);
+    if (!cached) {
+      console.warn('[Door1:Reanalyze] No cached file for', documentId);
+      return null;
+    }
+    // Clear old promoted fields for this document before re-analysis
+    setPromotedFields(prev => prev.filter(pf => pf.documentId !== documentId));
+    setProposals(prev => prev.filter(p => p.document_id !== documentId));
+    // Re-run analysis
+    return analyzeFile(cached.file, documentId, cached.slotHint);
+  }, [analyzeFile]);
+
   const acceptProposal = useCallback((proposalId: string) => {
     setProposals(prev => prev.map(p => {
       if (p.proposal_id !== proposalId) return p;
