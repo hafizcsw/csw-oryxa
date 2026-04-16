@@ -90,6 +90,22 @@ export const WorldMapSection = memo(function WorldMapSection() {
   const [countrySearch, setCountrySearch] = useState("");
   const [viewMode] = useState<"flat">("flat");
   const [mapViewport, setMapViewport] = useState<MapViewport | null>(null);
+  const [hoveredCountryCode, setHoveredCountryCode] = useState<string | null>(null);
+  const hoverClearTimer = useRef<number | null>(null);
+
+  const handleCountryHover = useCallback((code: string | null) => {
+    if (code) {
+      if (hoverClearTimer.current) { clearTimeout(hoverClearTimer.current); hoverClearTimer.current = null; }
+      setHoveredCountryCode(code);
+    } else {
+      if (hoverClearTimer.current) clearTimeout(hoverClearTimer.current);
+      hoverClearTimer.current = window.setTimeout(() => setHoveredCountryCode(null), 80);
+    }
+  }, []);
+
+  useEffect(() => () => {
+    if (hoverClearTimer.current) clearTimeout(hoverClearTimer.current);
+  }, []);
   const [manualCitySelection, setManualCitySelection] = useState(false);
   const mapLeafletRef = useRef<LeafletMapHandle>(null);
   const getLocalizedValue = useCallback((record: Record<string, unknown>, keyPrefix: string) => {
