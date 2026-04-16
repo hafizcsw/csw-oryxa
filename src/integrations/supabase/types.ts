@@ -1665,6 +1665,197 @@ export type Database = {
           },
         ]
       }
+      community_post_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_posts: {
+        Row: {
+          author_type: string
+          author_user_id: string | null
+          comments_count: number
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          is_pinned: boolean
+          likes_count: number
+          tags: string[] | null
+          university_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_type: string
+          author_user_id?: string | null
+          comments_count?: number
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_pinned?: boolean
+          likes_count?: number
+          tags?: string[] | null
+          university_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_type?: string
+          author_user_id?: string | null
+          comments_count?: number
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_pinned?: boolean
+          likes_count?: number
+          tags?: string[] | null
+          university_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "mv_university_catalog_fts"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "community_posts_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "programs_view"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "community_posts_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_posts_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_details"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "community_posts_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "community_posts_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search_api"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "community_posts_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search_api_v3_final"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "community_posts_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_slider_active"
+            referencedColumns: ["university_slug"]
+          },
+          {
+            foreignKeyName: "community_posts_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_card"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_posts_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_catalog"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "community_posts_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_details"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "community_posts_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_search"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_signatures: {
         Row: {
           contract_id: string | null
