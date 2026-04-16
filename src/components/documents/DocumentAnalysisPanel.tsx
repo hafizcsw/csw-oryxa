@@ -6,18 +6,21 @@
 // No report. No eligibility. No improvement plan.
 // ═══════════════════════════════════════════════════════════════
 
-import { CheckCircle2, XCircle, Clock, AlertTriangle, FileSearch, Loader2, ShieldCheck, Trash2, X, RefreshCw } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, AlertTriangle, FileSearch, Loader2, ShieldCheck, Trash2, X, RefreshCw, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DocumentAnalysis } from '@/features/documents/document-analysis-model';
 import type { ExtractionProposal, ProposalStatus } from '@/features/documents/extraction-proposal-model';
+import type { ReadingArtifact } from '@/features/documents/reading-artifact-model';
 import type { PromotedField } from '@/hooks/useDocumentAnalysis';
 
 interface DocumentAnalysisPanelProps {
   analyses: DocumentAnalysis[];
   proposals: ExtractionProposal[];
   promotedFields: PromotedField[];
+  /** Door 1: reading artifacts keyed by document_id (truth surface) */
+  artifacts?: Record<string, ReadingArtifact>;
   isAnalyzing: boolean;
   onAcceptProposal: (proposalId: string) => void;
   onRejectProposal: (proposalId: string) => void;
@@ -58,6 +61,7 @@ export function DocumentAnalysisPanel({
   analyses,
   proposals,
   promotedFields,
+  artifacts,
   isAnalyzing,
   onAcceptProposal,
   onRejectProposal,
