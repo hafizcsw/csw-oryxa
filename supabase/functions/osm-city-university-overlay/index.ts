@@ -14,7 +14,7 @@ const corsHeaders = {
 
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 const CACHE_TTL_DAYS = 30;
-const BBOX_FALLBACK_DEG = 0.35;
+const BBOX_FALLBACK_DEG = 0.25;
 const MATCH_THRESHOLD = 55;
 const AMBIGUOUS_GAP = 15;
 
@@ -142,23 +142,7 @@ function jaccardSimilarity(a: Set<string>, b: Set<string>): number {
   return intersection.length / union.size;
 }
 
-function longestCommonSubstring(a: string, b: string): number {
-  if (!a || !b) return 0;
-  const m = a.length, n = b.length;
-  let max = 0;
-  let prev = new Array(n + 1).fill(0);
-  for (let i = 1; i <= m; i++) {
-    const curr = new Array(n + 1).fill(0);
-    for (let j = 1; j <= n; j++) {
-      if (a[i - 1] === b[j - 1]) {
-        curr[j] = prev[j - 1] + 1;
-        if (curr[j] > max) max = curr[j];
-      }
-    }
-    prev = curr;
-  }
-  return max;
-}
+/* LCS removed — too CPU-expensive for edge functions with large datasets */
 
 interface MatchResult {
   score: number;
@@ -256,16 +240,11 @@ function scoreNameMatch(ourNames: string[], osmNames: string[]): MatchResult {
             score += 20;
           }
 
-          // LCS ratio (+15) — only when there's some token overlap
-          const lcs = longestCommonSubstring(our.norm, osm.norm);
-          const lcsRatio = lcs / Math.max(our.norm.length, osm.norm.length);
-          if (lcsRatio >= 0.6) score += 15;
-          else if (lcsRatio >= 0.4) score += 8;
-
-          // High token overlap (+10)
+          // High token overlap (+15)
           const overlapCount = [...ourTokens].filter(t => osmTokens.has(t)).length;
           const overlapRatio = overlapCount / Math.max(ourTokens.size, 1);
-          if (overlapRatio >= 0.6) score += 10;
+          if (overlapRatio >= 0.6) score += 15;
+          else if (overlapRatio >= 0.4) score += 8;
         }
       }
 
@@ -326,20 +305,30 @@ async function queryOverpassBbox(lat: number, lon: number, radiusDeg: number): P
   const west = lon - radiusDeg;
   const east = lon + radiusDeg;
 
-  const query = `[out:json][timeout:25];(nwr["amenity"="university"](${south},${west},${north},${east});nwr["amenity"="college"](${south},${west},${north},${east}););out center tags;`;
+  const query = `[out:json][timeout:10];(nwr["amenity"="university"](${south},${west},${north},${east});nwr["amenity"="college"](${south},${west},${north},${east}););out center tags;`;
 
-  const resp = await fetch(OVERPASS_URL, {
-    method: "POST",
-    body: `data=${encodeURIComponent(query)}`,
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
 
-  if (!resp.ok) {
-    console.error(`Overpass bbox failed (${resp.status})`);
+  try {
+    const resp = await fetch(OVERPASS_URL, {
+      method: "POST",
+      body: `data=${encodeURIComponent(query)}`,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (!resp.ok) {
+      console.error(`Overpass bbox failed (${resp.status})`);
+      return [];
+    }
+    const data = await resp.json();
+    return (data.elements || []).filter(isValidUniversityPOI);
+  } catch {
+    clearTimeout(timer);
+    console.warn("[osm-overlay-v3] Overpass bbox timed out");
     return [];
   }
-  const data = await resp.json();
-  return (data.elements || []).filter(isValidUniversityPOI);
 }
 
 /* ── Main handler ── */
@@ -411,7 +400,13 @@ Deno.serve(async (req) => {
     const cachedMap = new Map<string, any>();
     for (const c of cached || []) cachedMap.set(c.university_id, c);
 
-    const uncachedUnis = universities.filter(u => !cachedMap.has(u.id));
+    const uncachedAll = universities.filter(u => !cachedMap.has(u.id));
+    // Cap per invocation to avoid CPU timeout on large cities
+    const MAX_UNCACHED = 40;
+    const uncachedUnis = uncachedAll.slice(0, MAX_UNCACHED);
+    if (uncachedAll.length > MAX_UNCACHED) {
+      console.log(`[osm-overlay-v3] Capped: processing ${MAX_UNCACHED} of ${uncachedAll.length} uncached`);
+    }
     const newMatches: any[] = [];
 
     if (uncachedUnis.length > 0) {
