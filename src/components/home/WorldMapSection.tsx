@@ -390,7 +390,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
       { label: `🌍 ${t("home.worldMap.section.world")}`, onClick: handleBackToWorld },
     ];
     if (selectedCountryInfo) {
-      const name = selectedCountryCode ? countryDisplayName(selectedCountryCode, selectedCountryInfo) : "";
+      const name = selectedCountryCode ? countryDisplayName(selectedCountryCode, selectedCountryInfo as unknown as Record<string, unknown>) : "";
       items.push({
         label: name,
         onClick: drillLevel === "city" ? handleBackToCountry : () => {},
@@ -689,7 +689,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
                 <div className="p-5 border-b border-border bg-gradient-to-b from-primary/5 to-transparent">
                   <button className="flex items-center gap-1.5 text-xs text-primary hover:underline mb-3 font-medium transition-colors" onClick={handleBackToCountry}>
                     <ChevronRight className="h-3 w-3 rotate-180 rtl:rotate-0" />
-                    {getLocalizedValue(selectedCountryInfo as unknown as Record<string, unknown>, "country_name")}
+                    {selectedCountryCode ? countryDisplayName(selectedCountryCode, selectedCountryInfo as unknown as Record<string, unknown>) : ""}
                   </button>
                   <div className="flex items-center justify-between">
                     <div>
@@ -812,7 +812,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
                     )}
                     <div>
                       <h3 className="font-bold text-xl text-foreground">
-                        {getLocalizedValue(selectedCountryInfo as unknown as Record<string, unknown>, "country_name")}
+                        {selectedCountryCode ? countryDisplayName(selectedCountryCode, selectedCountryInfo as unknown as Record<string, unknown>) : ""}
                       </h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-sm text-muted-foreground flex items-center gap-1">
@@ -1055,7 +1055,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
                           )}
                           <div>
                             <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                              {getLocalizedValue(info as unknown as Record<string, unknown>, "country_name")}
+                              {countryDisplayName(code, info as unknown as Record<string, unknown>)}
                             </span>
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {info.programs_count.toLocaleString()} {t("home.worldMap.labels.programs")}
