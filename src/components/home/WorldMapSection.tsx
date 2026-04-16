@@ -677,6 +677,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
                osmOverlay={osmOverlay}
                osmOverlayLoading={osmOverlayLoading}
                countryMeta={countryMeta}
+               onCountryHover={handleCountryHover}
             />
 
           {/* Loading indicator for geodata */}
