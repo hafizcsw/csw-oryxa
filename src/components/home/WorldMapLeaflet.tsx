@@ -10,6 +10,7 @@ import { useTheme } from "next-themes";
 import * as topojson from "topojson-client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { RegionSummary } from "@/lib/regionMapping";
+import { getLocalizedCountryName } from "@/lib/countryDisplayName";
 import type { CitySummary, CityUniversity } from "@/hooks/useMapData";
 import type { OsmOverlayMatch } from "@/hooks/useOsmCityOverlay";
 import {
@@ -1176,7 +1177,9 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
           const isVisible = !visibleCountryCodes || (code && visibleCountryCodes.has(code));
           if (!isVisible) return;
 
-          const name = getLocalizedValue(info as unknown as Record<string, unknown>, "country_name");
+          const name = code
+            ? getLocalizedCountryName(code, language, (info as any).country_name_ar, (info as any).country_name_en)
+            : getLocalizedValue(info as unknown as Record<string, unknown>, "country_name");
           const meta = code ? countryMeta?.[code] : null;
           const imgUrl = meta?.image_url || null;
           const imgHtml = imgUrl
