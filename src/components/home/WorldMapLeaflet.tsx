@@ -1359,8 +1359,13 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         let zoomPath: string;
         if (useAntimeridianFallback) {
           if (selectedCountryCode && CC[selectedCountryCode]) {
-            map.flyTo(CC[selectedCountryCode], 3, { animate: true, duration: 1 });
-            zoomPath = 'flyTo:antimeridian';
+            // Use setView (not flyTo) to avoid intermediate zoomend events
+            // that would trigger the auto-back-to-world guard (z < 4.5)
+            const amZoom = selectedCountryCode === "RU" ? 3 : 5;
+            map.setView(CC[selectedCountryCode], amZoom, { animate: true, duration: 1 });
+            // Re-arm the programmatic-zoom guard so the single zoomend is also suppressed
+            userZoomingRef.current = true;
+            zoomPath = 'setView:antimeridian';
           } else {
             // No CC entry — last resort world view (should not happen for RU/FJ/NZ)
             map.flyTo([0, 0], 2, { animate: true });
