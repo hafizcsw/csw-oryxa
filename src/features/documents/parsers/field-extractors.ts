@@ -90,6 +90,8 @@ export function extractPassportTextFallback(text: string): Fields {
 
   return f;
 }
+
+// ── Graduation certificate fields from text ──────────────────
 export function extractGraduationFields(text: string): Fields {
   const f: Fields = {};
 
