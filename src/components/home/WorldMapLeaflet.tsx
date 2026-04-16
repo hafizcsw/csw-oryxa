@@ -51,6 +51,7 @@ const CC: Record<string, [number, number]> = {
 /* ── Tile URLs ── */
 const TILES = {
   satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+  referenceLabels: "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
   labels: "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
   streetsLight: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
   streetsDark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
@@ -568,6 +569,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     if (activeLayer === "satellite") {
       tileRef.current = [
         L.tileLayer(TILES.satellite, { ...hdTileOptions, maxZoom: 18, className: isDark ? "map-layer--satellite-dark" : "map-layer--satellite-light" }).addTo(map),
+        L.tileLayer(TILES.referenceLabels, { ...hdTileOptions, maxZoom: 18, pane: 'overlayPane' }).addTo(map),
       ];
     } else if (activeLayer === "streets") {
       tileRef.current = [L.tileLayer(isDark ? TILES.streetsDark : TILES.streetsLight, { ...hdTileOptions, maxZoom: 20, subdomains: 'abcd' }).addTo(map)];
