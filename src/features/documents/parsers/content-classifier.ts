@@ -172,8 +172,19 @@ const PASSPORT_HIGH_SIGNAL_TEXT_PATTERNS: Array<{ pattern: RegExp; label: string
   { pattern: /جهة\s*الإصدار/i, label: 'arabic_issuing_authority' },
 ];
 
-/** MRZ start pattern — TD3 line-1 prefix. Strongest possible passport signal. */
-const MRZ_PATTERN_RE = /P[A-Z<][A-Z<]{3}/;
+/**
+ * MRZ TD3 line-1 strict pattern. Requires:
+ *   - line starts with P[<A-Z]
+ *   - followed by 3-char issuing country code [A-Z<]{3}
+ *   - contains the double-filler `<<` (mandatory between surname / given names
+ *     in every real TD3 MRZ line 1)
+ *   - line is at least 30 chars long (real TD3 = 44; allow OCR slack)
+ *
+ * The previous loose pattern `P[A-Z<][A-Z<]{3}` matched OCR noise like
+ * stray "P<X" fragments inside non-passport scans. The double-`<<` filler
+ * is the cheapest reliable discriminator vs accidental OCR garbage.
+ */
+const MRZ_PATTERN_RE = /^P[<A-Z][A-Z<]{3}[A-Z<]*<<[A-Z<]{2,}/m;
 
 /**
  * Compute passport lane strength.
