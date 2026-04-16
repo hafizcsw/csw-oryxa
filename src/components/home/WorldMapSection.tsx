@@ -400,7 +400,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
       items.push({ label: selectedCity, onClick: () => {} });
     }
     return items;
-  }, [selectedCountryInfo, selectedCity, drillLevel, getLocalizedValue, handleBackToWorld, handleBackToCountry]);
+  }, [selectedCountryInfo, selectedCountryCode, selectedCity, drillLevel, countryDisplayName, getLocalizedValue, handleBackToWorld, handleBackToCountry]);
 
   // ── Let the map drive the active country from the real geometry under the viewport ──
   useEffect(() => {
