@@ -633,7 +633,8 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
       const z = map.getZoom();
       if (drillLevel === 'region' && z < 9) {
         onBackToCountry?.();
-      } else if (drillLevel === 'country' && z < 4.5) {
+      } else if (drillLevel === 'country' && z < 2.5) {
+        // Threshold lowered from 4.5 to 2.5 so antimeridian countries (RU at zoom 3) don't auto-back
         onBackToWorld?.();
       }
     };
