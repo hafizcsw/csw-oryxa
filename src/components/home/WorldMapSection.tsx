@@ -37,6 +37,7 @@ import {
   filterUniversitiesByRegion,
   type RegionSummary,
 } from "@/lib/regionMapping";
+import { getLocalizedCountryName } from "@/lib/countryDisplayName";
 
 /* ── Region grouping (visual filter only) ── */
 const REGIONS: Record<string, { labelKey: string; codes: string[] }> = {
@@ -123,6 +124,13 @@ export const WorldMapSection = memo(function WorldMapSection() {
     },
     staleTime: 30 * 60_000,
   });
+
+  /** 12-language country name via Intl.DisplayNames + DB fallback */
+  const countryDisplayName = useCallback((code: string, stats?: Record<string, unknown> | null) => {
+    const ar = (stats as any)?.country_name_ar ?? countryMeta?.[code]?.name_ar;
+    const en = (stats as any)?.country_name_en ?? countryMeta?.[code]?.name_en;
+    return getLocalizedCountryName(code, language, ar, en);
+  }, [language, countryMeta]);
 
   const { data: countryStats, isFetching: isFetchingStats } = useMapCountrySummary(rpcParams);
   const { data: countryUniversities, isLoading: loadingUnis } = useMapCountryUniversities(
@@ -382,7 +390,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
       { label: `🌍 ${t("home.worldMap.section.world")}`, onClick: handleBackToWorld },
     ];
     if (selectedCountryInfo) {
-      const name = getLocalizedValue(selectedCountryInfo as unknown as Record<string, unknown>, "country_name");
+      const name = selectedCountryCode ? countryDisplayName(selectedCountryCode, selectedCountryInfo as unknown as Record<string, unknown>) : "";
       items.push({
         label: name,
         onClick: drillLevel === "city" ? handleBackToCountry : () => {},
@@ -392,7 +400,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
       items.push({ label: selectedCity, onClick: () => {} });
     }
     return items;
-  }, [selectedCountryInfo, selectedCity, drillLevel, getLocalizedValue, handleBackToWorld, handleBackToCountry]);
+  }, [selectedCountryInfo, selectedCountryCode, selectedCity, drillLevel, countryDisplayName, getLocalizedValue, handleBackToWorld, handleBackToCountry]);
 
   // ── Let the map drive the active country from the real geometry under the viewport ──
   useEffect(() => {
@@ -681,7 +689,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
                 <div className="p-5 border-b border-border bg-gradient-to-b from-primary/5 to-transparent">
                   <button className="flex items-center gap-1.5 text-xs text-primary hover:underline mb-3 font-medium transition-colors" onClick={handleBackToCountry}>
                     <ChevronRight className="h-3 w-3 rotate-180 rtl:rotate-0" />
-                    {getLocalizedValue(selectedCountryInfo as unknown as Record<string, unknown>, "country_name")}
+                    {selectedCountryCode ? countryDisplayName(selectedCountryCode, selectedCountryInfo as unknown as Record<string, unknown>) : ""}
                   </button>
                   <div className="flex items-center justify-between">
                     <div>
@@ -804,7 +812,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
                     )}
                     <div>
                       <h3 className="font-bold text-xl text-foreground">
-                        {getLocalizedValue(selectedCountryInfo as unknown as Record<string, unknown>, "country_name")}
+                        {selectedCountryCode ? countryDisplayName(selectedCountryCode, selectedCountryInfo as unknown as Record<string, unknown>) : ""}
                       </h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-sm text-muted-foreground flex items-center gap-1">
@@ -1004,11 +1012,10 @@ export const WorldMapSection = memo(function WorldMapSection() {
                     if (v.universities_count === 0) return false;
                     if (filteredCodes && !filteredCodes.has(code)) return false;
                     if (searchLower) {
+                      const localizedName = countryDisplayName(code, v as unknown as Record<string, unknown>);
                       const nameAr = (v as any).country_name_ar || "";
                       const nameEn = (v as any).country_name_en || "";
-                      const metaAr = countryMeta?.[code]?.name_ar || "";
-                      const metaEn = countryMeta?.[code]?.name_en || "";
-                      const allNames = `${nameAr} ${nameEn} ${metaAr} ${metaEn} ${code}`.toLowerCase();
+                      const allNames = `${localizedName} ${nameAr} ${nameEn} ${code}`.toLowerCase();
                       if (!allNames.includes(searchLower)) return false;
                     }
                     return true;
@@ -1047,7 +1054,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
                           )}
                           <div>
                             <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                              {getLocalizedValue(info as unknown as Record<string, unknown>, "country_name")}
+                              {countryDisplayName(code, info as unknown as Record<string, unknown>)}
                             </span>
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {info.programs_count.toLocaleString()} {t("home.worldMap.labels.programs")}
