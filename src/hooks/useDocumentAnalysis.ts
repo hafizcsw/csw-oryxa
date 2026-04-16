@@ -199,6 +199,25 @@ export function useDocumentAnalysis({
     setPromotedFields(prev => prev.filter(pf => pf.documentId !== documentId));
   }, []);
 
+  const removePromotedField = useCallback((proposalId: string) => {
+    setPromotedFields(prev => prev.filter(pf => pf.proposalId !== proposalId));
+    // Reset the proposal back to pending so it can be re-accepted
+    setProposals(prev => prev.map(p => {
+      if (p.proposal_id !== proposalId) return p;
+      return { ...p, proposal_status: 'pending_review' as ProposalStatus, updated_at: new Date().toISOString() };
+    }));
+  }, []);
+
+  const removePromotedFieldsForDocument = useCallback((documentId: string) => {
+    const toRemove = new Set(promotedFields.filter(pf => pf.documentId === documentId).map(pf => pf.proposalId));
+    setPromotedFields(prev => prev.filter(pf => pf.documentId !== documentId));
+    // Reset those proposals back to pending
+    setProposals(prev => prev.map(p => {
+      if (!toRemove.has(p.proposal_id)) return p;
+      return { ...p, proposal_status: 'pending_review' as ProposalStatus, updated_at: new Date().toISOString() };
+    }));
+  }, [promotedFields]);
+
   const clearAllAnalyses = useCallback(() => {
     setAnalyses([]);
     setProposals([]);
@@ -213,6 +232,8 @@ export function useDocumentAnalysis({
     analyzeFile,
     acceptProposal,
     rejectProposal,
+    removePromotedField,
+    removePromotedFieldsForDocument,
     getProposalsForDocument,
     getAnalysis,
     dismissAnalysis,
