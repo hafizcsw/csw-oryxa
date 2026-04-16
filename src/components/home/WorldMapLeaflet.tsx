@@ -700,13 +700,15 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     // Only show reference labels in satellite mode when drilled into a country/region
     if (activeLayer === "satellite" && drillLevel !== "world") {
       refLabelsRef.current = L.tileLayer(TILES.referenceLabels, {
-        detectRetina: true,
+        detectRetina: false,
+        tileSize: 128,
+        zoomOffset: 1,
         updateWhenZooming: false,
         updateWhenIdle: true,
         keepBuffer: 4,
         crossOrigin: true,
         maxZoom: 18,
-        minZoom: 6,
+        minZoom: 5,
         pane: 'overlayPane',
       }).addTo(map);
     }
