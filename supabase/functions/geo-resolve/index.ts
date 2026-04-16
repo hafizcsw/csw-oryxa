@@ -81,9 +81,8 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'Warmup mode requires admin or service-role access' }, 403);
     }
 
-    if (mode === 'resolve' && !userId && !isServiceRole && !isAdmin) {
-      return json({ ok: false, error: 'Resolve mode requires authenticated user' }, 401);
-    }
+    // resolve mode: allow anonymous callers (anon key) for public map geocoding
+    // Rate limiting still applies to prevent abuse
 
     // ── Durable rate limiting via rate_limits table ──
     const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
