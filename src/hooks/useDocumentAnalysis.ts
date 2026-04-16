@@ -79,10 +79,11 @@ export function useDocumentAnalysis({
   ): Promise<AnalysisResult | null> => {
     if (!studentId) return null;
 
+    // Cache file for potential re-analysis
+    fileCache.current.set(documentId, { file, slotHint });
+
     analyzingCount.current++;
     setIsAnalyzing(true);
-
-    try {
       const result = await analyzeDocument({
         file,
         documentId,
