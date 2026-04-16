@@ -20,6 +20,11 @@ import {
   isCityFallback,
   type ResolvedLocation,
 } from "@/lib/geoResolver";
+import {
+  detectWorldGeoFetchSource,
+  getCachedWorldGeo,
+  setCachedWorldGeo,
+} from "@/lib/worldGeoCache";
 
 /* ── Fix default marker icons ── */
 delete (L.Icon.Default.prototype as any)._getIconUrl;
