@@ -69,6 +69,8 @@ export function useDocumentAnalysis({
   const [promotedFields, setPromotedFields] = useState<PromotedField[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const analyzingCount = useRef(0);
+  /** Cache File objects for re-analysis */
+  const fileCache = useRef(new Map<string, { file: File; slotHint: DocumentSlotType | null }>());
 
   const analyzeFile = useCallback(async (
     file: File,
