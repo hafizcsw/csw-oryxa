@@ -1059,6 +1059,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
                       </button>
                     );
                   })}
+                })()}
               </div>
             </div>
           )}
