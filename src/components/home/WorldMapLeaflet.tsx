@@ -1393,13 +1393,13 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
           </div>
         `, { direction: "top", offset: [0, -8], className: "leaflet-custom-tooltip", sticky: true });
         m.on("click", () => {
-          if (onCitySelect && city.city) {
-            onCitySelect(city.city);
+          if (city.city) {
+            callbacksRef.current.onCitySelect?.(city.city);
           } else {
             const region = regionSummaries.find(r =>
               r.cities.some(c => c.toLowerCase() === city.city?.toLowerCase())
             );
-            if (region) onRegionSelect(region.regionId);
+            if (region) callbacksRef.current.onRegionSelect(region.regionId);
           }
         });
         group.addLayer(m);
@@ -1417,7 +1417,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
           </div>
         `, { direction: "top", offset: [0, -8], className: "leaflet-custom-tooltip", sticky: true });
         unknownMarker.on("click", () => {
-          if (onCitySelect) onCitySelect("__unknown__");
+          callbacksRef.current.onCitySelect?.("__unknown__");
         });
         group.addLayer(unknownMarker);
       }
