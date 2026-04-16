@@ -12,14 +12,18 @@
  * 3. City center fallback (from city_coordinates table / geo_cache)
  * 4. Unresolved — explicit state, never silent wrong placement
  *
- * Persistent cache:
- * - Backend: geo_cache table (primary source of truth)
- * - Frontend: in-memory LRU for session performance
- * - Edge function: geo-resolve for Nominatim resolve-once-persist-reuse
+ * Cache read hierarchy:
+ * 1. In-memory LRU (fastest, session-scoped)
+ * 2. IndexedDB (browser-persistent, survives tabs/sessions)
+ * 3. Backend geo_cache table (source of truth)
+ * 4. Edge function geo-resolve (Nominatim resolve-once-persist-reuse)
+ *
+ * On successful backend/network resolve → write back to IndexedDB + memory.
  */
 
 import type { OsmOverlayMatch } from "@/hooks/useOsmCityOverlay";
 import { supabase } from "@/integrations/supabase/client";
+import { idbBatchGet, idbBatchSet } from "@/lib/spatialCache";
 
 export type ResolutionLevel =
   | "university_verified"  // OSM-verified position
@@ -54,7 +58,7 @@ export interface CityCoordinate {
   city_lon: number | null;
 }
 
-/* ── In-memory session cache (secondary) ── */
+/* ── In-memory session cache (fastest layer) ── */
 const memoryCache = new Map<string, ResolvedLocation>();
 const MEMORY_CACHE_MAX = 500;
 
@@ -86,8 +90,12 @@ export function uniKey(universityId: string): string {
 }
 
 /**
- * Batch lookup from backend geo_cache.
- * Returns a map of key -> ResolvedLocation
+ * Batch lookup with three-tier hierarchy:
+ *   1. In-memory cache
+ *   2. IndexedDB (browser-persistent)
+ *   3. Backend geo_cache (source of truth)
+ *
+ * On backend hit → write back to IndexedDB + memory.
  */
 export async function batchLookupGeoCache(
   keys: string[]
@@ -95,26 +103,48 @@ export async function batchLookupGeoCache(
   const result = new Map<string, ResolvedLocation>();
   if (keys.length === 0) return result;
 
-  // Check memory cache first
-  const missingKeys: string[] = [];
+  // ── Layer 1: In-memory ──
+  const afterMemory: string[] = [];
   for (const key of keys) {
     const cached = memoryCacheGet(key);
     if (cached) {
       result.set(key, cached);
     } else {
-      missingKeys.push(key);
+      afterMemory.push(key);
     }
   }
+  if (afterMemory.length === 0) return result;
 
-  if (missingKeys.length === 0) return result;
+  // ── Layer 2: IndexedDB ──
+  let afterIdb: string[] = afterMemory;
+  try {
+    const idbHits = await idbBatchGet(afterMemory);
+    if (idbHits.size > 0) {
+      afterIdb = [];
+      for (const key of afterMemory) {
+        const hit = idbHits.get(key);
+        if (hit) {
+          result.set(key, hit);
+          memoryCacheSet(key, hit); // promote to memory
+        } else {
+          afterIdb.push(key);
+        }
+      }
+    }
+  } catch {
+    // IDB unavailable — fall through to backend
+  }
+  if (afterIdb.length === 0) return result;
 
-  // Fetch from backend
+  // ── Layer 3: Backend geo_cache ──
   try {
     const { data, error } = await supabase.rpc('rpc_geo_cache_lookup', {
-      p_keys: missingKeys,
+      p_keys: afterIdb,
     });
 
     if (!error && data) {
+      const idbWriteback = new Map<string, ResolvedLocation>();
+
       for (const row of data as any[]) {
         if (row.resolution_level === 'unresolved' || (row.lat === 0 && row.lon === 0)) continue;
         const resolved: ResolvedLocation = {
@@ -130,6 +160,12 @@ export async function batchLookupGeoCache(
         };
         result.set(row.normalized_query_key, resolved);
         memoryCacheSet(row.normalized_query_key, resolved);
+        idbWriteback.set(row.normalized_query_key, resolved);
+      }
+
+      // Write back to IndexedDB (fire-and-forget)
+      if (idbWriteback.size > 0) {
+        idbBatchSet(idbWriteback).catch(() => {});
       }
     }
   } catch (e) {
@@ -141,7 +177,7 @@ export async function batchLookupGeoCache(
 
 /**
  * Request resolution for missing cities via the geo-resolve edge function.
- * This will resolve via Nominatim and persist to geo_cache.
+ * This will resolve via Nominatim and persist to geo_cache + IndexedDB.
  */
 export async function resolveAndPersistCities(
   entries: Array<{ city_name: string; country_code: string; country_name?: string }>
@@ -155,6 +191,8 @@ export async function resolveAndPersistCities(
     });
 
     if (!error && data?.results) {
+      const idbWriteback = new Map<string, ResolvedLocation>();
+
       for (const r of data.results) {
         if (r.resolution_level === 'unresolved' || (r.lat === 0 && r.lon === 0)) continue;
         const resolved: ResolvedLocation = {
@@ -170,6 +208,12 @@ export async function resolveAndPersistCities(
         };
         result.set(r.key, resolved);
         memoryCacheSet(r.key, resolved);
+        idbWriteback.set(r.key, resolved);
+      }
+
+      // Write back to IndexedDB (fire-and-forget)
+      if (idbWriteback.size > 0) {
+        idbBatchSet(idbWriteback).catch(() => {});
       }
     }
   } catch (e) {

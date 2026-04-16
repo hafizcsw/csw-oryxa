@@ -73,6 +73,81 @@ export default defineConfig(({ mode }) => {
                   maxAgeSeconds: 30 * 24 * 60 * 60
                 }
               }
+            },
+            // World GeoJSON — large file, rarely changes, CacheFirst with long TTL
+            {
+              urlPattern: /^https:\/\/raw\.githubusercontent\.com\/datasets\/geo-countries\/.*/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'map-world-geojson-v1',
+                expiration: {
+                  maxEntries: 2,
+                  maxAgeSeconds: 30 * 24 * 60 * 60
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            },
+            // Carto basemap tiles — CacheFirst, respects provider caching headers
+            {
+              urlPattern: /^https:\/\/[a-d]\.basemaps\.cartocdn\.com\/.*/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'map-tiles-carto-v1',
+                expiration: {
+                  maxEntries: 500,
+                  maxAgeSeconds: 7 * 24 * 60 * 60
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            },
+            // ArcGIS satellite/reference tiles
+            {
+              urlPattern: /^https:\/\/server\.arcgisonline\.com\/ArcGIS\/rest\/services\/.*/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'map-tiles-arcgis-v1',
+                expiration: {
+                  maxEntries: 500,
+                  maxAgeSeconds: 7 * 24 * 60 * 60
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            },
+            // OpenTopoMap tiles
+            {
+              urlPattern: /^https:\/\/[a-c]\.tile\.opentopomap\.org\/.*/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'map-tiles-topo-v1',
+                expiration: {
+                  maxEntries: 300,
+                  maxAgeSeconds: 7 * 24 * 60 * 60
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            },
+            // Leaflet assets (marker icons from unpkg)
+            {
+              urlPattern: /^https:\/\/unpkg\.com\/leaflet@.*\/dist\/images\/.*/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'map-leaflet-assets-v1',
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 30 * 24 * 60 * 60
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
             }
           ]
         }
