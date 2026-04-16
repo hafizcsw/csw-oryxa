@@ -173,7 +173,7 @@ export async function analyzeDocument(params: {
         conflictWithCurrent: conflict,
       });
 
-      proposal = applyPromotionRules(proposal);
+      proposal = applyPromotionRules(proposal, { readability: artifact.readability });
       proposals.push(proposal);
     }
 
