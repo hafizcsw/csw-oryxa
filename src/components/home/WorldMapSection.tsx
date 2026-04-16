@@ -390,6 +390,23 @@ export const WorldMapSection = memo(function WorldMapSection() {
     setManualCitySelection(false);
   }, []);
 
+  // Stable boundary callbacks passed to <WorldMapLeaflet> — avoids retriggering the giant
+  // GeoJSON/markers effect inside the map child on every parent re-render.
+  const handleMapCountrySelect = useCallback((code: string | null) => {
+    if (!code) {
+      handleBackToWorld();
+    } else {
+      handleCountryClick(code);
+    }
+  }, [handleBackToWorld, handleCountryClick]);
+
+  const handleMapRegionSelect = useCallback((regionId: string) => {
+    const region = regionSummaries.find(r => r.regionId === regionId);
+    if (region && region.cities.length > 0) {
+      handleCityClick(region.cities[0]);
+    }
+  }, [regionSummaries, handleCityClick]);
+
   const selectedCountryInfo = selectedCountryCode ? countryStats?.[selectedCountryCode] : null;
   const selectedMeta = selectedCountryCode ? countryMeta?.[selectedCountryCode] : null;
 
@@ -647,20 +664,9 @@ export const WorldMapSection = memo(function WorldMapSection() {
           <WorldMapLeaflet
               ref={mapLeafletRef}
               countryStats={countryStats}
-              onCountrySelect={(code) => {
-                if (!code) {
-                  handleBackToWorld();
-                } else {
-                  handleCountryClick(code);
-                }
-              }}
+              onCountrySelect={handleMapCountrySelect}
               onCitySelect={handleCityClick}
-              onRegionSelect={(regionId) => {
-                const region = regionSummaries.find(r => r.regionId === regionId);
-                if (region && region.cities.length > 0) {
-                  handleCityClick(region.cities[0]);
-                }
-              }}
+              onRegionSelect={handleMapRegionSelect}
               onBackToCountry={handleBackToCountry}
               onBackToWorld={handleBackToWorld}
               onViewportChange={handleViewportChange}
