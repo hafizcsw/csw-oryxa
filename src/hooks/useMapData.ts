@@ -145,7 +145,7 @@ export function useMapCitySummary(countryCode: string | null, rpcParams: MapRpcP
       return (data as CitySummary[]) || [];
     },
     enabled: !!canonicalCountryCode,
-    retry: 0,
+    retry: 2,
     staleTime: 30 * 60_000,
     gcTime: 60 * 60_000,
   });
