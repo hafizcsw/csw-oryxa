@@ -1,6 +1,7 @@
-import { useState, useMemo, useCallback, memo, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, memo, useEffect, useRef, lazy, Suspense } from "react";
 import { MapResultsRail } from "./MapResultsRail";
 import { WorldMapLeaflet, type LeafletMapHandle, type MapViewport } from "./WorldMapLeaflet";
+const Globe3DView = lazy(() => import("./Globe3D").then(m => ({ default: m.Globe3DView })));
 import { MapUniversitySearch } from "./MapUniversitySearch";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
