@@ -390,7 +390,22 @@ export const WorldMapSection = memo(function WorldMapSection() {
     setManualCitySelection(false);
   }, []);
 
-  const selectedCountryInfo = selectedCountryCode ? countryStats?.[selectedCountryCode] : null;
+  // Stable boundary callbacks passed to <WorldMapLeaflet> — avoids retriggering the giant
+  // GeoJSON/markers effect inside the map child on every parent re-render.
+  const handleMapCountrySelect = useCallback((code: string | null) => {
+    if (!code) {
+      handleBackToWorld();
+    } else {
+      handleCountryClick(code);
+    }
+  }, [handleBackToWorld, handleCountryClick]);
+
+  const handleMapRegionSelect = useCallback((regionId: string) => {
+    const region = regionSummaries.find(r => r.regionId === regionId);
+    if (region && region.cities.length > 0) {
+      handleCityClick(region.cities[0]);
+    }
+  }, [regionSummaries, handleCityClick]);
   const selectedMeta = selectedCountryCode ? countryMeta?.[selectedCountryCode] : null;
 
   // Find region for selected city (for map compat)

@@ -1298,7 +1298,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
               onCountryHover?.(null);
             },
             click: () => {
-              if (code) onCountrySelect(code);
+              if (code) callbacksRef.current.onCountrySelect(code);
             },
           });
         },
