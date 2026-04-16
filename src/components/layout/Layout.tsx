@@ -145,7 +145,7 @@ export function Layout({
             </nav>
           ) : !hideStudentNav ? (
             /* Standard full nav */
-            <nav className="hidden lg:flex items-center gap-1 text-sm font-medium">
+            <nav className="hidden lg:flex items-center gap-0.5 text-[13px] font-medium">
               <button 
                 onClick={() => navigate('/')} 
                 className="px-3 py-1.5 rounded-lg text-foreground/80 hover:text-primary hover:bg-primary/5 dark:text-foreground/90 dark:hover:text-primary dark:hover:bg-primary/10 transition-all"
