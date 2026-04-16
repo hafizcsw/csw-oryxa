@@ -18,6 +18,7 @@ import { WhyChooseUsSection } from "@/components/home/WhyChooseUsSection";
 import { OrxRankSection } from "@/components/home/OrxRankSection";
 import { AboutOryxaSection } from "@/components/home/AboutOryxaSection";
 import { InstitutionsSection } from "@/components/home/InstitutionsSection";
+import { UniversityCommunitySection } from "@/components/home/UniversityCommunitySection";
 import { PartnersMarquee } from "@/components/home/PartnersMarquee";
 import heroImage from "@/assets/hero-students.jpg";
 import { Search, Heart, Globe, ChevronDown, Home, Plane, Banknote, GraduationCap, HeartPulse, Smartphone, Coins, FileText, LucideIcon, MapPin, ChevronRight, ArrowRight, Play, TrendingUp, Award, Users, Bitcoin } from "lucide-react";
@@ -416,8 +417,11 @@ const Index = () => {
           {/* Hero Section with Integrated Chat */}
           <HeroSection />
 
-          {/* About ORYXA */}
-          <AboutOryxaSection />
+          {/* University Community Section */}
+          <UniversityCommunitySection />
+
+           {/* About ORYXA */}
+           <AboutOryxaSection />
 
           {/* Enhanced Services Section */}
           <section className="py-20 px-6 bg-gradient-to-b from-background to-muted/30">
