@@ -1008,7 +1008,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
                       }))}
                     onCountrySelect={handleCountryClick}
                     language={language}
-                    focusCountryCode={selectedCountryCode}
+                    focusCountryCode={hoveredCountryCode ?? selectedCountryCode}
                     focusLatLon={
                       selectedCitySummary?.city_lat != null && selectedCitySummary?.city_lon != null
                         ? { lat: selectedCitySummary.city_lat, lon: selectedCitySummary.city_lon }
