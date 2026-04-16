@@ -12,11 +12,27 @@ export interface ClassificationScore {
   evidence: string[];
 }
 
+/**
+ * Passport lane classification strength.
+ *  - 'passport_strong' : MRZ pattern present OR ≥2 independent high-signal
+ *    passport evidence items present in extracted text (not just filename).
+ *  - 'passport_weak'   : classifier fired only on filename / single weak
+ *    text fragment. Engine MUST NOT treat this as clean passport success.
+ *  - null              : not classified as passport.
+ */
+export type PassportLaneStrength = 'passport_strong' | 'passport_weak' | null;
+
 export interface ClassificationOutput {
   best: DocumentSlotType | 'unknown' | 'unsupported';
   confidence: number;
   scores: ClassificationScore[];
   evidence: string[];
+  /** Set only when best === 'passport'. Used by engine to gate the lane. */
+  passport_strength: PassportLaneStrength;
+  /** Evidence items observed inside extracted text (filename excluded). */
+  passport_text_evidence: string[];
+  /** True iff the MRZ start pattern (P<XXX) was seen anywhere in text. */
+  passport_mrz_pattern_in_text: boolean;
 }
 
 // MIME types that the analysis pipeline can process
