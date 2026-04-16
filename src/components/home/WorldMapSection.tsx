@@ -307,14 +307,34 @@ export const WorldMapSection = memo(function WorldMapSection() {
     return geoEnrichedCities.find(c => c.city?.toLowerCase() === selectedCity.toLowerCase()) || null;
   }, [selectedCity, geoEnrichedCities]);
 
+  // ── University geo resolution: resolve missing coordinates and persist globally ──
+  const { resolved: uniGeoResolved } = useUniversityGeoResolver(
+    cityUniversities,
+    selectedCountryCode,
+    drillLevel === "city" && cityUniversities.length > 0
+  );
+
+  // Merge resolved university coordinates into city universities
+  const geoEnrichedCityUnis = useMemo(() => {
+    if (uniGeoResolved.size === 0) return cityUniversities;
+    return cityUniversities.map(u => {
+      if (u.geo_lat != null && u.geo_lon != null) return u;
+      const cached = uniGeoResolved.get(uniKey(u.university_id));
+      if (cached) {
+        return { ...u, geo_lat: cached.lat, geo_lon: cached.lon, geo_source: cached.source };
+      }
+      return u;
+    });
+  }, [cityUniversities, uniGeoResolved]);
+
   // ── OSM City Overlay: verified university positions ──
   const { data: osmOverlay, isLoading: osmOverlayLoading } = useOsmCityOverlay(
     selectedCity,
     selectedCountryCode,
     selectedCitySummary?.city_lat ?? null,
     selectedCitySummary?.city_lon ?? null,
-    cityUniversities,
-    drillLevel === "city" && cityUniversities.length > 0
+    geoEnrichedCityUnis,
+    drillLevel === "city" && geoEnrichedCityUnis.length > 0
   );
 
   // ── Navigation callbacks ──
