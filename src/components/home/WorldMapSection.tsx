@@ -390,7 +390,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
       { label: `🌍 ${t("home.worldMap.section.world")}`, onClick: handleBackToWorld },
     ];
     if (selectedCountryInfo) {
-      const name = getLocalizedValue(selectedCountryInfo as unknown as Record<string, unknown>, "country_name");
+      const name = selectedCountryCode ? countryDisplayName(selectedCountryCode, selectedCountryInfo) : "";
       items.push({
         label: name,
         onClick: drillLevel === "city" ? handleBackToCountry : () => {},
