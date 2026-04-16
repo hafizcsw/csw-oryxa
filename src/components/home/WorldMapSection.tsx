@@ -19,7 +19,6 @@ import { cn } from "@/lib/utils";
 import { useMapFilters } from "@/hooks/useMapFilters";
 import {
   useMapCountrySummary,
-  useMapCitySummary,
   useMapCountryUniversities,
   type CitySummary,
 } from "@/hooks/useMapData";
@@ -121,7 +120,6 @@ export const WorldMapSection = memo(function WorldMapSection() {
   });
 
   const { data: countryStats, isFetching: isFetchingStats } = useMapCountrySummary(rpcParams);
-  const { data: countryCities, isLoading: loadingCities } = useMapCitySummary(selectedCountryCode, rpcParams);
   const { data: countryUniversities, isLoading: loadingUnis } = useMapCountryUniversities(
     selectedCountryCode,
     rpcParams,
@@ -192,37 +190,8 @@ export const WorldMapSection = memo(function WorldMapSection() {
   }, [countryUniversities]);
 
   const effectiveCountryCities = useMemo<CitySummary[]>(() => {
-    if ((!countryCities || countryCities.length === 0) && derivedCountryCities.length === 0) return [];
-    if (!countryCities || countryCities.length === 0) return derivedCountryCities;
-    if (derivedCountryCities.length === 0) return countryCities;
-
-    const normalizeCity = (city: string) => city.trim().toLowerCase();
-    const derivedByCity = new Map(
-      derivedCountryCities.map((city) => [normalizeCity(city.city), city])
-    );
-
-    const mergedRpcCities = countryCities.map((city) => {
-      const fallback = derivedByCity.get(normalizeCity(city.city));
-      return {
-        ...city,
-        city_lat: city.city_lat ?? fallback?.city_lat ?? null,
-        city_lon: city.city_lon ?? fallback?.city_lon ?? null,
-        universities_count: city.universities_count || fallback?.universities_count || 0,
-        programs_count: city.programs_count || fallback?.programs_count || 0,
-        fee_min: city.fee_min ?? fallback?.fee_min ?? null,
-        fee_max: city.fee_max ?? fallback?.fee_max ?? null,
-      };
-    });
-
-    const rpcCityKeys = new Set(countryCities.map((city) => normalizeCity(city.city)));
-    const missingDerivedCities = derivedCountryCities.filter(
-      (city) => !rpcCityKeys.has(normalizeCity(city.city))
-    );
-
-    return [...mergedRpcCities, ...missingDerivedCities].sort(
-      (a, b) => b.universities_count - a.universities_count
-    );
-  }, [countryCities, derivedCountryCities]);
+    return derivedCountryCities;
+  }, [derivedCountryCities]);
 
   // ── Geo cache: resolve missing city coordinates and persist ──
   const { resolved: geoCacheResolved, isResolving: geoCacheResolving } = useGeoCacheResolver(
@@ -244,7 +213,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
     });
   }, [effectiveCountryCities, geoCacheResolved, selectedCountryCode]);
 
-  const countryLevelLoading = loadingCities || (geoEnrichedCities.length === 0 && loadingUnis);
+  const countryLevelLoading = geoEnrichedCities.length === 0 && loadingUnis;
 
   const filteredCodes = useMemo(() => {
     if (filters.region === "all") return null;
