@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
     } else if (!apiKeyHeader && !token) {
       return json({ ok: false, error: 'Authentication required' }, 401);
     }
-    // If only apiKeyHeader === anonKey, allow lookup only (anonymous frontend)
+    // If token === anonKey or apiKeyHeader === anonKey → anonymous frontend caller (allowed for lookup + resolve)
 
     // ── Mode-specific access control ──
     if (mode === 'warmup' && !isServiceRole && !isAdmin) {
