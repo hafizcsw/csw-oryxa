@@ -1,84 +1,45 @@
 
 
-## الطلب
+## خطة: إضافة أسماء مدن مخصصة على الخريطة
 
-جعل الشريط الجانبي يتفاعل مع ما يظهر على الخريطة — عند الزوم على دولة تظهر المدن المرئية في الشريط، وعند الاقتراب من مدينة تظهر جامعاتها.
+### المشكلة
+أسماء المدن الحالية تأتي من طبقة صور خارجية (Esri Reference Labels) وهي صور ثابتة لا يمكن التحكم بحجمها. النتيجة: أسماء صغيرة جداً لا تكبر مع الزوم.
 
-## الخطة
+### الحل
+إنشاء طبقة أسماء مدن مخصصة من بيانات `citySummaries` نفسها، تظهر فقط عند الدخول لدولة معينة (drillLevel = country/region).
 
-### 1) إضافة callback للـ viewport من WorldMapLeaflet → WorldMapSection
+### كيف تعمل
+1. عند الزوم على دولة، كل مدينة لديها إحداثيات (`city_lat`, `city_lon`) من `resolveCityLocation()` — نفس النظام المستخدم للنقاط الخضراء الحالية
+2. المدن التي ليس لها إحداثيات يتم تحديدها تلقائياً عبر `geo-resolve` edge function (نفس آلية الجامعات) ثم تُحفظ في `geo_cache`
+3. تُرسم أسماء المدن كـ `L.Marker` مع `L.DivIcon` يحتوي نص اسم المدينة بخط كبير واضح
 
-في `WorldMapLeaflet.tsx`:
-- إضافة prop جديد `onViewportChange` يُرسل مستوى الزوم الحالي وحدود المنطقة المرئية (`LatLngBounds`)
-- ربطه بأحداث `moveend` و `zoomend` على الخريطة
+### التغييرات
 
-### 2) حالة viewport في WorldMapSection
+**ملف واحد: `src/components/home/WorldMapLeaflet.tsx`**
 
-في `WorldMapSection.tsx`:
-- إضافة state جديد `mapViewport` يحتوي على `{ zoom, bounds }`
-- عند تلقي تحديث من الخريطة، تحديث هذا الـ state
+1. **إضافة طبقة أسماء المدن** — داخل نفس `useEffect` الذي يرسم city dots (السطر ~1160):
+   - لكل مدينة لها إحداثيات، إضافة `L.marker` إضافي بـ `DivIcon` يحتوي اسم المدينة فقط (بدون دائرة)
+   - وضعه أسفل النقطة الخضراء بقليل (`iconAnchor` معدّل)
 
-### 3) حساب المدن المرئية من الـ viewport
+2. **حجم الخط ديناميكي حسب الزوم**:
+   - zoom 4-5: حجم 13px
+   - zoom 6-7: حجم 16px  
+   - zoom 8+: حجم 20px+
+   - مع `text-shadow` قوي للوضوح فوق الخريطة الساتلايتية
 
-- عندما يكون `drillLevel === "country"` والزوم كافٍ (≥5):
-  - فلترة `geoEnrichedCities` بحيث تظهر فقط المدن التي إحداثياتها داخل `bounds` المرئية
-  - ترتيبها حسب القرب من مركز الشاشة
-- عند الاقتراب أكثر (zoom ≥10) والمدن المرئية قليلة (1-2):
-  - تحديد المدينة الأقرب لمركز الشاشة وعرض جامعاتها تلقائياً
+3. **تقليل طبقة referenceLabels**:
+   - تخفيض opacity أو إزالتها عند drillLevel = country/region لمنع التكرار مع أسمائنا المخصصة
 
-### 4) تحديث الشريط الجانبي
+4. **التحديث عند الزوم**:
+   - الاستماع لحدث `zoomend` لإعادة حساب حجم الخط عند تغير مستوى الزوم
 
-مستوى الدولة (`drillLevel === "country"`):
-- بدلاً من عرض كل المدن دائماً، عرض فقط المدن المرئية في viewport الخريطة
-- عند hover على مدينة في الشريط → عرض tooltip بعدد الجامعات (موجود أصلاً كبادج)
+### الشروط
+- تظهر فقط عند الزوم على دولة (ليس على مستوى العالم)
+- تستخدم نفس نظام تحديد المواقع الحالي (`resolveCityLocation` + `geo_cache`)
+- الإحداثيات تُحفظ تلقائياً بعد أول تحديد
 
-مستوى المدينة:
-- عند الزوم القريب جداً (≥10) وظهور مدينة واحدة بوضوح → التبديل تلقائياً لعرض جامعات تلك المدينة في الشريط
-- مع إمكانية العودة للمدن بالضغط على زر الرجوع
-
-### 5) منع التضارب مع النقر اليدوي
-
-- إذا اختار المستخدم مدينة يدوياً (بالنقر)، يبقى الاختيار ثابتاً ولا يتأثر بالزوم
-- فقط عند عدم وجود اختيار يدوي يتفاعل الشريط مع الـ viewport
-
-## التفاصيل التقنية
-
-**ملفان:**
-- `src/components/home/WorldMapLeaflet.tsx` — إضافة `onViewportChange` prop + إرسال الأحداث
-- `src/components/home/WorldMapSection.tsx` — استقبال viewport + فلترة المدن/الجامعات المرئية
-
-**المنطق الأساسي:**
-
-```typescript
-// WorldMapLeaflet — prop جديد
-onViewportChange?: (viewport: { zoom: number; bounds: L.LatLngBounds }) => void;
-
-// ربط بالأحداث
-map.on('moveend', () => {
-  onViewportChange?.({ zoom: map.getZoom(), bounds: map.getBounds() });
-});
-
-// WorldMapSection — فلترة المدن المرئية
-const visibleCities = useMemo(() => {
-  if (!mapViewport || drillLevel !== "country") return geoEnrichedCities;
-  return geoEnrichedCities.filter(city => 
-    city.city_lat != null && city.city_lon != null &&
-    mapViewport.bounds.contains([city.city_lat, city.city_lon])
-  );
-}, [geoEnrichedCities, mapViewport, drillLevel]);
-
-// تبديل تلقائي للجامعات عند zoom عالي
-useEffect(() => {
-  if (mapViewport?.zoom >= 10 && visibleCities.length <= 2 && !manualCitySelection) {
-    // عرض جامعات أقرب مدينة تلقائياً
-  }
-}, [mapViewport, visibleCities]);
-```
-
-## النتيجة المتوقعة
-
-1. زوم على روسيا → الشريط يعرض المدن الظاهرة فقط (موسكو، سانت بطرسبرغ...)
-2. اقتراب أكثر نحو موسكو → الشريط يعرض جامعات موسكو تلقائياً
-3. ابتعاد → الشريط يعود لعرض المدن المرئية
-4. النقر اليدوي على مدينة يظل يعمل كالمعتاد
+### النتيجة
+- أسماء المدن واضحة وكبيرة
+- تكبر مع الاقتراب بدل أن تصغر
+- لا تعتمد على طبقة صور خارجية
 
