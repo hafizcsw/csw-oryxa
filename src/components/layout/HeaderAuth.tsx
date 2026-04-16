@@ -196,7 +196,7 @@ export function HeaderAuth() {
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
                 <button className="relative flex items-center gap-2 hover:opacity-80">
-                  <Avatar className="w-8 h-8 border-2 border-primary/20">
+                  <Avatar className="w-8 h-8">
                     <AvatarImage src={avatarUrl} alt={t('account.profile')} />
                     <AvatarFallback className="bg-primary/10 dark:bg-primary/20 text-sm font-medium text-primary">
                       {user.email?.[0]?.toUpperCase() || "U"}
