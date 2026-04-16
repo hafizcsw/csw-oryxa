@@ -1157,17 +1157,25 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         }
       });
 
-      if (universitiesWithoutCoords > 0 && selectedCountryCode && CC[selectedCountryCode]) {
-        const fallbackPos: [number, number] = [CC[selectedCountryCode][0], CC[selectedCountryCode][1]];
-        pts.push(L.latLng(fallbackPos[0], fallbackPos[1]));
-        const fallbackMarker = L.marker(fallbackPos, { icon: cityDotIcon(universitiesWithoutCoords, isDark) });
-        fallbackMarker.bindTooltip(`
-          <div style="font-family:system-ui;font-size:12px;direction:${isRtl ? 'rtl' : 'ltr'};text-align:${isRtl ? 'right' : 'left'}">
-            <div style="font-weight:800;font-size:14px;margin-bottom:4px">${mapText.universitiesWithoutExactCity}</div>
-            <div style="opacity:0.85">🎓 ${universitiesWithoutCoords} ${mapText.universities}</div>
-          </div>
-        `, { direction: "top", offset: [0, -8], className: "leaflet-custom-tooltip", sticky: true });
-        group.addLayer(fallbackMarker);
+      if (universitiesWithoutCoords > 0 && selectedCountryCode) {
+        // Use selected city coords as fallback position (not country center which can be thousands of km away)
+        const fallbackPos: [number, number] | null =
+          selectedCitySummary?.city_lat != null && selectedCitySummary?.city_lon != null
+            ? [selectedCitySummary.city_lat, selectedCitySummary.city_lon]
+            : CC[selectedCountryCode]
+              ? [CC[selectedCountryCode][0], CC[selectedCountryCode][1]]
+              : null;
+        if (fallbackPos) {
+          // Do NOT push into pts — fallback marker must not distort map bounds
+          const fallbackMarker = L.marker(fallbackPos, { icon: cityDotIcon(universitiesWithoutCoords, isDark) });
+          fallbackMarker.bindTooltip(`
+            <div style="font-family:system-ui;font-size:12px;direction:${isRtl ? 'rtl' : 'ltr'};text-align:${isRtl ? 'right' : 'left'}">
+              <div style="font-weight:800;font-size:14px;margin-bottom:4px">${mapText.universitiesWithoutExactCity}</div>
+              <div style="opacity:0.85">🎓 ${universitiesWithoutCoords} ${mapText.universities}</div>
+            </div>
+          `, { direction: "top", offset: [0, -8], className: "leaflet-custom-tooltip", sticky: true });
+          group.addLayer(fallbackMarker);
+        }
       }
 
       if (pts.length === 1) {
