@@ -164,25 +164,31 @@ export interface LeafletMapProps {
   countryMeta?: Record<string, { slug: string; name_ar: string; name_en: string | null; image_url: string | null }>;
 }
 
-/* ── City dot icon with university count badge ── */
-function cityDotIcon(count: number, isDark: boolean): L.DivIcon {
+/* ── City dot icon with country flag + university count badge ── */
+function cityDotIcon(count: number, isDark: boolean, countryCode?: string): L.DivIcon {
   const size = Math.min(46, Math.max(30, 22 + count * 2));
-  const bg = isDark
+  const cc = countryCode?.toLowerCase();
+  const flagUrl = cc ? `https://flagcdn.com/w80/${cc}.png` : null;
+  const fallbackBg = isDark
     ? "linear-gradient(135deg, rgba(52,211,153,0.95), rgba(16,185,129,0.9))"
     : "linear-gradient(135deg, rgba(5,150,105,0.95), rgba(4,120,87,0.9))";
   return L.divIcon({
     className: "",
     html: `<div style="
       width:${size}px;height:${size}px;border-radius:50%;
-      background:${bg};
+      ${flagUrl ? `background:url('${flagUrl}') center/cover no-repeat` : `background:${fallbackBg}`};
       border:2.5px solid ${isDark ? 'rgba(167,243,208,0.7)' : 'rgba(255,255,255,0.9)'};
       box-shadow:0 0 14px ${isDark ? 'rgba(52,211,153,0.5)' : 'rgba(5,150,105,0.4)'}, 0 2px 8px rgba(0,0,0,0.3);
       cursor:pointer;transition:all 0.2s ease;
       display:flex;align-items:center;justify-content:center;
-      font-size:${size > 34 ? 14 : 12}px;font-weight:800;color:white;
-      font-family:system-ui;letter-spacing:-0.5px;
+      position:relative;overflow:hidden;
     " onmouseenter="this.style.transform='scale(1.25)'" onmouseleave="this.style.transform='scale(1)'">
-      ${count}
+      <span style="
+        position:relative;z-index:1;
+        font-size:${size > 34 ? 14 : 12}px;font-weight:800;color:white;
+        font-family:system-ui;letter-spacing:-0.5px;
+        text-shadow:0 1px 3px rgba(0,0,0,0.7), 0 0 6px rgba(0,0,0,0.5);
+      ">${count}</span>
     </div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
@@ -1364,7 +1370,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
 
         const pos: [number, number] = [resolved.lat, resolved.lon];
         pts.push(L.latLng(pos[0], pos[1]));
-        const m = L.marker(pos, { icon: cityDotIcon(city.universities_count, isDark) });
+        const m = L.marker(pos, { icon: cityDotIcon(city.universities_count, isDark, selectedCountryCode || undefined) });
         m.bindTooltip(`
           <div style="font-family:system-ui;font-size:12px;direction:${isRtl ? 'rtl' : 'ltr'};text-align:${isRtl ? 'right' : 'left'}">
             <div style="font-weight:800;font-size:14px;margin-bottom:4px">${city.city}</div>
@@ -1392,7 +1398,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         const unknownPos: [number, number] = [CC[selectedCountryCode][0], CC[selectedCountryCode][1]];
         pts.push(L.latLng(unknownPos[0], unknownPos[1]));
         const unknownCityLabel = mapText.unknownCity;
-        const unknownMarker = L.marker(unknownPos, { icon: cityDotIcon(unknownUniversitiesCount, isDark) });
+        const unknownMarker = L.marker(unknownPos, { icon: cityDotIcon(unknownUniversitiesCount, isDark, selectedCountryCode || undefined) });
         unknownMarker.bindTooltip(`
           <div style="font-family:system-ui;font-size:12px;direction:${isRtl ? 'rtl' : 'ltr'};text-align:${isRtl ? 'right' : 'left'}">
             <div style="font-weight:800;font-size:14px;margin-bottom:4px">${unknownCityLabel}</div>
@@ -1603,7 +1609,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
               : null;
         if (fallbackPos) {
           // Do NOT push into pts — fallback marker must not distort map bounds
-          const fallbackMarker = L.marker(fallbackPos, { icon: cityDotIcon(universitiesWithoutCoords, isDark) });
+          const fallbackMarker = L.marker(fallbackPos, { icon: cityDotIcon(universitiesWithoutCoords, isDark, selectedCountryCode || undefined) });
           fallbackMarker.bindTooltip(`
             <div style="font-family:system-ui;font-size:12px;direction:${isRtl ? 'rtl' : 'ltr'};text-align:${isRtl ? 'right' : 'left'}">
               <div style="font-weight:800;font-size:14px;margin-bottom:4px">${mapText.universitiesWithoutExactCity}</div>
