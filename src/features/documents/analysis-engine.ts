@@ -100,8 +100,9 @@ export async function analyzeDocument(params: {
     return { analysis, proposals, artifact };
   }
 
-  // readable | degraded → continue, but mark surface honestly
-  analysis.readability_status = 'readable';
+  // readable | degraded → continue, but mark surface honestly.
+  // Honesty: a 'degraded' artifact MUST surface as 'degraded', never 'readable'.
+  analysis.readability_status = artifact.readability === 'degraded' ? 'degraded' : 'readable';
   if (artifact.full_text.trim().length > 0) {
     analysis.text_content = artifact.full_text;
   }
