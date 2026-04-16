@@ -293,6 +293,12 @@ export async function analyzeDocument(params: {
     is_readable: artifact.is_readable,
     failure: artifact.failure_reason,
     ms: Math.round(artifact.processing_time_ms),
+    ocr_quality: artifact.ocr_quality ? {
+      char_quality: `${(artifact.ocr_quality.char_quality * 100).toFixed(0)}%`,
+      word_coherence: `${(artifact.ocr_quality.word_coherence * 100).toFixed(0)}%`,
+      avg_token_len: artifact.ocr_quality.avg_token_length.toFixed(1),
+      label: artifact.ocr_quality.quality_label,
+    } : null,
     text_preview: textPreview || '(empty)',
   }, null, 2));
   console.log('[Door1:Classification]', JSON.stringify({
