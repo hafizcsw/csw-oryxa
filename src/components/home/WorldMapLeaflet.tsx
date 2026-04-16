@@ -904,9 +904,13 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     const featureLabels: FeatureLabelInfo[] = [];
     worldGeo.features.forEach((feature) => {
       const p = feature.properties;
-      const name = p?.NAME || p?.name || p?.ADMIN || "";
+      const iso = getCountryCode(feature) || p?.ISO_A2 || p?.iso_a2 || "";
+      const geoName = p?.NAME || p?.name || p?.ADMIN || "";
+      // Use Intl.DisplayNames for the active language, fallback to GeoJSON name
+      const name = iso
+        ? getLocalizedCountryName(iso, language, geoName, geoName)
+        : geoName;
       if (!name) return;
-      const iso = p?.ISO_A2 || p?.iso_a2 || "";
 
       try {
         const layer = L.geoJSON(feature);
