@@ -6,6 +6,7 @@ import { Users, Building2, ArrowRight, Heart, MessageCircle } from "lucide-react
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { isRtlLanguage } from "@/i18n/languages";
 
 interface PreviewPost {
   id: string;
@@ -15,7 +16,6 @@ interface PreviewPost {
   likes_count: number;
   comments_count: number;
   created_at: string;
-  // joined
   author_name?: string;
   university_name?: string;
   university_name_ar?: string;
@@ -33,8 +33,7 @@ const fadeUp = {
 export function UniversityCommunitySection() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const isAr = language === "ar";
-  const isRTL = ["ar", "he", "fa", "ur"].includes(language);
+  const isRTL = isRtlLanguage(language);
   const [posts, setPosts] = useState<PreviewPost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,7 +47,6 @@ export function UniversityCommunitySection() {
         .limit(6);
 
       if (!data || data.length === 0) {
-        // Fallback: show university cards if no community posts yet
         setLoading(false);
         return;
       }
@@ -73,7 +71,7 @@ export function UniversityCommunitySection() {
         const uni = p.university_id ? uniMap.get(p.university_id) : null;
         return {
           ...p,
-          author_name: profile?.full_name || (isAr ? "طالب" : "Student"),
+          author_name: profile?.full_name || t("home.community.student"),
           university_name: uni?.name,
           university_name_ar: uni?.name_ar,
           university_logo: uni?.logo_url,
@@ -81,26 +79,30 @@ export function UniversityCommunitySection() {
       }));
       setLoading(false);
     })();
-  }, [isAr]);
+  }, [t]);
 
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return isAr ? "الآن" : "now";
-    if (mins < 60) return isAr ? `منذ ${mins} د` : `${mins}m ago`;
+    if (mins < 1) return t("home.community.now");
+    if (mins < 60) return t("home.community.minAgo", { n: mins });
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return isAr ? `منذ ${hrs} س` : `${hrs}h ago`;
+    if (hrs < 24) return t("home.community.hourAgo", { n: hrs });
     const days = Math.floor(hrs / 24);
-    return isAr ? `منذ ${days} ي` : `${days}d ago`;
+    return t("home.community.dayAgo", { n: days });
   };
 
-  // Show empty state invitation if no posts
+  // Localized university name resolver — Arabic prefers name_ar, others fall back to name.
+  const getUniversityDisplayName = (post: PreviewPost): string => {
+    if (language === "ar" && post.university_name_ar) return post.university_name_ar;
+    return post.university_name || t("home.community.university");
+  };
+
   const showEmptyState = !loading && posts.length === 0;
 
   return (
     <section className="py-20 px-6 bg-muted/30">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -110,20 +112,17 @@ export function UniversityCommunitySection() {
         >
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 px-3 py-1 rounded-full">
             <Users className="w-3.5 h-3.5" />
-            {isAr ? "المجتمع" : "Community"}
+            {t("home.community.badge")}
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-            {isAr ? "مجتمع الطلاب والجامعات" : "Student & University Community"}
+            {t("home.community.title")}
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            {isAr
-              ? "شارك تجربتك وتواصل مع الجامعات والطلاب من حول العالم"
-              : "Share your experience and connect with universities and students worldwide"}
+            {t("home.community.subtitle")}
           </p>
         </motion.div>
 
         {showEmptyState ? (
-          /* Empty state - invite to community */
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -134,21 +133,18 @@ export function UniversityCommunitySection() {
               <Users className="w-8 h-8 text-primary" />
             </div>
             <h3 className="text-xl font-bold text-foreground mb-2">
-              {isAr ? "انضم إلى المجتمع" : "Join the Community"}
+              {t("home.community.joinTitle")}
             </h3>
             <p className="text-muted-foreground max-w-md mx-auto mb-6">
-              {isAr
-                ? "كن أول من يشارك تجربته! سجّل دخولك وابدأ بالنشر والتفاعل مع الجامعات والطلاب"
-                : "Be the first to share! Sign in and start posting and interacting with universities and students"}
+              {t("home.community.joinDesc")}
             </p>
             <Button onClick={() => navigate("/community")} className="gap-2">
-              {isAr ? "ابدأ الآن" : "Get Started"}
+              {t("home.community.getStarted")}
               <ArrowRight className={cn("w-4 h-4", isRTL && "rotate-180")} />
             </Button>
           </motion.div>
         ) : (
           <>
-            {/* Posts preview grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
               {posts.map((post, i) => (
                 <motion.div
@@ -164,7 +160,6 @@ export function UniversityCommunitySection() {
                     "hover:border-primary/30 hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
                   )}
                 >
-                  {/* Author */}
                   <div className="flex items-center gap-2.5 mb-3">
                     {post.author_type === "university" ? (
                       <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-border flex-shrink-0">
@@ -183,7 +178,7 @@ export function UniversityCommunitySection() {
                       <div className="flex items-center gap-1.5">
                         <span className="font-semibold text-sm text-foreground truncate">
                           {post.author_type === "university"
-                            ? (isAr ? post.university_name_ar || post.university_name : post.university_name) || (isAr ? "جامعة" : "University")
+                            ? getUniversityDisplayName(post)
                             : post.author_name}
                         </span>
                         <span className={cn(
@@ -192,26 +187,25 @@ export function UniversityCommunitySection() {
                             ? "bg-blue-500/10 text-blue-600"
                             : "bg-emerald-500/10 text-emerald-600"
                         )}>
-                          {post.author_type === "university" ? (isAr ? "جامعة" : "Uni") : (isAr ? "طالب" : "Student")}
+                          {post.author_type === "university"
+                            ? t("home.community.uniShort")
+                            : t("home.community.studentShort")}
                         </span>
                       </div>
                       <span className="text-[11px] text-muted-foreground">{timeAgo(post.created_at)}</span>
                     </div>
                   </div>
 
-                  {/* Content */}
                   <p className="text-sm text-foreground/85 line-clamp-3 leading-relaxed">
                     {post.content}
                   </p>
 
-                  {/* Image preview */}
                   {post.image_url && (
                     <div className="mt-3 rounded-lg overflow-hidden border border-border h-32">
                       <img src={post.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                     </div>
                   )}
 
-                  {/* Stats */}
                   <div className="flex items-center gap-4 mt-3 pt-2.5 border-t border-border/50 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Heart className="w-3.5 h-3.5" />
@@ -226,7 +220,6 @@ export function UniversityCommunitySection() {
               ))}
             </div>
 
-            {/* CTA */}
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -239,7 +232,7 @@ export function UniversityCommunitySection() {
                 variant="outline"
                 className="gap-2"
               >
-                {isAr ? "استكشف المجتمع" : "Explore Community"}
+                {t("home.community.explore")}
                 <ArrowRight className={cn("w-4 h-4", isRTL && "rotate-180")} />
               </Button>
             </motion.div>
