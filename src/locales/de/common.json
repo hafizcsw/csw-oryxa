@@ -1857,7 +1857,27 @@
         "readability_degraded": "teilweise lesbar",
         "readability_unreadable": "unlesbar",
         "legacy_reader": "temporärer Reader",
-        "legacy_reader_hint": "Temporärer Browser-Reader (pdf.js + Tesseract.js). Wird ersetzt."
+        "legacy_reader_hint": "Temporärer Browser-Reader (pdf.js + Tesseract.js). Wird ersetzt.",
+        "ocr_label": "OCR",
+        "ocr_quality_good": "gut",
+        "ocr_quality_partial": "teilweise",
+        "ocr_quality_garbage": "unlesbar"
+      },
+      "in_canonical_truth": "in der kanonischen Wahrheit",
+      "canonical_truth": "kanonische Wahrheit",
+      "filename_only_no_ocr": "nur Dateiname — kein OCR",
+      "reanalyze": "Neu analysieren",
+      "remove_all_canonical": "Alles aus kanonischer Wahrheit entfernen",
+      "remove_from_canonical": "Aus kanonischer Wahrheit entfernen",
+      "usefulness_useful": "nützlich",
+      "usefulness_not_useful": "nicht nützlich",
+      "usefulness_unknown": "unbekannt",
+      "proposal_status": {
+        "proposed": "vorgeschlagen",
+        "auto_accepted": "auto akzeptiert",
+        "pending_review": "zur Prüfung",
+        "rejected": "abgelehnt",
+        "superseded": "ersetzt"
       }
     }
   },

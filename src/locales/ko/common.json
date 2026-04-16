@@ -1857,7 +1857,27 @@
         "readability_degraded": "부분적으로 읽기 가능",
         "readability_unreadable": "읽기 불가",
         "legacy_reader": "임시 리더",
-        "legacy_reader_hint": "브라우저 내 임시 리더(pdf.js + Tesseract.js). 교체될 예정입니다."
+        "legacy_reader_hint": "브라우저 내 임시 리더(pdf.js + Tesseract.js). 교체될 예정입니다.",
+        "ocr_label": "OCR",
+        "ocr_quality_good": "양호",
+        "ocr_quality_partial": "부분",
+        "ocr_quality_garbage": "판독 불가"
+      },
+      "in_canonical_truth": "표준 진실에 포함",
+      "canonical_truth": "표준 진실",
+      "filename_only_no_ocr": "파일명만 — OCR 없음",
+      "reanalyze": "재분석",
+      "remove_all_canonical": "표준 진실에서 모두 제거",
+      "remove_from_canonical": "표준 진실에서 제거",
+      "usefulness_useful": "유용",
+      "usefulness_not_useful": "무용",
+      "usefulness_unknown": "알 수 없음",
+      "proposal_status": {
+        "proposed": "제안됨",
+        "auto_accepted": "자동 승인",
+        "pending_review": "검토 대기",
+        "rejected": "거부됨",
+        "superseded": "대체됨"
       }
     }
   },

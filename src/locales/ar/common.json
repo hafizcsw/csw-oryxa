@@ -1491,7 +1491,27 @@
         "readability_degraded": "مقروء جزئياً",
         "readability_unreadable": "غير مقروء",
         "legacy_reader": "قارئ مؤقت",
-        "legacy_reader_hint": "قارئ مؤقت داخل المتصفح (pdf.js + Tesseract.js). سيتم استبداله."
+        "legacy_reader_hint": "قارئ مؤقت داخل المتصفح (pdf.js + Tesseract.js). سيتم استبداله.",
+        "ocr_label": "OCR",
+        "ocr_quality_good": "جيد",
+        "ocr_quality_partial": "جزئي",
+        "ocr_quality_garbage": "تالف"
+      },
+      "in_canonical_truth": "في الحقيقة الموثوقة",
+      "canonical_truth": "حقيقة موثوقة",
+      "filename_only_no_ocr": "اسم الملف فقط — بدون OCR",
+      "reanalyze": "إعادة التحليل",
+      "remove_all_canonical": "إزالة الكل من الحقيقة الموثوقة",
+      "remove_from_canonical": "إزالة من الحقيقة الموثوقة",
+      "usefulness_useful": "مفيد",
+      "usefulness_not_useful": "غير مفيد",
+      "usefulness_unknown": "غير معروف",
+      "proposal_status": {
+        "proposed": "مقترح",
+        "auto_accepted": "مقبول تلقائياً",
+        "pending_review": "بانتظار المراجعة",
+        "rejected": "مرفوض",
+        "superseded": "مُستبدل"
       }
     },
     "nav": {

@@ -1857,7 +1857,27 @@
         "readability_degraded": "部分的に読み取り可能",
         "readability_unreadable": "読み取り不能",
         "legacy_reader": "仮リーダー",
-        "legacy_reader_hint": "ブラウザ内の仮リーダー(pdf.js + Tesseract.js)。後で置き換えられます。"
+        "legacy_reader_hint": "ブラウザ内の仮リーダー(pdf.js + Tesseract.js)。後で置き換えられます。",
+        "ocr_label": "OCR",
+        "ocr_quality_good": "良好",
+        "ocr_quality_partial": "部分的",
+        "ocr_quality_garbage": "判読不能"
+      },
+      "in_canonical_truth": "正規データ内",
+      "canonical_truth": "正規データ",
+      "filename_only_no_ocr": "ファイル名のみ — OCRなし",
+      "reanalyze": "再分析",
+      "remove_all_canonical": "正規データからすべて削除",
+      "remove_from_canonical": "正規データから削除",
+      "usefulness_useful": "有用",
+      "usefulness_not_useful": "無用",
+      "usefulness_unknown": "不明",
+      "proposal_status": {
+        "proposed": "提案済み",
+        "auto_accepted": "自動承認",
+        "pending_review": "レビュー待ち",
+        "rejected": "却下",
+        "superseded": "置換済み"
       }
     }
   },
