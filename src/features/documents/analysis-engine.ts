@@ -28,6 +28,7 @@ import {
   resolveReadingRoute,
   assembleFullText,
   calculateReadingConfidence,
+  assessOcrQuality,
 } from './reading-artifact-model';
 import { extractPdfText } from './parsers/pdf-text-parser';
 import { ocrImageFile, ocrPdfPages } from './parsers/ocr-reader';
