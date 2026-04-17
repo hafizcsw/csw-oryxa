@@ -174,10 +174,8 @@ function AIDataFlowHeroComponent({
     return Array.from({ length: count }).map((_, i) => {
       const t = count === 1 ? 0.5 : i / (count - 1);
       const y = TOP + span * t;
-      const jitter = ((i % 2 === 0 ? 1 : -1) * (10 + (i * 7) % 14));
-      const x = anchorX + (mirrored ? -jitter : jitter);
-      const rotate = (mirrored ? -1 : 1) * (-6 + ((i * 5) % 12));
-      return { x, y, rotate, scale: 1, opacity: 1, index: i, gIdx: gIdxStart + i };
+      // Clean column alignment — no jitter, no rotation. Cards stack tidily.
+      return { x: anchorX, y, rotate: 0, scale: 1, opacity: 1, index: i, gIdx: gIdxStart + i };
     });
   };
 
