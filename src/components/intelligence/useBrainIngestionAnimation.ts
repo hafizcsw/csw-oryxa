@@ -1,55 +1,87 @@
 import { useMemo } from "react";
-import type { BrainIngestionMotion, BrainIngestionStage } from "./BrainIngestionVisualizer.types";
+import type {
+  BrainIngestionMotion,
+  BrainIngestionStage,
+} from "./BrainIngestionVisualizer.types";
 
 /**
- * Derive motion values from a stage + progress pair.
- * Pure function (memoised) so re-renders stay cheap.
+ * Derive motion values from (stage, progress).
+ * Pure + memoised so re-renders stay cheap.
  *
- * Stage thresholds (0..100):
- *   0–10   : file wake-up + outer nodes
- *  10–35   : outer + mid branches
- *  35–65   : terminal branches + bridges
- *  65–90   : brain regions fill (lower → mid → upper)
- *  90–100  : core seam + completion glow
+ * Region thresholds describe WHEN each silhouette-clipped region
+ * starts revealing (in 0..1 progress space). Span = how long it
+ * takes to fully reveal once it crosses its threshold.
+ *
+ * Order matches REGION_ORDER in brainGeometry.ts:
+ *   left-lower, right-lower, left-mid, right-mid,
+ *   left-upper, right-upper, core-seam
  */
-const REGION_THRESHOLDS = [0.65, 0.68, 0.72, 0.76, 0.82, 0.88, 0.92];
+const REGION_THRESHOLDS = [0.18, 0.26, 0.4, 0.52, 0.68, 0.8, 0.92];
+const REGION_SPAN = 0.1;
+
+function clamp01(n: number): number {
+  return Math.max(0, Math.min(1, n));
+}
 
 export function useBrainIngestionAnimation(
   stage: BrainIngestionStage,
   progress = 0,
 ): BrainIngestionMotion {
   return useMemo(() => {
-    const p = Math.max(0, Math.min(100, progress)) / 100;
+    const p = clamp01(Math.max(0, Math.min(100, progress)) / 100);
 
-    const isError = stage === "error";
-    const isComplete = stage === "complete";
     const isIdle = stage === "idle";
+    const isComplete = stage === "complete";
+    const isError = stage === "error";
 
-    // streamIntensity is mostly a function of stage.
-    const streamIntensity =
-      isIdle ? 0
-      : stage === "uploading" ? 0.25
-      : stage === "scanning" ? 0.6
-      : stage === "extracting" ? 0.85
-      : stage === "interpreting" ? 1
-      : isComplete ? 0.35
-      : 0.18;
+    // Branch activation grows in 3 readable steps.
+    const branchActivation = isIdle
+      ? 0
+      : p < 0.12
+        ? 0.3
+        : p < 0.35
+          ? 0.6
+          : p < 0.65
+            ? 0.85
+            : 1;
 
-    // branchActivation grows with progress, accelerated.
-    const branchActivation = isIdle ? 0 : Math.min(1, p * 1.4);
+    // Stream intensity follows the stage (visible motion energy).
+    const streamIntensity = isIdle
+      ? 0
+      : stage === "uploading"
+        ? 0.35
+        : stage === "scanning"
+          ? 0.65
+          : stage === "extracting"
+            ? 0.9
+            : stage === "interpreting"
+              ? 1
+              : isComplete
+                ? 0.4
+                : 0.2;
 
-    // brainFill: clamp to progress. Complete forces 1, idle/error hold their value.
-    const brainFill = isComplete ? 1 : isIdle ? 0 : isError ? Math.min(0.85, p) : p;
+    // Bridge activation kicks in once we have meaningful inflow.
+    const bridgeActivation = isIdle
+      ? 0
+      : p < 0.3
+        ? 0
+        : p < 0.55
+          ? 0.5
+          : 1;
+
+    // Brain fill = progress, except complete forces 1, idle 0.
+    const brainFill = isComplete ? 1 : isIdle ? 0 : p;
 
     const stableGlow = isComplete ? 1 : 0;
     const errorDampening = isError ? 1 : 0;
 
-    // Per-region reveal — each region starts unveiling once brainFill crosses
-    // its threshold and reaches full opacity 12% later.
+    // Per-region opacity — segmented, NOT a global wash.
     const regionOpacity = REGION_THRESHOLDS.map((t) => {
-      if (brainFill <= t) return 0;
-      const span = 0.12;
-      return Math.min(1, (brainFill - t) / span);
+      if (isIdle) return 0;
+      if (isComplete) return 1;
+      const eff = isError ? Math.min(0.7, p) : p;
+      if (eff <= t) return 0;
+      return clamp01((eff - t) / REGION_SPAN);
     });
 
     return {
@@ -59,6 +91,7 @@ export function useBrainIngestionAnimation(
       stableGlow,
       errorDampening,
       regionOpacity,
+      bridgeActivation,
     };
   }, [stage, progress]);
 }

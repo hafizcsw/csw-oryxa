@@ -49,4 +49,6 @@ export interface BrainIngestionMotion {
   errorDampening: number;
   /** Per-region opacity 0..1, in order: L-lower, R-lower, L-mid, R-mid, L-upper, R-upper, core-seam. */
   regionOpacity: number[];
+  /** 0..1 — entry bridge activation (terminal conduit → silhouette). */
+  bridgeActivation: number;
 }
