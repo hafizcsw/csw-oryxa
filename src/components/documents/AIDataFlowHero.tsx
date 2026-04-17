@@ -531,7 +531,7 @@ function AIDataFlowHeroComponent({
           />
         )}
 
-        {/* ═══ Brain — new stateful BrainIngestionVisualizer ═══ */}
+        {/* ═══ Brain — single source of truth: BrainIngestionVisualizer ═══ */}
         <foreignObject x={CX - 320} y={CY - 240} width={640} height={480}>
           <BrainIngestionVisualizer
             stage={brainPipeline.stage}
@@ -541,18 +541,6 @@ function AIDataFlowHeroComponent({
             reducedMotion={!!reduceMotion}
           />
         </foreignObject>
-        {/* Legacy inner-tech kept for ingestion ripples per active file */}
-        <g transform={`translate(${CX}, ${CY})`}>
-          <BrainShape
-            animate={!reduceMotion}
-            fillProgress={fillProgress}
-            isEnergized={isEnergized && !reduceMotion}
-            allDone={allDone}
-            activeFileNames={fileList
-              .map((f, i) => (fileStatuses[i] === "active" ? f.name : null))
-              .filter((n): n is string => n !== null)}
-          />
-        </g>
       </svg>
     </div>
   );
