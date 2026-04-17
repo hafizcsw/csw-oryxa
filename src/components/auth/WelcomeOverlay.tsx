@@ -57,14 +57,31 @@ export function WelcomeOverlay({ name, avatarUrl }: WelcomeOverlayProps) {
         transition={{ duration: 0.35, ease: 'easeOut' }}
         className="relative z-10 flex flex-col items-center gap-6 px-6 text-center"
       >
-        <div className="relative flex h-16 w-16 items-center justify-center">
-          <span className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
-          <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-primary/15">
-            <Loader2 className="h-7 w-7 animate-spin text-primary" />
+        <div className="relative flex h-20 w-20 items-center justify-center">
+          <span className="absolute inset-0 animate-ping rounded-full bg-primary/15" />
+          <span className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-primary/10 ring-2 ring-primary/20">
+            {avatarUrl ? (
+              // eslint-disable-next-line jsx-a11y/alt-text
+              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+            ) : initials ? (
+              <span className="text-2xl font-semibold text-primary">{initials}</span>
+            ) : (
+              <User className="h-8 w-8 text-primary" />
+            )}
+          </span>
+          <span className="absolute -bottom-1 -end-1 flex h-7 w-7 items-center justify-center rounded-full bg-background shadow-md ring-1 ring-border">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
           </span>
         </div>
 
         <div className="space-y-2 max-w-md">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-foreground">
+            {greeting}
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            {t('auth.signingIn')}
+          </p>
+        </div>
           <h2 className="text-2xl sm:text-3xl font-semibold text-foreground">
             {greeting}
           </h2>
