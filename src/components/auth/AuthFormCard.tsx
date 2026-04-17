@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { trackRegisterStart, trackRegisterComplete } from '@/lib/decisionTracking';
 import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
+import { WelcomeOverlay } from './WelcomeOverlay';
 
 /** Check persistent staff cache for instant post-login redirect */
 function getStaffFastRedirect(): string | null {
@@ -102,6 +103,16 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
   
   const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [isSocialLoading, setIsSocialLoading] = useState<'google' | 'apple' | null>(null);
+
+  // Fullscreen welcome overlay shown during the post-login redirect
+  // (replaces the blank white "flash" caused by window.location.href).
+  const [redirecting, setRedirecting] = useState(false);
+  const [welcomeName, setWelcomeName] = useState<string | null>(null);
+
+  const beginRedirect = (name?: string | null) => {
+    setWelcomeName(name ?? null);
+    setRedirecting(true);
+  };
 
   const { continueAsGuest, startLogin, verifyLogin, startSignup, verifySignup, isLoading } = usePortalAuth();
 
