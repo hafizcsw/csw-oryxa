@@ -78,7 +78,7 @@ function AIDataFlowHeroComponent({
   className,
   intensity = "normal",
   ariaLabel,
-  visibleCardsPerSide = 3,
+  visibleCardsPerSide = 5,
   fileCount = 0,
   hasFiles = false,
   isDragOver = false,
