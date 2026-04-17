@@ -103,8 +103,30 @@ export async function analyzeDocument(params: {
     ].filter(Boolean).join(' | ');
     analysis.updated_at = new Date().toISOString();
     logArtifact(artifact, analysis);
-    return { analysis, proposals, artifact };
+    return {
+      analysis,
+      proposals,
+      artifact,
+      structured_artifact: buildStructuredBrowserArtifact(artifact),
+    };
   }
+
+  // ── In-Browser Document Intelligence: build structured upstream artifact ──
+  // Browser-only. Pure heuristics. No outbound HTTP. No LLM. Never throws.
+  const structured_artifact = buildStructuredBrowserArtifact(artifact);
+  console.log('[BrowserDocAI:StructuredArtifact]', JSON.stringify({
+    file: file.name,
+    builder: structured_artifact.builder,
+    local_only: structured_artifact.local_only,
+    pages: structured_artifact.summary.pages_analyzed,
+    rows_total: structured_artifact.summary.total_row_candidates,
+    rows_tabular: structured_artifact.summary.tabular_row_candidates,
+    table_regions: structured_artifact.summary.table_like_region_count,
+    headers: structured_artifact.summary.header_groups,
+    footers: structured_artifact.summary.footer_groups,
+    avg_quality: Number(structured_artifact.summary.avg_quality_score.toFixed(3)),
+    build_ms: Math.round(structured_artifact.build_time_ms),
+  }, null, 2));
 
   // readable | degraded → continue, but mark surface honestly.
   // Honesty: a 'degraded' artifact MUST surface as 'degraded', never 'readable'.
