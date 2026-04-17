@@ -33,12 +33,16 @@ import {
 import { parseTranscript } from './parsers/transcript-parser';
 import type { TranscriptIntermediate } from './parsers/transcript-structure';
 import type { CanonicalStudentFile } from '../student-file/canonical-model';
+import type { StructuredDocumentArtifact } from './structured-browser-artifact-model';
+import { buildStructuredBrowserArtifact } from './parsers/structured-artifact-builder';
 
 export interface AnalysisResult {
   analysis: DocumentAnalysis;
   proposals: ExtractionProposal[];
   /** Door 1: the structured reading artifact */
   artifact: ReadingArtifact;
+  /** In-Browser Document Intelligence: structured upstream artifact */
+  structured_artifact: StructuredDocumentArtifact;
 }
 
 /**
