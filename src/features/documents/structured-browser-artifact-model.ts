@@ -12,7 +12,8 @@
 // ═══════════════════════════════════════════════════════════════
 
 export type ArtifactBuilderImplementation =
-  | 'browser_local_v1'   // current in-browser builder
+  | 'browser_local_v1'        // current in-browser heuristic builder
+  | 'paddle_self_hosted_v1'   // self-hosted PaddleOCR PP-StructureV3 (mapped)
   | 'none';
 
 export interface PageQualityFlags {
