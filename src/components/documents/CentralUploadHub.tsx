@@ -8,6 +8,7 @@ import { useState, useRef, useCallback, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DocumentRecord, ProcessingStatus } from '@/features/documents/document-registry-model';
+import { AIDataFlowHero } from './AIDataFlowHero';
 
 interface CentralUploadHubProps {
   records: DocumentRecord[];
@@ -585,8 +586,11 @@ export function CentralUploadHub({
           disabled && 'opacity-50 cursor-not-allowed',
         )}
       >
-        <div className="w-full max-w-lg">
-          <BrainScene records={records} isProcessing={isProcessing} isDragOver={isDragOver} />
+        <div className="w-full max-w-3xl">
+          <AIDataFlowHero
+            intensity={isProcessing ? 'lively' : 'normal'}
+            ariaLabel={t('portal.uploadHub.title')}
+          />
         </div>
 
         <div className="text-center mt-1">
