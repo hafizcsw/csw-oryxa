@@ -660,16 +660,16 @@ function DocumentCard({
         <g>
           {isActive && float ? (
             <motion.circle
-              cx={mirrored ? W - 16 : 16}
+              cx={mirrored ? 16 : W - 16}
               cy={40}
               r={3}
               fill="hsl(265 90% 60%)"
               animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
               transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
-              style={{ transformOrigin: `${mirrored ? W - 16 : 16}px 40px` }}
+              style={{ transformOrigin: `${mirrored ? 16 : W - 16}px 40px` }}
             />
           ) : isDone ? (
-            <g transform={`translate(${mirrored ? W - 22 : 10}, 33)`}>
+            <g transform={`translate(${mirrored ? 10 : W - 22}, 33)`}>
               <circle cx={6} cy={6} r={6} fill="hsl(142 70% 42%)" />
               <path
                 d="M 3 6 L 5.2 8.2 L 9 4.2"
