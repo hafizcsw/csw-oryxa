@@ -132,11 +132,16 @@ function AIDataFlowHeroComponent({
     [fileList],
   );
 
-  // Brain shrinks while ANY file is still pending or active. Returns to full
-  // size only when every file has reached a terminal status (done | failed).
+  // Brain stays permanently at the compact size — no growing/shrinking.
+  // Instead, the INTERIOR of the brain fills with technical circuitry as
+  // each file finishes processing. While any file is active, the inner
+  // circuits pulse continuously (energy flowing in from connectors).
   const anyInFlight = fileStatuses.some((s) => s === "pending" || s === "active");
   const allDone = totalDocs > 0 && !anyInFlight;
-  const brainShrink = showDocuments && anyInFlight;
+  const activeCount = fileStatuses.filter((s) => s === "active").length;
+  const doneCount = fileStatuses.filter((s) => s === "done" || s === "failed").length;
+  const fillProgress = totalDocs > 0 ? doneCount / totalDocs : 0; // 0..1
+  const isEnergized = activeCount > 0;
 
   const ids = useMemo(
     () => ({
@@ -518,9 +523,14 @@ function AIDataFlowHeroComponent({
           />
         )}
 
-        {/* ═══ Brain (lucide-react icon — same as used elsewhere in app) ═══ */}
+        {/* ═══ Brain (compact, never resizes) + inner tech fill ═══ */}
         <g transform={`translate(${CX}, ${CY})`}>
-          <BrainShape animate={!reduceMotion} shrink={brainShrink} />
+          <BrainShape
+            animate={!reduceMotion}
+            fillProgress={fillProgress}
+            isEnergized={isEnergized && !reduceMotion}
+            allDone={allDone}
+          />
         </g>
       </svg>
     </div>
@@ -915,17 +925,270 @@ function DocumentChip({ pathD, duration, delay }: DocumentChipProps) {
 
 interface BrainShapeProps {
   animate: boolean;
-  shrink?: boolean;
+  /** 0..1 — share of files that have finished processing */
+  fillProgress?: number;
+  /** true while at least one file is actively being parsed */
+  isEnergized?: boolean;
+  /** true once every file has reached a terminal status */
+  allDone?: boolean;
 }
 
 /**
- * Brain-centered metaphor — locked. Uses the same lucide-react Brain icon
- * used elsewhere in the app (About, OrxRankHub, etc.). Rendered inside SVG
- * via foreignObject so the rest of the scene stays pure SVG.
+ * Brain-centered metaphor — locked at the compact size. The interior fills
+ * with a stylized circuit / chip / binary-rain layer that grows as files
+ * finish processing. While energized, the inner layer pulses; when all
+ * files are done, the layer holds steady at full glow.
  */
-function BrainShape({ animate, shrink = false }: BrainShapeProps) {
+function BrainShape({
+  animate,
+  fillProgress = 0,
+  isEnergized = false,
+  allDone = false,
+}: BrainShapeProps) {
   const SIZE = 630;
-  const targetScale = shrink ? 0.5 : 1;
+  // Brain is permanently rendered at compact scale — no resize behavior.
+  const SCALE = 0.5;
+
+  // Inner-tech canvas dimensions (in BRAIN-LOCAL coords AFTER the SCALE group).
+  // We draw the tech overlay in a small 200x160 box centered on (0,0) so it
+  // visually sits inside the brain silhouette regardless of icon stroke detail.
+  const TW = 200;
+  const TH = 160;
+  const clipId = useId().replace(/:/g, "");
+
+  // Approximate brain silhouette path (two-hemisphere blob), used as clipPath
+  // so all inner tech elements are masked to the brain shape.
+  // Coordinates assume a 200x160 box centered around (0,0).
+  const BRAIN_CLIP_D =
+    "M -90 -10 " +
+    "C -100 -50, -60 -78, -20 -70 " +
+    "C -10 -82, 10 -82, 20 -70 " +
+    "C 60 -78, 100 -50, 90 -10 " +
+    "C 100 30, 70 70, 20 68 " +
+    "C 10 78, -10 78, -20 68 " +
+    "C -70 70, -100 30, -90 -10 Z";
+
+  // Circuit polylines — drawn inside the brain. Each line reveals when its
+  // index threshold is reached by fillProgress.
+  const circuitLines: string[] = [
+    "M -70 -20 L -40 -20 L -40 0 L -10 0",
+    "M 70 -20 L 40 -20 L 40 0 L 10 0",
+    "M -60 20 L -30 20 L -30 40 L 0 40",
+    "M 60 20 L 30 20 L 30 40 L 0 40",
+    "M -75 0 L -55 0 L -55 -40 L -25 -40",
+    "M 75 0 L 55 0 L 55 -40 L 25 -40",
+    "M 0 -55 L 0 -30 L -20 -30 L -20 -10",
+    "M 0 -55 L 0 -30 L 20 -30 L 20 -10",
+    "M -50 50 L -20 50 L -20 30",
+    "M 50 50 L 20 50 L 20 30",
+    "M -80 -40 L -60 -40",
+    "M 80 -40 L 60 -40",
+  ];
+  const totalLines = circuitLines.length;
+
+  // Synapse nodes positioned at line intersections / endpoints.
+  const synapses: Array<{ x: number; y: number }> = [
+    { x: -40, y: -20 }, { x: 40, y: -20 },
+    { x: -10, y: 0 },   { x: 10, y: 0 },
+    { x: -30, y: 40 },  { x: 30, y: 40 },
+    { x: 0, y: -30 },   { x: 0, y: 40 },
+  ];
+
+  // Binary rain — vertical streams of 1/0 chars.
+  const rainColumns = [-60, -30, 0, 30, 60];
+
+  // Chip glow opacity scales with progress; min visible always.
+  const chipOpacity = 0.25 + 0.7 * fillProgress;
+  // Circuit base opacity also scales — keeps the brain visually "filling up".
+  const circuitBase = 0.15 + 0.55 * fillProgress;
+
+  const techLayer = (
+    <g>
+      <defs>
+        <clipPath id={`brain-tech-clip-${clipId}`}>
+          <path d={BRAIN_CLIP_D} />
+        </clipPath>
+        <radialGradient id={`brain-core-${clipId}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="hsl(190 100% 75%)" stopOpacity="0.95" />
+          <stop offset="60%" stopColor="hsl(220 95% 65%)" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="hsl(265 90% 60%)" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      <g clipPath={`url(#brain-tech-clip-${clipId})`}>
+        {/* Soft inner radial glow that intensifies with progress + energy */}
+        <circle
+          cx={0}
+          cy={0}
+          r={90}
+          fill={`url(#brain-core-${clipId})`}
+          opacity={0.25 + 0.5 * fillProgress + (isEnergized ? 0.15 : 0)}
+        />
+
+        {/* Circuit traces — revealed progressively */}
+        <g
+          stroke="hsl(190 95% 70%)"
+          strokeWidth={0.9}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          {circuitLines.map((d, i) => {
+            const threshold = i / totalLines;
+            const revealed = fillProgress >= threshold;
+            // Even un-revealed lines get a faint trace so the brain isn't empty.
+            const baseOpacity = revealed ? circuitBase + 0.3 : 0.08;
+            if (animate && isEnergized && revealed) {
+              return (
+                <motion.path
+                  key={`cl-${i}`}
+                  d={d}
+                  opacity={baseOpacity}
+                  animate={{ opacity: [baseOpacity, baseOpacity + 0.35, baseOpacity] }}
+                  transition={{
+                    duration: 1.8 + (i % 4) * 0.3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: (i * 0.12) % 1.4,
+                  }}
+                />
+              );
+            }
+            return <path key={`cl-${i}`} d={d} opacity={baseOpacity} />;
+          })}
+        </g>
+
+        {/* Synapse dots — light up one-by-one with progress */}
+        <g>
+          {synapses.map((s, i) => {
+            const threshold = i / synapses.length;
+            const lit = fillProgress >= threshold;
+            const op = lit ? 0.9 : 0.18;
+            if (animate && isEnergized && lit) {
+              return (
+                <motion.circle
+                  key={`sy-${i}`}
+                  cx={s.x}
+                  cy={s.y}
+                  r={1.8}
+                  fill="hsl(190 100% 80%)"
+                  animate={{ opacity: [op, 1, op], r: [1.6, 2.4, 1.6] }}
+                  transition={{
+                    duration: 1.4 + (i % 3) * 0.4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: (i * 0.18) % 1.2,
+                  }}
+                  style={{ transformOrigin: `${s.x}px ${s.y}px` }}
+                />
+              );
+            }
+            return (
+              <circle
+                key={`sy-${i}`}
+                cx={s.x}
+                cy={s.y}
+                r={1.6}
+                fill="hsl(190 100% 80%)"
+                opacity={op}
+              />
+            );
+          })}
+        </g>
+
+        {/* Binary rain — only flows while energized */}
+        {animate && isEnergized && (
+          <g
+            fontFamily="ui-monospace, SFMono-Regular, monospace"
+            fontSize={5}
+            fill="hsl(190 95% 70%)"
+            opacity={0.35}
+          >
+            {rainColumns.map((cx, ci) => (
+              <motion.g
+                key={`rain-${ci}`}
+                animate={{ y: [-60, 60] }}
+                transition={{
+                  duration: 2.4 + (ci % 3) * 0.5,
+                  repeat: Infinity,
+                  ease: "linear",
+                  delay: (ci * 0.4) % 1.8,
+                }}
+              >
+                {[0, 10, 20, 30, 40, 50, 60].map((dy, di) => (
+                  <text key={`r-${ci}-${di}`} x={cx} y={-60 + dy} textAnchor="middle">
+                    {(ci + di) % 2 === 0 ? "1" : "0"}
+                  </text>
+                ))}
+              </motion.g>
+            ))}
+          </g>
+        )}
+
+        {/* Inner AI chip — central glowing square */}
+        <g opacity={chipOpacity}>
+          <rect
+            x={-14}
+            y={-10}
+            width={28}
+            height={20}
+            rx={3}
+            fill="hsl(220 90% 55%)"
+            fillOpacity={0.35}
+            stroke="hsl(190 100% 75%)"
+            strokeWidth={0.8}
+          />
+          {/* Chip pins */}
+          {[-10, -4, 2, 8].map((px) => (
+            <g key={`pin-${px}`} stroke="hsl(190 95% 70%)" strokeWidth={0.6}>
+              <line x1={px} y1={-12} x2={px} y2={-14} />
+              <line x1={px} y1={10} x2={px} y2={12} />
+            </g>
+          ))}
+          <text
+            x={0}
+            y={2}
+            textAnchor="middle"
+            fontSize={7}
+            fontWeight={700}
+            fill="hsl(190 100% 88%)"
+            fontFamily="ui-monospace, SFMono-Regular, monospace"
+          >
+            AI
+          </text>
+          {animate && isEnergized && (
+            <motion.rect
+              x={-14}
+              y={-10}
+              width={28}
+              height={20}
+              rx={3}
+              fill="none"
+              stroke="hsl(190 100% 80%)"
+              strokeWidth={0.8}
+              animate={{ opacity: [0.2, 0.9, 0.2] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            />
+          )}
+          {allDone && (
+            <motion.rect
+              x={-16}
+              y={-12}
+              width={32}
+              height={24}
+              rx={4}
+              fill="none"
+              stroke="hsl(142 70% 55%)"
+              strokeWidth={0.7}
+              animate={{ opacity: [0.5, 0.85, 0.5] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            />
+          )}
+        </g>
+      </g>
+    </g>
+  );
+
   const icon = (
     <foreignObject x={-SIZE / 2} y={-SIZE / 2} width={SIZE} height={SIZE}>
       <div
@@ -943,16 +1206,24 @@ function BrainShape({ animate, shrink = false }: BrainShapeProps) {
     </foreignObject>
   );
 
+  const content = (
+    <>
+      {icon}
+      {techLayer}
+    </>
+  );
+
   if (!animate) {
-    return <g transform={`scale(${targetScale})`}>{icon}</g>;
+    return <g transform={`scale(${SCALE})`}>{content}</g>;
   }
 
   return (
     <motion.g
-      animate={{ scale: shrink ? [targetScale, targetScale * 1.03, targetScale] : [1, 1.03, 1] }}
+      transform={`scale(${SCALE})`}
+      animate={{ scale: [SCALE, SCALE * 1.03, SCALE] }}
       transition={{ duration: 4.6, repeat: Infinity, ease: "easeInOut" }}
     >
-      {icon}
+      {content}
     </motion.g>
   );
 }
