@@ -729,6 +729,7 @@ function DocumentChip({ pathD, duration, delay }: DocumentChipProps) {
 
 interface BrainShapeProps {
   animate: boolean;
+  shrink?: boolean;
 }
 
 /**
@@ -736,8 +737,9 @@ interface BrainShapeProps {
  * used elsewhere in the app (About, OrxRankHub, etc.). Rendered inside SVG
  * via foreignObject so the rest of the scene stays pure SVG.
  */
-function BrainShape({ animate }: BrainShapeProps) {
+function BrainShape({ animate, shrink = false }: BrainShapeProps) {
   const SIZE = 630;
+  const targetScale = shrink ? 0.5 : 1;
   const icon = (
     <foreignObject x={-SIZE / 2} y={-SIZE / 2} width={SIZE} height={SIZE}>
       <div
@@ -755,11 +757,13 @@ function BrainShape({ animate }: BrainShapeProps) {
     </foreignObject>
   );
 
-  if (!animate) return <g>{icon}</g>;
+  if (!animate) {
+    return <g transform={`scale(${targetScale})`}>{icon}</g>;
+  }
 
   return (
     <motion.g
-      animate={{ scale: [1, 1.03, 1] }}
+      animate={{ scale: shrink ? [targetScale, targetScale * 1.03, targetScale] : [1, 1.03, 1] }}
       transition={{ duration: 4.6, repeat: Infinity, ease: "easeInOut" }}
     >
       {icon}
