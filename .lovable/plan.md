@@ -1,35 +1,63 @@
 
 
-## Problem
-Uploading 5 files: connectors + chips render on both sides (proving `leftCards`/`rightCards` arrays are correct), but only 1 document card is visible on screen. The other 4 cards exist in the DOM but aren't visually placed.
+## Goal
+Sequential, realistic per-file scanning. Only ONE file is actively being scanned at a time. When its scan completes, the brain stops pulling from it (connectors/chips fade off for that card, scan beam disappears, card shows a "scanned" state), then the next card becomes active. Each card displays its real source filename as a title.
 
-## Root Cause
-In `DocumentCard` (AIDataFlowHero.tsx, lines 581-597), the entrance animation uses framer-motion to animate a `transform` *string attribute* on a `<motion.g>`:
+## Exploration Needed
+Read `src/components/documents/AIDataFlowHero.tsx` to confirm:
+- How `fileCount` / files are passed in (do we have actual filenames or just a count?).
+- Current `DocumentCard` props (need to add `label` + `isActive` + `isDone`).
+- Where `connectors` and `DocumentChip` are rendered (need to gate them per-card by active state).
+- Parent component (study-file tab) that owns the upload state — to pass real filenames down.
 
-```
-initial={{ transform: emergeFromTransform, opacity: 0 }}
-animate={{ transform: settledTransform, opacity, y: [...] }}
-```
+## Design
 
-Framer Motion does NOT reliably animate the SVG `transform` *attribute* as an interpolated string. It treats `transform` as a CSS transform, which for SVG `<g>` elements behaves inconsistently across browsers — and the simultaneous `y: [0, -2.2, 0, 2.2, 0]` keyframe (CSS y) conflicts with the SVG `y` attribute. The result: cards collapse to origin (0,0) or to a single position, so only the one whose final position happens to land in the visible area shows up.
+### 1. Real filenames
+- Change the hero's API from `fileCount: number` to `files: { name: string }[]` (keep `fileCount` derived as fallback for backward compat).
+- Parent (study-file upload area) passes the actual `File[]` (or `{name}[]`) into the hero.
+- Each `DocumentCard` receives `label` and renders it as a small title strip at the top of the card (truncated, max ~14 chars + ellipsis), replacing the generic header bar text.
 
-The connectors don't have this bug because they're plain `<motion.path d="...">` with a `pathLength` animation — no per-card transform is needed.
+### 2. Sequential scan state machine
+Inside `AIDataFlowHero`:
+- New state `activeIndex: number` (0 → totalDocs-1, then "all done").
+- Each card has a global index `gIdx` (matches `files[gIdx]`). Order = left column top→bottom, then right column top→bottom (deterministic, matches visual reading order).
+- A timer (`useEffect` with `setTimeout`) advances `activeIndex` every `SCAN_DURATION_MS` (e.g. 2600ms per file).
+- When `files` array changes (new file added), keep `activeIndex` where it is if still valid; if all were done and new files arrive, resume from the first not-yet-done index.
+- Track `doneSet: Set<number>` of completed indices.
 
-## Fix
-Refactor `DocumentCard` so positioning uses a static SVG `transform` attribute on the outer `<g>`, and the entrance animation uses motion-safe properties on an inner element:
+### 3. Per-card visual states
+`DocumentCard` gets `state: 'pending' | 'active' | 'done'`:
+- **pending**: card visible in slot, dim (opacity 0.55), no scan beam, no shimmer on body lines, body lines static gray.
+- **active**: full opacity, scan beam sweeping, body lines shimmer (current live behavior), small "Scanning…" micro-label or pulsing dot near the title.
+- **done**: full opacity, scan beam hidden, body lines static but tinted success-green, a small ✓ check badge in the corner.
 
-1. **Outer `<g>`**: static `transform={settledTransform}` and `opacity` — this guarantees every card is placed in its correct (x, y, rotate, scale) slot, exactly like the working static fallback path on line 578.
-2. **Inner `<motion.g>`**: handle entrance using `initial={{ scale: 0.2, opacity: 0, x: emergeDX, y: emergeDY }}` → `animate={{ scale: 1, opacity: 1, x: 0, y: 0 }}`, where `emergeDX/DY` are computed in the card's local coordinate space (origin at center) so the card visually flies in from the user/bottom-center toward its slot.
-3. **Idle float**: a separate inner `<motion.g>` (or a chained second animation) handles the gentle `y: [0,-2.2,0,2.2,0]` loop after the entrance completes (`delay: emergeDelay + 0.9`).
-4. Keep all other props/visuals identical.
+### 4. Per-card connectors + chips gating
+Currently `connectors` is one flat memo for all cards. Refactor so connectors and chips are filtered to render only for the card whose `gIdx === activeIndex`:
+- Connectors for inactive/done cards → not rendered (or rendered with opacity 0, instant).
+- Chips only flow on the active card's 3 lines.
+- Result: at any moment only ONE card has lines + chips going to the brain — exactly the "brain is reading this file right now" feel.
 
-Also keep the dynamic `key={\`L-${i}-of-${totalDocs}\`}` so cards re-mount and re-emerge when `fileCount` changes.
+### 5. Brain reaction
+- Brain stays at 0.5 scale while any card is `active` or `pending`.
+- Optional: subtle pulse intensity tied to active scanning (already breathing — keep as is).
+- When all cards are `done`, brain returns to scale 1 after a short delay.
+
+### 6. Timing
+- `SCAN_DURATION_MS = 2600` (matches roughly the existing scan-beam sweep duration).
+- Scan beam animation duration synced to `SCAN_DURATION_MS` so the beam reaches the bottom exactly when the file is marked done.
+- Small 200ms gap between files for a clean handoff.
+
+### 7. i18n
+- "Scanning…" and "Scanned" micro-labels go through `t('hero.aiFlow.scanning')` / `t('hero.aiFlow.scanned')` — added to all 12 locale files (or at minimum en/ar with safe key fallback).
+
+## Files to change
+- `src/components/documents/AIDataFlowHero.tsx` — add `files` prop, sequential scan state machine, per-card `state`, per-card connector/chip gating, filename label, done check badge.
+- Parent that mounts `AIDataFlowHero` on the study-file tab — pass real `files` array (need to locate via search; likely a component under `src/features/.../study-file/` or the documents area).
+- Locale files — add 2 keys (`hero.aiFlow.scanning`, `hero.aiFlow.scanned`) across the 12 locales.
 
 ## Verification
-- Upload 1 file → 1 card on left, emerging from bottom-center.
-- Upload 5 files → 3 cards left column, 2 cards right column, all visible, each with its own connector lines + chips flowing into the brain.
-- Upload 2, then 5 → newly added cards animate in; existing cards stay put.
-
-## Files
-- `src/components/documents/AIDataFlowHero.tsx` — refactor `DocumentCard` motion structure only. No prop/API changes, no parent changes.
+- Upload 1 file → card shows filename, scans once, marks done, brain returns to full size.
+- Upload 5 files → cards appear; only the 1st has connectors + chips; after ~2.6s it's checkmarked, connectors switch to the 2nd card; continues sequentially through all 5; brain returns to full size after the 5th.
+- Add a 6th file mid-sequence → it appears as `pending`, gets scanned in turn.
+- Each card's title shows the real uploaded filename, truncated.
 
