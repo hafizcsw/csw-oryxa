@@ -20,7 +20,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import brainAnatomical from "@/assets/brain-anatomical.svg";
-import { BrainIngestionVisualizer } from "@/components/intelligence/BrainIngestionVisualizer";
+import AnomalyOrb from "@/components/orb/AnomalyOrb";
 import { mapFileStatusesToBrainStage } from "@/utils/mapUploadPipelineToBrainStage";
 
 export type AIDataFlowHeroFileStatus = "pending" | "active" | "done" | "failed";
@@ -531,15 +531,47 @@ function AIDataFlowHeroComponent({
           />
         )}
 
-        {/* ═══ Brain — single source of truth: BrainIngestionVisualizer ═══ */}
-        <foreignObject x={CX - 320} y={CY - 240} width={640} height={480}>
-          <BrainIngestionVisualizer
-            stage={brainPipeline.stage}
-            progress={brainPipeline.progress}
-            showFileNode={false}
-            animate={!reduceMotion}
-            reducedMotion={!!reduceMotion}
-          />
+        {/* ═══ Anomaly Orb — fills with color as files are analyzed ═══
+            progress 0 → orb dim/desaturated; progress 100 → fully vibrant.
+            distortion + pulseSpeed scale with analysis activity. */}
+        <foreignObject x={CX - 220} y={CY - 220} width={440} height={440}>
+          <div className="w-full h-full flex items-center justify-center">
+            <AnomalyOrb
+              size={420}
+              distortion={0.4 + (brainPipeline.progress / 100) * 2.2}
+              pulseSpeed={
+                brainPipeline.stage === "idle"
+                  ? 0.6
+                  : brainPipeline.stage === "complete"
+                    ? 1.2
+                    : 1 + (brainPipeline.progress / 100) * 2
+              }
+              customColors={(() => {
+                const t = brainPipeline.progress / 100;
+                // Lerp from a dim grey-blue palette → vibrant primary palette.
+                const lerpHex = (a: string, b: string, k: number) => {
+                  const ah = parseInt(a.slice(1), 16);
+                  const bh = parseInt(b.slice(1), 16);
+                  const ar = (ah >> 16) & 255, ag = (ah >> 8) & 255, ab = ah & 255;
+                  const br = (bh >> 16) & 255, bg = (bh >> 8) & 255, bb = bh & 255;
+                  const r = Math.round(ar + (br - ar) * k);
+                  const g = Math.round(ag + (bg - ag) * k);
+                  const bl = Math.round(ab + (bb - ab) * k);
+                  return `#${((r << 16) | (g << 8) | bl).toString(16).padStart(6, "0")}`;
+                };
+                const dim = { c1: "#3a4a5a", c2: "#4a4a6a", c3: "#3a5a7a" };
+                const vivid =
+                  brainPipeline.stage === "error"
+                    ? { c1: "#ff6b6b", c2: "#c92a2a", c3: "#ff8787" }
+                    : { c1: "#00ffff", c2: "#8b5cf6", c3: "#0ea5e9" };
+                return {
+                  color1: lerpHex(dim.c1, vivid.c1, t),
+                  color2: lerpHex(dim.c2, vivid.c2, t),
+                  color3: lerpHex(dim.c3, vivid.c3, t),
+                };
+              })()}
+            />
+          </div>
         </foreignObject>
       </svg>
     </div>
