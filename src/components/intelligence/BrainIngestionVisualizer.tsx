@@ -19,7 +19,7 @@
 import { memo, useId } from "react";
 import { useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import brainAnatomical from "@/assets/brain-anatomical.svg";
+import brainTechnical from "@/assets/brain-technical.svg";
 import { useBrainIngestionAnimation } from "./useBrainIngestionAnimation";
 import type { BrainIngestionVisualizerProps } from "./BrainIngestionVisualizer.types";
 import "./brain-ingestion.css";
@@ -98,32 +98,32 @@ const NODE_POINTS_RIGHT = NODE_POINTS_LEFT.map((n) => ({ ...n, x: VB_W - n.x }))
 const FILE_LEFT = { x: 60, y: 440 };
 const FILE_RIGHT = { x: VB_W - 60, y: 440 };
 
-// ─── Brain interior region rectangles (overlays inside silhouette) ─
-// Order matches REGION_THRESHOLDS in the hook:
-// L-lower, R-lower, L-mid, R-mid, L-upper, R-upper, core-seam
-const REGIONS: Array<{ id: string; cx: number; cy: number; rx: number; ry: number }> = [
-  { id: "l-lower",   cx: CX - 90, cy: CY + 70, rx: 95, ry: 70 },
-  { id: "r-lower",   cx: CX + 90, cy: CY + 70, rx: 95, ry: 70 },
-  { id: "l-mid",     cx: CX - 95, cy: CY,      rx: 100, ry: 70 },
-  { id: "r-mid",     cx: CX + 95, cy: CY,      rx: 100, ry: 70 },
-  { id: "l-upper",   cx: CX - 70, cy: CY - 80, rx: 95, ry: 70 },
-  { id: "r-upper",   cx: CX + 70, cy: CY - 80, rx: 95, ry: 70 },
-  { id: "core-seam", cx: CX,      cy: CY,      rx: 60, ry: 130 },
-];
+// ─── Brain image bounding box (the technical SVG asset) ──────────
+// We render the technical brain raster centered on (CX,CY) at this size.
+const BRAIN_W = 760;
+const BRAIN_H = 560;
+const BRAIN_X = CX - BRAIN_W / 2;
+const BRAIN_Y = CY - BRAIN_H / 2;
 
-// Brain silhouette clipPath (simplified two-hemisphere).
-const BRAIN_SILHOUETTE_D = (() => {
-  const x = CX, y = CY, w = 320, h = 230;
-  return (
-    `M ${x - w} ${y - 30} ` +
-    `C ${x - w - 10} ${y - 130}, ${x - w / 2} ${y - h}, ${x - 60} ${y - h * 0.95} ` +
-    `C ${x - 30} ${y - h - 8}, ${x + 30} ${y - h - 8}, ${x + 60} ${y - h * 0.95} ` +
-    `C ${x + w / 2} ${y - h}, ${x + w + 10} ${y - 130}, ${x + w} ${y - 30} ` +
-    `C ${x + w + 6} ${y + 90}, ${x + w / 2} ${y + h - 10}, ${x + 50} ${y + h - 30} ` +
-    `C ${x + 30} ${y + h}, ${x - 30} ${y + h}, ${x - 50} ${y + h - 30} ` +
-    `C ${x - w / 2} ${y + h - 10}, ${x - w - 6} ${y + 90}, ${x - w} ${y - 30} Z`
-  );
-})();
+// ─── Brain interior reveal regions (rectangles inside the brain bbox) ──
+// Order matches REGION_THRESHOLDS in the hook:
+// L-lower, R-lower, L-mid, R-mid, L-upper, R-upper, core-seam.
+// Each region is a rectangle that "uncovers" the colored brain copy.
+const BRAIN_INNER_X = BRAIN_X + BRAIN_W * 0.18;
+const BRAIN_INNER_Y = BRAIN_Y + BRAIN_H * 0.22;
+const BRAIN_INNER_W = BRAIN_W * 0.64;
+const BRAIN_INNER_H = BRAIN_H * 0.56;
+const REG_W = BRAIN_INNER_W / 2;
+const REG_H = BRAIN_INNER_H / 3;
+const REGIONS: Array<{ id: string; x: number; y: number; w: number; h: number }> = [
+  { id: "l-lower", x: BRAIN_INNER_X,         y: BRAIN_INNER_Y + REG_H * 2, w: REG_W, h: REG_H },
+  { id: "r-lower", x: BRAIN_INNER_X + REG_W, y: BRAIN_INNER_Y + REG_H * 2, w: REG_W, h: REG_H },
+  { id: "l-mid",   x: BRAIN_INNER_X,         y: BRAIN_INNER_Y + REG_H,     w: REG_W, h: REG_H },
+  { id: "r-mid",   x: BRAIN_INNER_X + REG_W, y: BRAIN_INNER_Y + REG_H,     w: REG_W, h: REG_H },
+  { id: "l-upper", x: BRAIN_INNER_X,         y: BRAIN_INNER_Y,             w: REG_W, h: REG_H },
+  { id: "r-upper", x: BRAIN_INNER_X + REG_W, y: BRAIN_INNER_Y,             w: REG_W, h: REG_H },
+  { id: "core-seam", x: BRAIN_INNER_X + REG_W * 0.85, y: BRAIN_INNER_Y, w: REG_W * 0.3, h: BRAIN_INNER_H },
+];
 
 function BrainIngestionVisualizerComponent({
   stage,
@@ -143,11 +143,8 @@ function BrainIngestionVisualizerComponent({
   const uid = useId().replace(/:/g, "");
   const ids = {
     silhouette: `biv-clip-${uid}`,
-    fillGrad: `biv-fill-${uid}`,
     streamGrad: `biv-stream-${uid}`,
     aura: `biv-aura-${uid}`,
-    chipFace: `biv-chip-${uid}`,
-    glow: `biv-glow-${uid}`,
   };
 
   // CSS vars driving all keyframes.
@@ -180,15 +177,16 @@ function BrainIngestionVisualizerComponent({
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
-          <clipPath id={ids.silhouette}>
-            <path d={BRAIN_SILHOUETTE_D} />
+          {/* Brain reveal mask — region rectangles whose Y scale grows
+              with progress, so color fills bottom→top inside each region. */}
+          <clipPath id={ids.silhouette} clipPathUnits="userSpaceOnUse">
+            {REGIONS.map((r, i) => {
+              const fill = m.regionOpacity[i] ?? 0;
+              const grownH = r.h * fill;
+              const grownY = r.y + (r.h - grownH);
+              return <rect key={r.id} x={r.x} y={grownY} width={r.w} height={grownH} />;
+            })}
           </clipPath>
-
-          <radialGradient id={ids.fillGrad} cx="50%" cy="50%" r="60%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.85" />
-            <stop offset="55%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-          </radialGradient>
 
           <linearGradient id={ids.streamGrad} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0" />
@@ -197,31 +195,28 @@ function BrainIngestionVisualizerComponent({
           </linearGradient>
 
           <radialGradient id={ids.aura} cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.55" />
-            <stop offset="60%" stopColor="hsl(var(--primary))" stopOpacity="0.18" />
+            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
+            <stop offset="60%" stopColor="hsl(var(--primary))" stopOpacity="0.12" />
             <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
           </radialGradient>
-
-          <linearGradient id={ids.chipFace} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.65" />
-          </linearGradient>
-
-          <filter id={ids.glow} x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="3" />
-          </filter>
         </defs>
 
-        {/* ═══ Layer 1 — base brain geometry (pure wireframe, no raster) ═══
-            Always-visible faint silhouette. Color comes from Layer 6 fills. */}
+        {/* ═══ Layer 1 — base brain (the technical SVG, sharp, dominant) ═══
+            Always visible. Desaturated in idle, becomes gradually colored
+            via the Layer 6 colored copy that reveals through the clipPath. */}
         <g className="biv-base">
-          <path
-            d={BRAIN_SILHOUETTE_D}
-            fill="none"
-            stroke="hsl(var(--foreground))"
-            strokeOpacity={0.22}
-            strokeWidth={1.2}
-            strokeDasharray="3 4"
+          <image
+            href={brainTechnical}
+            x={BRAIN_X}
+            y={BRAIN_Y}
+            width={BRAIN_W}
+            height={BRAIN_H}
+            preserveAspectRatio="xMidYMid meet"
+            style={{
+              filter: `grayscale(${Math.max(0, 0.85 - m.brainFill * 0.85)}) contrast(${1.05 + m.brainFill * 0.15}) brightness(${0.92 + m.brainFill * 0.1})`,
+              opacity: 0.55 + m.brainFill * 0.15,
+              transition: "filter 700ms ease-out, opacity 700ms ease-out",
+            }}
           />
         </g>
 
@@ -306,25 +301,28 @@ function BrainIngestionVisualizerComponent({
           </g>
         )}
 
-        {/* ═══ Layer 6 — brain interior fill (region-by-region) ═══ */}
+        {/* ═══ Layer 6 — colored brain reveal (region-by-region) ═══
+            Full-color copy of the technical brain image, masked by a
+            clipPath whose region rectangles GROW with progress. This is
+            real region-based fill — no blur cloud, no overlay blob. */}
         <g clipPath={`url(#${ids.silhouette})`}>
-          {REGIONS.map((r, i) => (
-            <ellipse
-              key={r.id}
-              cx={r.cx}
-              cy={r.cy}
-              rx={r.rx}
-              ry={r.ry}
-              fill={`url(#${ids.fillGrad})`}
-              className="biv-region"
-              opacity={m.regionOpacity[i] ?? 0}
-            />
-          ))}
+          <image
+            href={brainTechnical}
+            x={BRAIN_X}
+            y={BRAIN_Y}
+            width={BRAIN_W}
+            height={BRAIN_H}
+            preserveAspectRatio="xMidYMid meet"
+            style={{
+              filter: `saturate(${1.05 + m.brainFill * 0.25}) contrast(1.1) brightness(1.05)`,
+              transition: "filter 600ms ease-out",
+            }}
+          />
         </g>
 
-        {/* ═══ Layer 7 — completion aura ═══ */}
+        {/* ═══ Layer 7 — completion aura (subtle, only at the end) ═══ */}
         <g className="biv-completion-aura">
-          <circle cx={CX} cy={CY} r={260} fill={`url(#${ids.aura})`} />
+          <circle cx={CX} cy={CY} r={Math.min(BRAIN_W, BRAIN_H) * 0.42} fill={`url(#${ids.aura})`} />
         </g>
 
         {/* ═══ File node glyphs (left + right) ═══ */}
@@ -348,8 +346,7 @@ function BrainIngestionVisualizerComponent({
           </g>
         )}
 
-        {/* Suppress unused-id warnings — chip/streamGrad reserved for future tier upgrades. */}
-        <use href={`#${ids.chipFace}`} x={-9999} y={-9999} />
+        {/* Reserve gradient ref for future stream usage. */}
         <use href={`#${ids.streamGrad}`} x={-9999} y={-9999} />
       </svg>
     </div>
