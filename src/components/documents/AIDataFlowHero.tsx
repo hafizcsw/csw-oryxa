@@ -337,22 +337,22 @@ function AIDataFlowHeroComponent({
           </g>
         )}
 
-        {/* ═══ Connector paths with arrowheads (only when documents exist) ═══ */}
+        {/* ═══ Connector paths with arrowheads (one set per card line) ═══ */}
         {showConnectors && (
           <g fill="none" strokeLinecap="round">
-            {connectors.map((p, i) => (
+            {connectors.map((p) => (
               <ConnectorPath
                 key={p.key}
                 d={p.d}
                 animate={!reduceMotion}
-                delay={i * 0.1}
+                delay={0.9 + p.cardIdx * 0.12 + p.lineIdx * 0.08}
                 markerId={ids.arrowHead}
               />
             ))}
           </g>
         )}
 
-        {/* ═══ Mid-flight extraction chips (only while processing) ═══ */}
+        {/* ═══ Mid-flight extraction chips riding the connectors ═══ */}
         {showChips && !reduceMotion && (
           <g>
             {connectors.map((p, i) => (
@@ -360,7 +360,7 @@ function AIDataFlowHeroComponent({
                 key={`chip-${p.key}`}
                 pathD={p.d}
                 duration={cfg.chipDuration}
-                delay={(i * 0.45) % cfg.chipDuration}
+                delay={(1.4 + p.cardIdx * 0.3 + p.lineIdx * 0.5 + (i * 0.15)) % cfg.chipDuration}
               />
             ))}
           </g>
