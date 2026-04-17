@@ -85,7 +85,7 @@ export function Footer() {
                 <li key={link.href}>
                   <button
                     onClick={() => handleLinkClick(link.href)}
-                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                    className="text-foreground font-bold text-[14px] hover:text-primary transition-colors"
                   >
                     {link.label}
                   </button>
@@ -102,7 +102,7 @@ export function Footer() {
                 <li key={link.href}>
                   <button
                     onClick={() => handleLinkClick(link.href)}
-                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                    className="text-foreground font-bold text-[14px] hover:text-primary transition-colors"
                   >
                     {link.label}
                   </button>
@@ -119,7 +119,7 @@ export function Footer() {
                 <li key={link.href}>
                   <button
                     onClick={() => handleLinkClick(link.href)}
-                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                    className="text-foreground font-bold text-[14px] hover:text-primary transition-colors"
                   >
                     {link.label}
                   </button>
@@ -136,7 +136,7 @@ export function Footer() {
                 <li key={link.href}>
                   <button
                     onClick={() => handleLinkClick(link.href)}
-                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                    className="text-foreground font-bold text-[14px] hover:text-primary transition-colors"
                   >
                     {link.label}
                   </button>
@@ -153,7 +153,7 @@ export function Footer() {
                 <li key={link.href}>
                   <button
                     onClick={() => handleLinkClick(link.href)}
-                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                    className="text-foreground font-bold text-[14px] hover:text-primary transition-colors"
                   >
                     {link.label}
                   </button>
@@ -170,7 +170,7 @@ export function Footer() {
                 <li key={link.href}>
                   <button
                     onClick={() => handleLinkClick(link.href)}
-                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                    className="text-foreground font-bold text-[14px] hover:text-primary transition-colors"
                   >
                     {link.label}
                   </button>
