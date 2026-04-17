@@ -536,9 +536,22 @@ export function CentralUploadHub({
   onDismiss,
   onClearCompleted,
 }: CentralUploadHubProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // AI-powered per-file discovery feed (independent of upload registry).
+  const { discoveries, analyzeFiles } = useDocumentDiscoveries();
+
+  const triggerFiles = useCallback(
+    (files: File[]) => {
+      if (files.length === 0) return;
+      onFilesSelected(files);
+      // Fire-and-forget AI analysis in parallel — does NOT block uploads.
+      void analyzeFiles(files, language);
+    },
+    [onFilesSelected, analyzeFiles, language],
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -558,14 +571,14 @@ export function CentralUploadHub({
     setIsDragOver(false);
     if (disabled) return;
     const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) onFilesSelected(files);
-  }, [disabled, onFilesSelected]);
+    triggerFiles(files);
+  }, [disabled, triggerFiles]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length > 0) onFilesSelected(files);
+    triggerFiles(files);
     if (fileInputRef.current) fileInputRef.current.value = '';
-  }, [onFilesSelected]);
+  }, [triggerFiles]);
 
   const isProcessing = isUploading || records.some(r =>
     r.processing_status === 'uploading' || r.processing_status === 'confirming'
