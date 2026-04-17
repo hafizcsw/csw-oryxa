@@ -305,8 +305,8 @@ export default function AnomalyOrb({
         sphereRef.current.rotation.y = elapsedTime * 0.1;
         sphereRef.current.rotation.x = Math.sin(elapsedTime * 0.05) * 0.1;
 
-        // Audio-reactive scale
-        const scale = 1 + effectiveAudioLevel * 0.15;
+        // Audio-reactive scale (reduced to 25%)
+        const scale = 1 + effectiveAudioLevel * 0.04;
         sphereRef.current.scale.setScalar(scale);
       }
 
