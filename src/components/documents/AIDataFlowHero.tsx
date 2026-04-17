@@ -90,10 +90,14 @@ function AIDataFlowHeroComponent({
   const effectiveIntensity = isProcessing ? "lively" : isDragOver ? "normal" : intensity;
   const cfg = INTENSITY_MAP[effectiveIntensity];
 
-  // State machine: idle | dragOver | active (hasFiles) | processing
-  const showDocuments = hasFiles || isProcessing;
+  // STRICT state machine — documents are derived ONLY from real fileCount.
+  // Idle (fileCount=0, !isProcessing): brain only. No docs, no connectors, no chips.
+  // Drag-over (fileCount=0): subtle hint ring only. Still no permanent docs.
+  // hasFiles / isProcessing: render docs + connectors. Chips animate while processing.
+  const totalDocs = Math.max(0, Math.floor(fileCount));
+  const showDocuments = totalDocs > 0;
   const showConnectors = showDocuments;
-  const showChips = isProcessing; // extraction packets only while reading
+  const showChips = showDocuments && isProcessing;
   const dragHint = isDragOver && !showDocuments;
 
   const ids = useMemo(
@@ -111,14 +115,11 @@ function AIDataFlowHeroComponent({
   const LEFT_ANCHOR  = { x: 168, y: 180 };
   const RIGHT_ANCHOR = { x: 660, y: 180 };
 
-  // Distribute fileCount across two sides; cap by visibleCardsPerSide (≤5)
+  // Distribute REAL fileCount across two sides; cap by visibleCardsPerSide (≤5).
+  // No fallback — if totalDocs is 0, both sides are 0 and nothing renders.
   const maxPerSide = Math.max(1, Math.min(5, visibleCardsPerSide));
-  const totalDocs = Math.max(0, fileCount);
-  const leftCountRaw  = showDocuments ? Math.min(maxPerSide, Math.ceil(totalDocs / 2)) : 0;
-  const rightCountRaw = showDocuments ? Math.min(maxPerSide, Math.floor(totalDocs / 2)) : 0;
-  // If hasFiles flagged but count is 0, fall back to a single card per side
-  const lc = showDocuments && leftCountRaw === 0 && rightCountRaw === 0 ? 1 : leftCountRaw;
-  const rc = showDocuments && leftCountRaw === 0 && rightCountRaw === 0 ? 1 : rightCountRaw;
+  const lc = Math.min(maxPerSide, Math.ceil(totalDocs / 2));
+  const rc = Math.min(maxPerSide, Math.floor(totalDocs / 2));
   const cardsPerSide = Math.max(lc, rc, 1);
 
   const leftCards = FAN.slice(0, lc).map((f, i) => ({
