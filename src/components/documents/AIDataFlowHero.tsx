@@ -25,8 +25,16 @@ export interface AIDataFlowHeroProps {
   intensity?: "calm" | "normal" | "lively";
   /** Localized aria-label */
   ariaLabel?: string;
-  /** Visible cards per side (default 3, fan supports up to 5) */
+  /** Max visible cards per side cap (fan supports up to 5) */
   visibleCardsPerSide?: number;
+  /** STATE: number of uploaded files (drives doc count per side) */
+  fileCount?: number;
+  /** STATE: any files exist → render document clusters + connectors */
+  hasFiles?: boolean;
+  /** STATE: user is dragging files over the dropzone */
+  isDragOver?: boolean;
+  /** STATE: upload/extraction in progress → animate chips faster */
+  isProcessing?: boolean;
 }
 
 const VIEWBOX_W = 960;
@@ -70,10 +78,22 @@ function AIDataFlowHeroComponent({
   intensity = "normal",
   ariaLabel,
   visibleCardsPerSide = 3,
+  fileCount = 0,
+  hasFiles = false,
+  isDragOver = false,
+  isProcessing = false,
 }: AIDataFlowHeroProps) {
   const reduceMotion = useReducedMotion();
   const uid = useId().replace(/:/g, "");
-  const cfg = INTENSITY_MAP[intensity];
+  // Derive intensity from state when processing
+  const effectiveIntensity = isProcessing ? "lively" : isDragOver ? "normal" : intensity;
+  const cfg = INTENSITY_MAP[effectiveIntensity];
+
+  // State machine: idle | dragOver | active (hasFiles) | processing
+  const showDocuments = hasFiles || isProcessing;
+  const showConnectors = showDocuments;
+  const showChips = isProcessing; // extraction packets only while reading
+  const dragHint = isDragOver && !showDocuments;
 
   const ids = useMemo(
     () => ({
