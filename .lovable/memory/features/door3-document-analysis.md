@@ -1,43 +1,49 @@
 ---
 name: Door 3 — Document Understanding + Proposals
-description: Internal document analysis with PDF text extraction, MRZ parsing, regex classification, extraction proposals, and truth promotion rules
+description: Internal document analysis with PDF text extraction, MRZ parsing, regex classification, extraction proposals, lane-specific promotion gates, and trial-safe persistence
 type: feature
 ---
 
 ## Models
-- `DocumentAnalysis` in `document-analysis-model.ts` — analysis status, parser type, extracted fields, classification
-- `ExtractionProposal` in `extraction-proposal-model.ts` — proposal lifecycle with auto-accept/pending/reject/superseded
+- `DocumentAnalysis` in `document-analysis-model.ts`
+- `ExtractionProposal` in `extraction-proposal-model.ts`
+- `StructuredDocumentArtifact` in `structured-browser-artifact-model.ts` — local-only browser artifact
 
 ## Parsers (all internal, no external LLM)
-- `pdf-text-parser.ts` — pdfjs-dist text extraction
-- `mrz-parser.ts` — TD3 passport MRZ regex parser
-- `content-classifier.ts` — keyword/pattern classification
-- `field-extractors.ts` — per-document-type regex extraction
+- `pdf-text-parser.ts` — pdfjs-dist
+- `mrz-parser.ts` — TD3
+- `content-classifier.ts`
+- `field-extractors.ts`
+- `transcript-parser.ts` — consumes structured artifact (transcript lane only)
+- `browser-preprocessing.ts` + `structured-artifact-builder.ts` — local heuristic
 
 ## Engine
 - `analysis-engine.ts` — orchestrates classify → extract → propose → promote
 
-## Truth Promotion (V1)
-- Promoted fields merge into CanonicalStudentFile via `useCanonicalStudentFile({ promotedFields })`
-- `mergePromotedFields()` writes values into canonical blocks with `source_type: 'extracted'` provenance
-- Auto-accept: low-risk field + confidence >= 0.85 + no conflict
-- Pending review: ambiguity, conflicting current value
-- Reject: null value, unsupported type, extraction failed
+## Truth Promotion (V1) — HONESTY GATES
+- GATE 1: degraded readability → never auto-accept
+- GATE 2: passport identity requires MRZ + passport_strong
+- GATE 3: transcript lane = always pending_review
+- GATE 4: graduation lane = always pending_review (no auto-accept, ever, in V1)
+- GATE 5: language lane narrow auto-accept whitelist:
+  - only `language.english_test_type` and `language.english_total_score`
+  - requires readable + confidence ≥ 0.9 + trusted parser source + no conflict
+  - all other language fields → pending_review (expiry never masquerades as explicit)
 
-## Extraction Targets V1
-- Passport: 7 identity fields via MRZ (PDF text only — no OCR for images in V1)
-- Graduation cert: 6 academic fields via regex
-- Transcript: 4 academic fields via regex
-- Language cert: 8 language fields via regex
+## Trial-safe persistence (compact 2-table schema)
+- `engine-persistence.ts` + `useDocumentAnalysis` hydration
+- Tables: `document_analyses`, `extraction_proposals` (RLS: per-user)
+- Artifact + structured artifact persisted as SUMMARY JSONB only
+- Promoted state DERIVED from proposal status (auto_accepted)
+- Reload-safe: hook hydrates on mount per user
 
-## HONEST GAPS (V1)
-- **No image OCR**: Image uploads (jpg/png) get `filename_only` parser. No field extraction from images.
-- **Passport image extraction does NOT work** in V1 — requires Tesseract.js (future)
-- **No CRM writeback** — promoted values are session-local canonical overlay only
-- **pendingFilesRef** uses unique keys (name+size+counter) to avoid duplicate filename collision
+## Transcript coverage honesty
+- denominator = base_row_like + structured_unique_added (no double counting)
+- evidence_summary exposes base / struct_seen / struct_unique
 
 ## NOT in Door 3
-- No OpenAI / Oryxa
+- No OpenAI / no LLM / no outbound document-content path
 - No CRM writeback
-- No eligibility / fit / report engine
-- No CV / SOP / recommendation parsing
+- No image OCR auto-accept
+- No graduation auto-accept
+- No language auto-accept beyond the narrow 2-field whitelist

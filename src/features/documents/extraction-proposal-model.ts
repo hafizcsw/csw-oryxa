@@ -72,7 +72,10 @@ export function createProposal(params: {
 // ── Truth Promotion Rules (V1) ───────────────────────────────
 // These rules are intentionally conservative for Door 3.
 
-/** Fields that are safe for auto-accept at high confidence */
+/** Fields that are safe for auto-accept at high confidence.
+ *  Graduation fields are intentionally NOT in this set — graduation lane
+ *  is review-first by HONESTY GATE 4. Language has its own narrow
+ *  whitelist enforced by HONESTY GATE 5. */
 const LOW_RISK_FIELDS = new Set([
   'identity.passport_name',
   'identity.passport_number',
@@ -82,19 +85,24 @@ const LOW_RISK_FIELDS = new Set([
   'identity.passport_issue_date',
   'identity.passport_expiry_date',
   'identity.passport_issuing_country',
-  'academic.credential_name',
-  'academic.awarding_institution',
-  'academic.institution_name',
-  'academic.graduation_year',
-  'academic.country_of_education',
-  'language.english_test_type',
-  'language.english_total_score',
-  'language.english_test_date',
-  'language.english_expiry_date',
 ]);
 
-/** Minimum confidence for auto-accept */
+/** Language fields permitted to auto-accept under HONESTY GATE 5. */
+const LANGUAGE_AUTO_ACCEPT_WHITELIST = new Set<string>([
+  'language.english_test_type',
+  'language.english_total_score',
+]);
+
+/** Parser sources trusted for language auto-accept. */
+const LANGUAGE_TRUSTED_PARSER_SOURCES = new Set<string>([
+  'pdf_text',
+  'regex_heuristic',
+]);
+
+/** Minimum confidence for general low-risk auto-accept (passport identity). */
 const AUTO_ACCEPT_THRESHOLD = 0.85;
+/** Minimum confidence for narrow language auto-accept. */
+const LANGUAGE_AUTO_ACCEPT_THRESHOLD = 0.9;
 
 /** Context required to apply promotion rules honestly. */
 export interface PromotionContext {
@@ -194,9 +202,6 @@ export function applyPromotionRules(
   }
 
   // HONESTY GATE 3: transcript lane is review-first only in V1.
-  // No transcript-derived field can ever auto-accept — even high-confidence
-  // header fields like institution_name. Transcripts are partial/structured
-  // and require human review before entering canonical truth.
   if (context.source_lane === 'transcript') {
     updated.proposal_status = 'pending_review';
     updated.requires_review = true;
@@ -204,7 +209,40 @@ export function applyPromotionRules(
     return updated;
   }
 
+  // HONESTY GATE 4: graduation lane is review-first only in V1.
+  // Every graduation-derived field — even high-confidence credential_name —
+  // must go through human review. No auto-accept, ever, in V1.
+  if (context.source_lane === 'graduation') {
+    updated.proposal_status = 'pending_review';
+    updated.requires_review = true;
+    updated.auto_apply_candidate = false;
+    return updated;
+  }
+
+  // HONESTY GATE 5: language lane narrow auto-accept.
+  // Only english_test_type and english_total_score may auto-accept, and only
+  // when readable + high confidence + trusted parser source + no conflict.
+  // Everything else in the language lane → pending_review.
+  if (context.source_lane === 'language') {
+    const whitelisted = LANGUAGE_AUTO_ACCEPT_WHITELIST.has(updated.field_key);
+    const readable = context.readability === 'readable';
+    const trustedSource =
+      !!context.parser_source && LANGUAGE_TRUSTED_PARSER_SOURCES.has(context.parser_source);
+    const highConf = updated.confidence >= LANGUAGE_AUTO_ACCEPT_THRESHOLD;
+    if (whitelisted && readable && trustedSource && highConf && !updated.conflict_with_current) {
+      updated.proposal_status = 'auto_accepted';
+      updated.requires_review = false;
+      updated.auto_apply_candidate = true;
+      return updated;
+    }
+    updated.proposal_status = 'pending_review';
+    updated.requires_review = true;
+    updated.auto_apply_candidate = false;
+    return updated;
+  }
+
   // Rule: auto-accept if low-risk + high confidence + no conflict
+  // (passport identity lane, already filtered by GATE 2 for parser/strength)
   if (
     LOW_RISK_FIELDS.has(updated.field_key) &&
     updated.confidence >= AUTO_ACCEPT_THRESHOLD &&
