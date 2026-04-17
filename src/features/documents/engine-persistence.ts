@@ -206,9 +206,27 @@ export async function deleteAllPersistedForUser(userId: string): Promise<void> {
 
 // ── Hydration ────────────────────────────────────────────────
 
+/** Provenance of an accepted proposal — preserved across reload. */
+export type AcceptDecisionSource = 'engine' | 'user';
+
+export interface HydratedAnalysisExtras {
+  document_id: string;
+  document_filename: string | null;
+  artifact_summary: PersistedArtifactSummary | null;
+  structured_artifact_summary: PersistedStructuredArtifactSummary | null;
+}
+
+export interface HydratedProposalDecision {
+  proposal_id: string;
+  decided_by: AcceptDecisionSource | null;
+  decided_at: string | null;
+}
+
 export interface HydratedEngineState {
   analyses: DocumentAnalysis[];
   proposals: ExtractionProposal[];
+  analysis_extras: HydratedAnalysisExtras[];
+  proposal_decisions: HydratedProposalDecision[];
 }
 
 /** Load every persisted analysis + proposal for the current user. */
