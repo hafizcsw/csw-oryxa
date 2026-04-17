@@ -1,21 +1,23 @@
 /* ════════════════════════════════════════════════════════════════
- * BrainIngestionVisualizer — CSS variable driven keyframes.
+ * BrainIngestionVisualizer — structure-based, NOT filter-based.
  *
- * Motion values flow from React → CSS custom properties on .biv-root,
- * keyframes consume them. This avoids per-frame React re-renders for
- * dozens of SVG paths.
+ * Strategy:
+ *   - Real vector silhouette + internal wireframe stay crisp.
+ *   - Streams animate via stroke-dashoffset (no global blur wash).
+ *   - Region fills transition opacity inside the real silhouette clip.
+ *   - Soft glow only on the completion aura, never the base.
  *
- * All colors come from design-system semantic tokens (HSL).
- * No hex literals, no hardcoded text, no flicker.
+ * All colors via design-system semantic tokens (HSL).
  * ════════════════════════════════════════════════════════════════ */
 
 .biv-root {
   --biv-cool: var(--primary, 200 100% 60%);
   --biv-warm: var(--accent, 35 95% 60%);
   --biv-fg: var(--foreground, 0 0% 100%);
-  --biv-stream-cycle: 2.4s;
+  --biv-stream-cycle: 1.8s;
   --biv-stream-intensity: 0;
   --biv-branch-activation: 0;
+  --biv-bridge-activation: 0;
   --biv-brain-fill: 0;
   --biv-stable-glow: 0;
   --biv-error-dampening: 0;
@@ -24,115 +26,138 @@
   height: 100%;
 }
 
-.biv-root[data-stage="idle"] { --biv-stream-cycle: 6s; }
-.biv-root[data-stage="uploading"] { --biv-stream-cycle: 3.4s; }
-.biv-root[data-stage="scanning"] { --biv-stream-cycle: 2.4s; }
-.biv-root[data-stage="extracting"] { --biv-stream-cycle: 1.8s; }
-.biv-root[data-stage="interpreting"] { --biv-stream-cycle: 1.4s; }
-.biv-root[data-stage="complete"] { --biv-stream-cycle: 4.6s; }
-.biv-root[data-stage="error"] { --biv-stream-cycle: 5s; }
+.biv-root[data-stage="idle"]         { --biv-stream-cycle: 6s; }
+.biv-root[data-stage="uploading"]    { --biv-stream-cycle: 2.6s; }
+.biv-root[data-stage="scanning"]     { --biv-stream-cycle: 2.0s; }
+.biv-root[data-stage="extracting"]   { --biv-stream-cycle: 1.5s; }
+.biv-root[data-stage="interpreting"] { --biv-stream-cycle: 1.1s; }
+.biv-root[data-stage="complete"]     { --biv-stream-cycle: 4s; }
+.biv-root[data-stage="error"]        { --biv-stream-cycle: 5s; }
 
-/* ── Layer 1: brain base — sharp, dominant, no blur ────────────── */
-.biv-base {
-  opacity: 1;
+/* ── Brain silhouette stroke (always crisp, dominant) ──────────── */
+.biv-silhouette {
+  fill: hsl(var(--biv-cool) / 0.04);
+  stroke: hsl(var(--biv-fg) / 0.55);
+  stroke-width: 1.6;
 }
 
-/* ── Layer 2: passive branch skeleton ──────────────────────────── */
-.biv-branch-skeleton {
-  opacity: calc(0.18 + 0.12 * var(--biv-branch-activation));
-  transition: opacity 500ms ease-out;
-}
-
-/* ── Layer 3: active streams — stroke pulses along branches ────── */
-.biv-stream {
-  stroke: hsl(var(--biv-cool));
-  stroke-width: 1.2;
+/* ── Central seam ─────────────────────────────────────────────── */
+.biv-seam {
   fill: none;
+  stroke: hsl(var(--biv-fg) / 0.3);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+/* ── Internal wireframe (sulci/gyri lines) ─────────────────────── */
+.biv-wire {
+  fill: none;
+  stroke: hsl(var(--biv-fg) / 0.32);
+  stroke-width: 0.9;
   stroke-linecap: round;
-  opacity: calc(0.15 + 0.85 * var(--biv-stream-intensity) * var(--biv-branch-activation));
-  stroke-dasharray: 6 14;
+}
+
+/* ── Passive branch skeleton ───────────────────────────────────── */
+.biv-branch-skeleton {
+  fill: none;
+  stroke: hsl(var(--biv-fg) / 0.22);
+  stroke-width: 1.2;
+  opacity: calc(0.5 + 0.4 * var(--biv-branch-activation));
+  transition: opacity 400ms ease-out;
+}
+
+/* ── Active branch streams ─────────────────────────────────────── */
+.biv-stream {
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 10 16;
   animation: biv-stream-flow var(--biv-stream-cycle) linear infinite;
-  transition: opacity 500ms ease-out;
+  transition: opacity 400ms ease-out;
   will-change: stroke-dashoffset;
 }
-
-.biv-stream--mid { animation-delay: -0.4s; }
-.biv-stream--terminal { animation-delay: -0.9s; stroke: hsl(var(--biv-warm)); }
+.biv-stream--outer    { stroke: hsl(var(--biv-cool)); }
+.biv-stream--mid      { stroke: hsl(var(--biv-cool)); animation-delay: -0.4s; }
+.biv-stream--terminal { stroke: hsl(var(--biv-warm)); animation-delay: -0.8s; stroke-width: 2.6; }
 
 @keyframes biv-stream-flow {
-  from { stroke-dashoffset: 40; }
+  from { stroke-dashoffset: 52; }
   to   { stroke-dashoffset: 0; }
 }
 
-/* ── Layer 4: nodes pulsing along branches ─────────────────────── */
+/* ── Branch nodes (real, sequential pulse) ────────────────────── */
 .biv-node {
   fill: hsl(var(--biv-cool));
-  opacity: calc(0.25 + 0.65 * var(--biv-branch-activation));
   transform-box: fill-box;
   transform-origin: center;
-  animation: biv-node-pulse calc(var(--biv-stream-cycle) * 0.9) ease-in-out infinite;
-  transition: opacity 500ms ease-out;
+  animation: biv-node-pulse calc(var(--biv-stream-cycle) * 0.95) ease-in-out infinite;
+  opacity: calc(0.3 + 0.6 * var(--biv-branch-activation));
+  transition: opacity 400ms ease-out;
 }
-.biv-node--warm { fill: hsl(var(--biv-warm)); }
+.biv-node--terminal { fill: hsl(var(--biv-warm)); }
 
 @keyframes biv-node-pulse {
   0%, 100% { transform: scale(0.85); opacity: calc(0.35 * var(--biv-branch-activation)); }
   50%      { transform: scale(1.15); opacity: calc(0.95 * var(--biv-branch-activation)); }
 }
 
-/* ── Layer 5: inflow bridges — only meaningful mid-pipeline ────── */
+/* ── Entry bridges — only activate mid/late pipeline ──────────── */
 .biv-bridge {
-  stroke: hsl(var(--biv-cool));
-  stroke-width: 1.4;
   fill: none;
+  stroke: hsl(var(--biv-warm));
+  stroke-width: 2;
   stroke-linecap: round;
-  opacity: calc(var(--biv-stream-intensity) * 0.9);
   stroke-dasharray: 4 6;
-  animation: biv-bridge-flow calc(var(--biv-stream-cycle) * 0.8) linear infinite;
-  transition: opacity 600ms ease-out;
+  animation: biv-bridge-flow calc(var(--biv-stream-cycle) * 0.75) linear infinite;
+  opacity: calc(var(--biv-bridge-activation) * 0.95);
+  transition: opacity 500ms ease-out;
 }
-
 @keyframes biv-bridge-flow {
   from { stroke-dashoffset: 0; }
   to   { stroke-dashoffset: -20; }
 }
 
-/* ── Layer 6: brain interior reveal — handled via clipPath, no blur ── */
+/* ── Region fills (segmented, inside real silhouette clip) ─────── */
 .biv-region {
-  transition: opacity 600ms ease-out;
+  transition: opacity 280ms linear;
+  /* Region color uses cool primary, gently brightened. */
 }
+.biv-region--cool { fill: hsl(var(--biv-cool) / 0.55); }
+.biv-region--warm { fill: hsl(var(--biv-warm) / 0.45); }
+.biv-region--seam { fill: hsl(var(--biv-cool) / 0.35); }
 
-/* ── Layer 7: completion aura ──────────────────────────────────── */
+/* ── Completion aura — minimal, only at end ────────────────────── */
 .biv-completion-aura {
   opacity: var(--biv-stable-glow);
-  transition: opacity 1200ms ease-out;
+  transition: opacity 900ms ease-out;
+  pointer-events: none;
 }
 
 /* ── File node + halo ──────────────────────────────────────────── */
 .biv-file-node {
-  opacity: calc(0.6 + 0.4 * var(--biv-branch-activation));
+  opacity: calc(0.7 + 0.3 * var(--biv-branch-activation));
   transition: opacity 500ms ease-out;
 }
 .biv-file-pulse {
-  fill: hsl(var(--biv-cool) / 0.18);
+  fill: hsl(var(--biv-cool) / 0.2);
   transform-box: fill-box;
   transform-origin: center;
   animation: biv-file-halo 2.4s ease-in-out infinite;
 }
 @keyframes biv-file-halo {
   0%, 100% { transform: scale(0.92); opacity: 0.35; }
-  50%      { transform: scale(1.18); opacity: 0.85; }
+  50%      { transform: scale(1.18); opacity: 0.8; }
 }
 
-/* ── Error dampening — gentle desaturation, no shake ───────────── */
+/* ── Error dampening ───────────────────────────────────────────── */
 .biv-root[data-stage="error"] .biv-stream,
 .biv-root[data-stage="error"] .biv-bridge,
 .biv-root[data-stage="error"] .biv-node {
-  filter: saturate(0.55) hue-rotate(-25deg);
-  opacity: 0.45;
+  filter: saturate(0.45) hue-rotate(-30deg);
+  opacity: 0.5;
 }
 
-/* ── Reduced motion: kill keyframes, keep static reveal ────────── */
+/* ── Reduced motion ────────────────────────────────────────────── */
 .biv-root[data-reduced-motion="true"] .biv-stream,
 .biv-root[data-reduced-motion="true"] .biv-bridge,
 .biv-root[data-reduced-motion="true"] .biv-node,
