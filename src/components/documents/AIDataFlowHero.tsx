@@ -641,38 +641,92 @@ interface BrainShapeProps {
 }
 
 /**
- * Anatomical top-down brain (two hemispheres) drawn as line art.
- * Uses currentColor-friendly foreground stroke. No fill — a glow halo sits behind.
+ * Pure atomic shape — central nucleus with three rotating elliptical orbits
+ * and electrons riding each orbit. No fill backgrounds, line-art only.
  */
 function BrainShape({ animate }: BrainShapeProps) {
-  // Use the SAME lucide-react Brain icon used across the app (About, OrxRankHub, etc.)
-  // Render it inside SVG via foreignObject so the rest of the scene stays pure SVG.
-  const SIZE = 132;
-  const icon = (
-    <foreignObject x={-SIZE / 2} y={-SIZE / 2} width={SIZE} height={SIZE}>
-      <div
-        style={{
-          width: SIZE,
-          height: SIZE,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "hsl(265 85% 60%)",
-        }}
-      >
-        <Brain size={SIZE} strokeWidth={1.4} absoluteStrokeWidth />
-      </div>
-    </foreignObject>
+  const stroke = "hsl(265 85% 60%)";
+  const strokeOpacity = 0.85;
+  const sw = 1.4;
+
+  // Three orbit ellipses at 0°, 60°, -60°
+  const orbits = [
+    { rx: 62, ry: 22, rot: 0,   dur: 7,  dir: 1  },
+    { rx: 62, ry: 22, rot: 60,  dur: 9,  dir: -1 },
+    { rx: 62, ry: 22, rot: -60, dur: 8,  dir: 1  },
+  ];
+
+  const atom = (
+    <g>
+      {/* Orbits + electrons */}
+      {orbits.map((o, i) => {
+        const orbit = (
+          <ellipse
+            cx={0}
+            cy={0}
+            rx={o.rx}
+            ry={o.ry}
+            fill="none"
+            stroke={stroke}
+            strokeOpacity={strokeOpacity}
+            strokeWidth={sw}
+          />
+        );
+
+        // Electron path (same ellipse) so animateMotion can ride it
+        const pathId = `atom-orbit-${i}`;
+        const pathD = `M ${o.rx} 0 A ${o.rx} ${o.ry} 0 1 1 ${-o.rx} 0 A ${o.rx} ${o.ry} 0 1 1 ${o.rx} 0 Z`;
+
+        return (
+          <g key={i} transform={`rotate(${o.rot})`}>
+            {orbit}
+            <defs>
+              <path id={pathId} d={pathD} />
+            </defs>
+            <circle r={3.2} fill={stroke}>
+              {animate && (
+                <animateMotion
+                  dur={`${o.dur}s`}
+                  repeatCount="indefinite"
+                  keyPoints={o.dir === 1 ? "0;1" : "1;0"}
+                  keyTimes="0;1"
+                >
+                  <mpath href={`#${pathId}`} />
+                </animateMotion>
+              )}
+            </circle>
+          </g>
+        );
+      })}
+
+      {/* Nucleus */}
+      <circle
+        cx={0}
+        cy={0}
+        r={9}
+        fill={stroke}
+        fillOpacity={0.9}
+      />
+      <circle
+        cx={0}
+        cy={0}
+        r={9}
+        fill="none"
+        stroke={stroke}
+        strokeOpacity={1}
+        strokeWidth={sw}
+      />
+    </g>
   );
 
-  if (!animate) return <g>{icon}</g>;
+  if (!animate) return <g>{atom}</g>;
 
   return (
     <motion.g
       animate={{ scale: [1, 1.03, 1] }}
       transition={{ duration: 4.6, repeat: Infinity, ease: "easeInOut" }}
     >
-      {icon}
+      {atom}
     </motion.g>
   );
 }
