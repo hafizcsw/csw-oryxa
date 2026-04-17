@@ -586,7 +586,14 @@ export function CentralUploadHub({
           disabled && 'opacity-50 cursor-not-allowed',
         )}
       >
-        <div className="w-full max-w-3xl">
+        <div
+          className={cn(
+            'mx-auto transition-all duration-500 ease-out',
+            records.length > 0 || isDragOver || isProcessing
+              ? 'w-full max-w-3xl'
+              : 'w-40 sm:w-48',
+          )}
+        >
           <AIDataFlowHero
             intensity={isProcessing ? 'lively' : 'normal'}
             ariaLabel={t('portal.uploadHub.title')}
