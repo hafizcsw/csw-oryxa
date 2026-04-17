@@ -546,18 +546,28 @@ function DocumentCard({
     </g>
   );
 
-  const transform = `translate(${x}, ${y}) rotate(${rotate} ${W / 2} ${H / 2}) scale(${scale})`;
+  const settledTransform = `translate(${x}, ${y}) rotate(${rotate} ${W / 2} ${H / 2}) scale(${scale})`;
+  const fromX = emergeFromX ?? x;
+  const fromY = emergeFromY ?? y;
+  const emergeFromTransform = `translate(${fromX}, ${fromY}) rotate(0 ${W / 2} ${H / 2}) scale(0.2)`;
 
   if (!float) {
-    return <g transform={transform} opacity={opacity}>{sheet}</g>;
+    return <g transform={settledTransform} opacity={opacity}>{sheet}</g>;
   }
 
   return (
     <motion.g
-      transform={transform}
-      opacity={opacity}
-      animate={{ y: [0, -2.2, 0, 2.2, 0] }}
-      transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: floatDelay }}
+      initial={{ transform: emergeFromTransform, opacity: 0 }}
+      animate={{
+        transform: settledTransform,
+        opacity,
+        y: [0, -2.2, 0, 2.2, 0],
+      }}
+      transition={{
+        transform: { duration: 0.9, delay: emergeDelay, ease: [0.16, 1, 0.3, 1] },
+        opacity:   { duration: 0.5, delay: emergeDelay, ease: "easeOut" },
+        y: { duration: 9, repeat: Infinity, ease: "easeInOut", delay: floatDelay + emergeDelay + 0.9 },
+      }}
     >
       {sheet}
     </motion.g>
