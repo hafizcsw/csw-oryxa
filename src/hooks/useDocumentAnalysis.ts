@@ -2,12 +2,12 @@
 // useDocumentAnalysis — Door 3: Analysis + proposal state
 // ═══════════════════════════════════════════════════════════════
 // Manages analysis results and proposals for uploaded documents.
-// Integrates with useDocumentRegistry (Door 2) and
-// useCanonicalStudentFile (Door 1).
-// No external LLM. No OpenAI.
+// Trial-safe persistence: hydrates from + writes to Supabase
+// (compact 2-table schema). Promoted state derived from
+// proposal status. No outbound document-content path.
 // ═══════════════════════════════════════════════════════════════
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { DocumentAnalysis } from '@/features/documents/document-analysis-model';
 import type {
   ExtractionProposal,
@@ -16,8 +16,15 @@ import type {
 import { analyzeDocument, type AnalysisResult } from '@/features/documents/analysis-engine';
 import type { ReadingArtifact } from '@/features/documents/reading-artifact-model';
 import type { CanonicalStudentFile } from '@/features/student-file/canonical-model';
-import type { FieldProvenance, FieldSourceType } from '@/features/student-file/canonical-model';
 import type { DocumentSlotType } from '@/features/documents/document-registry-model';
+import {
+  hydrateEngineStateForUser,
+  persistAnalysis,
+  persistProposals,
+  persistProposalStatus,
+  deletePersistedDocument,
+  deleteAllPersistedForUser,
+} from '@/features/documents/engine-persistence';
 
 interface UseDocumentAnalysisOptions {
   studentId: string | null;
@@ -33,36 +40,41 @@ export interface PromotedField {
 }
 
 interface UseDocumentAnalysisResult {
-  /** All analysis records */
   analyses: DocumentAnalysis[];
-  /** All proposals (across all documents) */
   proposals: ExtractionProposal[];
-  /** Fields promoted to canonical truth */
   promotedFields: PromotedField[];
-  /** Reading artifacts keyed by document_id (truth surface for Door 1) */
   artifacts: Record<string, ReadingArtifact>;
-  /** True when any analysis is running */
   isAnalyzing: boolean;
-  /** Run analysis on a file */
   analyzeFile: (file: File, documentId: string, slotHint: DocumentSlotType | null) => Promise<AnalysisResult | null>;
-  /** Manually accept a proposal */
   acceptProposal: (proposalId: string) => void;
-  /** Manually reject a proposal */
   rejectProposal: (proposalId: string) => void;
-  /** Remove a single promoted field from canonical truth */
   removePromotedField: (proposalId: string) => void;
-  /** Remove all promoted fields for a document */
   removePromotedFieldsForDocument: (documentId: string) => void;
-  /** Re-analyze a previously analyzed document */
   reanalyzeFile: (documentId: string) => Promise<AnalysisResult | null>;
-  /** Get proposals for a specific document */
   getProposalsForDocument: (documentId: string) => ExtractionProposal[];
-  /** Get analysis for a specific document */
   getAnalysis: (documentId: string) => DocumentAnalysis | undefined;
-  /** Dismiss a single analysis */
   dismissAnalysis: (documentId: string) => void;
-  /** Clear all analyses */
   clearAllAnalyses: () => void;
+}
+
+function laneFromClassification(c: string | null | undefined): 'passport' | 'transcript' | 'graduation' | 'language' | 'unknown' {
+  if (c === 'passport') return 'passport';
+  if (c === 'transcript') return 'transcript';
+  if (c === 'graduation_certificate') return 'graduation';
+  if (c === 'language_certificate') return 'language';
+  return 'unknown';
+}
+
+function derivePromotedFromProposals(proposals: ExtractionProposal[]): PromotedField[] {
+  return proposals
+    .filter(p => p.proposal_status === 'auto_accepted' && p.proposed_value != null)
+    .map(p => ({
+      fieldKey: p.field_key,
+      value: p.proposed_value!,
+      proposalId: p.proposal_id,
+      documentId: p.document_id,
+      source: 'auto_accepted' as const,
+    }));
 }
 
 export function useDocumentAnalysis({
@@ -75,8 +87,26 @@ export function useDocumentAnalysis({
   const [artifacts, setArtifacts] = useState<Record<string, ReadingArtifact>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const analyzingCount = useRef(0);
-  /** Cache File objects for re-analysis */
   const fileCache = useRef(new Map<string, { file: File; slotHint: DocumentSlotType | null }>());
+  /** Track manual_accepted proposals so hydration preserves provenance. */
+  const manualAcceptedRef = useRef<Set<string>>(new Set());
+  const hydratedFor = useRef<string | null>(null);
+
+  // ── Hydrate persisted engine state on mount / on user change ──
+  useEffect(() => {
+    if (!studentId) return;
+    if (hydratedFor.current === studentId) return;
+    hydratedFor.current = studentId;
+    let cancelled = false;
+    (async () => {
+      const { analyses: ha, proposals: hp } = await hydrateEngineStateForUser(studentId);
+      if (cancelled) return;
+      setAnalyses(ha);
+      setProposals(hp);
+      setPromotedFields(derivePromotedFromProposals(hp));
+    })();
+    return () => { cancelled = true; };
+  }, [studentId]);
 
   const analyzeFile = useCallback(async (
     file: File,
@@ -85,7 +115,6 @@ export function useDocumentAnalysis({
   ): Promise<AnalysisResult | null> => {
     if (!studentId) return null;
 
-    // Cache file for potential re-analysis
     fileCache.current.set(documentId, { file, slotHint });
 
     analyzingCount.current++;
@@ -100,7 +129,6 @@ export function useDocumentAnalysis({
         canonicalFile,
       });
 
-      // Store analysis
       setAnalyses(prev => {
         const existing = prev.findIndex(a => a.document_id === documentId);
         if (existing >= 0) {
@@ -111,57 +139,39 @@ export function useDocumentAnalysis({
         return [...prev, result.analysis];
       });
 
-      // Store proposals
       setProposals(prev => {
-        // Remove old proposals for this document
         const filtered = prev.filter(p => p.document_id !== documentId);
         return [...filtered, ...result.proposals];
       });
 
-      // Store reading artifact (Door 1 truth surface)
       setArtifacts(prev => ({ ...prev, [documentId]: result.artifact }));
 
-      // Auto-promote accepted proposals
-      const autoAccepted = result.proposals.filter(p => p.proposal_status === 'auto_accepted');
-      if (autoAccepted.length > 0) {
-        const newPromoted: PromotedField[] = autoAccepted
-          .filter(p => p.proposed_value !== null)
-          .map(p => ({
-            fieldKey: p.field_key,
-            value: p.proposed_value!,
-            proposalId: p.proposal_id,
-            documentId: p.document_id,
-            source: 'auto_accepted' as const,
-          }));
-        setPromotedFields(prev => [...prev, ...newPromoted]);
+      // Promoted state is DERIVED from proposal status (auto_accepted).
+      const newPromoted = derivePromotedFromProposals(result.proposals);
+      if (newPromoted.length > 0) {
+        setPromotedFields(prev => {
+          const filtered = prev.filter(pf => pf.documentId !== documentId);
+          return [...filtered, ...newPromoted];
+        });
       }
 
-      // Always log artifact — Door 1 is not closed, we need runtime proof
-      const artifact = result.artifact;
-      console.log('[Door1:ReadingArtifact]', {
-        chosen_route: artifact.chosen_route,
-        parser_used: artifact.parser_used,
-        pages_processed: artifact.pages_processed,
-        total_page_count: artifact.total_page_count,
-        full_text_length: artifact.full_text.length,
-        full_text_preview: artifact.full_text.slice(0, 300),
-        confidence: artifact.confidence,
-        is_readable: artifact.is_readable,
-        failure_reason: artifact.failure_reason,
-        processing_time_ms: Math.round(artifact.processing_time_ms),
-        input_mime: artifact.input_mime,
-        input_filename: artifact.input_filename,
-      });
-      console.log('[Door1:Classification]', {
-        documentId,
-        classification: result.analysis.classification_result,
-        classification_confidence: result.analysis.classification_confidence,
-        parser_type: result.analysis.parser_type,
-        readability: result.analysis.readability_status,
-        fieldsExtracted: Object.keys(result.analysis.extracted_fields).length,
-        proposals: result.proposals.length,
-        summary: result.analysis.summary_message_internal,
-      });
+      // ── Persist (trial-safe) ────────────────────────────────
+      const lane = laneFromClassification(result.analysis.classification_result);
+      await Promise.all([
+        persistAnalysis({
+          userId: studentId,
+          analysis: result.analysis,
+          documentFilename: file.name,
+          artifact: result.artifact,
+          structuredArtifact: result.structured_artifact,
+        }),
+        persistProposals({
+          userId: studentId,
+          documentId,
+          proposals: result.proposals,
+          sourceLane: lane,
+        }),
+      ]);
 
       return result;
     } finally {
@@ -170,48 +180,62 @@ export function useDocumentAnalysis({
     }
   }, [studentId, canonicalFile]);
 
-  /** Re-analyze a previously analyzed document using cached File object */
   const reanalyzeFile = useCallback(async (documentId: string) => {
     const cached = fileCache.current.get(documentId);
     if (!cached) {
       console.warn('[Door1:Reanalyze] No cached file for', documentId);
       return null;
     }
-    // Clear old promoted fields for this document before re-analysis
     setPromotedFields(prev => prev.filter(pf => pf.documentId !== documentId));
     setProposals(prev => prev.filter(p => p.document_id !== documentId));
-    // Re-run analysis
     return analyzeFile(cached.file, documentId, cached.slotHint);
   }, [analyzeFile]);
 
   const acceptProposal = useCallback((proposalId: string) => {
+    if (!studentId) return;
+    let target: ExtractionProposal | undefined;
     setProposals(prev => prev.map(p => {
       if (p.proposal_id !== proposalId) return p;
-      return { ...p, proposal_status: 'auto_accepted' as ProposalStatus, updated_at: new Date().toISOString() };
+      target = p;
+      return { ...p, proposal_status: 'auto_accepted' as ProposalStatus, requires_review: false, auto_apply_candidate: true, updated_at: new Date().toISOString() };
     }));
 
-    // Find the proposal and promote it
-    setProposals(prev => {
-      const proposal = prev.find(p => p.proposal_id === proposalId);
-      if (proposal && proposal.proposed_value) {
-        setPromotedFields(pf => [...pf, {
-          fieldKey: proposal.field_key,
-          value: proposal.proposed_value!,
-          proposalId: proposal.proposal_id,
-          documentId: proposal.document_id,
-          source: 'manual_accepted' as const,
-        }]);
-      }
-      return prev;
+    if (target && target.proposed_value) {
+      manualAcceptedRef.current.add(proposalId);
+      setPromotedFields(pf => [...pf.filter(x => x.proposalId !== proposalId), {
+        fieldKey: target!.field_key,
+        value: target!.proposed_value!,
+        proposalId: target!.proposal_id,
+        documentId: target!.document_id,
+        source: 'manual_accepted' as const,
+      }]);
+    }
+
+    void persistProposalStatus({
+      userId: studentId,
+      proposalId,
+      status: 'auto_accepted',
+      requiresReview: false,
+      autoApplyCandidate: true,
+      decidedBy: 'user',
     });
-  }, []);
+  }, [studentId]);
 
   const rejectProposal = useCallback((proposalId: string) => {
+    if (!studentId) return;
     setProposals(prev => prev.map(p => {
       if (p.proposal_id !== proposalId) return p;
       return { ...p, proposal_status: 'rejected' as ProposalStatus, updated_at: new Date().toISOString() };
     }));
-  }, []);
+    void persistProposalStatus({
+      userId: studentId,
+      proposalId,
+      status: 'rejected',
+      requiresReview: false,
+      autoApplyCandidate: false,
+      decidedBy: 'user',
+    });
+  }, [studentId]);
 
   const getProposalsForDocument = useCallback((documentId: string) => {
     return proposals.filter(p => p.document_id === documentId);
@@ -229,33 +253,57 @@ export function useDocumentAnalysis({
       const { [documentId]: _, ...rest } = prev;
       return rest;
     });
-  }, []);
+    if (studentId) {
+      void deletePersistedDocument({ userId: studentId, documentId });
+    }
+  }, [studentId]);
 
   const removePromotedField = useCallback((proposalId: string) => {
+    if (!studentId) return;
     setPromotedFields(prev => prev.filter(pf => pf.proposalId !== proposalId));
-    // Reset the proposal back to pending so it can be re-accepted
     setProposals(prev => prev.map(p => {
       if (p.proposal_id !== proposalId) return p;
-      return { ...p, proposal_status: 'pending_review' as ProposalStatus, updated_at: new Date().toISOString() };
+      return { ...p, proposal_status: 'pending_review' as ProposalStatus, requires_review: true, auto_apply_candidate: false, updated_at: new Date().toISOString() };
     }));
-  }, []);
+    void persistProposalStatus({
+      userId: studentId,
+      proposalId,
+      status: 'pending_review',
+      requiresReview: true,
+      autoApplyCandidate: false,
+      decidedBy: 'user',
+    });
+  }, [studentId]);
 
   const removePromotedFieldsForDocument = useCallback((documentId: string) => {
-    const toRemove = new Set(promotedFields.filter(pf => pf.documentId === documentId).map(pf => pf.proposalId));
+    if (!studentId) return;
+    const toRemove = promotedFields.filter(pf => pf.documentId === documentId).map(pf => pf.proposalId);
     setPromotedFields(prev => prev.filter(pf => pf.documentId !== documentId));
-    // Reset those proposals back to pending
     setProposals(prev => prev.map(p => {
-      if (!toRemove.has(p.proposal_id)) return p;
-      return { ...p, proposal_status: 'pending_review' as ProposalStatus, updated_at: new Date().toISOString() };
+      if (!toRemove.includes(p.proposal_id)) return p;
+      return { ...p, proposal_status: 'pending_review' as ProposalStatus, requires_review: true, auto_apply_candidate: false, updated_at: new Date().toISOString() };
     }));
-  }, [promotedFields]);
+    toRemove.forEach(pid => {
+      void persistProposalStatus({
+        userId: studentId,
+        proposalId: pid,
+        status: 'pending_review',
+        requiresReview: true,
+        autoApplyCandidate: false,
+        decidedBy: 'user',
+      });
+    });
+  }, [promotedFields, studentId]);
 
   const clearAllAnalyses = useCallback(() => {
     setAnalyses([]);
     setProposals([]);
     setPromotedFields([]);
     setArtifacts({});
-  }, []);
+    if (studentId) {
+      void deleteAllPersistedForUser(studentId);
+    }
+  }, [studentId]);
 
   return {
     analyses,
