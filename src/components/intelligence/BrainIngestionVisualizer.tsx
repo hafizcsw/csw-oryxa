@@ -212,8 +212,21 @@ function BrainIngestionVisualizerComponent({
           </filter>
         </defs>
 
-        {/* ═══ Layer 1 — base brain geometry (decorative raster reference) ═══ */}
+        {/* ═══ Layer 1 — base brain geometry ═══
+            Idle = nearly transparent wireframe.
+            As brainFill grows, the raster reference fades in to give
+            the impression that the brain is "filling up with meaning". */}
         <g className="biv-base">
+          {/* Faint wireframe silhouette — always visible so the shape is readable. */}
+          <path
+            d={BRAIN_SILHOUETTE_D}
+            fill="none"
+            stroke="hsl(var(--foreground))"
+            strokeOpacity={0.18}
+            strokeWidth={1.1}
+            strokeDasharray="3 4"
+          />
+          {/* Colored raster reveals progressively with brainFill. */}
           <image
             href={brainAnatomical}
             x={CX - 360}
@@ -221,7 +234,11 @@ function BrainIngestionVisualizerComponent({
             width={720}
             height={540}
             preserveAspectRatio="xMidYMid meet"
-            opacity={0.8}
+            style={{
+              opacity: 0.05 + m.brainFill * 0.85,
+              transition: "opacity 600ms ease-out",
+              filter: m.brainFill < 0.25 ? "grayscale(0.85) saturate(0.4)" : "none",
+            }}
           />
         </g>
 
