@@ -82,13 +82,6 @@ export function WelcomeOverlay({ name, avatarUrl }: WelcomeOverlayProps) {
             {t('auth.signingIn')}
           </p>
         </div>
-          <h2 className="text-2xl sm:text-3xl font-semibold text-foreground">
-            {greeting}
-          </h2>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            {t('auth.signingIn')}
-          </p>
-        </div>
       </motion.div>
     </motion.div>
   );
