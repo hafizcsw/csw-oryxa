@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,11 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { trackRegisterStart, trackRegisterComplete } from '@/lib/decisionTracking';
+import {
+  markWelcomePending,
+  isExternalUrl,
+  type WelcomeTargetKind,
+} from '@/lib/welcomeTransition';
 
 type AuthMode = 'login' | 'signup';
 type AuthMethod = 'phone' | 'email';
@@ -99,6 +105,21 @@ export function AuthStartModal({ open, onOpenChange }: AuthStartModalProps) {
   
   const { continueAsGuest, startLogin, verifyLogin, startSignup, verifySignup, isLoading } = usePortalAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  /**
+   * Single navigation gate. Internal targets use SPA navigation (no reload,
+   * no white flash). External absolute URLs still hard-redirect.
+   * Always sets the welcome_pending flag so <WelcomeTransition/> takes over.
+   */
+  const goWithWelcome = (target: string, kind: WelcomeTargetKind, name?: string | null) => {
+    markWelcomePending(name ?? null, kind);
+    if (isExternalUrl(target)) {
+      window.location.href = target;
+      return;
+    }
+    navigate(target, { replace: true });
+  };
 
   // Auto-submit OTP
   useEffect(() => {
@@ -228,15 +249,15 @@ export function AuthStartModal({ open, onOpenChange }: AuthStartModalProps) {
         if (result.redirect_url) {
           console.log('[AuthStartModal] ✅ Using canonical redirect_url (magic link)');
           sessionStorage.setItem('portal_auth_pending_until', String(Date.now() + 15000));
-          window.location.href = result.redirect_url;
+          goWithWelcome(result.redirect_url, 'student', null);
         } else if (result.student_portal_token) {
           console.log('[AuthStartModal] ⚠️ Fallback: using student_portal_token');
           sessionStorage.setItem('portal_auth_pending_until', String(Date.now() + 15000));
           sessionStorage.setItem('portal_exchange_token', result.student_portal_token);
-          window.location.href = '/account';
+          goWithWelcome('/account', 'student', null);
         } else {
           console.warn('[AuthStartModal] ⚠️ No redirect_url or token, navigating to /account');
-          window.location.href = '/account';
+          goWithWelcome('/account', 'student', null);
         }
       } else {
         setError(getErrorMessage(result));
@@ -252,15 +273,15 @@ export function AuthStartModal({ open, onOpenChange }: AuthStartModalProps) {
         if (result.redirect_url) {
           console.log('[AuthStartModal] ✅ Using canonical redirect_url (magic link)');
           sessionStorage.setItem('portal_auth_pending_until', String(Date.now() + 15000));
-          window.location.href = result.redirect_url;
+          goWithWelcome(result.redirect_url, 'student', null);
         } else if (result.student_portal_token) {
           console.log('[AuthStartModal] ⚠️ Fallback: using student_portal_token');
           sessionStorage.setItem('portal_auth_pending_until', String(Date.now() + 15000));
           sessionStorage.setItem('portal_exchange_token', result.student_portal_token);
-          window.location.href = '/account';
+          goWithWelcome('/account', 'student', null);
         } else {
           console.warn('[AuthStartModal] ⚠️ No redirect_url or token, navigating to /account');
-          window.location.href = '/account';
+          goWithWelcome('/account', 'student', null);
         }
       } else {
         setError(getErrorMessage(result));
@@ -286,7 +307,8 @@ export function AuthStartModal({ open, onOpenChange }: AuthStartModalProps) {
         
         if (isInstitutionUser) {
           const { resolveInstitutionLanding } = await import('@/lib/resolveInstitutionLanding');
-          window.location.href = await resolveInstitutionLanding();
+          const path = await resolveInstitutionLanding();
+          goWithWelcome(path, 'institution', null);
           return;
         }
       } else {

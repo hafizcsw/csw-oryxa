@@ -9,6 +9,8 @@ import { MalakChatProvider, useMalakChat } from "@/contexts/MalakChatContext";
 import { StudentSiteTour } from "@/components/onboarding/StudentSiteTour";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { AuthStartModal } from "@/components/auth/AuthStartModal";
+import { WelcomeTransition } from "@/components/auth/WelcomeTransition";
+import { welcomeAlreadyRouted } from "@/lib/welcomeTransition";
 import { PhoneActivationGate } from "@/components/auth/PhoneActivationGate";
 import { CanonicalRedirect } from "@/components/system/CanonicalRedirect";
 import { SearchRedirect } from "@/components/system/SearchRedirect";
@@ -273,6 +275,7 @@ async function migrateGuestShortlistOnLogin() {
 
 function AppContent() {
   const { pathname } = useLocation();
+  const navigateRouter = useNavigate();
   const hideFab = pathname.startsWith("/admin") || pathname.startsWith("/apply") || pathname === "/maintenance";
   
   // Sync document language and RTL direction
@@ -398,24 +401,30 @@ function AppContent() {
       }
 
       if (session?.user) {
+        // 🛡️ Guard: if AuthFormCard / AuthStartModal already initiated a
+        // welcome-driven SPA navigation for THIS sign-in, skip the legacy
+        // redirect block entirely. Prevents double-navigation + the white
+        // flash that came from window.location.href below.
+        const skipDueToWelcome = welcomeAlreadyRouted();
+
         // ✅ Institution account redirect (after email confirmation or returning)
         const accountType = session.user.user_metadata?.account_type;
         const isOnUniversityPage = window.location.pathname.startsWith('/university/');
-        if (accountType === 'institution' && !window.location.pathname.startsWith('/institution') && !isOnUniversityPage) {
+        if (!skipDueToWelcome && accountType === 'institution' && !window.location.pathname.startsWith('/institution') && !isOnUniversityPage) {
           // Don't redirect if already on an institution or university route
           const postAuthReturn = sessionStorage.getItem('post_auth_return_to');
           if (postAuthReturn?.startsWith('/institution') || postAuthReturn?.startsWith('/university/')) {
             sessionStorage.removeItem('post_auth_return_to');
-            window.location.href = postAuthReturn;
+            navigateRouter(postAuthReturn, { replace: true });
             return;
           }
           // Resolve and go to exact university page
           import('@/lib/resolveInstitutionLanding').then(({ resolveInstitutionLanding }) => {
             resolveInstitutionLanding().then((path) => {
-              window.location.href = path;
+              navigateRouter(path, { replace: true });
             });
           }).catch(() => {
-            window.location.href = '/institution/onboarding';
+            navigateRouter('/institution/onboarding', { replace: true });
           });
           return;
         }
@@ -433,7 +442,7 @@ function AppContent() {
             if (raw) persistedAuth = JSON.parse(raw);
           } catch {}
           
-          if (persistedAuth?.role && persistedAuth.accessScope !== 'crm_only') {
+          if (!skipDueToWelcome && persistedAuth?.role && persistedAuth.accessScope !== 'crm_only') {
             const isOnGenericPage = window.location.pathname === '/' || window.location.pathname === '/languages' || window.location.pathname.startsWith('/languages/');
             if (isOnGenericPage && !window.location.pathname.startsWith('/staff') && !window.location.pathname.startsWith('/admin')) {
               const staffLandingMap: Record<string, string> = {
@@ -446,7 +455,7 @@ function AppContent() {
               if (fastPath) {
                 console.log(`[App] ⚡ Fast-path staff redirect (persistent cache): role=${persistedAuth.role} → ${fastPath}`);
                 sessionStorage.setItem('staff_routed_once', '1');
-                window.location.href = fastPath;
+                navigateRouter(fastPath, { replace: true });
                 return;
               }
             }
@@ -528,7 +537,7 @@ function AppContent() {
 
             // Step 2: Staff redirect — on SIGNED_IN or INITIAL_SESSION (if on generic page)
             if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && authorityState === 'portal_staff' && staffRole) {
-              const alreadyRouted = sessionStorage.getItem('staff_routed_once');
+              const alreadyRouted = sessionStorage.getItem('staff_routed_once') || welcomeAlreadyRouted();
               if (!alreadyRouted && !window.location.pathname.startsWith('/staff') && !window.location.pathname.startsWith('/admin')) {
                 sessionStorage.setItem('staff_routed_once', '1');
                 const staffLandingMap: Record<string, string> = {
@@ -540,7 +549,7 @@ function AppContent() {
                 const landingPath = staffLandingMap[staffRole];
                 if (landingPath) {
                   console.log(`[App] ✅ Staff auto-routing: role=${staffRole} scope=${staffScope} → ${landingPath}`);
-                  window.location.href = landingPath;
+                  navigateRouter(landingPath, { replace: true });
                   return;
                 }
               }
@@ -626,8 +635,7 @@ function AppContent() {
           sessionStorage.removeItem('post_auth_return_to');
           if (window.location.pathname !== postAuthReturn) {
             console.log('[App] ✅ Navigating to:', postAuthReturn);
-            window.history.replaceState({}, '', postAuthReturn);
-            window.location.href = postAuthReturn;
+            navigateRouter(postAuthReturn, { replace: true });
           }
         }
       }
@@ -689,12 +697,14 @@ function AppContent() {
         ? `${window.location.pathname}?${urlParams.toString()}` 
         : window.location.pathname;
       window.history.replaceState({}, '', newUrl);
-      setTimeout(() => { window.location.href = '/auth'; }, 100);
+      setTimeout(() => { navigateRouter('/auth'); }, 100);
     }
   }, [pathname]);
 
   return (
     <>
+      {/* Route-level welcome transition — survives client-side navigation */}
+      <WelcomeTransition />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Sync Routes (Critical) */}
