@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Defensive paint background — prevents white flash if any code path
+   still triggers a hard reload (OAuth callback, manual refresh, etc.). */
+html, body, #root {
+  background-color: hsl(var(--background));
+}
+
 /* Force English/Latin numerals globally */
 * {
   font-variant-numeric: lining-nums tabular-nums;
