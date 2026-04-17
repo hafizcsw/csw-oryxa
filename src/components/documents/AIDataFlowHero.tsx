@@ -934,6 +934,32 @@ interface BrainShapeProps {
   isEnergized?: boolean;
   /** true once every file has reached a terminal status */
   allDone?: boolean;
+  /** Names of currently-active files — drives ingestion ripples per lobe. */
+  activeFileNames?: string[];
+}
+
+/** Map a filename to a brain lobe ingestion target (in tech-layer coords). */
+function lobeForFileName(name: string): { x: number; y: number; key: string } {
+  const n = (name || "").toLowerCase();
+  // Keyword routing → distinct lobes
+  if (/(passport|جواز|بطاقة|id|national)/.test(n)) return { x: -52, y: -28, key: "frontal-l" };
+  if (/(grad|شهادة|diploma|degree|تخرج|بكالوريوس)/.test(n)) return { x: 0, y: -56, key: "parietal" };
+  if (/(transcript|كشف|درجات|grades|marks)/.test(n)) return { x: 56, y: -10, key: "temporal-r" };
+  if (/(ielts|toefl|english|عربي|language|لغة|سات)/.test(n)) return { x: -56, y: 28, key: "broca" };
+  if (/(cv|resume|سيرة)/.test(n)) return { x: 50, y: 32, key: "occipital-r" };
+  if (/(photo|صورة|image|picture)/.test(n)) return { x: -28, y: 50, key: "cerebellum-l" };
+  // Fallback: hash to one of 6 stable targets
+  const targets = [
+    { x: -52, y: -28, key: "frontal-l" },
+    { x: 0, y: -56, key: "parietal" },
+    { x: 56, y: -10, key: "temporal-r" },
+    { x: -56, y: 28, key: "broca" },
+    { x: 50, y: 32, key: "occipital-r" },
+    { x: -28, y: 50, key: "cerebellum-l" },
+  ];
+  let h = 0;
+  for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) | 0;
+  return targets[Math.abs(h) % targets.length];
 }
 
 /**
@@ -947,6 +973,7 @@ function BrainShape({
   fillProgress = 0,
   isEnergized = false,
   allDone = false,
+  activeFileNames = [],
 }: BrainShapeProps) {
   const SIZE = 630;
   // Brain is permanently rendered at compact scale — no resize behavior.
