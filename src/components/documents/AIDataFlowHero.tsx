@@ -112,8 +112,8 @@ function AIDataFlowHeroComponent({
   );
 
   // Cluster anchor X (column) per side
-  const LEFT_X  = 110;
-  const RIGHT_X = 720;
+  const LEFT_X  = 40;
+  const RIGHT_X = 790;
 
   // Distribute REAL fileCount across two sides; cap by visibleCardsPerSide (≤5).
   const maxPerSide = Math.max(1, Math.min(5, visibleCardsPerSide));
