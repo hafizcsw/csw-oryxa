@@ -49,7 +49,8 @@ export function Layout({
   const { count: uniCount } = useUniversityShortlistHook();
   const [showShortlistDrawer, setShowShortlistDrawer] = useState(false);
   const {
-    t
+    t,
+    language
   } = useLanguage();
   const { isStaff, role } = useStaffAuthority();
   const permissions = useTeacherPermissions(role);
