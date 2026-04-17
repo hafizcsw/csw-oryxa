@@ -1,1 +1,4 @@
 project_id = "pkivavsxbvwtnkgxaufa"
+
+[functions.paddle-structure]
+verify_jwt = true
