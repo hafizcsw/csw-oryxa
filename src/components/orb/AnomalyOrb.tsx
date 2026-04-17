@@ -109,12 +109,12 @@ const vertexShader = `
     float noise2 = snoise(position * 4.0 - uTime * 0.5);
     float noise3 = snoise(position * 1.0 + uTime * 0.2);
     
-    // Audio-reactive displacement
-    float audioBoost = 1.0 + uAudioLevel * 2.0;
+    // Audio-reactive displacement (reduced to 25% intensity)
+    float audioBoost = 1.0 + uAudioLevel * 0.5;
     float displacement = (noise1 * 0.3 + noise2 * 0.15 + noise3 * 0.1) * uDistortion * audioBoost;
     
-    // Apply displacement along normal
-    vec3 newPosition = position + normal * displacement * 0.15;
+    // Apply displacement along normal (reduced amplitude)
+    vec3 newPosition = position + normal * displacement * 0.04;
     
     vDisplacement = displacement;
     
@@ -305,8 +305,8 @@ export default function AnomalyOrb({
         sphereRef.current.rotation.y = elapsedTime * 0.1;
         sphereRef.current.rotation.x = Math.sin(elapsedTime * 0.05) * 0.1;
 
-        // Audio-reactive scale
-        const scale = 1 + effectiveAudioLevel * 0.15;
+        // Audio-reactive scale (reduced to 25%)
+        const scale = 1 + effectiveAudioLevel * 0.04;
         sphereRef.current.scale.setScalar(scale);
       }
 
@@ -412,31 +412,9 @@ export default function AnomalyOrb({
     }
   }, []);
 
-  // Calculate glow intensity based on audio
-  const glowIntensity = 0.4 + effectiveAudioLevel * 0.6;
-  const glowColor = isDark ? "rgba(0, 255, 255, " : "rgba(99, 102, 241, ";
-
   return (
     <div className={`orx-anomaly-orb relative ${className}`} style={{ width: size, height: size }}>
-      {/* Outer glow layers */}
-      <div 
-        className="absolute inset-0 rounded-full blur-3xl pointer-events-none"
-        style={{
-          background: `radial-gradient(circle, ${glowColor}${glowIntensity * 0.3}) 0%, transparent 70%)`,
-          transform: `scale(${1.2 + effectiveAudioLevel * 0.2})`,
-          transition: "transform 0.15s ease-out",
-        }}
-      />
-      <div 
-        className="absolute inset-0 rounded-full blur-2xl pointer-events-none"
-        style={{
-          background: `radial-gradient(circle, ${glowColor}${glowIntensity * 0.4}) 0%, transparent 60%)`,
-          transform: `scale(${1.1 + effectiveAudioLevel * 0.15})`,
-          transition: "transform 0.1s ease-out",
-        }}
-      />
-      
-      {/* Three.js container - transparent background to blend with hero */}
+      {/* Three.js container - transparent background, no rectangular halo */}
       <div 
         ref={containerRef}
         id="three-container" 
