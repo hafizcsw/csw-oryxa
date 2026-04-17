@@ -39,7 +39,7 @@ export interface AIDataFlowHeroProps {
 }
 
 const VIEWBOX_W = 960;
-const VIEWBOX_H = 460;
+const VIEWBOX_H = 720;
 const CX = VIEWBOX_W / 2;
 const CY = VIEWBOX_H / 2;
 
@@ -649,7 +649,7 @@ interface BrainShapeProps {
  * via foreignObject so the rest of the scene stays pure SVG.
  */
 function BrainShape({ animate }: BrainShapeProps) {
-  const SIZE = 420;
+  const SIZE = 630;
   const icon = (
     <foreignObject x={-SIZE / 2} y={-SIZE / 2} width={SIZE} height={SIZE}>
       <div
