@@ -35,6 +35,8 @@ import type { TranscriptIntermediate } from './parsers/transcript-structure';
 import type { CanonicalStudentFile } from '../student-file/canonical-model';
 import type { StructuredDocumentArtifact } from './structured-browser-artifact-model';
 import { buildStructuredBrowserArtifact } from './parsers/structured-artifact-builder';
+import { resolveStructuredArtifact } from './document-ai/resolver';
+import type { DocumentAIMode } from './document-ai/document-ai-provider';
 
 export interface AnalysisResult {
   analysis: DocumentAnalysis;
