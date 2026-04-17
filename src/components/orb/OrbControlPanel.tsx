@@ -20,7 +20,7 @@ interface OrbControlPanelProps {
 
 export function OrbControlPanel({ settings, onChange, className = "" }: OrbControlPanelProps) {
   const { language } = useLanguage();
-  const isRTL = ['ar', 'he', 'fa', 'ur'].includes(language);
+  const isRTL = language === "ar";
 
   const updateSetting = <K extends keyof OrbSettings>(key: K, value: OrbSettings[K]) => {
     onChange({ ...settings, [key]: value });
