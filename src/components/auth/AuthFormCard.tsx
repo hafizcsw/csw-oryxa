@@ -206,6 +206,7 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
         description: mode === 'login' ? t('auth.loginSuccess') : t('auth.welcome') 
       });
       
+      beginRedirect(result.full_name || result.name || null);
       if (result.redirect_url) {
         sessionStorage.setItem('portal_auth_pending_until', String(Date.now() + 15000));
         window.location.href = result.redirect_url;
@@ -233,11 +234,17 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
         toast({ title: t('auth.welcomeBack'), description: t('auth.loginSuccess') });
         
         // Check if this user is an institution operator (from metadata OR selected tab)
-        const userMeta = (await supabase.auth.getUser()).data.user?.user_metadata;
+        const userResp = await supabase.auth.getUser();
+        const userMeta = userResp.data.user?.user_metadata;
+        const displayName =
+          (userMeta?.full_name as string | undefined) ||
+          (userMeta?.name as string | undefined) ||
+          (userResp.data.user?.email ? userResp.data.user.email.split('@')[0] : null);
         const isInstitutionUser = accountType === 'institution' || userMeta?.account_type === 'institution';
         
         if (isInstitutionUser) {
           const { resolveInstitutionLanding } = await import('@/lib/resolveInstitutionLanding');
+          beginRedirect(displayName);
           window.location.href = await resolveInstitutionLanding();
           return;
         }
@@ -246,6 +253,7 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
         const staffRedirect = getStaffFastRedirect();
         if (staffRedirect) {
           sessionStorage.setItem('staff_routed_once', '1');
+          beginRedirect(displayName);
           window.location.href = staffRedirect;
         } else {
           // No cache — try CRM resolution before defaulting to home
@@ -263,12 +271,14 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
               const path = landingMap[role];
               if (path) {
                 sessionStorage.setItem('staff_routed_once', '1');
+                beginRedirect(displayName);
                 window.location.href = path;
                 return;
               }
             }
           } catch {}
           onSuccess?.();
+          beginRedirect(displayName);
           window.location.href = '/';
         }
       } else {
