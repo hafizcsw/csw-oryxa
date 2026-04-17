@@ -1,11 +1,26 @@
-# Replace paddle.example.com with your real hostname.
-paddle.example.com {
-    encode zstd gzip
-    reverse_proxy paddle:8000 {
-        flush_interval -1
-    }
-    @health path /healthz
-    handle @health {
-        reverse_proxy paddle:8000
-    }
+# Caddy reads PADDLE_HOSTNAME and ACME_EMAIL from the environment
+# (loaded from .env via docker compose `env_file`).
+
+{
+	email {$ACME_EMAIL}
+}
+
+{$PADDLE_HOSTNAME} {
+	encode zstd gzip
+
+	# Health endpoint — unauthenticated, safe to probe.
+	@health path /healthz
+	handle @health {
+		reverse_proxy paddle:8000
+	}
+
+	# Main structure endpoint — auth is enforced *inside* the app
+	# via the PADDLE_API_KEY bearer token.
+	reverse_proxy paddle:8000 {
+		flush_interval -1
+		transport http {
+			read_timeout  60s
+			write_timeout 60s
+		}
+	}
 }

@@ -1,31 +1,42 @@
 version: "3.9"
 
 # Self-hosted PaddleOCR PP-StructureV3 service.
-# After `docker compose up -d`, set these Supabase secrets:
-#   PADDLE_STRUCTURE_ENDPOINT = https://<your-host>/v1/structure
-#   PADDLE_API_KEY            = <random long string, same as below>
+# Bring-up:
+#   1) cp .env.example .env  &&  edit values
+#   2) docker compose up -d --build
+#   3) curl https://${PADDLE_HOSTNAME}/healthz
+#
+# After healthz is OK, set Supabase secrets:
+#   PADDLE_STRUCTURE_ENDPOINT = https://<PADDLE_HOSTNAME>/v1/structure
+#   PADDLE_API_KEY            = <same value as in .env>
 
 services:
   paddle:
     build: .
     image: paddle-structure:latest
     restart: unless-stopped
+    env_file: .env
     environment:
-      PADDLE_API_KEY: "${PADDLE_API_KEY:-change-me}"
-      DOWNLOAD_TIMEOUT_S: "20"
-      MAX_BYTES: "26214400"      # 25 MB
-    ports:
-      - "127.0.0.1:8000:8000"     # bind localhost; expose via Caddy/Nginx
+      PADDLE_API_KEY: "${PADDLE_API_KEY:?set PADDLE_API_KEY in .env}"
+      DOWNLOAD_TIMEOUT_S: "${DOWNLOAD_TIMEOUT_S:-20}"
+      MAX_BYTES: "${MAX_BYTES:-26214400}"
+    expose:
+      - "8000"
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/healthz"]
       interval: 30s
       timeout: 5s
       retries: 3
+      start_period: 60s
 
   caddy:
     image: caddy:2
     restart: unless-stopped
     depends_on: [paddle]
+    env_file: .env
+    environment:
+      PADDLE_HOSTNAME: "${PADDLE_HOSTNAME:?set PADDLE_HOSTNAME in .env}"
+      ACME_EMAIL: "${ACME_EMAIL:-}"
     ports:
       - "80:80"
       - "443:443"
