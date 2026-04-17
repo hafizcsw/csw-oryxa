@@ -109,10 +109,8 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
   const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [isSocialLoading, setIsSocialLoading] = useState<'google' | 'apple' | null>(null);
 
-  // Fullscreen welcome overlay shown during the post-login redirect
-  // (replaces the blank white "flash" caused by window.location.href).
-  const [redirecting, setRedirecting] = useState(false);
-  const [welcomeName, setWelcomeName] = useState<string | null>(null);
+  // (Removed in-card overlay state — replaced by route-level <WelcomeTransition/>)
+
 
   const navigate = useNavigate();
 
@@ -222,16 +220,17 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
         description: mode === 'login' ? t('auth.loginSuccess') : t('auth.welcome') 
       });
       
-      beginRedirect(fullName?.trim() || null);
+      const studentName = fullName?.trim() || null;
       if (result.redirect_url) {
         sessionStorage.setItem('portal_auth_pending_until', String(Date.now() + 15000));
-        window.location.href = result.redirect_url;
+        // Phone-OTP redirect_url may be a magic-link absolute URL → still a hard redirect.
+        goWithWelcome(result.redirect_url, 'student', studentName);
       } else if (result.student_portal_token) {
         sessionStorage.setItem('portal_auth_pending_until', String(Date.now() + 15000));
         sessionStorage.setItem('portal_exchange_token', result.student_portal_token);
-        window.location.href = '/account';
+        goWithWelcome('/account', 'student', studentName);
       } else {
-        window.location.href = '/account';
+        goWithWelcome('/account', 'student', studentName);
       }
       onSuccess?.();
     } else {
@@ -260,8 +259,8 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
         
         if (isInstitutionUser) {
           const { resolveInstitutionLanding } = await import('@/lib/resolveInstitutionLanding');
-          beginRedirect(displayName);
-          window.location.href = await resolveInstitutionLanding();
+          const path = await resolveInstitutionLanding();
+          goWithWelcome(path, 'institution', displayName);
           return;
         }
         
@@ -269,8 +268,7 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
         const staffRedirect = getStaffFastRedirect();
         if (staffRedirect) {
           sessionStorage.setItem('staff_routed_once', '1');
-          beginRedirect(displayName);
-          window.location.href = staffRedirect;
+          goWithWelcome(staffRedirect, 'staff', displayName);
         } else {
           // No cache — try CRM resolution before defaulting to home
           try {
@@ -287,15 +285,13 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
               const path = landingMap[role];
               if (path) {
                 sessionStorage.setItem('staff_routed_once', '1');
-                beginRedirect(displayName);
-                window.location.href = path;
+                goWithWelcome(path, 'staff', displayName);
                 return;
               }
             }
           } catch {}
           onSuccess?.();
-          beginRedirect(displayName);
-          window.location.href = '/';
+          goWithWelcome('/', 'student', displayName);
         }
       } else {
         if (!fullName.trim()) { setError(t('auth.enterFullName')); setIsEmailLoading(false); return; }
