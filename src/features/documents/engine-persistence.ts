@@ -152,6 +152,9 @@ export async function persistProposals(params: {
     auto_apply_candidate: p.auto_apply_candidate,
     rejection_reason: null as string | null,
     conflict_with_existing: p.conflict_with_current ? ({ conflict: true } as any) : null,
+    // Provenance: engine auto-acceptance is recorded so reload preserves it.
+    decided_by: p.proposal_status === 'auto_accepted' ? 'engine' : null,
+    decided_at: p.proposal_status === 'auto_accepted' ? new Date().toISOString() : null,
   }));
 
   const { error: insErr } = await supabase
