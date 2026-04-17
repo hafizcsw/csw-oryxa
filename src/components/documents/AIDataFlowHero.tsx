@@ -1178,6 +1178,65 @@ function BrainShape({
           })}
         </g>
 
+        {/* Per-file ingestion ripples — each active file pings its lobe */}
+        {animate &&
+          activeFileNames.map((fname, i) => {
+            const lobe = lobeForFileName(fname);
+            const delay = (i * 0.35) % 1.4;
+            return (
+              <g key={`ing-${i}-${lobe.key}`}>
+                {/* Outer ripple */}
+                <motion.circle
+                  cx={lobe.x}
+                  cy={lobe.y}
+                  r={4}
+                  fill="none"
+                  stroke="hsl(190 100% 75%)"
+                  strokeWidth={0.9}
+                  initial={{ opacity: 0 }}
+                  animate={{ r: [4, 22, 4], opacity: [0.85, 0, 0.85] }}
+                  transition={{
+                    duration: 1.6,
+                    repeat: Infinity,
+                    ease: "easeOut",
+                    delay,
+                  }}
+                  style={{ transformOrigin: `${lobe.x}px ${lobe.y}px` }}
+                />
+                {/* Inner hot core */}
+                <motion.circle
+                  cx={lobe.x}
+                  cy={lobe.y}
+                  r={2.4}
+                  fill="hsl(190 100% 88%)"
+                  animate={{ opacity: [0.6, 1, 0.6], r: [2, 3.2, 2] }}
+                  transition={{
+                    duration: 1.1,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay,
+                  }}
+                  style={{ transformOrigin: `${lobe.x}px ${lobe.y}px` }}
+                />
+                {/* Faint connecting trace from chip → lobe (data path) */}
+                <motion.line
+                  x1={0}
+                  y1={0}
+                  x2={lobe.x}
+                  y2={lobe.y}
+                  stroke="hsl(195 100% 80%)"
+                  strokeWidth={0.6}
+                  strokeDasharray="2 3"
+                  animate={{ strokeDashoffset: [0, -10], opacity: [0.25, 0.6, 0.25] }}
+                  transition={{
+                    strokeDashoffset: { duration: 1.4, repeat: Infinity, ease: "linear", delay },
+                    opacity: { duration: 1.4, repeat: Infinity, ease: "easeInOut", delay },
+                  }}
+                />
+              </g>
+            );
+          })}
+
         {/* Central AI chip — visual anchor (matches reference video) */}
         <g opacity={chipGlow} filter={`url(#chip-glow-${clipId})`}>
           {/* Pin stubs on every edge */}
