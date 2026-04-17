@@ -346,32 +346,43 @@ export function parseTranscript(
   // ── Optional: merge in tabular row_candidates from structured artifact ──
   // Browser-only artifact. Pure additive: dedupe by raw_line prefix, never
   // overwrite existing rows. Tagged with same partial-truth flag.
+  // Coverage denominator honesty fix (Option A):
+  //   base_row_like_candidates = unique row-like lines from primary text pass
+  //   structured_tabular_candidates = total tabular row_candidates seen in artifact
+  //   structured_unique_candidates_added = those NOT already represented in base set
+  //                                        (same dedupe key as numerator path)
+  //   effective_row_like_candidates = base + unique_added  (NO double counting)
   let extraRowsAdded = 0;
   let tabularCandidatesSeen = 0;
+  let structuredUniqueCandidatesAdded = 0;
   if (structured && structured.builder !== 'none' && structured.pages.length > 0) {
-    const seen = new Set(intermediate.rows.map(r => r.raw_line.slice(0, 80)));
+    // Dedupe key MUST match numerator dedupe to keep denominator honest.
+    const seenKeys = new Set(intermediate.rows.map(r => r.raw_line.slice(0, 80)));
     for (const page of structured.pages) {
       for (const cand of page.row_candidates) {
         if (!cand.is_tabular) continue;
         tabularCandidatesSeen++;
         const key = cand.raw_line.slice(0, 80);
-        if (seen.has(key)) continue;
+        if (seenKeys.has(key)) continue;
+        // Unique candidate not present in base row-like set — counts toward denominator.
+        structuredUniqueCandidatesAdded++;
+        seenKeys.add(key);
         const row = reconstructRow(cand.raw_line);
         if (!row) continue;
-        seen.add(key);
         intermediate.rows.push(row);
         extraRowsAdded++;
       }
     }
   }
 
+  const effectiveRowLikeCandidates = rowLikeCandidates + structuredUniqueCandidatesAdded;
   intermediate.coverage = {
     inspected_lines: inspected,
-    row_like_candidates: rowLikeCandidates + tabularCandidatesSeen,
+    row_like_candidates: effectiveRowLikeCandidates,
     rows_reconstructed: intermediate.rows.length,
     coverage_estimate:
-      rowLikeCandidates + tabularCandidatesSeen > 0
-        ? Math.min(intermediate.rows.length / (rowLikeCandidates + tabularCandidatesSeen), 1)
+      effectiveRowLikeCandidates > 0
+        ? Math.min(intermediate.rows.length / effectiveRowLikeCandidates, 1)
         : 0,
     partial: true, // V1 always treats transcript parse as partial truth.
   };
@@ -383,7 +394,7 @@ export function parseTranscript(
     `grade_hits=${intermediate.signals.grade_pattern_hits}`,
     `credit_hits=${intermediate.signals.credit_pattern_hits}`,
     `row_like=${intermediate.signals.row_like_lines}`,
-    `rows=${intermediate.rows.length}/${rowLikeCandidates + tabularCandidatesSeen} (inspected=${inspected})`,
+    `rows=${intermediate.rows.length}/${effectiveRowLikeCandidates} (inspected=${inspected}, base=${rowLikeCandidates}, struct_seen=${tabularCandidatesSeen}, struct_unique=${structuredUniqueCandidatesAdded})`,
     `coverage=${intermediate.coverage.coverage_estimate.toFixed(2)}`,
     `structured_extra=${extraRowsAdded}`,
   ].join(' ');
