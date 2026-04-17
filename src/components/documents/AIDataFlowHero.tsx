@@ -523,7 +523,17 @@ function AIDataFlowHeroComponent({
           />
         )}
 
-        {/* ═══ Brain (compact, never resizes) + inner tech fill ═══ */}
+        {/* ═══ Brain — new stateful BrainIngestionVisualizer ═══ */}
+        <foreignObject x={CX - 320} y={CY - 240} width={640} height={480}>
+          <BrainIngestionVisualizer
+            stage={brainPipeline.stage}
+            progress={brainPipeline.progress}
+            showFileNode={false}
+            animate={!reduceMotion}
+            reducedMotion={!!reduceMotion}
+          />
+        </foreignObject>
+        {/* Legacy inner-tech kept for ingestion ripples per active file */}
         <g transform={`translate(${CX}, ${CY})`}>
           <BrainShape
             animate={!reduceMotion}
