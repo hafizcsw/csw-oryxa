@@ -33,12 +33,16 @@ import {
 import { parseTranscript } from './parsers/transcript-parser';
 import type { TranscriptIntermediate } from './parsers/transcript-structure';
 import type { CanonicalStudentFile } from '../student-file/canonical-model';
+import type { StructuredDocumentArtifact } from './structured-browser-artifact-model';
+import { buildStructuredBrowserArtifact } from './parsers/structured-artifact-builder';
 
 export interface AnalysisResult {
   analysis: DocumentAnalysis;
   proposals: ExtractionProposal[];
   /** Door 1: the structured reading artifact */
   artifact: ReadingArtifact;
+  /** In-Browser Document Intelligence: structured upstream artifact */
+  structured_artifact: StructuredDocumentArtifact;
 }
 
 /**
@@ -99,8 +103,30 @@ export async function analyzeDocument(params: {
     ].filter(Boolean).join(' | ');
     analysis.updated_at = new Date().toISOString();
     logArtifact(artifact, analysis);
-    return { analysis, proposals, artifact };
+    return {
+      analysis,
+      proposals,
+      artifact,
+      structured_artifact: buildStructuredBrowserArtifact(artifact),
+    };
   }
+
+  // ── In-Browser Document Intelligence: build structured upstream artifact ──
+  // Browser-only. Pure heuristics. No outbound HTTP. No LLM. Never throws.
+  const structured_artifact = buildStructuredBrowserArtifact(artifact);
+  console.log('[BrowserDocAI:StructuredArtifact]', JSON.stringify({
+    file: file.name,
+    builder: structured_artifact.builder,
+    local_only: structured_artifact.local_only,
+    pages: structured_artifact.summary.pages_analyzed,
+    rows_total: structured_artifact.summary.total_row_candidates,
+    rows_tabular: structured_artifact.summary.tabular_row_candidates,
+    table_regions: structured_artifact.summary.table_like_region_count,
+    headers: structured_artifact.summary.header_groups,
+    footers: structured_artifact.summary.footer_groups,
+    avg_quality: Number(structured_artifact.summary.avg_quality_score.toFixed(3)),
+    build_ms: Math.round(structured_artifact.build_time_ms),
+  }, null, 2));
 
   // readable | degraded → continue, but mark surface honestly.
   // Honesty: a 'degraded' artifact MUST surface as 'degraded', never 'readable'.
@@ -150,9 +176,18 @@ export async function analyzeDocument(params: {
       extractedFields = extractGraduationFields(textContent);
     } else if (classification.best === 'transcript') {
       // Order 2: structured parser + truthful partial intermediate.
-      const result = parseTranscript(textContent);
+      // BrowserDocAI: pass structured artifact so transcript lane can recover
+      // tabular row_candidates the line-by-line regex pass missed.
+      const result = parseTranscript(textContent, structured_artifact);
       transcriptIntermediate = result.intermediate;
       extractedFields = result.header_fields;
+      console.log('[BrowserDocAI:TranscriptLaneConsumed]', JSON.stringify({
+        file: file.name,
+        used: result.structured_artifact_used?.used ?? false,
+        extra_rows_added: result.structured_artifact_used?.extra_rows_added ?? 0,
+        tabular_candidates_seen: result.structured_artifact_used?.tabular_candidates_seen ?? 0,
+        final_rows: transcriptIntermediate.rows.length,
+      }, null, 2));
     } else if (classification.best === 'language_certificate') {
       extractedFields = extractLanguageCertFields(textContent);
     }
@@ -325,7 +360,7 @@ export async function analyzeDocument(params: {
 
   logArtifact(artifact, analysis);
   console.info('[Door1:TotalMs]', Math.round(performance.now() - startTime));
-  return { analysis, proposals, artifact };
+  return { analysis, proposals, artifact, structured_artifact };
 }
 
 function logArtifact(artifact: ReadingArtifact, analysis: DocumentAnalysis): void {

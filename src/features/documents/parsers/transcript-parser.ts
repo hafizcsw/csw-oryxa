@@ -25,6 +25,7 @@ import {
   type TranscriptDisambiguationSignals,
   emptyIntermediate,
 } from './transcript-structure';
+import type { StructuredDocumentArtifact } from '../structured-browser-artifact-model';
 
 type Fields = Record<string, ExtractedField>;
 const PARSER: ParserType = 'regex_heuristic';
@@ -265,9 +266,24 @@ function reconstructRow(line: string): TranscriptRow | null {
 export interface TranscriptParseResult {
   intermediate: TranscriptIntermediate;
   header_fields: Fields;
+  /** Telemetry: how the structured artifact contributed (browser-only). */
+  structured_artifact_used?: {
+    used: boolean;
+    extra_rows_added: number;
+    tabular_candidates_seen: number;
+  };
 }
 
-export function parseTranscript(text: string): TranscriptParseResult {
+/**
+ * Parse transcript text. Optionally consume a StructuredDocumentArtifact
+ * (browser-only structured layer) to recover additional row candidates the
+ * line-by-line regex pass missed. Honesty contract preserved: structured
+ * rows are deduped and tagged with the same partial-truth confidence cap.
+ */
+export function parseTranscript(
+  text: string,
+  structured?: StructuredDocumentArtifact | null,
+): TranscriptParseResult {
   const intermediate = emptyIntermediate(PARSER);
   const fields: Fields = {};
 
@@ -305,8 +321,6 @@ export function parseTranscript(text: string): TranscriptParseResult {
   }
 
   // Rows — Order 2 honesty fix: separate inspected vs row-like candidates.
-  // A line is a row-like candidate iff it has subject-ish text AND at least one
-  // of: course code, grade-ish token (letter/percent/fraction), or credit token.
   const lines = text.split(/\r?\n/);
   let inspected = 0;
   let rowLikeCandidates = 0;
@@ -328,12 +342,37 @@ export function parseTranscript(text: string): TranscriptParseResult {
     const row = reconstructRow(line);
     if (row) intermediate.rows.push(row);
   }
+
+  // ── Optional: merge in tabular row_candidates from structured artifact ──
+  // Browser-only artifact. Pure additive: dedupe by raw_line prefix, never
+  // overwrite existing rows. Tagged with same partial-truth flag.
+  let extraRowsAdded = 0;
+  let tabularCandidatesSeen = 0;
+  if (structured && structured.builder !== 'none' && structured.pages.length > 0) {
+    const seen = new Set(intermediate.rows.map(r => r.raw_line.slice(0, 80)));
+    for (const page of structured.pages) {
+      for (const cand of page.row_candidates) {
+        if (!cand.is_tabular) continue;
+        tabularCandidatesSeen++;
+        const key = cand.raw_line.slice(0, 80);
+        if (seen.has(key)) continue;
+        const row = reconstructRow(cand.raw_line);
+        if (!row) continue;
+        seen.add(key);
+        intermediate.rows.push(row);
+        extraRowsAdded++;
+      }
+    }
+  }
+
   intermediate.coverage = {
     inspected_lines: inspected,
-    row_like_candidates: rowLikeCandidates,
+    row_like_candidates: rowLikeCandidates + tabularCandidatesSeen,
     rows_reconstructed: intermediate.rows.length,
     coverage_estimate:
-      rowLikeCandidates > 0 ? Math.min(intermediate.rows.length / rowLikeCandidates, 1) : 0,
+      rowLikeCandidates + tabularCandidatesSeen > 0
+        ? Math.min(intermediate.rows.length / (rowLikeCandidates + tabularCandidatesSeen), 1)
+        : 0,
     partial: true, // V1 always treats transcript parse as partial truth.
   };
   intermediate.partial = true;
@@ -344,9 +383,18 @@ export function parseTranscript(text: string): TranscriptParseResult {
     `grade_hits=${intermediate.signals.grade_pattern_hits}`,
     `credit_hits=${intermediate.signals.credit_pattern_hits}`,
     `row_like=${intermediate.signals.row_like_lines}`,
-    `rows=${intermediate.rows.length}/${rowLikeCandidates} (inspected=${inspected})`,
+    `rows=${intermediate.rows.length}/${rowLikeCandidates + tabularCandidatesSeen} (inspected=${inspected})`,
     `coverage=${intermediate.coverage.coverage_estimate.toFixed(2)}`,
+    `structured_extra=${extraRowsAdded}`,
   ].join(' ');
 
-  return { intermediate, header_fields: fields };
+  return {
+    intermediate,
+    header_fields: fields,
+    structured_artifact_used: {
+      used: !!(structured && structured.builder !== 'none'),
+      extra_rows_added: extraRowsAdded,
+      tabular_candidates_seen: tabularCandidatesSeen,
+    },
+  };
 }
