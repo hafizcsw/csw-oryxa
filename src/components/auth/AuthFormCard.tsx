@@ -315,7 +315,7 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
           trackRegisterComplete();
           toast({ title: t('auth.accountCreated'), description: t('auth.welcome') });
           onSuccess?.();
-          window.location.href = '/';
+          goWithWelcome('/', 'generic', fullName?.trim() || null);
         }
       }
     } catch (err: any) {
@@ -339,7 +339,7 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
       trackRegisterComplete();
       toast({ title: t('auth.accountCreated'), description: t('auth.welcome') });
       onSuccess?.();
-      window.location.href = '/';
+      goWithWelcome('/', 'generic', fullName?.trim() || null);
     } catch (err: any) {
       setError(getSupabaseErrorMessage(err.message));
     } finally {
@@ -368,7 +368,7 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
   const handleContinueAsGuest = async () => {
     await continueAsGuest();
     onSuccess?.();
-    window.location.href = '/';
+    navigate('/', { replace: true });
   };
 
   const isPhoneValid = phone && phone.length >= 5;
@@ -380,7 +380,7 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
 
   return (
     <div className="w-full" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      {redirecting && <WelcomeOverlay name={welcomeName} />}
+      {/* Welcome overlay is now mounted at route level (<WelcomeTransition/>) */}
 
       {/* ── 1. Account type toggle ────────────────────────── */}
       <div className="mb-5">
