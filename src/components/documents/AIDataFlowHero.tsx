@@ -682,10 +682,10 @@ function DocumentCard({
             </g>
           ) : null}
           <text
-            x={mirrored ? W - 24 : 24}
-            y={43}
+            x={mirrored ? W - 32 : 32}
+            y={47}
             textAnchor={mirrored ? "end" : "start"}
-            fontSize={7.5}
+            fontSize={7}
             fill={isDone ? "hsl(142 70% 35%)" : "hsl(265 85% 55%)"}
             fontWeight={600}
             style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif" }}
