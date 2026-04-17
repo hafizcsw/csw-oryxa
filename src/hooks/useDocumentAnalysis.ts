@@ -286,6 +286,10 @@ export function useDocumentAnalysis({
       const { [documentId]: _, ...rest } = prev;
       return rest;
     });
+    setHydratedArtifactSurfaces(prev => {
+      const { [documentId]: _s, ...rest } = prev;
+      return rest;
+    });
     if (studentId) {
       void deletePersistedDocument({ userId: studentId, documentId });
     }
