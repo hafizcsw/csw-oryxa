@@ -143,11 +143,8 @@ function BrainIngestionVisualizerComponent({
   const uid = useId().replace(/:/g, "");
   const ids = {
     silhouette: `biv-clip-${uid}`,
-    fillGrad: `biv-fill-${uid}`,
     streamGrad: `biv-stream-${uid}`,
     aura: `biv-aura-${uid}`,
-    chipFace: `biv-chip-${uid}`,
-    glow: `biv-glow-${uid}`,
   };
 
   // CSS vars driving all keyframes.
