@@ -6,21 +6,31 @@
 // 12-language safe: uses translation keys only.
 // ═══════════════════════════════════════════════════════════════
 
-import { Loader2 } from 'lucide-react';
+import { Loader2, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface WelcomeOverlayProps {
   /** Optional display name; if absent, generic welcome is shown. */
   name?: string | null;
+  /** Optional avatar URL — falls back to initials, then to icon. */
+  avatarUrl?: string | null;
 }
 
-export function WelcomeOverlay({ name }: WelcomeOverlayProps) {
+function initialsOf(name?: string | null): string {
+  if (!name) return '';
+  const parts = name.trim().split(/\s+/).slice(0, 2);
+  return parts.map((p) => p.charAt(0).toUpperCase()).join('');
+}
+
+export function WelcomeOverlay({ name, avatarUrl }: WelcomeOverlayProps) {
   const { t } = useLanguage();
 
   const greeting = name
     ? t('auth.welcomeBackUser').replace('{name}', name)
     : t('auth.welcomeBack');
+
+  const initials = initialsOf(name);
 
   return (
     <motion.div
