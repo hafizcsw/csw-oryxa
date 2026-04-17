@@ -304,25 +304,28 @@ function BrainIngestionVisualizerComponent({
           </g>
         )}
 
-        {/* ═══ Layer 6 — brain interior fill (region-by-region) ═══ */}
+        {/* ═══ Layer 6 — colored brain reveal (region-by-region) ═══
+            Full-color copy of the technical brain image, masked by a
+            clipPath whose region rectangles GROW with progress. This is
+            real region-based fill — no blur cloud, no overlay blob. */}
         <g clipPath={`url(#${ids.silhouette})`}>
-          {REGIONS.map((r, i) => (
-            <ellipse
-              key={r.id}
-              cx={r.cx}
-              cy={r.cy}
-              rx={r.rx}
-              ry={r.ry}
-              fill={`url(#${ids.fillGrad})`}
-              className="biv-region"
-              opacity={m.regionOpacity[i] ?? 0}
-            />
-          ))}
+          <image
+            href={brainTechnical}
+            x={BRAIN_X}
+            y={BRAIN_Y}
+            width={BRAIN_W}
+            height={BRAIN_H}
+            preserveAspectRatio="xMidYMid meet"
+            style={{
+              filter: `saturate(${1.05 + m.brainFill * 0.25}) contrast(1.1) brightness(1.05)`,
+              transition: "filter 600ms ease-out",
+            }}
+          />
         </g>
 
-        {/* ═══ Layer 7 — completion aura ═══ */}
+        {/* ═══ Layer 7 — completion aura (subtle, only at the end) ═══ */}
         <g className="biv-completion-aura">
-          <circle cx={CX} cy={CY} r={260} fill={`url(#${ids.aura})`} />
+          <circle cx={CX} cy={CY} r={Math.min(BRAIN_W, BRAIN_H) * 0.42} fill={`url(#${ids.aura})`} />
         </g>
 
         {/* ═══ File node glyphs (left + right) ═══ */}
