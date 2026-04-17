@@ -24,6 +24,8 @@ import {
   persistProposalStatus,
   deletePersistedDocument,
   deleteAllPersistedForUser,
+  type PersistedArtifactSummary,
+  type PersistedStructuredArtifactSummary,
 } from '@/features/documents/engine-persistence';
 
 interface UseDocumentAnalysisOptions {
