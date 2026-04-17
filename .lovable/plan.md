@@ -1,67 +1,70 @@
 
 
-## Goal
-Keep the brain at small size (no growing). While files are being scanned, the brain itself "fills up" technically from inside — like the reference image: glowing neural circuits, binary streams, and an inner AI chip light up progressively as scanning advances. Each active scan beam on a card visually feeds into the brain, drawing more circuitry inside it in real time.
+## رأيي في الصورة الجديدة
 
-## Visual concept (from reference image)
-- Brain silhouette stays the same small size.
-- Inside the brain: layered tech imagery appears progressively:
-  1. **Neural circuit lines** — thin cyan/blue lines tracing through the brain's interior, drawn with `stroke-dasharray` animation.
-  2. **Inner AI chip** — small glowing square at brain center (like the "AI" chip in the reference) that pulses brighter as more files complete.
-  3. **Binary rain** — faint `1`/`0` characters flowing downward inside the brain mask.
-  4. **Synapse dots** — small glowing nodes that light up along the circuit paths.
-- Fill progress is bound to: `(done files) / (total files)`. So as each file flips to `done`, more of the inner tech imagery becomes visible/illuminated.
-- While any file is `active`, the inner circuits pulse/animate continuously (energy flowing).
+الصورة عبارة عن SVG لعقل بشري مرسوم بأسلوب تقني/شبكي — يتكون من خطوط ومنحنيات بيضاء رفيعة تشكّل تضاريس العقل (الفصوص، الجذع، التلافيف) على خلفية شفافة. هذا أفضل بكثير من العقل الحالي للأسباب التالية:
 
-## Exploration needed
-1. `src/components/documents/AIDataFlowHero.tsx` — locate the brain SVG element, the current `shrink` scale logic, and where to inject the inner tech layer (must be clipped to brain shape).
-2. Confirm the brain is rendered as an SVG `<path>` (so we can reuse it as a `<clipPath>`) or as an `<image>`. If it's an image, we'll need a brain-shaped `<clipPath>` (an approximate path) to mask the inner tech overlay.
+1. **شفاف وخطي** — يعمل كـ"إطار" مثالي يمكن ملء داخله بطبقات تقنية (دارات، أرقام ثنائية، شريحة AI) دون أن تتعارض الألوان.
+2. **تفاصيل تشريحية حقيقية** — الفصوص واضحة، مما يسمح بربط كل ملف بمنطقة معينة من العقل (مثلاً: الجواز → الفص الأمامي، الشهادة → الفص الجداري).
+3. **قابل للتلوين ديناميكياً** — بما أنه SVG خطي، يمكن تغيير `stroke` لكل مسار حسب التقدم (رمادي → سماوي متوهج).
 
-## Design
+## الخطة
 
-### 1. Remove brain shrink behavior
-- Drop the `shrink` scale animation. Brain stays at its current "small" size permanently.
-- Remove the `anyInFlight ? 0.5 : 1` scale logic.
+### 1. استبدال أصل العقل
+- نسخ `user-uploads://تصميم_بدون_عنوان_1.svg` إلى `src/assets/brain-anatomical.svg`.
+- استبدال `<image href={brainImage}>` الحالي في `AIDataFlowHero.tsx` بـ inline SVG (نقرأ المحتوى ونحقنه) حتى نستطيع التحكم بكل `<path>` على حدة.
 
-### 2. Add inner tech layer (clipped to brain)
-New SVG group `<g clip-path="url(#brain-clip)">` placed on top of the brain image, containing:
+### 2. استخراج silhouette حقيقي للـ clipPath
+- بدلاً من `BRAIN_CLIP_D` التقريبي الحالي، نستخدم المسار الخارجي الفعلي للعقل الجديد كـ `<clipPath>` — هذا يعني أن كل الطبقات التقنية الداخلية ستلتزم بالشكل التشريحي الدقيق.
 
-**a. Circuit grid** — ~12-16 thin polylines forming a stylized neural/circuit pattern across the brain interior. Each line has `stroke-dasharray` + animated `stroke-dashoffset` to "draw in" progressively.
+### 3. تفاعل تقني محسّن مع الملفات (الجزء الأهم)
 
-**b. Inner chip** — a small rounded rect at brain center with "AI" text, glowing cyan. Opacity tied to progress.
+**أ. Sweeping data ingestion beam لكل ملف نشط:**
+- بدلاً من خط مستقيم من البطاقة إلى مركز العقل، نرسم منحنى Bézier ينتهي عند **منطقة محددة من العقل** (لكل نوع ملف منطقة):
+  - Passport → فص أمامي يسار
+  - Graduation → فص جداري علوي
+  - Transcript → فص صدغي
+  - Language → منطقة بروكا (يسار سفلي)
+- على طول المنحنى، تتدفق "حزم بيانات" (دوائر صغيرة متوهجة) من البطاقة باتجاه نقطة الدخول في العقل.
 
-**c. Binary stream** — a vertical column of `0`/`1` SVG `<text>` elements with a downward translate animation, low opacity.
+**ب. Activation ripple داخل العقل:**
+- عند وصول كل حزمة بيانات لنقطة الدخول، تنطلق موجة دائرية (`<circle>` مع `r` متزايد و `opacity` متناقص) من تلك النقطة، تنتشر داخل clip العقل.
 
-**d. Synapse nodes** — ~8 small `<circle>` elements at circuit intersections that fade in one-by-one as progress increases.
+**ج. Path lighting تدريجي:**
+- مسارات العقل الخطية نفسها (الـ `<path>` الأصلية في الـ SVG) تبدأ رمادية باهتة.
+- كل ما تنتهي معالجة ملف، تتحول مجموعة من المسارات القريبة من منطقته إلى التوهج السماوي مع `stroke-dasharray` animation (تأثير "الإضاءة من الداخل").
+- `fillProgress = doneCount / totalDocs` يتحكم بنسبة المسارات المضيئة.
 
-### 3. Bind to real progress
-```ts
-const total = files.length;
-const doneCount = files.filter(f => f.status === 'done' || f.status === 'failed').length;
-const activeCount = files.filter(f => f.status === 'active').length;
-const fillProgress = total > 0 ? doneCount / total : 0; // 0..1
-const isEnergized = activeCount > 0; // pulse animations on/off
+**د. Inner tech layer (نُبقي ما يعمل):**
+- شريحة AI المركزية + الـ binary rain + الـ synapse nodes تبقى من النسخة السابقة، لكن:
+  - تظهر داخل الـ clipPath التشريحي الجديد (أدق).
+  - تتموضع نسبياً مع المسارات الفعلية للعقل (synapses عند تقاطعات الـ paths الحقيقية).
+
+**هـ. Pulse synced with ingestion:**
+- عند كل وصول حزمة بيانات → نبضة سريعة (200ms) في شريحة AI + وميض في المسارات المضيئة.
+
+### 4. الإيقاع البصري النهائي
+```
+ملف active → بطاقة تومض → حزم بيانات تنطلق على منحنى → 
+تدخل العقل عند منطقة الفص المخصص → ripple → 
+مسارات الفص تضيء تدريجياً → AI chip ينبض → 
+عند done: المنطقة كاملة مضيئة بثبات
 ```
 
-- Circuit lines: each line's `pathLength` reveal is gated by `fillProgress` (e.g., line N visible when `fillProgress >= N/totalLines`).
-- Inner chip glow opacity: `0.3 + 0.7 * fillProgress`.
-- Binary rain + synapse pulse: only animate while `isEnergized` is true.
-- When all done: full circuitry visible, gentle steady glow (no pulse).
+### 5. الملفات المتأثرة
+- `src/assets/brain-anatomical.svg` (جديد، نسخ من الـ upload)
+- `src/components/documents/AIDataFlowHero.tsx` (التعديل الرئيسي):
+  - استبدال `<image>` بـ inline SVG قابل للتحكم
+  - تحديث `BRAIN_CLIP_D` بالمسار الحقيقي
+  - إضافة `INGESTION_TARGETS` map (نوع ملف → نقطة دخول x,y)
+  - إضافة data packet animation على المنحنيات
+  - إضافة activation ripples
+  - تحويل العقل من lit-paths-static إلى progressive-lit-paths
 
-### 4. Connector beams now "feed" the brain
-- Existing connectors from active cards already converge on brain center. Keep them; they visually become the energy source filling the inner circuitry.
-- Add a subtle radial glow at brain center that intensifies with `activeCount`.
-
-### 5. Brain clip path
-- If brain is an `<image>`: define a `<clipPath id="brain-clip">` with an approximate brain silhouette `<path>` matching the image's outline. All inner tech draws into this clip so it never spills outside.
-- If brain is already a `<path>`: reuse its `d` attribute inside the clipPath.
-
-## Files to change
-- `src/components/documents/AIDataFlowHero.tsx` — only file. Remove shrink logic, add `<defs>` with brain clipPath + gradients, add inner tech `<g>` overlay bound to `fillProgress` and `isEnergized`.
-
-## Verification
-- Brain stays small, never grows or shrinks.
-- Upload 1 file → inner circuits start drawing in + chip glows + binary rain flows while card is `active`. When card flips to `done`, brain shows ~100% filled circuitry with steady glow.
-- Upload 5 files → circuitry fills in 5 stages (20%, 40%, 60%, 80%, 100%) as each completes. Pulse animation runs whenever any card is still `active`.
-- No layout shift; no card changes; only brain interior gains the new tech imagery.
+### 6. المراجعة (QA)
+- العقل بحجمه الصغير الثابت لا يكبر.
+- رفع 1 ملف → حزم بيانات تتدفق على منحنى → ripple عند الدخول → فص واحد يضيء.
+- رفع 4 ملفات بأنواع مختلفة → 4 مناطق مختلفة من العقل تضيء بالتوازي.
+- عند اكتمال الجميع → كامل العقل مضيء بنبض هادئ + شريحة AI بأقصى توهج.
+- كل النصوص عبر مفاتيح الترجمة (لا hardcoded text).
 
