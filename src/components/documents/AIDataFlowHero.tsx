@@ -432,30 +432,30 @@ function AIDataFlowHeroComponent({
           </g>
         )}
 
-        {/* ═══ Connector paths with arrowheads (one set per card line) ═══ */}
+        {/* ═══ Connector paths — ONLY for the currently active file ═══ */}
         {showConnectors && (
           <g fill="none" strokeLinecap="round">
-            {connectors.map((p) => (
+            {activeConnectors.map((p) => (
               <ConnectorPath
-                key={p.key}
+                key={`act-${p.key}-${activeIndex}`}
                 d={p.d}
                 animate={!reduceMotion}
-                delay={0.9 + p.cardIdx * 0.12 + p.lineIdx * 0.08}
+                delay={0.15 + p.lineIdx * 0.08}
                 markerId={ids.arrowHead}
               />
             ))}
           </g>
         )}
 
-        {/* ═══ Mid-flight extraction chips riding the connectors ═══ */}
+        {/* ═══ Mid-flight extraction chips — ONLY on active file's lines ═══ */}
         {showChips && !reduceMotion && (
           <g>
-            {connectors.map((p, i) => (
+            {activeConnectors.map((p, i) => (
               <DocumentChip
-                key={`chip-${p.key}`}
+                key={`chip-${p.key}-${activeIndex}`}
                 pathD={p.d}
                 duration={cfg.chipDuration}
-                delay={(1.4 + p.cardIdx * 0.3 + p.lineIdx * 0.5 + (i * 0.15)) % cfg.chipDuration}
+                delay={(0.5 + p.lineIdx * 0.5 + (i * 0.15)) % cfg.chipDuration}
               />
             ))}
           </g>
@@ -464,42 +464,58 @@ function AIDataFlowHeroComponent({
         {/* ═══ Document clusters (only when files exist) ═══ */}
         {showDocuments && (
           <g>
-            {leftCards.map((c, i) => (
-              <DocumentCard
-                key={`L-${i}-of-${totalDocs}`}
-                x={c.x}
-                y={c.y}
-                rotate={c.rotate}
-                scale={c.scale}
-                opacity={c.opacity}
-                shadowId={ids.paperShadow}
-                accentVariant={i % 3}
-                float={!reduceMotion}
-                floatDelay={i * 0.45}
-                mirrored={false}
-                emergeFromX={CX - CARD_W / 2}
-                emergeFromY={VIEWBOX_H - 40}
-                emergeDelay={i * 0.12}
-              />
-            ))}
-            {rightCards.map((c, i) => (
-              <DocumentCard
-                key={`R-${i}-of-${totalDocs}`}
-                x={c.x}
-                y={c.y}
-                rotate={-c.rotate}
-                scale={c.scale}
-                opacity={c.opacity}
-                shadowId={ids.paperShadow}
-                accentVariant={(i + 1) % 3}
-                float={!reduceMotion}
-                floatDelay={i * 0.45 + 0.7}
-                mirrored
-                emergeFromX={CX - CARD_W / 2}
-                emergeFromY={VIEWBOX_H - 40}
-                emergeDelay={i * 0.12 + 0.06}
-              />
-            ))}
+            {leftCards.map((c, i) => {
+              const st = cardState(c.gIdx);
+              return (
+                <DocumentCard
+                  key={`L-${i}-of-${totalDocs}`}
+                  x={c.x}
+                  y={c.y}
+                  rotate={c.rotate}
+                  scale={c.scale}
+                  opacity={c.opacity}
+                  shadowId={ids.paperShadow}
+                  accentVariant={i % 3}
+                  float={!reduceMotion}
+                  floatDelay={i * 0.45}
+                  mirrored={false}
+                  emergeFromX={CX - CARD_W / 2}
+                  emergeFromY={VIEWBOX_H - 40}
+                  emergeDelay={i * 0.12}
+                  label={fileList[c.gIdx]?.name ?? ""}
+                  state={st}
+                  scanDurationSec={SCAN_DURATION_MS / 1000}
+                  scanningLabel={scanningLabel}
+                  scannedLabel={scannedLabel}
+                />
+              );
+            })}
+            {rightCards.map((c, i) => {
+              const st = cardState(c.gIdx);
+              return (
+                <DocumentCard
+                  key={`R-${i}-of-${totalDocs}`}
+                  x={c.x}
+                  y={c.y}
+                  rotate={-c.rotate}
+                  scale={c.scale}
+                  opacity={c.opacity}
+                  shadowId={ids.paperShadow}
+                  accentVariant={(i + 1) % 3}
+                  float={!reduceMotion}
+                  floatDelay={i * 0.45 + 0.7}
+                  mirrored
+                  emergeFromX={CX - CARD_W / 2}
+                  emergeFromY={VIEWBOX_H - 40}
+                  emergeDelay={i * 0.12 + 0.06}
+                  label={fileList[c.gIdx]?.name ?? ""}
+                  state={st}
+                  scanDurationSec={SCAN_DURATION_MS / 1000}
+                  scanningLabel={scanningLabel}
+                  scannedLabel={scannedLabel}
+                />
+              );
+            })}
           </g>
         )}
 
