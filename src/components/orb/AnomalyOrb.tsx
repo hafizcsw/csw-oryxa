@@ -109,12 +109,12 @@ const vertexShader = `
     float noise2 = snoise(position * 4.0 - uTime * 0.5);
     float noise3 = snoise(position * 1.0 + uTime * 0.2);
     
-    // Audio-reactive displacement
-    float audioBoost = 1.0 + uAudioLevel * 2.0;
+    // Audio-reactive displacement (reduced to 25% intensity)
+    float audioBoost = 1.0 + uAudioLevel * 0.5;
     float displacement = (noise1 * 0.3 + noise2 * 0.15 + noise3 * 0.1) * uDistortion * audioBoost;
     
-    // Apply displacement along normal
-    vec3 newPosition = position + normal * displacement * 0.15;
+    // Apply displacement along normal (reduced amplitude)
+    vec3 newPosition = position + normal * displacement * 0.04;
     
     vDisplacement = displacement;
     
