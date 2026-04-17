@@ -180,15 +180,16 @@ function BrainIngestionVisualizerComponent({
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
-          <clipPath id={ids.silhouette}>
-            <path d={BRAIN_SILHOUETTE_D} />
+          {/* Brain reveal mask — region rectangles whose Y scale grows
+              with progress, so color fills bottom→top inside each region. */}
+          <clipPath id={ids.silhouette} clipPathUnits="userSpaceOnUse">
+            {REGIONS.map((r, i) => {
+              const fill = m.regionOpacity[i] ?? 0;
+              const grownH = r.h * fill;
+              const grownY = r.y + (r.h - grownH);
+              return <rect key={r.id} x={r.x} y={grownY} width={r.w} height={grownH} />;
+            })}
           </clipPath>
-
-          <radialGradient id={ids.fillGrad} cx="50%" cy="50%" r="60%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.85" />
-            <stop offset="55%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-          </radialGradient>
 
           <linearGradient id={ids.streamGrad} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0" />
@@ -197,31 +198,28 @@ function BrainIngestionVisualizerComponent({
           </linearGradient>
 
           <radialGradient id={ids.aura} cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.55" />
-            <stop offset="60%" stopColor="hsl(var(--primary))" stopOpacity="0.18" />
+            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
+            <stop offset="60%" stopColor="hsl(var(--primary))" stopOpacity="0.12" />
             <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
           </radialGradient>
-
-          <linearGradient id={ids.chipFace} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.65" />
-          </linearGradient>
-
-          <filter id={ids.glow} x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="3" />
-          </filter>
         </defs>
 
-        {/* ═══ Layer 1 — base brain geometry (pure wireframe, no raster) ═══
-            Always-visible faint silhouette. Color comes from Layer 6 fills. */}
+        {/* ═══ Layer 1 — base brain (the technical SVG, sharp, dominant) ═══
+            Always visible. Desaturated in idle, becomes gradually colored
+            via the Layer 6 colored copy that reveals through the clipPath. */}
         <g className="biv-base">
-          <path
-            d={BRAIN_SILHOUETTE_D}
-            fill="none"
-            stroke="hsl(var(--foreground))"
-            strokeOpacity={0.22}
-            strokeWidth={1.2}
-            strokeDasharray="3 4"
+          <image
+            href={brainTechnical}
+            x={BRAIN_X}
+            y={BRAIN_Y}
+            width={BRAIN_W}
+            height={BRAIN_H}
+            preserveAspectRatio="xMidYMid meet"
+            style={{
+              filter: `grayscale(${Math.max(0, 0.85 - m.brainFill * 0.85)}) contrast(${1.05 + m.brainFill * 0.15}) brightness(${0.92 + m.brainFill * 0.1})`,
+              opacity: 0.55 + m.brainFill * 0.15,
+              transition: "filter 700ms ease-out, opacity 700ms ease-out",
+            }}
           />
         </g>
 
