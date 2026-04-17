@@ -411,7 +411,7 @@ export async function analyzeDocument(params: {
 
   logArtifact(artifact, analysis);
   console.info('[Door1:TotalMs]', Math.round(performance.now() - startTime));
-  return { analysis, proposals, artifact, structured_artifact };
+  return { analysis, proposals, artifact, structured_artifact, document_ai_mode, document_ai_diag };
 }
 
 function logArtifact(artifact: ReadingArtifact, analysis: DocumentAnalysis): void {
