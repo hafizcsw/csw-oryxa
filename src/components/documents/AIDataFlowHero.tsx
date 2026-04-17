@@ -97,7 +97,7 @@ function AIDataFlowHeroComponent({
   const totalDocs = Math.max(0, Math.floor(fileCount));
   const showDocuments = totalDocs > 0;
   const showConnectors = showDocuments;
-  const showChips = showDocuments && isProcessing;
+  const showChips = showDocuments;
   const dragHint = isDragOver && !showDocuments;
 
   const ids = useMemo(
