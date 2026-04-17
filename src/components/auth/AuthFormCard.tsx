@@ -368,6 +368,7 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
 
   return (
     <div className="w-full" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      {redirecting && <WelcomeOverlay name={welcomeName} />}
 
       {/* ── 1. Account type toggle ────────────────────────── */}
       <div className="mb-5">
