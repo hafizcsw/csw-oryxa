@@ -112,8 +112,8 @@ function AIDataFlowHeroComponent({
   );
 
   // Cluster anchor X (column) per side
-  const LEFT_X  = 110;
-  const RIGHT_X = 720;
+  const LEFT_X  = 40;
+  const RIGHT_X = 790;
 
   // Distribute REAL fileCount across two sides; cap by visibleCardsPerSide (≤5).
   const maxPerSide = Math.max(1, Math.min(5, visibleCardsPerSide));
@@ -510,7 +510,7 @@ function DocumentCard({
           fillOpacity={0.82}
         />
       )}
-      {/* Body lines */}
+      {/* Body lines — animated shimmer width to imply live data */}
       <g
         stroke="hsl(var(--foreground))"
         strokeOpacity={0.42}
@@ -521,7 +521,23 @@ function DocumentCard({
           Array.from({ length: row.count }).map((_, i) => {
             const widths = [W - 22, W - 30, W - 18, W - 36, W - 24, W - 40, W - 26, W - 32];
             const w = widths[(i + accentVariant) % widths.length];
-            return (
+            return float ? (
+              <motion.line
+                key={`ln-${i}`}
+                x1={12}
+                y1={row.yStart + i * row.gap}
+                y2={row.yStart + i * row.gap}
+                initial={{ x2: 12 }}
+                animate={{ x2: [12, w, w, 12] }}
+                transition={{
+                  duration: 3.6,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: (i * 0.18 + accentVariant * 0.3) % 2.4,
+                  times: [0, 0.45, 0.85, 1],
+                }}
+              />
+            ) : (
               <line
                 key={`ln-${i}`}
                 x1={12}
@@ -565,6 +581,27 @@ function DocumentCard({
             fillOpacity={0.82}
           />
         </>
+      )}
+      {/* Live scan beam — sweeps top→bottom to show brain reading the page */}
+      {float && (
+        <g clipPath={`inset(0 round 6px)`}>
+          <motion.rect
+            x={2}
+            width={W - 4}
+            height={18}
+            rx={3}
+            fill="hsl(265 90% 70%)"
+            fillOpacity={0.22}
+            initial={{ y: -20 }}
+            animate={{ y: [-20, H - 14, -20] }}
+            transition={{
+              duration: 2.6,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: (accentVariant * 0.4) % 1.6,
+            }}
+          />
+        </g>
       )}
     </g>
   );
