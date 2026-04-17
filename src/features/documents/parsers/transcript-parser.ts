@@ -25,6 +25,7 @@ import {
   type TranscriptDisambiguationSignals,
   emptyIntermediate,
 } from './transcript-structure';
+import type { StructuredDocumentArtifact } from '../structured-browser-artifact-model';
 
 type Fields = Record<string, ExtractedField>;
 const PARSER: ParserType = 'regex_heuristic';
