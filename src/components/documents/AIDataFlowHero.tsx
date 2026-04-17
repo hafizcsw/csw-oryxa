@@ -572,28 +572,40 @@ function DocumentCard({
   const settledTransform = `translate(${x}, ${y}) rotate(${rotate} ${W / 2} ${H / 2}) scale(${scale})`;
   const fromX = emergeFromX ?? x;
   const fromY = emergeFromY ?? y;
-  const emergeFromTransform = `translate(${fromX}, ${fromY}) rotate(0 ${W / 2} ${H / 2}) scale(0.2)`;
+  // Emergence offset in the card's local (post-translate) coordinate space
+  const emergeDX = fromX - x;
+  const emergeDY = fromY - y;
 
   if (!float) {
     return <g transform={settledTransform} opacity={opacity}>{sheet}</g>;
   }
 
   return (
-    <motion.g
-      initial={{ transform: emergeFromTransform, opacity: 0 }}
-      animate={{
-        transform: settledTransform,
-        opacity,
-        y: [0, -2.2, 0, 2.2, 0],
-      }}
-      transition={{
-        transform: { duration: 0.9, delay: emergeDelay, ease: [0.16, 1, 0.3, 1] },
-        opacity:   { duration: 0.5, delay: emergeDelay, ease: "easeOut" },
-        y: { duration: 9, repeat: Infinity, ease: "easeInOut", delay: floatDelay + emergeDelay + 0.9 },
-      }}
-    >
-      {sheet}
-    </motion.g>
+    <g transform={settledTransform} opacity={opacity}>
+      <motion.g
+        initial={{ scale: 0.2, opacity: 0, x: emergeDX, y: emergeDY }}
+        animate={{ scale: 1, opacity: 1, x: 0, y: 0 }}
+        transition={{
+          duration: 0.9,
+          delay: emergeDelay,
+          ease: [0.16, 1, 0.3, 1],
+          opacity: { duration: 0.5, delay: emergeDelay, ease: "easeOut" },
+        }}
+        style={{ transformOrigin: `${W / 2}px ${H / 2}px` }}
+      >
+        <motion.g
+          animate={{ y: [0, -2.2, 0, 2.2, 0] }}
+          transition={{
+            duration: 9,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: floatDelay + emergeDelay + 0.9,
+          }}
+        >
+          {sheet}
+        </motion.g>
+      </motion.g>
+    </g>
   );
 }
 
