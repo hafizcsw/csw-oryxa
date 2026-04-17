@@ -566,34 +566,71 @@ interface DocumentCardProps {
   emergeFromY?: number;
   /** Stagger for emerge entrance */
   emergeDelay?: number;
+  /** Real filename to display as the card title */
+  label?: string;
+  /** Sequential scan state */
+  state?: "pending" | "active" | "done";
+  /** Scan beam sweep duration (sec) — synced to outer scheduler */
+  scanDurationSec?: number;
+  /** Localized labels */
+  scanningLabel?: string;
+  scannedLabel?: string;
+}
+
+/** Truncate a filename for display (keep extension if short) */
+function truncateName(name: string, max = 16): string {
+  if (!name) return "";
+  if (name.length <= max) return name;
+  const dot = name.lastIndexOf(".");
+  if (dot > 0 && name.length - dot <= 5) {
+    const ext = name.slice(dot);
+    const head = name.slice(0, Math.max(1, max - ext.length - 1));
+    return `${head}…${ext}`;
+  }
+  return `${name.slice(0, max - 1)}…`;
 }
 
 function DocumentCard({
   x, y, rotate, scale, opacity, shadowId, accentVariant, float, floatDelay, mirrored,
   emergeFromX, emergeFromY, emergeDelay = 0,
+  label = "",
+  state = "active",
+  scanDurationSec = 2.6,
+  scanningLabel = "Scanning…",
+  scannedLabel = "Scanned",
 }: DocumentCardProps) {
   const W = CARD_W;
   const H = CARD_H;
 
+  const isActive = state === "active";
+  const isDone = state === "done";
+  const isPending = state === "pending";
+
   // Multiple short text-line groups for a denser editorial feel
   const lineRows = [
-    { yStart: 44, count: 8, gap: 9 },
+    { yStart: 56, count: 7, gap: 9 },
   ];
 
-  // Variant defines header/footer block presence
-  const showHeaderBlock = accentVariant !== 1;
+  // Variant defines footer block presence (header replaced by filename strip)
   const showFooterBlocks = accentVariant !== 2;
 
+  // Card body opacity per state — pending dimmed, active/done fully visible
+  const bodyOpacity = isPending ? 0.55 : 1;
+
+  // Body line stroke — done = success-tinted, others = foreground
+  const lineStroke = isDone ? "hsl(142 70% 42%)" : "hsl(var(--foreground))";
+  const lineStrokeOpacity = isDone ? 0.55 : 0.42;
+
   const sheet = (
-    <g filter={`url(#${shadowId})`}>
+    <g filter={`url(#${shadowId})`} opacity={bodyOpacity}>
       {/* Page */}
       <rect
         width={W}
         height={H}
         rx={6}
         fill="hsl(var(--card))"
-        stroke="hsl(var(--foreground))"
-        strokeOpacity={0.55}
+        stroke={isDone ? "hsl(142 70% 42%)" : "hsl(var(--foreground))"}
+        strokeOpacity={isDone ? 0.7 : 0.55}
         strokeWidth={1.1}
       />
       {/* Folded corner */}
@@ -603,22 +640,74 @@ function DocumentCard({
           : `M ${W} 0 L ${W - 18} 0 L ${W} 18 Z`}
         fill="hsl(var(--muted))"
       />
-      {/* Header dark block (like reference) */}
-      {showHeaderBlock && (
+      {/* Filename strip — replaces generic header block */}
+      <g>
         <rect
-          x={mirrored ? 22 : 14}
-          y={16}
-          width={W * 0.5}
-          height={10}
-          rx={1.5}
+          x={8}
+          y={8}
+          width={W - 16}
+          height={20}
+          rx={3}
           fill="hsl(var(--foreground))"
-          fillOpacity={0.82}
+          fillOpacity={isDone ? 0.7 : 0.85}
         />
+        <text
+          x={W / 2}
+          y={22}
+          textAnchor="middle"
+          fontSize={9}
+          fontWeight={600}
+          fill="hsl(var(--background))"
+          style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif" }}
+        >
+          {truncateName(label, 18)}
+        </text>
+      </g>
+
+      {/* State micro-label under filename */}
+      {(isActive || isDone) && (
+        <g>
+          {isActive && float ? (
+            <motion.circle
+              cx={mirrored ? W - 16 : 16}
+              cy={40}
+              r={3}
+              fill="hsl(265 90% 60%)"
+              animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
+              transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+              style={{ transformOrigin: `${mirrored ? W - 16 : 16}px 40px` }}
+            />
+          ) : isDone ? (
+            <g transform={`translate(${mirrored ? W - 22 : 10}, 33)`}>
+              <circle cx={6} cy={6} r={6} fill="hsl(142 70% 42%)" />
+              <path
+                d="M 3 6 L 5.2 8.2 L 9 4.2"
+                stroke="hsl(var(--background))"
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+            </g>
+          ) : null}
+          <text
+            x={mirrored ? W - 24 : 24}
+            y={43}
+            textAnchor={mirrored ? "end" : "start"}
+            fontSize={7.5}
+            fill={isDone ? "hsl(142 70% 35%)" : "hsl(265 85% 55%)"}
+            fontWeight={600}
+            style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif" }}
+          >
+            {isDone ? scannedLabel : scanningLabel}
+          </text>
+        </g>
       )}
-      {/* Body lines — animated shimmer width to imply live data */}
+
+      {/* Body lines — shimmer ONLY when active; static otherwise */}
       <g
-        stroke="hsl(var(--foreground))"
-        strokeOpacity={0.42}
+        stroke={lineStroke}
+        strokeOpacity={lineStrokeOpacity}
         strokeWidth={1}
         strokeLinecap="round"
       >
@@ -626,7 +715,7 @@ function DocumentCard({
           Array.from({ length: row.count }).map((_, i) => {
             const widths = [W - 22, W - 30, W - 18, W - 36, W - 24, W - 40, W - 26, W - 32];
             const w = widths[(i + accentVariant) % widths.length];
-            return float ? (
+            return float && isActive ? (
               <motion.line
                 key={`ln-${i}`}
                 x1={12}
@@ -654,15 +743,15 @@ function DocumentCard({
           }),
         )}
       </g>
-      {/* Inline emphasis block mid-page (like reference) */}
+      {/* Inline emphasis block mid-page */}
       <rect
         x={mirrored ? W - 64 : 38}
-        y={H * 0.52}
+        y={H * 0.62}
         width={42}
         height={10}
         rx={1.5}
-        fill="hsl(var(--foreground))"
-        fillOpacity={0.82}
+        fill={isDone ? "hsl(142 70% 42%)" : "hsl(var(--foreground))"}
+        fillOpacity={isDone ? 0.7 : 0.82}
       />
       {/* Footer blocks */}
       {showFooterBlocks && (
@@ -687,8 +776,9 @@ function DocumentCard({
           />
         </>
       )}
-      {/* Live scan beam — sweeps top→bottom to show brain reading the page */}
-      {float && (
+      {/* Live scan beam — ONLY while this card is being actively scanned.
+          Synced to outer scheduler: a single sweep top→bottom across SCAN_DURATION. */}
+      {float && isActive && (
         <g clipPath={`inset(0 round 6px)`}>
           <motion.rect
             x={2}
@@ -696,14 +786,14 @@ function DocumentCard({
             height={18}
             rx={3}
             fill="hsl(265 90% 70%)"
-            fillOpacity={0.22}
+            fillOpacity={0.32}
             initial={{ y: -20 }}
-            animate={{ y: [-20, H - 14, -20] }}
+            animate={{ y: [-20, H - 14, H - 14] }}
             transition={{
-              duration: 2.6,
+              duration: scanDurationSec,
               repeat: Infinity,
               ease: "easeInOut",
-              delay: (accentVariant * 0.4) % 1.6,
+              times: [0, 0.85, 1],
             }}
           />
         </g>
