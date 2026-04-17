@@ -98,32 +98,32 @@ const NODE_POINTS_RIGHT = NODE_POINTS_LEFT.map((n) => ({ ...n, x: VB_W - n.x }))
 const FILE_LEFT = { x: 60, y: 440 };
 const FILE_RIGHT = { x: VB_W - 60, y: 440 };
 
-// ─── Brain interior region rectangles (overlays inside silhouette) ─
-// Order matches REGION_THRESHOLDS in the hook:
-// L-lower, R-lower, L-mid, R-mid, L-upper, R-upper, core-seam
-const REGIONS: Array<{ id: string; cx: number; cy: number; rx: number; ry: number }> = [
-  { id: "l-lower",   cx: CX - 90, cy: CY + 70, rx: 95, ry: 70 },
-  { id: "r-lower",   cx: CX + 90, cy: CY + 70, rx: 95, ry: 70 },
-  { id: "l-mid",     cx: CX - 95, cy: CY,      rx: 100, ry: 70 },
-  { id: "r-mid",     cx: CX + 95, cy: CY,      rx: 100, ry: 70 },
-  { id: "l-upper",   cx: CX - 70, cy: CY - 80, rx: 95, ry: 70 },
-  { id: "r-upper",   cx: CX + 70, cy: CY - 80, rx: 95, ry: 70 },
-  { id: "core-seam", cx: CX,      cy: CY,      rx: 60, ry: 130 },
-];
+// ─── Brain image bounding box (the technical SVG asset) ──────────
+// We render the technical brain raster centered on (CX,CY) at this size.
+const BRAIN_W = 760;
+const BRAIN_H = 560;
+const BRAIN_X = CX - BRAIN_W / 2;
+const BRAIN_Y = CY - BRAIN_H / 2;
 
-// Brain silhouette clipPath (simplified two-hemisphere).
-const BRAIN_SILHOUETTE_D = (() => {
-  const x = CX, y = CY, w = 320, h = 230;
-  return (
-    `M ${x - w} ${y - 30} ` +
-    `C ${x - w - 10} ${y - 130}, ${x - w / 2} ${y - h}, ${x - 60} ${y - h * 0.95} ` +
-    `C ${x - 30} ${y - h - 8}, ${x + 30} ${y - h - 8}, ${x + 60} ${y - h * 0.95} ` +
-    `C ${x + w / 2} ${y - h}, ${x + w + 10} ${y - 130}, ${x + w} ${y - 30} ` +
-    `C ${x + w + 6} ${y + 90}, ${x + w / 2} ${y + h - 10}, ${x + 50} ${y + h - 30} ` +
-    `C ${x + 30} ${y + h}, ${x - 30} ${y + h}, ${x - 50} ${y + h - 30} ` +
-    `C ${x - w / 2} ${y + h - 10}, ${x - w - 6} ${y + 90}, ${x - w} ${y - 30} Z`
-  );
-})();
+// ─── Brain interior reveal regions (rectangles inside the brain bbox) ──
+// Order matches REGION_THRESHOLDS in the hook:
+// L-lower, R-lower, L-mid, R-mid, L-upper, R-upper, core-seam.
+// Each region is a rectangle that "uncovers" the colored brain copy.
+const BRAIN_INNER_X = BRAIN_X + BRAIN_W * 0.18;
+const BRAIN_INNER_Y = BRAIN_Y + BRAIN_H * 0.22;
+const BRAIN_INNER_W = BRAIN_W * 0.64;
+const BRAIN_INNER_H = BRAIN_H * 0.56;
+const REG_W = BRAIN_INNER_W / 2;
+const REG_H = BRAIN_INNER_H / 3;
+const REGIONS: Array<{ id: string; x: number; y: number; w: number; h: number }> = [
+  { id: "l-lower", x: BRAIN_INNER_X,         y: BRAIN_INNER_Y + REG_H * 2, w: REG_W, h: REG_H },
+  { id: "r-lower", x: BRAIN_INNER_X + REG_W, y: BRAIN_INNER_Y + REG_H * 2, w: REG_W, h: REG_H },
+  { id: "l-mid",   x: BRAIN_INNER_X,         y: BRAIN_INNER_Y + REG_H,     w: REG_W, h: REG_H },
+  { id: "r-mid",   x: BRAIN_INNER_X + REG_W, y: BRAIN_INNER_Y + REG_H,     w: REG_W, h: REG_H },
+  { id: "l-upper", x: BRAIN_INNER_X,         y: BRAIN_INNER_Y,             w: REG_W, h: REG_H },
+  { id: "r-upper", x: BRAIN_INNER_X + REG_W, y: BRAIN_INNER_Y,             w: REG_W, h: REG_H },
+  { id: "core-seam", x: BRAIN_INNER_X + REG_W * 0.85, y: BRAIN_INNER_Y, w: REG_W * 0.3, h: BRAIN_INNER_H },
+];
 
 function BrainIngestionVisualizerComponent({
   stage,
