@@ -136,7 +136,7 @@ function BrainIngestionVisualizerComponent({
   ariaLabel,
 }: BrainIngestionVisualizerProps) {
   const prefersReduce = useReducedMotion();
-  const reduced = reducedMotion ?? !!prefersReduce ?? false;
+  const reduced = reducedMotion ?? !!prefersReduce;
   const motionOff = !animate || reduced;
 
   const m = useBrainIngestionAnimation(stage, progress);
