@@ -132,11 +132,16 @@ function AIDataFlowHeroComponent({
     [fileList],
   );
 
-  // Brain shrinks while ANY file is still pending or active. Returns to full
-  // size only when every file has reached a terminal status (done | failed).
+  // Brain stays permanently at the compact size — no growing/shrinking.
+  // Instead, the INTERIOR of the brain fills with technical circuitry as
+  // each file finishes processing. While any file is active, the inner
+  // circuits pulse continuously (energy flowing in from connectors).
   const anyInFlight = fileStatuses.some((s) => s === "pending" || s === "active");
   const allDone = totalDocs > 0 && !anyInFlight;
-  const brainShrink = showDocuments && anyInFlight;
+  const activeCount = fileStatuses.filter((s) => s === "active").length;
+  const doneCount = fileStatuses.filter((s) => s === "done" || s === "failed").length;
+  const fillProgress = totalDocs > 0 ? doneCount / totalDocs : 0; // 0..1
+  const isEnergized = activeCount > 0;
 
   const ids = useMemo(
     () => ({
