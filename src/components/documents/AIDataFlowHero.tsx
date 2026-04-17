@@ -530,6 +530,9 @@ function AIDataFlowHeroComponent({
             fillProgress={fillProgress}
             isEnergized={isEnergized && !reduceMotion}
             allDone={allDone}
+            activeFileNames={fileList
+              .map((f, i) => (fileStatuses[i] === "active" ? f.name : null))
+              .filter((n): n is string => n !== null)}
           />
         </g>
       </svg>
