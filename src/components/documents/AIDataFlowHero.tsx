@@ -558,15 +558,15 @@ function AIDataFlowHeroComponent({
               })()}
               distortion={
                 brainPipeline.stage === "idle"
-                  ? 0.4
-                  : 0.6 + (brainPipeline.progress / 100) * 2.0
+                  ? 0.3
+                  : 0.4 + (brainPipeline.progress / 100) * 0.5
               }
               pulseSpeed={
                 brainPipeline.stage === "idle"
                   ? 0.6
                   : brainPipeline.stage === "complete"
-                    ? 1.4
-                    : 1 + (brainPipeline.progress / 100) * 2.5
+                    ? 1.2
+                    : 0.8 + (brainPipeline.progress / 100) * 1.0
               }
               customColors={(() => {
                 const t = brainPipeline.progress / 100;
