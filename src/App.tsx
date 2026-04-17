@@ -9,6 +9,8 @@ import { MalakChatProvider, useMalakChat } from "@/contexts/MalakChatContext";
 import { StudentSiteTour } from "@/components/onboarding/StudentSiteTour";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { AuthStartModal } from "@/components/auth/AuthStartModal";
+import { WelcomeTransition } from "@/components/auth/WelcomeTransition";
+import { welcomeAlreadyRouted } from "@/lib/welcomeTransition";
 import { PhoneActivationGate } from "@/components/auth/PhoneActivationGate";
 import { CanonicalRedirect } from "@/components/system/CanonicalRedirect";
 import { SearchRedirect } from "@/components/system/SearchRedirect";
@@ -399,24 +401,30 @@ function AppContent() {
       }
 
       if (session?.user) {
+        // 🛡️ Guard: if AuthFormCard / AuthStartModal already initiated a
+        // welcome-driven SPA navigation for THIS sign-in, skip the legacy
+        // redirect block entirely. Prevents double-navigation + the white
+        // flash that came from window.location.href below.
+        const skipDueToWelcome = welcomeAlreadyRouted();
+
         // ✅ Institution account redirect (after email confirmation or returning)
         const accountType = session.user.user_metadata?.account_type;
         const isOnUniversityPage = window.location.pathname.startsWith('/university/');
-        if (accountType === 'institution' && !window.location.pathname.startsWith('/institution') && !isOnUniversityPage) {
+        if (!skipDueToWelcome && accountType === 'institution' && !window.location.pathname.startsWith('/institution') && !isOnUniversityPage) {
           // Don't redirect if already on an institution or university route
           const postAuthReturn = sessionStorage.getItem('post_auth_return_to');
           if (postAuthReturn?.startsWith('/institution') || postAuthReturn?.startsWith('/university/')) {
             sessionStorage.removeItem('post_auth_return_to');
-            window.location.href = postAuthReturn;
+            navigateRouter(postAuthReturn, { replace: true });
             return;
           }
           // Resolve and go to exact university page
           import('@/lib/resolveInstitutionLanding').then(({ resolveInstitutionLanding }) => {
             resolveInstitutionLanding().then((path) => {
-              window.location.href = path;
+              navigateRouter(path, { replace: true });
             });
           }).catch(() => {
-            window.location.href = '/institution/onboarding';
+            navigateRouter('/institution/onboarding', { replace: true });
           });
           return;
         }
