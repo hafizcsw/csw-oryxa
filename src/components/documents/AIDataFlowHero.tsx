@@ -360,7 +360,7 @@ function AIDataFlowHeroComponent({
           <g>
             {leftCards.map((c, i) => (
               <DocumentCard
-                key={`L-${i}`}
+                key={`L-${i}-of-${totalDocs}`}
                 x={c.x}
                 y={c.y}
                 rotate={c.rotate}
@@ -371,11 +371,14 @@ function AIDataFlowHeroComponent({
                 float={!reduceMotion}
                 floatDelay={i * 0.45}
                 mirrored={false}
+                emergeFromX={CX - CARD_W / 2}
+                emergeFromY={VIEWBOX_H - 40}
+                emergeDelay={i * 0.12}
               />
             ))}
             {rightCards.map((c, i) => (
               <DocumentCard
-                key={`R-${i}`}
+                key={`R-${i}-of-${totalDocs}`}
                 x={c.x}
                 y={c.y}
                 rotate={-c.rotate}
@@ -386,6 +389,9 @@ function AIDataFlowHeroComponent({
                 float={!reduceMotion}
                 floatDelay={i * 0.45 + 0.7}
                 mirrored
+                emergeFromX={CX - CARD_W / 2}
+                emergeFromY={VIEWBOX_H - 40}
+                emergeDelay={i * 0.12 + 0.06}
               />
             ))}
           </g>
@@ -433,10 +439,16 @@ interface DocumentCardProps {
   float: boolean;
   floatDelay: number;
   mirrored?: boolean;
+  /** Emerge-from-user origin (bottom-center of viewbox) */
+  emergeFromX?: number;
+  emergeFromY?: number;
+  /** Stagger for emerge entrance */
+  emergeDelay?: number;
 }
 
 function DocumentCard({
   x, y, rotate, scale, opacity, shadowId, accentVariant, float, floatDelay, mirrored,
+  emergeFromX, emergeFromY, emergeDelay = 0,
 }: DocumentCardProps) {
   const W = CARD_W;
   const H = CARD_H;
@@ -540,18 +552,28 @@ function DocumentCard({
     </g>
   );
 
-  const transform = `translate(${x}, ${y}) rotate(${rotate} ${W / 2} ${H / 2}) scale(${scale})`;
+  const settledTransform = `translate(${x}, ${y}) rotate(${rotate} ${W / 2} ${H / 2}) scale(${scale})`;
+  const fromX = emergeFromX ?? x;
+  const fromY = emergeFromY ?? y;
+  const emergeFromTransform = `translate(${fromX}, ${fromY}) rotate(0 ${W / 2} ${H / 2}) scale(0.2)`;
 
   if (!float) {
-    return <g transform={transform} opacity={opacity}>{sheet}</g>;
+    return <g transform={settledTransform} opacity={opacity}>{sheet}</g>;
   }
 
   return (
     <motion.g
-      transform={transform}
-      opacity={opacity}
-      animate={{ y: [0, -2.2, 0, 2.2, 0] }}
-      transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: floatDelay }}
+      initial={{ transform: emergeFromTransform, opacity: 0 }}
+      animate={{
+        transform: settledTransform,
+        opacity,
+        y: [0, -2.2, 0, 2.2, 0],
+      }}
+      transition={{
+        transform: { duration: 0.9, delay: emergeDelay, ease: [0.16, 1, 0.3, 1] },
+        opacity:   { duration: 0.5, delay: emergeDelay, ease: "easeOut" },
+        y: { duration: 9, repeat: Infinity, ease: "easeInOut", delay: floatDelay + emergeDelay + 0.9 },
+      }}
     >
       {sheet}
     </motion.g>
