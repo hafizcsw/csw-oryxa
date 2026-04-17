@@ -442,7 +442,7 @@ function AppContent() {
             if (raw) persistedAuth = JSON.parse(raw);
           } catch {}
           
-          if (persistedAuth?.role && persistedAuth.accessScope !== 'crm_only') {
+          if (!skipDueToWelcome && persistedAuth?.role && persistedAuth.accessScope !== 'crm_only') {
             const isOnGenericPage = window.location.pathname === '/' || window.location.pathname === '/languages' || window.location.pathname.startsWith('/languages/');
             if (isOnGenericPage && !window.location.pathname.startsWith('/staff') && !window.location.pathname.startsWith('/admin')) {
               const staffLandingMap: Record<string, string> = {
@@ -455,7 +455,7 @@ function AppContent() {
               if (fastPath) {
                 console.log(`[App] ⚡ Fast-path staff redirect (persistent cache): role=${persistedAuth.role} → ${fastPath}`);
                 sessionStorage.setItem('staff_routed_once', '1');
-                window.location.href = fastPath;
+                navigateRouter(fastPath, { replace: true });
                 return;
               }
             }
@@ -537,7 +537,7 @@ function AppContent() {
 
             // Step 2: Staff redirect — on SIGNED_IN or INITIAL_SESSION (if on generic page)
             if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && authorityState === 'portal_staff' && staffRole) {
-              const alreadyRouted = sessionStorage.getItem('staff_routed_once');
+              const alreadyRouted = sessionStorage.getItem('staff_routed_once') || welcomeAlreadyRouted();
               if (!alreadyRouted && !window.location.pathname.startsWith('/staff') && !window.location.pathname.startsWith('/admin')) {
                 sessionStorage.setItem('staff_routed_once', '1');
                 const staffLandingMap: Record<string, string> = {
@@ -549,7 +549,7 @@ function AppContent() {
                 const landingPath = staffLandingMap[staffRole];
                 if (landingPath) {
                   console.log(`[App] ✅ Staff auto-routing: role=${staffRole} scope=${staffScope} → ${landingPath}`);
-                  window.location.href = landingPath;
+                  navigateRouter(landingPath, { replace: true });
                   return;
                 }
               }
@@ -635,8 +635,7 @@ function AppContent() {
           sessionStorage.removeItem('post_auth_return_to');
           if (window.location.pathname !== postAuthReturn) {
             console.log('[App] ✅ Navigating to:', postAuthReturn);
-            window.history.replaceState({}, '', postAuthReturn);
-            window.location.href = postAuthReturn;
+            navigateRouter(postAuthReturn, { replace: true });
           }
         }
       }
