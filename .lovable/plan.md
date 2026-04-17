@@ -1,58 +1,67 @@
 
 
-## Problem
-The scan animation runs on its own fixed timer (2600ms per file) and is NOT tied to the real backend processing state of each file. So the engine may still be parsing a file while the UI already marked it "done", or vice versa — the visual scan and the real work are out of sync.
-
 ## Goal
-Bind each `DocumentCard`'s state (`pending` / `active` / `done`) to the **actual processing status of that specific document record**, not to a `setTimeout`.
+Keep the brain at small size (no growing). While files are being scanned, the brain itself "fills up" technically from inside — like the reference image: glowing neural circuits, binary streams, and an inner AI chip light up progressively as scanning advances. Each active scan beam on a card visually feeds into the brain, drawing more circuitry inside it in real time.
 
-## Exploration Needed
-1. `src/components/documents/CentralUploadHub.tsx` — see what document records it holds, what status field exists (`status`, `processing_status`, `parsed_at`, etc.), and how it currently passes `files` to `AIDataFlowHero`.
-2. `src/components/documents/AIDataFlowHero.tsx` — current `activeIndex` timer logic to remove.
-3. The documents table schema / hook that feeds CentralUploadHub — confirm the real status enum values (e.g. `uploading` → `processing` → `processed` / `failed`).
+## Visual concept (from reference image)
+- Brain silhouette stays the same small size.
+- Inside the brain: layered tech imagery appears progressively:
+  1. **Neural circuit lines** — thin cyan/blue lines tracing through the brain's interior, drawn with `stroke-dasharray` animation.
+  2. **Inner AI chip** — small glowing square at brain center (like the "AI" chip in the reference) that pulses brighter as more files complete.
+  3. **Binary rain** — faint `1`/`0` characters flowing downward inside the brain mask.
+  4. **Synapse dots** — small glowing nodes that light up along the circuit paths.
+- Fill progress is bound to: `(done files) / (total files)`. So as each file flips to `done`, more of the inner tech imagery becomes visible/illuminated.
+- While any file is `active`, the inner circuits pulse/animate continuously (energy flowing).
+
+## Exploration needed
+1. `src/components/documents/AIDataFlowHero.tsx` — locate the brain SVG element, the current `shrink` scale logic, and where to inject the inner tech layer (must be clipped to brain shape).
+2. Confirm the brain is rendered as an SVG `<path>` (so we can reuse it as a `<clipPath>`) or as an `<image>`. If it's an image, we'll need a brain-shaped `<clipPath>` (an approximate path) to mask the inner tech overlay.
 
 ## Design
 
-### 1. Pass real status per file
-Change the hero's `files` prop from `{ name: string }[]` to:
+### 1. Remove brain shrink behavior
+- Drop the `shrink` scale animation. Brain stays at its current "small" size permanently.
+- Remove the `anyInFlight ? 0.5 : 1` scale logic.
+
+### 2. Add inner tech layer (clipped to brain)
+New SVG group `<g clip-path="url(#brain-clip)">` placed on top of the brain image, containing:
+
+**a. Circuit grid** — ~12-16 thin polylines forming a stylized neural/circuit pattern across the brain interior. Each line has `stroke-dasharray` + animated `stroke-dashoffset` to "draw in" progressively.
+
+**b. Inner chip** — a small rounded rect at brain center with "AI" text, glowing cyan. Opacity tied to progress.
+
+**c. Binary stream** — a vertical column of `0`/`1` SVG `<text>` elements with a downward translate animation, low opacity.
+
+**d. Synapse nodes** — ~8 small `<circle>` elements at circuit intersections that fade in one-by-one as progress increases.
+
+### 3. Bind to real progress
 ```ts
-files: { name: string; status: 'pending' | 'active' | 'done' | 'failed' }[]
+const total = files.length;
+const doneCount = files.filter(f => f.status === 'done' || f.status === 'failed').length;
+const activeCount = files.filter(f => f.status === 'active').length;
+const fillProgress = total > 0 ? doneCount / total : 0; // 0..1
+const isEnergized = activeCount > 0; // pulse animations on/off
 ```
-`CentralUploadHub` maps each document record's real status to one of these 4 values:
-- not yet started / queued → `pending`
-- currently being parsed / extracted → `active`
-- finished successfully → `done`
-- error → `failed` (treated visually like `done` but with a red tint, optional)
 
-### 2. Drop the timer in AIDataFlowHero
-- Remove `activeIndex` state, `SCAN_DURATION_MS` advancement, and the `useEffect` setTimeout loop.
-- `DocumentCard.state` now comes directly from `files[gIdx].status`.
-- `activeConnectors` / `DocumentChip` rendering is gated by "is this card's status === 'active'" — multiple cards CAN be active simultaneously if backend processes in parallel (matches reality).
+- Circuit lines: each line's `pathLength` reveal is gated by `fillProgress` (e.g., line N visible when `fillProgress >= N/totalLines`).
+- Inner chip glow opacity: `0.3 + 0.7 * fillProgress`.
+- Binary rain + synapse pulse: only animate while `isEnergized` is true.
+- When all done: full circuitry visible, gentle steady glow (no pulse).
 
-### 3. Brain reaction
-- Brain stays at 0.5 scale while ANY file has status `pending` or `active`.
-- Returns to 1.0 only when every file is `done` (or `failed`).
+### 4. Connector beams now "feed" the brain
+- Existing connectors from active cards already converge on brain center. Keep them; they visually become the energy source filling the inner circuitry.
+- Add a subtle radial glow at brain center that intensifies with `activeCount`.
 
-### 4. Scan beam timing
-- Scan beam loops continuously (2.6s sweep) while card is `active`. It no longer needs to "finish" at a specific moment — it just keeps sweeping until the real status flips to `done`, then disappears and the green ✓ appears.
-
-### 5. Source of truth in CentralUploadHub
-Locate the documents query/hook and derive status:
-```ts
-const heroFiles = documents.map(d => ({
-  name: d.original_file_name,
-  status: deriveStatus(d), // reads d.status / d.parsed_at / d.processing_state
-}));
-```
-If the backend currently has only a binary "uploaded vs not", we'll need to also surface a "processing" flag — exploration of the documents hook will confirm what's already available. If nothing exists, fallback: treat freshly inserted rows (< N seconds old, no `parsed_at`) as `active`, rows with `parsed_at` as `done`.
+### 5. Brain clip path
+- If brain is an `<image>`: define a `<clipPath id="brain-clip">` with an approximate brain silhouette `<path>` matching the image's outline. All inner tech draws into this clip so it never spills outside.
+- If brain is already a `<path>`: reuse its `d` attribute inside the clipPath.
 
 ## Files to change
-- `src/components/documents/AIDataFlowHero.tsx` — extend `files` prop with `status`, remove timer state machine, drive card state from prop.
-- `src/components/documents/CentralUploadHub.tsx` — map real document records → `{name, status}` and pass down.
-- (Possibly) the documents hook/query file — only to read existing status fields, no schema changes unless exploration shows none exist.
+- `src/components/documents/AIDataFlowHero.tsx` — only file. Remove shrink logic, add `<defs>` with brain clipPath + gradients, add inner tech `<g>` overlay bound to `fillProgress` and `isEnergized`.
 
 ## Verification
-- Upload 1 file → card is `active` (beam sweeping) for as long as backend is parsing; flips to `done` ✓ exactly when parsing finishes.
-- Upload 5 files at once → if backend processes them in parallel, multiple cards show `active` simultaneously, each flipping to `done` independently as their real processing finishes.
-- Brain returns to full size only after the LAST file actually finishes processing on the backend.
+- Brain stays small, never grows or shrinks.
+- Upload 1 file → inner circuits start drawing in + chip glows + binary rain flows while card is `active`. When card flips to `done`, brain shows ~100% filled circuitry with steady glow.
+- Upload 5 files → circuitry fills in 5 stages (20%, 40%, 60%, 80%, 100%) as each completes. Pulse animation runs whenever any card is still `active`.
+- No layout shift; no card changes; only brain interior gains the new tech imagery.
 
