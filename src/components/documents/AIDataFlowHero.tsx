@@ -21,8 +21,12 @@ import { Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+export type AIDataFlowHeroFileStatus = "pending" | "active" | "done" | "failed";
+
 export interface AIDataFlowHeroFile {
   name: string;
+  /** Real backend processing status. Defaults to 'active' if omitted. */
+  status?: AIDataFlowHeroFileStatus;
 }
 
 export interface AIDataFlowHeroProps {
@@ -116,43 +120,23 @@ function AIDataFlowHeroComponent({
   const showDocuments = totalDocs > 0;
   const dragHint = isDragOver && !showDocuments;
 
-  // ───── Sequential scan state machine ─────
-  // activeIndex advances every SCAN_DURATION_MS + SCAN_GAP_MS while there are
-  // still un-scanned files. When new files arrive after completion, resume.
-  const [activeIndex, setActiveIndex] = useState(0);
-  const prevTotalRef = useRef(0);
+  // ───── Real-status driven scan state ─────
+  // Each card's state comes DIRECTLY from the per-file status passed by the
+  // parent (which mirrors the real backend processing_status). No timer.
+  // - 'pending'  → not yet started / queued
+  // - 'active'   → currently being uploaded / parsed (beam + chips + connectors)
+  // - 'done'     → finished successfully (✓ green)
+  // - 'failed'   → finished with error (treated visually like done; red optional)
+  const fileStatuses: AIDataFlowHeroFileStatus[] = useMemo(
+    () => fileList.map((f) => f.status ?? "active"),
+    [fileList],
+  );
 
-  useEffect(() => {
-    // If new files were added after we finished, resume from the first new index
-    if (totalDocs > prevTotalRef.current && activeIndex >= prevTotalRef.current) {
-      setActiveIndex(prevTotalRef.current);
-    }
-    // If total dropped to 0, reset
-    if (totalDocs === 0) {
-      setActiveIndex(0);
-    }
-    prevTotalRef.current = totalDocs;
-  }, [totalDocs, activeIndex]);
-
-  useEffect(() => {
-    if (totalDocs === 0) return;
-    if (activeIndex >= totalDocs) return; // all done
-    if (reduceMotion) {
-      // No animation: mark all done immediately
-      setActiveIndex(totalDocs);
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      setActiveIndex((idx) => Math.min(idx + 1, totalDocs));
-    }, SCAN_DURATION_MS + SCAN_GAP_MS);
-    return () => window.clearTimeout(timer);
-  }, [activeIndex, totalDocs, reduceMotion]);
-
-  const allDone = totalDocs > 0 && activeIndex >= totalDocs;
-
-  // Brain stays shrunk while any file is pending or active. Returns to full
-  // size once the last file is scanned.
-  const brainShrink = showDocuments && !allDone;
+  // Brain shrinks while ANY file is still pending or active. Returns to full
+  // size only when every file has reached a terminal status (done | failed).
+  const anyInFlight = fileStatuses.some((s) => s === "pending" || s === "active");
+  const allDone = totalDocs > 0 && !anyInFlight;
+  const brainShrink = showDocuments && anyInFlight;
 
   const ids = useMemo(
     () => ({
@@ -176,8 +160,6 @@ function AIDataFlowHeroComponent({
   const cardsPerSide = Math.max(lc, rc, 1);
 
   // Helper: evenly distribute N cards vertically within the viewbox column.
-  // Returns positions including the GLOBAL file index (gIdx) so we can map
-  // each card to its file in `fileList` and to scan state.
   const distributeColumn = (
     count: number,
     anchorX: number,
@@ -203,10 +185,11 @@ function AIDataFlowHeroComponent({
   const leftCards = distributeColumn(lc, LEFT_X, false, 0);
   const rightCards = distributeColumn(rc, RIGHT_X, true, lc);
 
-  // Helper: compute per-card visual state from activeIndex
+  // Card visual state comes straight from the real backend status.
   const cardState = (gIdx: number): "pending" | "active" | "done" => {
-    if (gIdx < activeIndex) return "done";
-    if (gIdx === activeIndex) return "active";
+    const s = fileStatuses[gIdx];
+    if (s === "done" || s === "failed") return "done";
+    if (s === "active") return "active";
     return "pending";
   };
 
@@ -261,13 +244,15 @@ function AIDataFlowHeroComponent({
     return paths;
   }, [cardsPerSide, leftCards, rightCards]);
 
-  // Only the active file's connectors stream into the brain.
+  // Only ACTIVE files' connectors stream into the brain. Multiple may be
+  // active at once if the backend processes files in parallel — that matches
+  // reality, the brain visibly pulls from every file currently being parsed.
   const activeConnectors = useMemo(
-    () => connectors.filter((p) => p.gIdx === activeIndex),
-    [connectors, activeIndex],
+    () => connectors.filter((p) => fileStatuses[p.gIdx] === "active"),
+    [connectors, fileStatuses],
   );
 
-  const showConnectors = showDocuments && !allDone;
+  const showConnectors = showDocuments && activeConnectors.length > 0;
   const showChips = showConnectors;
 
   // Localized micro-labels with safe fallbacks
@@ -437,7 +422,7 @@ function AIDataFlowHeroComponent({
           <g fill="none" strokeLinecap="round">
             {activeConnectors.map((p) => (
               <ConnectorPath
-                key={`act-${p.key}-${activeIndex}`}
+                key={`act-${p.key}`}
                 d={p.d}
                 animate={!reduceMotion}
                 delay={0.15 + p.lineIdx * 0.08}
@@ -452,7 +437,7 @@ function AIDataFlowHeroComponent({
           <g>
             {activeConnectors.map((p, i) => (
               <DocumentChip
-                key={`chip-${p.key}-${activeIndex}`}
+                key={`chip-${p.key}`}
                 pathD={p.d}
                 duration={cfg.chipDuration}
                 delay={(0.5 + p.lineIdx * 0.5 + (i * 0.15)) % cfg.chipDuration}

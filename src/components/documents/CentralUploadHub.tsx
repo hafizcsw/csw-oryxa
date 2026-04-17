@@ -594,7 +594,26 @@ export function CentralUploadHub({
           <AIDataFlowHero
             intensity={isProcessing ? 'lively' : 'normal'}
             ariaLabel={t('portal.uploadHub.title')}
-            files={records.map((r) => ({ name: r.original_file_name || 'Document' }))}
+            files={records
+              .filter((r) => r.processing_status !== 'cancelled')
+              .map((r) => {
+                let status: 'pending' | 'active' | 'done' | 'failed';
+                switch (r.processing_status) {
+                  case 'registered':
+                    status = 'done';
+                    break;
+                  case 'upload_failed':
+                    status = 'failed';
+                    break;
+                  case 'uploading':
+                  case 'confirming':
+                    status = 'active';
+                    break;
+                  default:
+                    status = 'pending';
+                }
+                return { name: r.original_file_name || 'Document', status };
+              })}
             fileCount={records.length}
             hasFiles={records.length > 0}
             isDragOver={isDragOver}
