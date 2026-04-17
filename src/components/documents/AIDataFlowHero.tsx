@@ -17,6 +17,7 @@
 
 import { memo, useId, useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import { Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface AIDataFlowHeroProps {
@@ -403,7 +404,7 @@ function AIDataFlowHeroComponent({
           />
         )}
 
-        {/* ═══ Brain (anatomical, top-down, two hemispheres) ═══ */}
+        {/* ═══ Brain (lucide-react icon — same as used elsewhere in app) ═══ */}
         <g transform={`translate(${CX}, ${CY})`}>
           <BrainShape animate={!reduceMotion} />
         </g>
@@ -644,82 +645,34 @@ interface BrainShapeProps {
  * Uses currentColor-friendly foreground stroke. No fill — a glow halo sits behind.
  */
 function BrainShape({ animate }: BrainShapeProps) {
-  const stroke = "hsl(var(--foreground))";
-  const strokeOpacity = 0.82;
-  const sw = 1.5;
-
-  // Half-brain (left hemisphere) — anatomical squiggles
-  const leftHemisphere = (
-    <g
-      fill="none"
-      stroke={stroke}
-      strokeOpacity={strokeOpacity}
-      strokeWidth={sw}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {/* Outer hemisphere outline */}
-      <path d="M 0 -54
-               C -22 -56, -44 -42, -54 -22
-               C -62 -4, -62 16, -54 32
-               C -44 48, -24 56, -6 54
-               C -2 52, 0 48, 0 44
-               L 0 -54 Z" />
-      {/* Inner sulci/folds — flowing curves */}
-      <path d="M -8 -44 C -22 -38, -34 -28, -38 -14" />
-      <path d="M -14 -28 C -28 -22, -38 -10, -40 4" />
-      <path d="M -10 -10 C -24 -6, -34 6, -34 18" />
-      <path d="M -16 8 C -28 14, -34 24, -30 36" />
-      <path d="M -6 28 C -16 34, -22 42, -18 50" />
-      <path d="M -28 -36 C -36 -28, -42 -20, -44 -8" />
-      <path d="M -42 12 C -46 22, -44 32, -38 40" />
-    </g>
+  // Use the SAME lucide-react Brain icon used across the app (About, OrxRankHub, etc.)
+  // Render it inside SVG via foreignObject so the rest of the scene stays pure SVG.
+  const SIZE = 132;
+  const icon = (
+    <foreignObject x={-SIZE / 2} y={-SIZE / 2} width={SIZE} height={SIZE}>
+      <div
+        style={{
+          width: SIZE,
+          height: SIZE,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "hsl(265 85% 60%)",
+        }}
+      >
+        <Brain size={SIZE} strokeWidth={1.4} absoluteStrokeWidth />
+      </div>
+    </foreignObject>
   );
 
-  // Mirror to build the right hemisphere
-  const brain = (
-    <>
-      {/* Subtle base wash to lift it from the glow */}
-      <ellipse cx={0} cy={0} rx={62} ry={56} fill="hsl(var(--card))" fillOpacity={0.35} />
-
-      {/* Central fissure */}
-      <line
-        x1={0}
-        y1={-54}
-        x2={0}
-        y2={54}
-        stroke={stroke}
-        strokeOpacity={strokeOpacity * 0.85}
-        strokeWidth={sw}
-        strokeLinecap="round"
-      />
-
-      {/* Left hemisphere */}
-      {leftHemisphere}
-
-      {/* Right hemisphere (mirrored via scale) */}
-      <g transform="scale(-1, 1)">{leftHemisphere}</g>
-
-      {/* Brain stem hint at bottom */}
-      <path
-        d="M -8 50 C -6 58, 6 58, 8 50"
-        fill="none"
-        stroke={stroke}
-        strokeOpacity={strokeOpacity * 0.9}
-        strokeWidth={sw}
-        strokeLinecap="round"
-      />
-    </>
-  );
-
-  if (!animate) return <g>{brain}</g>;
+  if (!animate) return <g>{icon}</g>;
 
   return (
     <motion.g
-      animate={{ scale: [1, 1.025, 1] }}
+      animate={{ scale: [1, 1.03, 1] }}
       transition={{ duration: 4.6, repeat: Infinity, ease: "easeInOut" }}
     >
-      {brain}
+      {icon}
     </motion.g>
   );
 }
