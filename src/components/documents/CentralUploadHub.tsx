@@ -578,11 +578,8 @@ export function CentralUploadHub({
         onDrop={handleDrop}
         onClick={() => !disabled && fileInputRef.current?.click()}
         className={cn(
-          'relative flex flex-col items-center justify-center cursor-pointer transition-all group',
-          'rounded-2xl border-2 border-dashed p-4',
-          isDragOver
-            ? 'border-primary bg-primary/5'
-            : 'border-border/60 hover:border-primary/40 hover:bg-muted/30',
+          'relative flex flex-col items-center justify-center cursor-pointer transition-all group p-4',
+          isDragOver && 'bg-primary/5 rounded-2xl',
           disabled && 'opacity-50 cursor-not-allowed',
         )}
       >
