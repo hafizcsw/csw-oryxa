@@ -1471,6 +1471,66 @@
       "status_upload_failed": "فشل",
       "status_cancelled": "ملغى"
     },
+    "assembly": {
+      "title": "تجميع ملفك الطلابي",
+      "queue": { "title": "قائمة الانتظار", "empty": "أسقط الملفات في المركز ←" },
+      "core": {
+        "dropTitle": "أسقط مستنداتك هنا",
+        "dropHint": "جواز السفر · كشف الدرجات · شهادة التخرج · شهادة اللغة",
+        "intake": "جارٍ استقبال الملف…",
+        "reading": "جارٍ قراءة المستند…",
+        "classifying": "جارٍ التعرف على نوع المستند…",
+        "discovered": "تم اكتشاف",
+        "confidence": "الثقة",
+        "placing": "جارٍ وضعه في ملفك…",
+        "failTitle": "تعذّر تجميع هذا المستند"
+      },
+      "stage": {
+        "queued": "في قائمة الانتظار",
+        "intake": "جارٍ الاستقبال",
+        "reading": "جارٍ القراءة",
+        "classifying": "جارٍ التصنيف",
+        "extracting": "جارٍ استخراج الحقول",
+        "placing": "جارٍ وضعه في الملف",
+        "done": "اكتمل",
+        "failed": "تعذّرت المعالجة"
+      },
+      "fields": {
+        "preparing": "جارٍ تجهيز الحقول…",
+        "accepted": "✓ مقبول",
+        "pending": "بحاجة لمراجعة",
+        "unresolved": "غير محسوم",
+        "notFound": "(غير موجود)"
+      },
+      "section": {
+        "identity": "الهوية", "academic": "الأكاديمي", "language": "اللغة",
+        "incoming": "قادم…", "empty": "لا يوجد شيء بعد",
+        "accepted": "مقبول", "pending": "قيد المراجعة", "unresolved": "غير محسوم"
+      },
+      "quality": {
+        "excellent": "جودة ممتازة", "good": "جودة جيدة",
+        "acceptable": "مقبولة", "poor": "جودة ضعيفة", "unreadable": "غير قابلة للقراءة"
+      },
+      "fail": {
+        "unsupported_file_type": "نوع ملف غير مدعوم",
+        "unsupported_in_v1": "ليس ضمن هذه المرحلة (جواز / كشف / تخرج / لغة فقط)",
+        "unreadable_scan": "المسح غير قابل للقراءة — يرجى رفع نسخة أوضح",
+        "low_ocr_quality": "الجودة منخفضة جدًا لاستخراج الحقول",
+        "classification_uncertain": "تعذّر التعرف بثقة على نوع المستند",
+        "extraction_partial": "تم استخراج بعض الحقول، والبعض يحتاج مراجعة",
+        "extraction_failed": "فشل الاستخراج",
+        "conflict_with_existing_truth": "يتعارض مع معلومات مقبولة سابقًا",
+        "review_required": "يتطلب مراجعة يدوية",
+        "file_too_large": "الملف أكبر من المسموح",
+        "rate_limited": "طلبات كثيرة — حاول بعد قليل",
+        "ai_gateway_error": "خدمة الذكاء غير متاحة"
+      },
+      "summary": {
+        "title": "تم تجميع ملف الطالب",
+        "acceptedFacts": "حقائق مقبولة", "pendingReview": "قيد المراجعة",
+        "unresolved": "غير محسوم", "failedFiles": "ملفات فشلت"
+      }
+    },
     "discovery": {
       "analyzing": "جارٍ تحليل {name}…",
       "detected": "تم اكتشاف: {label}",

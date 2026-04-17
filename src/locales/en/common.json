@@ -1469,6 +1469,66 @@
       "status_upload_failed": "Failed",
       "status_cancelled": "Cancelled"
     },
+    "assembly": {
+      "title": "Assemble Your Student File",
+      "queue": { "title": "Queue", "empty": "Drop files into the core →" },
+      "core": {
+        "dropTitle": "Drop your documents here",
+        "dropHint": "Passport · Transcript · Graduation · Language certificate",
+        "intake": "Receiving file…",
+        "reading": "Reading document…",
+        "classifying": "Identifying document type…",
+        "discovered": "Detected",
+        "confidence": "Confidence",
+        "placing": "Placing into your file…",
+        "failTitle": "Could not assemble this document"
+      },
+      "stage": {
+        "queued": "Waiting in queue",
+        "intake": "Receiving file",
+        "reading": "Reading document",
+        "classifying": "Identifying document type",
+        "extracting": "Extracting fields",
+        "placing": "Placing into your file",
+        "done": "Done",
+        "failed": "Could not process"
+      },
+      "fields": {
+        "preparing": "Preparing fields…",
+        "accepted": "✓ accepted",
+        "pending": "review",
+        "unresolved": "unresolved",
+        "notFound": "(not found)"
+      },
+      "section": {
+        "identity": "Identity", "academic": "Academic", "language": "Language",
+        "incoming": "incoming…", "empty": "Nothing here yet",
+        "accepted": "accepted", "pending": "pending", "unresolved": "unresolved"
+      },
+      "quality": {
+        "excellent": "Excellent quality", "good": "Good quality",
+        "acceptable": "Acceptable", "poor": "Poor quality", "unreadable": "Unreadable"
+      },
+      "fail": {
+        "unsupported_file_type": "Unsupported file type",
+        "unsupported_in_v1": "Not part of this step (passport / transcript / graduation / language only)",
+        "unreadable_scan": "Scan is unreadable — please re-upload a clearer copy",
+        "low_ocr_quality": "Quality is too low to extract fields",
+        "classification_uncertain": "Could not confidently identify the document type",
+        "extraction_partial": "Some fields were extracted; others need review",
+        "extraction_failed": "Extraction failed",
+        "conflict_with_existing_truth": "Conflicts with previously accepted information",
+        "review_required": "Manual review required",
+        "file_too_large": "File is too large",
+        "rate_limited": "Too many requests — try again in a moment",
+        "ai_gateway_error": "AI service unavailable"
+      },
+      "summary": {
+        "title": "Student File Assembled",
+        "acceptedFacts": "Accepted facts", "pendingReview": "Pending review",
+        "unresolved": "Unresolved", "failedFiles": "Failed files"
+      }
+    },
     "discovery": {
       "analyzing": "Analyzing {name}…",
       "detected": "Detected: {label}",
