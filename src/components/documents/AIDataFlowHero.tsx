@@ -269,39 +269,41 @@ function AIDataFlowHeroComponent({
           </g>
         )}
 
-        {/* ═══ Glow halo behind brain ═══ */}
-        <g>
-          {reduceMotion ? (
-            <>
-              <circle cx={CX} cy={CY} r="170" fill={`url(#${ids.glow})`} />
-              <circle cx={CX} cy={CY} r="80"  fill={`url(#${ids.glowInner})`} />
-            </>
-          ) : (
-            <>
-              <motion.circle
-                cx={CX}
-                cy={CY}
-                r="170"
-                fill={`url(#${ids.glow})`}
-                animate={{ scale: [1, 1.08, 1], opacity: [0.85, 1, 0.85] }}
-                transition={{ duration: cfg.glowDuration, repeat: Infinity, ease: "easeInOut" }}
-                style={{ transformOrigin: `${CX}px ${CY}px` }}
-              />
-              <motion.circle
-                cx={CX}
-                cy={CY}
-                r="80"
-                fill={`url(#${ids.glowInner})`}
-                animate={{ scale: [1, 1.12, 1], opacity: [0.75, 1, 0.75] }}
-                transition={{ duration: cfg.glowDuration * 0.7, repeat: Infinity, ease: "easeInOut" }}
-                style={{ transformOrigin: `${CX}px ${CY}px` }}
-              />
-            </>
-          )}
-        </g>
+        {/* ═══ Glow halo behind atom (only when active: drag/files/processing) ═══ */}
+        {(showDocuments || dragHint) && (
+          <g>
+            {reduceMotion ? (
+              <>
+                <circle cx={CX} cy={CY} r="170" fill={`url(#${ids.glow})`} />
+                <circle cx={CX} cy={CY} r="80"  fill={`url(#${ids.glowInner})`} />
+              </>
+            ) : (
+              <>
+                <motion.circle
+                  cx={CX}
+                  cy={CY}
+                  r="170"
+                  fill={`url(#${ids.glow})`}
+                  animate={{ scale: [1, 1.08, 1], opacity: [0.85, 1, 0.85] }}
+                  transition={{ duration: cfg.glowDuration, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ transformOrigin: `${CX}px ${CY}px` }}
+                />
+                <motion.circle
+                  cx={CX}
+                  cy={CY}
+                  r="80"
+                  fill={`url(#${ids.glowInner})`}
+                  animate={{ scale: [1, 1.12, 1], opacity: [0.75, 1, 0.75] }}
+                  transition={{ duration: cfg.glowDuration * 0.7, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ transformOrigin: `${CX}px ${CY}px` }}
+                />
+              </>
+            )}
+          </g>
+        )}
 
-        {/* ═══ Sparkles ═══ */}
-        {!reduceMotion && (
+        {/* ═══ Sparkles (only when active) ═══ */}
+        {!reduceMotion && (showDocuments || dragHint) && (
           <g>
             {sparkles.map((s, i) => (
               <motion.circle
