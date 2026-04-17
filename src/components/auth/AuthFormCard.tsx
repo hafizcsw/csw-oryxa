@@ -206,7 +206,7 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
         description: mode === 'login' ? t('auth.loginSuccess') : t('auth.welcome') 
       });
       
-      beginRedirect(result.full_name || result.name || null);
+      beginRedirect(fullName?.trim() || null);
       if (result.redirect_url) {
         sessionStorage.setItem('portal_auth_pending_until', String(Date.now() + 15000));
         window.location.href = result.redirect_url;
