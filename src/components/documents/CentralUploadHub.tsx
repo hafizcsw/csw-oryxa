@@ -636,6 +636,9 @@ export function CentralUploadHub({
           />
         </div>
 
+        {/* AI discovery commentary right under the orb */}
+        <OrbDiscoveryFeed discoveries={discoveries} t={t as (k: string) => string} />
+
         <div className="text-center mt-1">
           <p className={cn(
             'text-sm font-medium transition-colors',
