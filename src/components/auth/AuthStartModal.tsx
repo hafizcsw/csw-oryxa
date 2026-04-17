@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,11 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { trackRegisterStart, trackRegisterComplete } from '@/lib/decisionTracking';
+import {
+  markWelcomePending,
+  isExternalUrl,
+  type WelcomeTargetKind,
+} from '@/lib/welcomeTransition';
 
 type AuthMode = 'login' | 'signup';
 type AuthMethod = 'phone' | 'email';
