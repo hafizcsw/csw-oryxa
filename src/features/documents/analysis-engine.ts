@@ -176,9 +176,18 @@ export async function analyzeDocument(params: {
       extractedFields = extractGraduationFields(textContent);
     } else if (classification.best === 'transcript') {
       // Order 2: structured parser + truthful partial intermediate.
-      const result = parseTranscript(textContent);
+      // BrowserDocAI: pass structured artifact so transcript lane can recover
+      // tabular row_candidates the line-by-line regex pass missed.
+      const result = parseTranscript(textContent, structured_artifact);
       transcriptIntermediate = result.intermediate;
       extractedFields = result.header_fields;
+      console.log('[BrowserDocAI:TranscriptLaneConsumed]', JSON.stringify({
+        file: file.name,
+        used: result.structured_artifact_used?.used ?? false,
+        extra_rows_added: result.structured_artifact_used?.extra_rows_added ?? 0,
+        tabular_candidates_seen: result.structured_artifact_used?.tabular_candidates_seen ?? 0,
+        final_rows: transcriptIntermediate.rows.length,
+      }, null, 2));
     } else if (classification.best === 'language_certificate') {
       extractedFields = extractLanguageCertFields(textContent);
     }
