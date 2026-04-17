@@ -697,12 +697,14 @@ function AppContent() {
         ? `${window.location.pathname}?${urlParams.toString()}` 
         : window.location.pathname;
       window.history.replaceState({}, '', newUrl);
-      setTimeout(() => { window.location.href = '/auth'; }, 100);
+      setTimeout(() => { navigateRouter('/auth'); }, 100);
     }
   }, [pathname]);
 
   return (
     <>
+      {/* Route-level welcome transition — survives client-side navigation */}
+      <WelcomeTransition />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Sync Routes (Critical) */}
