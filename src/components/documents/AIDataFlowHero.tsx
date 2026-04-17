@@ -360,7 +360,7 @@ function AIDataFlowHeroComponent({
           <g>
             {leftCards.map((c, i) => (
               <DocumentCard
-                key={`L-${i}`}
+                key={`L-${i}-of-${totalDocs}`}
                 x={c.x}
                 y={c.y}
                 rotate={c.rotate}
@@ -371,11 +371,14 @@ function AIDataFlowHeroComponent({
                 float={!reduceMotion}
                 floatDelay={i * 0.45}
                 mirrored={false}
+                emergeFromX={CX - CARD_W / 2}
+                emergeFromY={VIEWBOX_H - 40}
+                emergeDelay={i * 0.12}
               />
             ))}
             {rightCards.map((c, i) => (
               <DocumentCard
-                key={`R-${i}`}
+                key={`R-${i}-of-${totalDocs}`}
                 x={c.x}
                 y={c.y}
                 rotate={-c.rotate}
@@ -386,6 +389,9 @@ function AIDataFlowHeroComponent({
                 float={!reduceMotion}
                 floatDelay={i * 0.45 + 0.7}
                 mirrored
+                emergeFromX={CX - CARD_W / 2}
+                emergeFromY={VIEWBOX_H - 40}
+                emergeDelay={i * 0.12 + 0.06}
               />
             ))}
           </g>
