@@ -531,24 +531,45 @@ function AIDataFlowHeroComponent({
           />
         )}
 
-        {/* ═══ Anomaly Orb — fills with color as files are analyzed ═══
-            progress 0 → orb dim/desaturated; progress 100 → fully vibrant.
-            distortion + pulseSpeed scale with analysis activity. */}
+        {/* ═══ Anomaly Orb (Three.js + GLSL) ═══
+            All real props are wired to file-analysis activity:
+              • audioLevel  → analysis intensity (drives shader displacement + scale)
+              • distortion  → grows as more files are processed
+              • pulseSpeed  → faster while extracting/interpreting
+              • customColors → lerp from dim palette → vivid palette as progress grows
+                              (red palette in error state) */}
         <foreignObject x={CX - 220} y={CY - 220} width={440} height={440}>
           <div className="w-full h-full flex items-center justify-center">
             <AnomalyOrb
               size={420}
-              distortion={0.4 + (brainPipeline.progress / 100) * 2.2}
+              audioLevel={(() => {
+                // Map stage → an "energy level" 0..1 that drives shader uniforms.
+                const t = brainPipeline.progress / 100;
+                if (brainPipeline.stage === "idle") return 0.05;
+                if (brainPipeline.stage === "complete") return 0.25;
+                if (brainPipeline.stage === "error") return 0.15;
+                // Active stages: combine progress + a per-stage floor.
+                const floor =
+                  brainPipeline.stage === "uploading" ? 0.2
+                  : brainPipeline.stage === "scanning" ? 0.4
+                  : brainPipeline.stage === "extracting" ? 0.6
+                  : 0.75; // interpreting
+                return Math.min(1, floor + t * 0.25);
+              })()}
+              distortion={
+                brainPipeline.stage === "idle"
+                  ? 0.4
+                  : 0.6 + (brainPipeline.progress / 100) * 2.0
+              }
               pulseSpeed={
                 brainPipeline.stage === "idle"
                   ? 0.6
                   : brainPipeline.stage === "complete"
-                    ? 1.2
-                    : 1 + (brainPipeline.progress / 100) * 2
+                    ? 1.4
+                    : 1 + (brainPipeline.progress / 100) * 2.5
               }
               customColors={(() => {
                 const t = brainPipeline.progress / 100;
-                // Lerp from a dim grey-blue palette → vibrant primary palette.
                 const lerpHex = (a: string, b: string, k: number) => {
                   const ah = parseInt(a.slice(1), 16);
                   const bh = parseInt(b.slice(1), 16);
@@ -559,7 +580,7 @@ function AIDataFlowHeroComponent({
                   const bl = Math.round(ab + (bb - ab) * k);
                   return `#${((r << 16) | (g << 8) | bl).toString(16).padStart(6, "0")}`;
                 };
-                const dim = { c1: "#3a4a5a", c2: "#4a4a6a", c3: "#3a5a7a" };
+                const dim = { c1: "#2a3a4a", c2: "#3a3a5a", c3: "#2a4a6a" };
                 const vivid =
                   brainPipeline.stage === "error"
                     ? { c1: "#ff6b6b", c2: "#c92a2a", c3: "#ff8787" }
