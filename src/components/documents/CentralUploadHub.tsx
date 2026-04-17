@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DocumentRecord, ProcessingStatus } from '@/features/documents/document-registry-model';
 import { AIDataFlowHero } from './AIDataFlowHero';
+import { OrbDiscoveryFeed } from './OrbDiscoveryFeed';
+import { useDocumentDiscoveries } from '@/features/documents/useDocumentDiscoveries';
 
 interface CentralUploadHubProps {
   records: DocumentRecord[];
