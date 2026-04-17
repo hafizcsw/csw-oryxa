@@ -24,6 +24,8 @@ import {
   persistProposalStatus,
   deletePersistedDocument,
   deleteAllPersistedForUser,
+  type PersistedArtifactSummary,
+  type PersistedStructuredArtifactSummary,
 } from '@/features/documents/engine-persistence';
 
 interface UseDocumentAnalysisOptions {
@@ -39,11 +41,20 @@ export interface PromotedField {
   source: 'auto_accepted' | 'manual_accepted';
 }
 
+/** Hydrated artifact summary surface — visible truth after reload. */
+export interface HydratedArtifactSurface {
+  documentId: string;
+  documentFilename: string | null;
+  artifactSummary: PersistedArtifactSummary | null;
+  structuredArtifactSummary: PersistedStructuredArtifactSummary | null;
+}
+
 interface UseDocumentAnalysisResult {
   analyses: DocumentAnalysis[];
   proposals: ExtractionProposal[];
   promotedFields: PromotedField[];
   artifacts: Record<string, ReadingArtifact>;
+  hydratedArtifactSurfaces: Record<string, HydratedArtifactSurface>;
   isAnalyzing: boolean;
   analyzeFile: (file: File, documentId: string, slotHint: DocumentSlotType | null) => Promise<AnalysisResult | null>;
   acceptProposal: (proposalId: string) => void;
@@ -65,7 +76,15 @@ function laneFromClassification(c: string | null | undefined): 'passport' | 'tra
   return 'unknown';
 }
 
-function derivePromotedFromProposals(proposals: ExtractionProposal[]): PromotedField[] {
+/**
+ * Derive promoted fields from proposals + provenance map.
+ * Honest provenance: a proposal accepted by the user is `manual_accepted`;
+ * an engine-auto-accepted proposal is `auto_accepted`. Reload-safe.
+ */
+function derivePromotedFromProposals(
+  proposals: ExtractionProposal[],
+  manualAcceptedIds: Set<string>,
+): PromotedField[] {
   return proposals
     .filter(p => p.proposal_status === 'auto_accepted' && p.proposed_value != null)
     .map(p => ({
@@ -73,7 +92,7 @@ function derivePromotedFromProposals(proposals: ExtractionProposal[]): PromotedF
       value: p.proposed_value!,
       proposalId: p.proposal_id,
       documentId: p.document_id,
-      source: 'auto_accepted' as const,
+      source: manualAcceptedIds.has(p.proposal_id) ? 'manual_accepted' as const : 'auto_accepted' as const,
     }));
 }
 
@@ -85,10 +104,11 @@ export function useDocumentAnalysis({
   const [proposals, setProposals] = useState<ExtractionProposal[]>([]);
   const [promotedFields, setPromotedFields] = useState<PromotedField[]>([]);
   const [artifacts, setArtifacts] = useState<Record<string, ReadingArtifact>>({});
+  const [hydratedArtifactSurfaces, setHydratedArtifactSurfaces] = useState<Record<string, HydratedArtifactSurface>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const analyzingCount = useRef(0);
   const fileCache = useRef(new Map<string, { file: File; slotHint: DocumentSlotType | null }>());
-  /** Track manual_accepted proposals so hydration preserves provenance. */
+  /** Track manual_accepted proposals so derivation distinguishes user vs engine. */
   const manualAcceptedRef = useRef<Set<string>>(new Set());
   const hydratedFor = useRef<string | null>(null);
 
@@ -99,11 +119,24 @@ export function useDocumentAnalysis({
     hydratedFor.current = studentId;
     let cancelled = false;
     (async () => {
-      const { analyses: ha, proposals: hp } = await hydrateEngineStateForUser(studentId);
+      const { analyses: ha, proposals: hp, analysis_extras, proposal_decisions } = await hydrateEngineStateForUser(studentId);
       if (cancelled) return;
+      manualAcceptedRef.current = new Set(
+        proposal_decisions.filter(d => d.decided_by === 'user').map(d => d.proposal_id),
+      );
       setAnalyses(ha);
       setProposals(hp);
-      setPromotedFields(derivePromotedFromProposals(hp));
+      setPromotedFields(derivePromotedFromProposals(hp, manualAcceptedRef.current));
+      const surfaces: Record<string, HydratedArtifactSurface> = {};
+      for (const ex of analysis_extras) {
+        surfaces[ex.document_id] = {
+          documentId: ex.document_id,
+          documentFilename: ex.document_filename,
+          artifactSummary: ex.artifact_summary,
+          structuredArtifactSummary: ex.structured_artifact_summary,
+        };
+      }
+      setHydratedArtifactSurfaces(surfaces);
     })();
     return () => { cancelled = true; };
   }, [studentId]);
@@ -147,7 +180,7 @@ export function useDocumentAnalysis({
       setArtifacts(prev => ({ ...prev, [documentId]: result.artifact }));
 
       // Promoted state is DERIVED from proposal status (auto_accepted).
-      const newPromoted = derivePromotedFromProposals(result.proposals);
+      const newPromoted = derivePromotedFromProposals(result.proposals, manualAcceptedRef.current);
       if (newPromoted.length > 0) {
         setPromotedFields(prev => {
           const filtered = prev.filter(pf => pf.documentId !== documentId);
@@ -253,6 +286,10 @@ export function useDocumentAnalysis({
       const { [documentId]: _, ...rest } = prev;
       return rest;
     });
+    setHydratedArtifactSurfaces(prev => {
+      const { [documentId]: _s, ...rest } = prev;
+      return rest;
+    });
     if (studentId) {
       void deletePersistedDocument({ userId: studentId, documentId });
     }
@@ -300,6 +337,8 @@ export function useDocumentAnalysis({
     setProposals([]);
     setPromotedFields([]);
     setArtifacts({});
+    setHydratedArtifactSurfaces({});
+    manualAcceptedRef.current = new Set();
     if (studentId) {
       void deleteAllPersistedForUser(studentId);
     }
@@ -310,6 +349,7 @@ export function useDocumentAnalysis({
     proposals,
     promotedFields,
     artifacts,
+    hydratedArtifactSurfaces,
     isAnalyzing,
     analyzeFile,
     reanalyzeFile,

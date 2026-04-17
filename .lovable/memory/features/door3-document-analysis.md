@@ -32,9 +32,10 @@ type: feature
 
 ## Trial-safe persistence (compact 2-table schema)
 - `engine-persistence.ts` + `useDocumentAnalysis` hydration
-- Tables: `document_analyses`, `extraction_proposals` (RLS: per-user)
-- Artifact + structured artifact persisted as SUMMARY JSONB only
+- Tables: `document_analyses`, `extraction_proposals` (RLS: per-user, auth.uid() = user_id, all 4 verbs)
+- Artifact + structured artifact persisted as SUMMARY JSONB only; hydrated on mount into `hydratedArtifactSurfaces` (visible truth surface, reload-safe)
 - Promoted state DERIVED from proposal status (auto_accepted)
+- Provenance honest: `decided_by` ('user'|'engine') persisted on accept; hydration rebuilds `manualAcceptedRef` so manual_accepted ≠ auto_accepted after reload
 - Reload-safe: hook hydrates on mount per user
 
 ## Transcript coverage honesty

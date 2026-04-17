@@ -152,6 +152,9 @@ export async function persistProposals(params: {
     auto_apply_candidate: p.auto_apply_candidate,
     rejection_reason: null as string | null,
     conflict_with_existing: p.conflict_with_current ? ({ conflict: true } as any) : null,
+    // Provenance: engine auto-acceptance is recorded so reload preserves it.
+    decided_by: p.proposal_status === 'auto_accepted' ? 'engine' : null,
+    decided_at: p.proposal_status === 'auto_accepted' ? new Date().toISOString() : null,
   }));
 
   const { error: insErr } = await supabase
@@ -206,14 +209,32 @@ export async function deleteAllPersistedForUser(userId: string): Promise<void> {
 
 // ── Hydration ────────────────────────────────────────────────
 
+/** Provenance of an accepted proposal — preserved across reload. */
+export type AcceptDecisionSource = 'engine' | 'user';
+
+export interface HydratedAnalysisExtras {
+  document_id: string;
+  document_filename: string | null;
+  artifact_summary: PersistedArtifactSummary | null;
+  structured_artifact_summary: PersistedStructuredArtifactSummary | null;
+}
+
+export interface HydratedProposalDecision {
+  proposal_id: string;
+  decided_by: AcceptDecisionSource | null;
+  decided_at: string | null;
+}
+
 export interface HydratedEngineState {
   analyses: DocumentAnalysis[];
   proposals: ExtractionProposal[];
+  analysis_extras: HydratedAnalysisExtras[];
+  proposal_decisions: HydratedProposalDecision[];
 }
 
 /** Load every persisted analysis + proposal for the current user. */
 export async function hydrateEngineStateForUser(userId: string): Promise<HydratedEngineState> {
-  const empty: HydratedEngineState = { analyses: [], proposals: [] };
+  const empty: HydratedEngineState = { analyses: [], proposals: [], analysis_extras: [], proposal_decisions: [] };
 
   const [analysesRes, proposalsRes] = await Promise.all([
     supabase.from('document_analyses').select('*').eq('user_id', userId),
@@ -248,6 +269,13 @@ export async function hydrateEngineStateForUser(userId: string): Promise<Hydrate
     updated_at: r.updated_at as string,
   }));
 
+  const analysis_extras: HydratedAnalysisExtras[] = (analysesRes.data ?? []).map(r => ({
+    document_id: r.document_id,
+    document_filename: (r.document_filename as any) ?? null,
+    artifact_summary: (r.artifact_summary as any) ?? null,
+    structured_artifact_summary: (r.structured_artifact_summary as any) ?? null,
+  }));
+
   const proposals: ExtractionProposal[] = (proposalsRes.data ?? []).map(r => ({
     proposal_id: r.proposal_id,
     student_id: r.user_id,
@@ -264,11 +292,24 @@ export async function hydrateEngineStateForUser(userId: string): Promise<Hydrate
     updated_at: r.updated_at as string,
   }));
 
+  const proposal_decisions: HydratedProposalDecision[] = (proposalsRes.data ?? []).map(r => ({
+    proposal_id: r.proposal_id,
+    decided_by: ((r.decided_by as any) === 'user' || (r.decided_by as any) === 'engine') ? (r.decided_by as AcceptDecisionSource) : null,
+    decided_at: (r.decided_at as any) ?? null,
+  }));
+
+  const manualCount = proposal_decisions.filter(d => d.decided_by === 'user').length;
+  const autoCount = proposal_decisions.filter(d => d.decided_by === 'engine').length;
+
   console.log('[EnginePersistence:hydrate]', JSON.stringify({
     user_id: userId,
     analyses_loaded: analyses.length,
     proposals_loaded: proposals.length,
+    artifact_summaries_loaded: analysis_extras.filter(e => e.artifact_summary).length,
+    structured_summaries_loaded: analysis_extras.filter(e => e.structured_artifact_summary).length,
+    decisions_manual: manualCount,
+    decisions_auto: autoCount,
   }, null, 2));
 
-  return { analyses, proposals };
+  return { analyses, proposals, analysis_extras, proposal_decisions };
 }
