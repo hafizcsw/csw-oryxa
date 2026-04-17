@@ -273,6 +273,7 @@ async function migrateGuestShortlistOnLogin() {
 
 function AppContent() {
   const { pathname } = useLocation();
+  const navigateRouter = useNavigate();
   const hideFab = pathname.startsWith("/admin") || pathname.startsWith("/apply") || pathname === "/maintenance";
   
   // Sync document language and RTL direction
