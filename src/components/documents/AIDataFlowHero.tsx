@@ -1237,20 +1237,18 @@ function BrainShape({
   );
 
   const icon = (
-    <foreignObject x={-SIZE / 2} y={-SIZE / 2} width={SIZE} height={SIZE}>
-      <div
-        style={{
-          width: SIZE,
-          height: SIZE,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "hsl(265 85% 60%)",
-        }}
-      >
-        <Brain size={SIZE} strokeWidth={1.4} absoluteStrokeWidth />
-      </div>
-    </foreignObject>
+    <image
+      href={brainAnatomical}
+      x={-SIZE / 2}
+      y={-SIZE / 2}
+      width={SIZE}
+      height={SIZE}
+      preserveAspectRatio="xMidYMid meet"
+      style={{
+        filter:
+          "drop-shadow(0 0 8px hsl(200 100% 70% / 0.45)) drop-shadow(0 0 22px hsl(220 100% 60% / 0.25))",
+      }}
+    />
   );
 
   const content = (
