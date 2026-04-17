@@ -801,7 +801,9 @@
     "verifyEmail": "Подтвердите email",
     "verificationCodeSentTo": "Код подтверждения отправлен на",
     "verificationCodeSent": "Код подтверждения отправлен",
-    "codeSentAgain": "Код отправлен повторно"
+    "codeSentAgain": "Код отправлен повторно",
+    "signingIn": "Выполняется вход...",
+    "welcomeBackUser": "С возвращением, {name}"
   },
   "account": {
     "myAccount": "Мой аккаунт",

@@ -800,7 +800,9 @@
     "verifyEmail": "验证您的邮箱",
     "verificationCodeSentTo": "验证码已发送至",
     "verificationCodeSent": "验证码已发送",
-    "codeSentAgain": "验证码已重新发送"
+    "codeSentAgain": "验证码已重新发送",
+    "signingIn": "正在登录...",
+    "welcomeBackUser": "欢迎回来，{name}"
   },
   "account": {
     "myAccount": "我的账户",

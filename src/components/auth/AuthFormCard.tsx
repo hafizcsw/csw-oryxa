@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { trackRegisterStart, trackRegisterComplete } from '@/lib/decisionTracking';
 import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
+import { WelcomeOverlay } from './WelcomeOverlay';
 
 /** Check persistent staff cache for instant post-login redirect */
 function getStaffFastRedirect(): string | null {
@@ -102,6 +103,16 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
   
   const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [isSocialLoading, setIsSocialLoading] = useState<'google' | 'apple' | null>(null);
+
+  // Fullscreen welcome overlay shown during the post-login redirect
+  // (replaces the blank white "flash" caused by window.location.href).
+  const [redirecting, setRedirecting] = useState(false);
+  const [welcomeName, setWelcomeName] = useState<string | null>(null);
+
+  const beginRedirect = (name?: string | null) => {
+    setWelcomeName(name ?? null);
+    setRedirecting(true);
+  };
 
   const { continueAsGuest, startLogin, verifyLogin, startSignup, verifySignup, isLoading } = usePortalAuth();
 
@@ -195,6 +206,7 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
         description: mode === 'login' ? t('auth.loginSuccess') : t('auth.welcome') 
       });
       
+      beginRedirect(fullName?.trim() || null);
       if (result.redirect_url) {
         sessionStorage.setItem('portal_auth_pending_until', String(Date.now() + 15000));
         window.location.href = result.redirect_url;
@@ -222,11 +234,17 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
         toast({ title: t('auth.welcomeBack'), description: t('auth.loginSuccess') });
         
         // Check if this user is an institution operator (from metadata OR selected tab)
-        const userMeta = (await supabase.auth.getUser()).data.user?.user_metadata;
+        const userResp = await supabase.auth.getUser();
+        const userMeta = userResp.data.user?.user_metadata;
+        const displayName =
+          (userMeta?.full_name as string | undefined) ||
+          (userMeta?.name as string | undefined) ||
+          (userResp.data.user?.email ? userResp.data.user.email.split('@')[0] : null);
         const isInstitutionUser = accountType === 'institution' || userMeta?.account_type === 'institution';
         
         if (isInstitutionUser) {
           const { resolveInstitutionLanding } = await import('@/lib/resolveInstitutionLanding');
+          beginRedirect(displayName);
           window.location.href = await resolveInstitutionLanding();
           return;
         }
@@ -235,6 +253,7 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
         const staffRedirect = getStaffFastRedirect();
         if (staffRedirect) {
           sessionStorage.setItem('staff_routed_once', '1');
+          beginRedirect(displayName);
           window.location.href = staffRedirect;
         } else {
           // No cache — try CRM resolution before defaulting to home
@@ -252,12 +271,14 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
               const path = landingMap[role];
               if (path) {
                 sessionStorage.setItem('staff_routed_once', '1');
+                beginRedirect(displayName);
                 window.location.href = path;
                 return;
               }
             }
           } catch {}
           onSuccess?.();
+          beginRedirect(displayName);
           window.location.href = '/';
         }
       } else {
@@ -347,6 +368,7 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
 
   return (
     <div className="w-full" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      {redirecting && <WelcomeOverlay name={welcomeName} />}
 
       {/* ── 1. Account type toggle ────────────────────────── */}
       <div className="mb-5">

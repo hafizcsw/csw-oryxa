@@ -1010,7 +1010,9 @@
     "verifyEmail": "تأكيد البريد الإلكتروني",
     "verificationCodeSentTo": "تم إرسال كود التحقق إلى",
     "verificationCodeSent": "تم إرسال كود التحقق",
-    "codeSentAgain": "تم إعادة إرسال الكود"
+    "codeSentAgain": "تم إعادة إرسال الكود",
+    "signingIn": "جارٍ تسجيل الدخول...",
+    "welcomeBackUser": "مرحبًا بعودتك، {name}"
   },
   "account": {
     "myAccount": "حسابي",
