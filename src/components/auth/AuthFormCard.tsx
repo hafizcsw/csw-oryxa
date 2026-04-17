@@ -114,9 +114,20 @@ export function AuthFormCard({ defaultMode = 'login', defaultAccountType = 'stud
   const [redirecting, setRedirecting] = useState(false);
   const [welcomeName, setWelcomeName] = useState<string | null>(null);
 
-  const beginRedirect = (name?: string | null) => {
-    setWelcomeName(name ?? null);
-    setRedirecting(true);
+  const navigate = useNavigate();
+
+  /**
+   * Single navigation gate. Internal targets use SPA navigation (no reload,
+   * no white flash). External absolute URLs (rare) still hard-redirect.
+   * Always sets the welcome_pending flag so <WelcomeTransition/> takes over.
+   */
+  const goWithWelcome = (target: string, kind: WelcomeTargetKind, name?: string | null) => {
+    markWelcomePending(name ?? null, kind);
+    if (isExternalUrl(target)) {
+      window.location.href = target;
+      return;
+    }
+    navigate(target, { replace: true });
   };
 
   const { continueAsGuest, startLogin, verifyLogin, startSignup, verifySignup, isLoading } = usePortalAuth();
