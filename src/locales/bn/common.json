@@ -189,36 +189,37 @@
       }
     },
     "institutions": {
-      "badge": "For Institutions",
-      "title": "Partner With Us",
-      "subtitle": "Join the global network of universities and institutions reaching the right students worldwide",
-      "cta": "Register Your Institution",
+      "badge": "প্রতিষ্ঠানের জন্য",
+      "title": "আমাদের সাথে অংশীদার হন",
+      "subtitle": "বিশ্বজুড়ে সঠিক শিক্ষার্থীদের কাছে পৌঁছানো বিশ্ববিদ্যালয় ও প্রতিষ্ঠানের গ্লোবাল নেটওয়ার্কে যোগ দিন",
+      "cta": "আপনার প্রতিষ্ঠান নিবন্ধন করুন",
       "features": {
         "manage": {
-          "title": "Manage Your Profile",
-          "desc": "Control your institution public page, programs, and key information from one dashboard"
+          "title": "আপনার প্রোফাইল পরিচালনা করুন",
+          "desc": "একটি ড্যাশবোর্ড থেকে আপনার প্রতিষ্ঠানের পাবলিক পেজ, প্রোগ্রাম এবং মূল তথ্য নিয়ন্ত্রণ করুন"
         },
         "students": {
-          "title": "Reach Qualified Students",
-          "desc": "Receive applications from students who match your programs and admission criteria"
+          "title": "যোগ্য শিক্ষার্থীদের কাছে পৌঁছান",
+          "desc": "আপনার প্রোগ্রাম ও ভর্তি মানদণ্ডের সাথে মেলে এমন শিক্ষার্থীদের কাছ থেকে আবেদন পান"
         },
         "analytics": {
-          "title": "Performance Insights",
-          "desc": "Track views, applications, and engagement with real-time analytics"
+          "title": "পারফরম্যান্স বিশ্লেষণ",
+          "desc": "রিয়েল-টাইম বিশ্লেষণ দিয়ে ভিউ, আবেদন এবং সম্পৃক্ততা ট্র্যাক করুন"
         },
         "verified": {
-          "title": "Verified Presence",
-          "desc": "Build trust with a verified institution badge and accurate program listings"
+          "title": "যাচাইকৃত উপস্থিতি",
+          "desc": "যাচাইকৃত ব্যাজ এবং নির্ভুল প্রোগ্রাম তথ্যের মাধ্যমে আস্থা গড়ুন"
         },
         "visibility": {
-          "title": "বিশ্বব্যাপী দৃশ্যমানতা",
-          "desc": "বিশ্বজুড়ে অধ্যয়নের সুযোগ খুঁজছেন এমন হাজার হাজার আন্তর্জাতিক শিক্ষার্থীদের কাছে আপনার প্রতিষ্ঠান প্রদর্শন করুন।"
+          "title": "গ্লোবাল দৃশ্যমানতা",
+          "desc": "বিশ্বজুড়ে অধ্যয়নের সুযোগ খুঁজছেন এমন হাজার হাজার আন্তর্জাতিক শিক্ষার্থীর কাছে আপনার প্রতিষ্ঠান উপস্থাপন করুন"
         },
         "partnership": {
           "title": "কৌশলগত অংশীদারিত্ব",
-          "desc": "নতুন বাজারে প্রসারিত হতে Connect Study World এর নেটওয়ার্ক ব্যবহার করুন।"
+          "desc": "Connect Study World নেটওয়ার্ক কাজে লাগিয়ে নতুন বাজারে সম্প্রসারণ করুন এবং দীর্ঘমেয়াদি সম্পর্ক গড়ুন"
         }
-      }
+      },
+      "exploreMap": "মানচিত্র দেখুন"
     },
     "blog": {
       "title": "সর্বশেষ প্রবন্ধ",
@@ -426,6 +427,25 @@
       "minAgo": "{{n}}মি আগে",
       "hourAgo": "{{n}}ঘ আগে",
       "dayAgo": "{{n}}দি আগে"
+    },
+    "orx": {
+      "badge": "প্রমাণ-ভিত্তিক রেটিং সিস্টেম",
+      "subtitle": "ঐতিহ্যবাহী খ্যাতির পরিবর্তে ভবিষ্যত-প্রস্তুতির ওপর কেন্দ্রীভূত একটি অনন্য রেটিং সিস্টেম — তিনটি বিশ্লেষণাত্মক স্তরে যাচাইকৃত প্রমাণের ওপর ভিত্তি করে",
+      "pillars": {
+        "country": {
+          "title": "দেশের প্রেক্ষাপট",
+          "desc": "বিশ্ববিদ্যালয় যে প্রেক্ষাপটে কাজ করে তা বোঝার জন্য শিক্ষা, অর্থনৈতিক ও প্রযুক্তিগত পরিবেশ বিশ্লেষণ"
+        },
+        "university": {
+          "title": "বিশ্ববিদ্যালয়ের প্রস্তুতি",
+          "desc": "পাঠ্যক্রম, অবকাঠামো ও উদ্ভাবনের ক্ষেত্রে বিশ্ববিদ্যালয় ভবিষ্যতের চাহিদার সাথে কতটা মানিয়ে নেয় তার মূল্যায়ন"
+        },
+        "program": {
+          "title": "প্রোগ্রামের প্রাসঙ্গিকতা",
+          "desc": "প্রোগ্রামের ভবিষ্যত শ্রমবাজারের সাথে সংগতি ও আধুনিক প্রযুক্তির সাথে একীকরণ পরিমাপ"
+        }
+      },
+      "cta": "ORX RANK পদ্ধতি জানুন"
     }
   },
   "services": {

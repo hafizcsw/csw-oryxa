@@ -191,36 +191,37 @@
       }
     },
     "institutions": {
-      "badge": "For Institutions",
-      "title": "Partner With Us",
-      "subtitle": "Join the global network of universities and institutions reaching the right students worldwide",
-      "cta": "Register Your Institution",
+      "badge": "Для учреждений",
+      "title": "Станьте нашим партнёром",
+      "subtitle": "Присоединяйтесь к глобальной сети университетов и учреждений, привлекающих подходящих студентов по всему миру",
+      "cta": "Зарегистрировать учреждение",
       "features": {
         "manage": {
-          "title": "Manage Your Profile",
-          "desc": "Control your institution public page, programs, and key information from one dashboard"
+          "title": "Управляйте профилем",
+          "desc": "Контролируйте публичную страницу учреждения, программы и ключевую информацию из единой панели"
         },
         "students": {
-          "title": "Reach Qualified Students",
-          "desc": "Receive applications from students who match your programs and admission criteria"
+          "title": "Привлекайте подходящих студентов",
+          "desc": "Получайте заявки от студентов, соответствующих вашим программам и критериям приёма"
         },
         "analytics": {
-          "title": "Performance Insights",
-          "desc": "Track views, applications, and engagement with real-time analytics"
+          "title": "Аналитика эффективности",
+          "desc": "Отслеживайте просмотры, заявки и вовлечённость в реальном времени"
         },
         "verified": {
-          "title": "Verified Presence",
-          "desc": "Build trust with a verified institution badge and accurate program listings"
+          "title": "Подтверждённое присутствие",
+          "desc": "Завоюйте доверие с помощью подтверждённого знака учреждения и точных описаний программ"
         },
         "visibility": {
           "title": "Глобальная видимость",
-          "desc": "Покажите ваш вуз тысячам иностранных студентов по всему миру."
+          "desc": "Покажите ваш вуз тысячам иностранных студентов, ищущих возможности обучения по всему миру"
         },
         "partnership": {
           "title": "Стратегическое партнёрство",
-          "desc": "Используйте сеть Connect Study World для выхода на новые рынки."
+          "desc": "Используйте сеть Connect Study World для выхода на новые рынки и построения долгосрочных отношений"
         }
-      }
+      },
+      "exploreMap": "Открыть карту"
     },
     "blog": {
       "title": "Последние статьи",
@@ -428,6 +429,25 @@
       "minAgo": "{{n}} мин назад",
       "hourAgo": "{{n}} ч назад",
       "dayAgo": "{{n}} д назад"
+    },
+    "orx": {
+      "badge": "Рейтинг на основе данных",
+      "subtitle": "Уникальная рейтинговая система, ориентированная на готовность к будущему, а не на традиционную репутацию — основанная на проверенных данных на трёх уровнях анализа",
+      "pillars": {
+        "country": {
+          "title": "Контекст страны",
+          "desc": "Анализ образовательной, экономической и технологической среды для понимания контекста, в котором работает университет"
+        },
+        "university": {
+          "title": "Готовность университета",
+          "desc": "Оценка того, насколько хорошо университет адаптируется к требованиям будущего: учебная программа, инфраструктура и инновации"
+        },
+        "program": {
+          "title": "Релевантность программы",
+          "desc": "Измерение соответствия программы будущему рынку труда и её интеграции с современными технологиями"
+        }
+      },
+      "cta": "Изучить методологию ORX RANK"
     }
   },
   "services": {
