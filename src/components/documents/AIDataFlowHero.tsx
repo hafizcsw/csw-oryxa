@@ -968,39 +968,49 @@ function BrainShape({
     "C 10 78, -10 78, -20 68 " +
     "C -70 70, -100 30, -90 -10 Z";
 
-  // Circuit polylines — drawn inside the brain. Each line reveals when its
-  // index threshold is reached by fillProgress.
-  const circuitLines: string[] = [
-    "M -70 -20 L -40 -20 L -40 0 L -10 0",
-    "M 70 -20 L 40 -20 L 40 0 L 10 0",
-    "M -60 20 L -30 20 L -30 40 L 0 40",
-    "M 60 20 L 30 20 L 30 40 L 0 40",
-    "M -75 0 L -55 0 L -55 -40 L -25 -40",
-    "M 75 0 L 55 0 L 55 -40 L 25 -40",
-    "M 0 -55 L 0 -30 L -20 -30 L -20 -10",
-    "M 0 -55 L 0 -30 L 20 -30 L 20 -10",
-    "M -50 50 L -20 50 L -20 30",
-    "M 50 50 L 20 50 L 20 30",
-    "M -80 -40 L -60 -40",
-    "M 80 -40 L 60 -40",
+  // ─────────────────────────────────────────────────────────────
+  // Reference: a glowing AI chip sits at the brain's center with
+  // circuit traces fanning OUTWARD from each chip pin into the
+  // surrounding brain tissue (PCB-style right-angle traces).
+  // ─────────────────────────────────────────────────────────────
+
+  // Central chip geometry
+  const CHIP_W = 44;
+  const CHIP_H = 32;
+  const CHIP_X = -CHIP_W / 2;
+  const CHIP_Y = -CHIP_H / 2;
+
+  // Pin positions on each side of the chip + the trace each pin extends.
+  // Traces use right-angle PCB routing and end at synapse nodes near the
+  // brain perimeter. Each is revealed progressively with fillProgress.
+  type Trace = { pin: { x: number; y: number }; d: string; node: { x: number; y: number } };
+  const TRACES: Trace[] = [
+    // Top pins → upper hemisphere
+    { pin: { x: -14, y: -16 }, d: "M -14 -16 L -14 -34 L -40 -34 L -40 -52", node: { x: -40, y: -52 } },
+    { pin: { x:  -4, y: -16 }, d: "M -4 -16 L -4 -42 L -22 -42 L -22 -60",   node: { x: -22, y: -60 } },
+    { pin: { x:   4, y: -16 }, d: "M 4 -16 L 4 -42 L 22 -42 L 22 -60",       node: { x:  22, y: -60 } },
+    { pin: { x:  14, y: -16 }, d: "M 14 -16 L 14 -34 L 40 -34 L 40 -52",     node: { x:  40, y: -52 } },
+    // Bottom pins → lower hemisphere
+    { pin: { x: -14, y:  16 }, d: "M -14 16 L -14 36 L -34 36 L -34 56",     node: { x: -34, y:  56 } },
+    { pin: { x:  -4, y:  16 }, d: "M -4 16 L -4 44 L -16 44 L -16 64",       node: { x: -16, y:  64 } },
+    { pin: { x:   4, y:  16 }, d: "M 4 16 L 4 44 L 16 44 L 16 64",           node: { x:  16, y:  64 } },
+    { pin: { x:  14, y:  16 }, d: "M 14 16 L 14 36 L 34 36 L 34 56",         node: { x:  34, y:  56 } },
+    // Left pins → left hemisphere
+    { pin: { x: -22, y:  -8 }, d: "M -22 -8 L -44 -8 L -44 -22 L -68 -22",   node: { x: -68, y: -22 } },
+    { pin: { x: -22, y:   8 }, d: "M -22 8 L -44 8 L -44 22 L -68 22",       node: { x: -68, y:  22 } },
+    // Right pins → right hemisphere
+    { pin: { x:  22, y:  -8 }, d: "M 22 -8 L 44 -8 L 44 -22 L 68 -22",       node: { x:  68, y: -22 } },
+    { pin: { x:  22, y:   8 }, d: "M 22 8 L 44 8 L 44 22 L 68 22",           node: { x:  68, y:  22 } },
   ];
-  const totalLines = circuitLines.length;
+  const totalTraces = TRACES.length;
 
-  // Synapse nodes positioned at line intersections / endpoints.
-  const synapses: Array<{ x: number; y: number }> = [
-    { x: -40, y: -20 }, { x: 40, y: -20 },
-    { x: -10, y: 0 },   { x: 10, y: 0 },
-    { x: -30, y: 40 },  { x: 30, y: 40 },
-    { x: 0, y: -30 },   { x: 0, y: 40 },
-  ];
+  // Binary rain — vertical streams of 1/0 chars in the background.
+  const rainColumns = [-70, -45, 45, 70];
 
-  // Binary rain — vertical streams of 1/0 chars.
-  const rainColumns = [-60, -30, 0, 30, 60];
-
-  // Chip glow opacity scales with progress; min visible always.
-  const chipOpacity = 0.25 + 0.7 * fillProgress;
-  // Circuit base opacity also scales — keeps the brain visually "filling up".
-  const circuitBase = 0.15 + 0.55 * fillProgress;
+  // Chip glow scales with progress; minimum visible from the start so the
+  // chip is always the visual anchor of the brain.
+  const chipGlow = 0.55 + 0.45 * fillProgress;
+  const traceBase = 0.25 + 0.55 * fillProgress;
 
   const techLayer = (
     <g>
