@@ -649,7 +649,7 @@ interface BrainShapeProps {
  * via foreignObject so the rest of the scene stays pure SVG.
  */
 function BrainShape({ animate }: BrainShapeProps) {
-  const SIZE = 132;
+  const SIZE = 264;
   const icon = (
     <foreignObject x={-SIZE / 2} y={-SIZE / 2} width={SIZE} height={SIZE}>
       <div
