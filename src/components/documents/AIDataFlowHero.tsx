@@ -15,10 +15,15 @@
 //   - Not connected to the reading engine.
 // ═══════════════════════════════════════════════════════════════
 
-import { memo, useId, useMemo } from "react";
+import { memo, useEffect, useId, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+export interface AIDataFlowHeroFile {
+  name: string;
+}
 
 export interface AIDataFlowHeroProps {
   className?: string;
@@ -28,7 +33,9 @@ export interface AIDataFlowHeroProps {
   ariaLabel?: string;
   /** Max visible cards per side cap (fan supports up to 5) */
   visibleCardsPerSide?: number;
-  /** STATE: number of uploaded files (drives doc count per side) */
+  /** STATE: real list of uploaded files — drives doc cards + filenames + scan order */
+  files?: AIDataFlowHeroFile[];
+  /** STATE: number of uploaded files (fallback if `files` not provided) */
   fileCount?: number;
   /** STATE: any files exist → render document clusters + connectors */
   hasFiles?: boolean;
@@ -37,6 +44,11 @@ export interface AIDataFlowHeroProps {
   /** STATE: upload/extraction in progress → animate chips faster */
   isProcessing?: boolean;
 }
+
+/** Time per file scan, ms */
+const SCAN_DURATION_MS = 2600;
+/** Gap between files, ms */
+const SCAN_GAP_MS = 200;
 
 const VIEWBOX_W = 960;
 const VIEWBOX_H = 720;
@@ -79,6 +91,7 @@ function AIDataFlowHeroComponent({
   intensity = "normal",
   ariaLabel,
   visibleCardsPerSide = 5,
+  files,
   fileCount = 0,
   hasFiles = false,
   isDragOver = false,
@@ -86,19 +99,60 @@ function AIDataFlowHeroComponent({
 }: AIDataFlowHeroProps) {
   const reduceMotion = useReducedMotion();
   const uid = useId().replace(/:/g, "");
+  const { t } = useLanguage();
+
   // Derive intensity from state when processing
   const effectiveIntensity = isProcessing ? "lively" : isDragOver ? "normal" : intensity;
   const cfg = INTENSITY_MAP[effectiveIntensity];
 
-  // STRICT state machine — documents are derived ONLY from real fileCount.
-  // Idle (fileCount=0, !isProcessing): brain only. No docs, no connectors, no chips.
-  // Drag-over (fileCount=0): subtle hint ring only. Still no permanent docs.
-  // hasFiles / isProcessing: render docs + connectors. Chips animate while processing.
-  const totalDocs = Math.max(0, Math.floor(fileCount));
+  // STRICT state machine — documents are derived ONLY from real files/fileCount.
+  const fileList: AIDataFlowHeroFile[] = useMemo(() => {
+    if (files && files.length > 0) return files;
+    const n = Math.max(0, Math.floor(fileCount));
+    return Array.from({ length: n }).map((_, i) => ({ name: `Document ${i + 1}` }));
+  }, [files, fileCount]);
+
+  const totalDocs = fileList.length;
   const showDocuments = totalDocs > 0;
-  const showConnectors = showDocuments;
-  const showChips = showDocuments;
   const dragHint = isDragOver && !showDocuments;
+
+  // ───── Sequential scan state machine ─────
+  // activeIndex advances every SCAN_DURATION_MS + SCAN_GAP_MS while there are
+  // still un-scanned files. When new files arrive after completion, resume.
+  const [activeIndex, setActiveIndex] = useState(0);
+  const prevTotalRef = useRef(0);
+
+  useEffect(() => {
+    // If new files were added after we finished, resume from the first new index
+    if (totalDocs > prevTotalRef.current && activeIndex >= prevTotalRef.current) {
+      setActiveIndex(prevTotalRef.current);
+    }
+    // If total dropped to 0, reset
+    if (totalDocs === 0) {
+      setActiveIndex(0);
+    }
+    prevTotalRef.current = totalDocs;
+  }, [totalDocs, activeIndex]);
+
+  useEffect(() => {
+    if (totalDocs === 0) return;
+    if (activeIndex >= totalDocs) return; // all done
+    if (reduceMotion) {
+      // No animation: mark all done immediately
+      setActiveIndex(totalDocs);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setActiveIndex((idx) => Math.min(idx + 1, totalDocs));
+    }, SCAN_DURATION_MS + SCAN_GAP_MS);
+    return () => window.clearTimeout(timer);
+  }, [activeIndex, totalDocs, reduceMotion]);
+
+  const allDone = totalDocs > 0 && activeIndex >= totalDocs;
+
+  // Brain stays shrunk while any file is pending or active. Returns to full
+  // size once the last file is scanned.
+  const brainShrink = showDocuments && !allDone;
 
   const ids = useMemo(
     () => ({
@@ -121,10 +175,17 @@ function AIDataFlowHeroComponent({
   const rc = Math.min(maxPerSide, Math.floor(totalDocs / 2));
   const cardsPerSide = Math.max(lc, rc, 1);
 
-  // Helper: evenly distribute N cards vertically within the viewbox column,
-  // with a small horizontal jitter and slight rotation for a paper-stack feel.
-  const distributeColumn = (count: number, anchorX: number, mirrored: boolean) => {
-    if (count === 0) return [] as Array<{ x: number; y: number; rotate: number; scale: number; opacity: number; index: number }>;
+  // Helper: evenly distribute N cards vertically within the viewbox column.
+  // Returns positions including the GLOBAL file index (gIdx) so we can map
+  // each card to its file in `fileList` and to scan state.
+  const distributeColumn = (
+    count: number,
+    anchorX: number,
+    mirrored: boolean,
+    gIdxStart: number,
+  ) => {
+    if (count === 0)
+      return [] as Array<{ x: number; y: number; rotate: number; scale: number; opacity: number; index: number; gIdx: number }>;
     const TOP = 60;
     const BOTTOM = VIEWBOX_H - CARD_H - 60;
     const span = BOTTOM - TOP;
@@ -134,18 +195,25 @@ function AIDataFlowHeroComponent({
       const jitter = ((i % 2 === 0 ? 1 : -1) * (10 + (i * 7) % 14));
       const x = anchorX + (mirrored ? -jitter : jitter);
       const rotate = (mirrored ? -1 : 1) * (-6 + ((i * 5) % 12));
-      return { x, y, rotate, scale: 1, opacity: 1, index: i };
+      return { x, y, rotate, scale: 1, opacity: 1, index: i, gIdx: gIdxStart + i };
     });
   };
 
-  const leftCards = distributeColumn(lc, LEFT_X, false);
-  const rightCards = distributeColumn(rc, RIGHT_X, true);
+  // Reading order: left column top→bottom (gIdx 0..lc-1), then right column (gIdx lc..lc+rc-1)
+  const leftCards = distributeColumn(lc, LEFT_X, false, 0);
+  const rightCards = distributeColumn(rc, RIGHT_X, true, lc);
 
-  // Connector paths — 3 gentle S-curves PER card (top, middle, bottom of page)
-  // emerging from the inner edge of each document and flowing into the brain.
+  // Helper: compute per-card visual state from activeIndex
+  const cardState = (gIdx: number): "pending" | "active" | "done" => {
+    if (gIdx < activeIndex) return "done";
+    if (gIdx === activeIndex) return "active";
+    return "pending";
+  };
+
+  // Connector paths — generated for ALL cards, but rendered only for the
+  // currently-active card so chips/arrows visibly switch from file to file.
   const connectors = useMemo(() => {
-    const paths: Array<{ d: string; key: string; side: "L" | "R"; cardIdx: number; lineIdx: number }> = [];
-    const LINES_PER_CARD = 3;
+    const paths: Array<{ d: string; key: string; side: "L" | "R"; cardIdx: number; lineIdx: number; gIdx: number }> = [];
     const CARD_LINE_OFFSETS = [CARD_H * 0.28, CARD_H * 0.5, CARD_H * 0.72];
 
     leftCards.forEach((c, i) => {
@@ -164,6 +232,7 @@ function AIDataFlowHeroComponent({
           side: "L",
           cardIdx: i,
           lineIdx: li,
+          gIdx: c.gIdx,
         });
       });
     });
@@ -184,12 +253,32 @@ function AIDataFlowHeroComponent({
           side: "R",
           cardIdx: i,
           lineIdx: li,
+          gIdx: c.gIdx,
         });
       });
     });
 
     return paths;
   }, [cardsPerSide, leftCards, rightCards]);
+
+  // Only the active file's connectors stream into the brain.
+  const activeConnectors = useMemo(
+    () => connectors.filter((p) => p.gIdx === activeIndex),
+    [connectors, activeIndex],
+  );
+
+  const showConnectors = showDocuments && !allDone;
+  const showChips = showConnectors;
+
+  // Localized micro-labels with safe fallbacks
+  const scanningLabel = (() => {
+    const v = t("hero.aiFlow.scanning");
+    return typeof v === "string" && v && v !== "hero.aiFlow.scanning" ? v : "Scanning…";
+  })();
+  const scannedLabel = (() => {
+    const v = t("hero.aiFlow.scanned");
+    return typeof v === "string" && v && v !== "hero.aiFlow.scanned" ? v : "Scanned";
+  })();
 
   // Sparkle positions around brain glow
   const sparkles = useMemo(() => {
@@ -343,30 +432,30 @@ function AIDataFlowHeroComponent({
           </g>
         )}
 
-        {/* ═══ Connector paths with arrowheads (one set per card line) ═══ */}
+        {/* ═══ Connector paths — ONLY for the currently active file ═══ */}
         {showConnectors && (
           <g fill="none" strokeLinecap="round">
-            {connectors.map((p) => (
+            {activeConnectors.map((p) => (
               <ConnectorPath
-                key={p.key}
+                key={`act-${p.key}-${activeIndex}`}
                 d={p.d}
                 animate={!reduceMotion}
-                delay={0.9 + p.cardIdx * 0.12 + p.lineIdx * 0.08}
+                delay={0.15 + p.lineIdx * 0.08}
                 markerId={ids.arrowHead}
               />
             ))}
           </g>
         )}
 
-        {/* ═══ Mid-flight extraction chips riding the connectors ═══ */}
+        {/* ═══ Mid-flight extraction chips — ONLY on active file's lines ═══ */}
         {showChips && !reduceMotion && (
           <g>
-            {connectors.map((p, i) => (
+            {activeConnectors.map((p, i) => (
               <DocumentChip
-                key={`chip-${p.key}`}
+                key={`chip-${p.key}-${activeIndex}`}
                 pathD={p.d}
                 duration={cfg.chipDuration}
-                delay={(1.4 + p.cardIdx * 0.3 + p.lineIdx * 0.5 + (i * 0.15)) % cfg.chipDuration}
+                delay={(0.5 + p.lineIdx * 0.5 + (i * 0.15)) % cfg.chipDuration}
               />
             ))}
           </g>
@@ -375,42 +464,58 @@ function AIDataFlowHeroComponent({
         {/* ═══ Document clusters (only when files exist) ═══ */}
         {showDocuments && (
           <g>
-            {leftCards.map((c, i) => (
-              <DocumentCard
-                key={`L-${i}-of-${totalDocs}`}
-                x={c.x}
-                y={c.y}
-                rotate={c.rotate}
-                scale={c.scale}
-                opacity={c.opacity}
-                shadowId={ids.paperShadow}
-                accentVariant={i % 3}
-                float={!reduceMotion}
-                floatDelay={i * 0.45}
-                mirrored={false}
-                emergeFromX={CX - CARD_W / 2}
-                emergeFromY={VIEWBOX_H - 40}
-                emergeDelay={i * 0.12}
-              />
-            ))}
-            {rightCards.map((c, i) => (
-              <DocumentCard
-                key={`R-${i}-of-${totalDocs}`}
-                x={c.x}
-                y={c.y}
-                rotate={-c.rotate}
-                scale={c.scale}
-                opacity={c.opacity}
-                shadowId={ids.paperShadow}
-                accentVariant={(i + 1) % 3}
-                float={!reduceMotion}
-                floatDelay={i * 0.45 + 0.7}
-                mirrored
-                emergeFromX={CX - CARD_W / 2}
-                emergeFromY={VIEWBOX_H - 40}
-                emergeDelay={i * 0.12 + 0.06}
-              />
-            ))}
+            {leftCards.map((c, i) => {
+              const st = cardState(c.gIdx);
+              return (
+                <DocumentCard
+                  key={`L-${i}-of-${totalDocs}`}
+                  x={c.x}
+                  y={c.y}
+                  rotate={c.rotate}
+                  scale={c.scale}
+                  opacity={c.opacity}
+                  shadowId={ids.paperShadow}
+                  accentVariant={i % 3}
+                  float={!reduceMotion}
+                  floatDelay={i * 0.45}
+                  mirrored={false}
+                  emergeFromX={CX - CARD_W / 2}
+                  emergeFromY={VIEWBOX_H - 40}
+                  emergeDelay={i * 0.12}
+                  label={fileList[c.gIdx]?.name ?? ""}
+                  state={st}
+                  scanDurationSec={SCAN_DURATION_MS / 1000}
+                  scanningLabel={scanningLabel}
+                  scannedLabel={scannedLabel}
+                />
+              );
+            })}
+            {rightCards.map((c, i) => {
+              const st = cardState(c.gIdx);
+              return (
+                <DocumentCard
+                  key={`R-${i}-of-${totalDocs}`}
+                  x={c.x}
+                  y={c.y}
+                  rotate={-c.rotate}
+                  scale={c.scale}
+                  opacity={c.opacity}
+                  shadowId={ids.paperShadow}
+                  accentVariant={(i + 1) % 3}
+                  float={!reduceMotion}
+                  floatDelay={i * 0.45 + 0.7}
+                  mirrored
+                  emergeFromX={CX - CARD_W / 2}
+                  emergeFromY={VIEWBOX_H - 40}
+                  emergeDelay={i * 0.12 + 0.06}
+                  label={fileList[c.gIdx]?.name ?? ""}
+                  state={st}
+                  scanDurationSec={SCAN_DURATION_MS / 1000}
+                  scanningLabel={scanningLabel}
+                  scannedLabel={scannedLabel}
+                />
+              );
+            })}
           </g>
         )}
 
@@ -432,7 +537,7 @@ function AIDataFlowHeroComponent({
 
         {/* ═══ Brain (lucide-react icon — same as used elsewhere in app) ═══ */}
         <g transform={`translate(${CX}, ${CY})`}>
-          <BrainShape animate={!reduceMotion} shrink={showDocuments} />
+          <BrainShape animate={!reduceMotion} shrink={brainShrink} />
         </g>
       </svg>
     </div>
@@ -461,34 +566,71 @@ interface DocumentCardProps {
   emergeFromY?: number;
   /** Stagger for emerge entrance */
   emergeDelay?: number;
+  /** Real filename to display as the card title */
+  label?: string;
+  /** Sequential scan state */
+  state?: "pending" | "active" | "done";
+  /** Scan beam sweep duration (sec) — synced to outer scheduler */
+  scanDurationSec?: number;
+  /** Localized labels */
+  scanningLabel?: string;
+  scannedLabel?: string;
+}
+
+/** Truncate a filename for display (keep extension if short) */
+function truncateName(name: string, max = 16): string {
+  if (!name) return "";
+  if (name.length <= max) return name;
+  const dot = name.lastIndexOf(".");
+  if (dot > 0 && name.length - dot <= 5) {
+    const ext = name.slice(dot);
+    const head = name.slice(0, Math.max(1, max - ext.length - 1));
+    return `${head}…${ext}`;
+  }
+  return `${name.slice(0, max - 1)}…`;
 }
 
 function DocumentCard({
   x, y, rotate, scale, opacity, shadowId, accentVariant, float, floatDelay, mirrored,
   emergeFromX, emergeFromY, emergeDelay = 0,
+  label = "",
+  state = "active",
+  scanDurationSec = 2.6,
+  scanningLabel = "Scanning…",
+  scannedLabel = "Scanned",
 }: DocumentCardProps) {
   const W = CARD_W;
   const H = CARD_H;
 
+  const isActive = state === "active";
+  const isDone = state === "done";
+  const isPending = state === "pending";
+
   // Multiple short text-line groups for a denser editorial feel
   const lineRows = [
-    { yStart: 44, count: 8, gap: 9 },
+    { yStart: 56, count: 7, gap: 9 },
   ];
 
-  // Variant defines header/footer block presence
-  const showHeaderBlock = accentVariant !== 1;
+  // Variant defines footer block presence (header replaced by filename strip)
   const showFooterBlocks = accentVariant !== 2;
 
+  // Card body opacity per state — pending dimmed, active/done fully visible
+  const bodyOpacity = isPending ? 0.55 : 1;
+
+  // Body line stroke — done = success-tinted, others = foreground
+  const lineStroke = isDone ? "hsl(142 70% 42%)" : "hsl(var(--foreground))";
+  const lineStrokeOpacity = isDone ? 0.55 : 0.42;
+
   const sheet = (
-    <g filter={`url(#${shadowId})`}>
+    <g filter={`url(#${shadowId})`} opacity={bodyOpacity}>
       {/* Page */}
       <rect
         width={W}
         height={H}
         rx={6}
         fill="hsl(var(--card))"
-        stroke="hsl(var(--foreground))"
-        strokeOpacity={0.55}
+        stroke={isDone ? "hsl(142 70% 42%)" : "hsl(var(--foreground))"}
+        strokeOpacity={isDone ? 0.7 : 0.55}
         strokeWidth={1.1}
       />
       {/* Folded corner */}
@@ -498,22 +640,74 @@ function DocumentCard({
           : `M ${W} 0 L ${W - 18} 0 L ${W} 18 Z`}
         fill="hsl(var(--muted))"
       />
-      {/* Header dark block (like reference) */}
-      {showHeaderBlock && (
+      {/* Filename strip — replaces generic header block */}
+      <g>
         <rect
-          x={mirrored ? 22 : 14}
-          y={16}
-          width={W * 0.5}
-          height={10}
-          rx={1.5}
+          x={8}
+          y={8}
+          width={W - 16}
+          height={20}
+          rx={3}
           fill="hsl(var(--foreground))"
-          fillOpacity={0.82}
+          fillOpacity={isDone ? 0.7 : 0.85}
         />
+        <text
+          x={W / 2}
+          y={22}
+          textAnchor="middle"
+          fontSize={9}
+          fontWeight={600}
+          fill="hsl(var(--background))"
+          style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif" }}
+        >
+          {truncateName(label, 18)}
+        </text>
+      </g>
+
+      {/* State micro-label under filename */}
+      {(isActive || isDone) && (
+        <g>
+          {isActive && float ? (
+            <motion.circle
+              cx={mirrored ? W - 16 : 16}
+              cy={40}
+              r={3}
+              fill="hsl(265 90% 60%)"
+              animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
+              transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+              style={{ transformOrigin: `${mirrored ? W - 16 : 16}px 40px` }}
+            />
+          ) : isDone ? (
+            <g transform={`translate(${mirrored ? W - 22 : 10}, 33)`}>
+              <circle cx={6} cy={6} r={6} fill="hsl(142 70% 42%)" />
+              <path
+                d="M 3 6 L 5.2 8.2 L 9 4.2"
+                stroke="hsl(var(--background))"
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+            </g>
+          ) : null}
+          <text
+            x={mirrored ? W - 24 : 24}
+            y={43}
+            textAnchor={mirrored ? "end" : "start"}
+            fontSize={7.5}
+            fill={isDone ? "hsl(142 70% 35%)" : "hsl(265 85% 55%)"}
+            fontWeight={600}
+            style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif" }}
+          >
+            {isDone ? scannedLabel : scanningLabel}
+          </text>
+        </g>
       )}
-      {/* Body lines — animated shimmer width to imply live data */}
+
+      {/* Body lines — shimmer ONLY when active; static otherwise */}
       <g
-        stroke="hsl(var(--foreground))"
-        strokeOpacity={0.42}
+        stroke={lineStroke}
+        strokeOpacity={lineStrokeOpacity}
         strokeWidth={1}
         strokeLinecap="round"
       >
@@ -521,7 +715,7 @@ function DocumentCard({
           Array.from({ length: row.count }).map((_, i) => {
             const widths = [W - 22, W - 30, W - 18, W - 36, W - 24, W - 40, W - 26, W - 32];
             const w = widths[(i + accentVariant) % widths.length];
-            return float ? (
+            return float && isActive ? (
               <motion.line
                 key={`ln-${i}`}
                 x1={12}
@@ -549,15 +743,15 @@ function DocumentCard({
           }),
         )}
       </g>
-      {/* Inline emphasis block mid-page (like reference) */}
+      {/* Inline emphasis block mid-page */}
       <rect
         x={mirrored ? W - 64 : 38}
-        y={H * 0.52}
+        y={H * 0.62}
         width={42}
         height={10}
         rx={1.5}
-        fill="hsl(var(--foreground))"
-        fillOpacity={0.82}
+        fill={isDone ? "hsl(142 70% 42%)" : "hsl(var(--foreground))"}
+        fillOpacity={isDone ? 0.7 : 0.82}
       />
       {/* Footer blocks */}
       {showFooterBlocks && (
@@ -582,8 +776,9 @@ function DocumentCard({
           />
         </>
       )}
-      {/* Live scan beam — sweeps top→bottom to show brain reading the page */}
-      {float && (
+      {/* Live scan beam — ONLY while this card is being actively scanned.
+          Synced to outer scheduler: a single sweep top→bottom across SCAN_DURATION. */}
+      {float && isActive && (
         <g clipPath={`inset(0 round 6px)`}>
           <motion.rect
             x={2}
@@ -591,14 +786,14 @@ function DocumentCard({
             height={18}
             rx={3}
             fill="hsl(265 90% 70%)"
-            fillOpacity={0.22}
+            fillOpacity={0.32}
             initial={{ y: -20 }}
-            animate={{ y: [-20, H - 14, -20] }}
+            animate={{ y: [-20, H - 14, H - 14] }}
             transition={{
-              duration: 2.6,
+              duration: scanDurationSec,
               repeat: Infinity,
               ease: "easeInOut",
-              delay: (accentVariant * 0.4) % 1.6,
+              times: [0, 0.85, 1],
             }}
           />
         </g>

@@ -594,6 +594,7 @@ export function CentralUploadHub({
           <AIDataFlowHero
             intensity={isProcessing ? 'lively' : 'normal'}
             ariaLabel={t('portal.uploadHub.title')}
+            files={records.map((r) => ({ name: r.original_file_name || 'Document' }))}
             fileCount={records.length}
             hasFiles={records.length > 0}
             isDragOver={isDragOver}
