@@ -3141,6 +3141,75 @@ export type Database = {
         }
         Relationships: []
       }
+      document_analyses: {
+        Row: {
+          analysis_status: string
+          artifact_summary: Json | null
+          classification_confidence: number
+          classification_result: string | null
+          created_at: string
+          document_filename: string | null
+          document_id: string
+          duplicate_status: string
+          extracted_fields: Json
+          field_confidence_map: Json
+          id: string
+          parser_type: string
+          readability_status: string
+          rejection_reason: string | null
+          slot_hint: string | null
+          structured_artifact_summary: Json | null
+          summary_message_internal: string | null
+          updated_at: string
+          usefulness_status: string
+          user_id: string
+        }
+        Insert: {
+          analysis_status: string
+          artifact_summary?: Json | null
+          classification_confidence?: number
+          classification_result?: string | null
+          created_at?: string
+          document_filename?: string | null
+          document_id: string
+          duplicate_status?: string
+          extracted_fields?: Json
+          field_confidence_map?: Json
+          id?: string
+          parser_type: string
+          readability_status?: string
+          rejection_reason?: string | null
+          slot_hint?: string | null
+          structured_artifact_summary?: Json | null
+          summary_message_internal?: string | null
+          updated_at?: string
+          usefulness_status?: string
+          user_id: string
+        }
+        Update: {
+          analysis_status?: string
+          artifact_summary?: Json | null
+          classification_confidence?: number
+          classification_result?: string | null
+          created_at?: string
+          document_filename?: string | null
+          document_id?: string
+          duplicate_status?: string
+          extracted_fields?: Json
+          field_confidence_map?: Json
+          id?: string
+          parser_type?: string
+          readability_status?: string
+          rejection_reason?: string | null
+          slot_hint?: string | null
+          structured_artifact_summary?: Json | null
+          summary_message_internal?: string | null
+          updated_at?: string
+          usefulness_status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       education_events: {
         Row: {
           city: string | null
@@ -3568,6 +3637,75 @@ export type Database = {
           trace_tag?: string | null
           traffic_class?: string | null
           visitor_id?: string | null
+        }
+        Relationships: []
+      }
+      extraction_proposals: {
+        Row: {
+          auto_apply_candidate: boolean
+          confidence: number
+          conflict_with_existing: Json | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          document_id: string
+          evidence_snippet: string | null
+          field_path: string
+          id: string
+          parser_source: string
+          proposal_id: string
+          proposed_value: Json | null
+          raw_text: string | null
+          rejection_reason: string | null
+          requires_review: boolean
+          source_lane: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_apply_candidate?: boolean
+          confidence?: number
+          conflict_with_existing?: Json | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          document_id: string
+          evidence_snippet?: string | null
+          field_path: string
+          id?: string
+          parser_source: string
+          proposal_id: string
+          proposed_value?: Json | null
+          raw_text?: string | null
+          rejection_reason?: string | null
+          requires_review?: boolean
+          source_lane?: string | null
+          status: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_apply_candidate?: boolean
+          confidence?: number
+          conflict_with_existing?: Json | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          document_id?: string
+          evidence_snippet?: string | null
+          field_path?: string
+          id?: string
+          parser_source?: string
+          proposal_id?: string
+          proposed_value?: Json | null
+          raw_text?: string | null
+          rejection_reason?: string | null
+          requires_review?: boolean
+          source_lane?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
