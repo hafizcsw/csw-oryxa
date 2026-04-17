@@ -32,11 +32,9 @@
 .biv-root[data-stage="complete"] { --biv-stream-cycle: 4.6s; }
 .biv-root[data-stage="error"] { --biv-stream-cycle: 5s; }
 
-/* ── Layer 1: brain base geometry — always faintly visible ─────── */
+/* ── Layer 1: brain base — sharp, dominant, no blur ────────────── */
 .biv-base {
-  opacity: calc(0.55 + 0.35 * var(--biv-stable-glow));
-  transition: opacity 600ms ease-out;
-  filter: drop-shadow(0 0 6px hsl(var(--biv-cool) / 0.35));
+  opacity: 1;
 }
 
 /* ── Layer 2: passive branch skeleton ──────────────────────────── */
@@ -99,11 +97,9 @@
   to   { stroke-dashoffset: -20; }
 }
 
-/* ── Layer 6: brain interior fill regions ──────────────────────── */
+/* ── Layer 6: brain interior reveal — handled via clipPath, no blur ── */
 .biv-region {
-  transition: opacity 800ms ease-out, filter 800ms ease-out;
-  mix-blend-mode: screen;
-  filter: blur(0.4px);
+  transition: opacity 600ms ease-out;
 }
 
 /* ── Layer 7: completion aura ──────────────────────────────────── */
