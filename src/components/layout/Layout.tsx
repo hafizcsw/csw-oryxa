@@ -145,33 +145,33 @@ export function Layout({
               </button>
             </nav>
           ) : !hideStudentNav ? (
-            /* Standard full nav */
+            /* Standard full nav — all buttons styled at ORX strength */
             <nav className={cn(
-              "hidden lg:flex items-center gap-0.5 font-medium whitespace-nowrap [&_button]:whitespace-nowrap",
-              language === 'ru' ? "text-[11.7px]" : "text-[13px]"
+              "hidden lg:flex items-center gap-0.5 font-bold whitespace-nowrap [&_button]:whitespace-nowrap",
+              language === 'ru' ? "text-[12.6px]" : "text-[14px]"
             )}>
-              <button 
-                onClick={() => navigate('/')} 
-                className="px-3 py-1.5 rounded-lg text-foreground/80 hover:text-primary hover:bg-primary/5 dark:text-foreground/90 dark:hover:text-primary dark:hover:bg-primary/10 transition-all"
+              <button
+                onClick={() => navigate('/')}
+                className="px-3 py-1.5 rounded-lg text-foreground hover:text-primary hover:bg-primary/5 dark:text-foreground dark:hover:text-primary dark:hover:bg-primary/10 transition-all font-bold"
               >
                 {t("nav.home")}
               </button>
-              <button 
-                onClick={() => navigate('/countries')} 
-                className="px-3 py-1.5 rounded-lg text-foreground/80 hover:text-primary hover:bg-primary/5 dark:text-foreground/90 dark:hover:text-primary dark:hover:bg-primary/10 transition-all"
+              <button
+                onClick={() => navigate('/countries')}
+                className="px-3 py-1.5 rounded-lg text-foreground hover:text-primary hover:bg-primary/5 dark:text-foreground dark:hover:text-primary dark:hover:bg-primary/10 transition-all font-bold"
               >
                 {t("nav.studyDestinations")}
               </button>
-              <button onClick={() => navigate("/universities?tab=universities")} className="px-3 py-1.5 rounded-lg text-foreground/80 hover:text-primary hover:bg-primary/5 dark:text-foreground/90 dark:hover:text-primary dark:hover:bg-primary/10 transition-all">
+              <button onClick={() => navigate("/universities?tab=universities")} className="px-3 py-1.5 rounded-lg text-foreground hover:text-primary hover:bg-primary/5 dark:text-foreground dark:hover:text-primary dark:hover:bg-primary/10 transition-all font-bold">
                 {t("nav.findUniversity")}
               </button>
-              <button onClick={() => navigate("/languages")} className="px-3 py-1.5 rounded-lg text-foreground/80 hover:text-primary hover:bg-primary/5 dark:text-foreground/90 dark:hover:text-primary dark:hover:bg-primary/10 transition-all">
+              <button onClick={() => navigate("/languages")} className="px-3 py-1.5 rounded-lg text-foreground hover:text-primary hover:bg-primary/5 dark:text-foreground dark:hover:text-primary dark:hover:bg-primary/10 transition-all font-bold">
                 {t("nav.languages")}
               </button>
-              <button onClick={() => navigate("/orx-rank")} className="px-3 py-1.5 rounded-lg text-foreground/80 hover:text-primary hover:bg-primary/5 dark:text-foreground/90 dark:hover:text-primary dark:hover:bg-primary/10 transition-all font-bold">
+              <button onClick={() => navigate("/orx-rank")} className="px-3 py-1.5 rounded-lg text-foreground hover:text-primary hover:bg-primary/5 dark:text-foreground dark:hover:text-primary dark:hover:bg-primary/10 transition-all font-bold">
                 {t("orx.nav.orxRank")}
               </button>
-              <button onClick={() => navigate("/community")} className="px-3 py-1.5 rounded-lg text-foreground/80 hover:text-primary hover:bg-primary/5 dark:text-foreground/90 dark:hover:text-primary dark:hover:bg-primary/10 transition-all flex items-center gap-1">
+              <button onClick={() => navigate("/community")} className="px-3 py-1.5 rounded-lg text-foreground hover:text-primary hover:bg-primary/5 dark:text-foreground dark:hover:text-primary dark:hover:bg-primary/10 transition-all flex items-center gap-1 font-bold">
                 <Users className="w-3.5 h-3.5" />
                 {t("nav.community") || (t("nav.home") === "الرئيسية" ? "المجتمع" : "Community")}
               </button>
