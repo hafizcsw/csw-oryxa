@@ -1,63 +1,58 @@
 
 
+## Problem
+The scan animation runs on its own fixed timer (2600ms per file) and is NOT tied to the real backend processing state of each file. So the engine may still be parsing a file while the UI already marked it "done", or vice versa — the visual scan and the real work are out of sync.
+
 ## Goal
-Sequential, realistic per-file scanning. Only ONE file is actively being scanned at a time. When its scan completes, the brain stops pulling from it (connectors/chips fade off for that card, scan beam disappears, card shows a "scanned" state), then the next card becomes active. Each card displays its real source filename as a title.
+Bind each `DocumentCard`'s state (`pending` / `active` / `done`) to the **actual processing status of that specific document record**, not to a `setTimeout`.
 
 ## Exploration Needed
-Read `src/components/documents/AIDataFlowHero.tsx` to confirm:
-- How `fileCount` / files are passed in (do we have actual filenames or just a count?).
-- Current `DocumentCard` props (need to add `label` + `isActive` + `isDone`).
-- Where `connectors` and `DocumentChip` are rendered (need to gate them per-card by active state).
-- Parent component (study-file tab) that owns the upload state — to pass real filenames down.
+1. `src/components/documents/CentralUploadHub.tsx` — see what document records it holds, what status field exists (`status`, `processing_status`, `parsed_at`, etc.), and how it currently passes `files` to `AIDataFlowHero`.
+2. `src/components/documents/AIDataFlowHero.tsx` — current `activeIndex` timer logic to remove.
+3. The documents table schema / hook that feeds CentralUploadHub — confirm the real status enum values (e.g. `uploading` → `processing` → `processed` / `failed`).
 
 ## Design
 
-### 1. Real filenames
-- Change the hero's API from `fileCount: number` to `files: { name: string }[]` (keep `fileCount` derived as fallback for backward compat).
-- Parent (study-file upload area) passes the actual `File[]` (or `{name}[]`) into the hero.
-- Each `DocumentCard` receives `label` and renders it as a small title strip at the top of the card (truncated, max ~14 chars + ellipsis), replacing the generic header bar text.
+### 1. Pass real status per file
+Change the hero's `files` prop from `{ name: string }[]` to:
+```ts
+files: { name: string; status: 'pending' | 'active' | 'done' | 'failed' }[]
+```
+`CentralUploadHub` maps each document record's real status to one of these 4 values:
+- not yet started / queued → `pending`
+- currently being parsed / extracted → `active`
+- finished successfully → `done`
+- error → `failed` (treated visually like `done` but with a red tint, optional)
 
-### 2. Sequential scan state machine
-Inside `AIDataFlowHero`:
-- New state `activeIndex: number` (0 → totalDocs-1, then "all done").
-- Each card has a global index `gIdx` (matches `files[gIdx]`). Order = left column top→bottom, then right column top→bottom (deterministic, matches visual reading order).
-- A timer (`useEffect` with `setTimeout`) advances `activeIndex` every `SCAN_DURATION_MS` (e.g. 2600ms per file).
-- When `files` array changes (new file added), keep `activeIndex` where it is if still valid; if all were done and new files arrive, resume from the first not-yet-done index.
-- Track `doneSet: Set<number>` of completed indices.
+### 2. Drop the timer in AIDataFlowHero
+- Remove `activeIndex` state, `SCAN_DURATION_MS` advancement, and the `useEffect` setTimeout loop.
+- `DocumentCard.state` now comes directly from `files[gIdx].status`.
+- `activeConnectors` / `DocumentChip` rendering is gated by "is this card's status === 'active'" — multiple cards CAN be active simultaneously if backend processes in parallel (matches reality).
 
-### 3. Per-card visual states
-`DocumentCard` gets `state: 'pending' | 'active' | 'done'`:
-- **pending**: card visible in slot, dim (opacity 0.55), no scan beam, no shimmer on body lines, body lines static gray.
-- **active**: full opacity, scan beam sweeping, body lines shimmer (current live behavior), small "Scanning…" micro-label or pulsing dot near the title.
-- **done**: full opacity, scan beam hidden, body lines static but tinted success-green, a small ✓ check badge in the corner.
+### 3. Brain reaction
+- Brain stays at 0.5 scale while ANY file has status `pending` or `active`.
+- Returns to 1.0 only when every file is `done` (or `failed`).
 
-### 4. Per-card connectors + chips gating
-Currently `connectors` is one flat memo for all cards. Refactor so connectors and chips are filtered to render only for the card whose `gIdx === activeIndex`:
-- Connectors for inactive/done cards → not rendered (or rendered with opacity 0, instant).
-- Chips only flow on the active card's 3 lines.
-- Result: at any moment only ONE card has lines + chips going to the brain — exactly the "brain is reading this file right now" feel.
+### 4. Scan beam timing
+- Scan beam loops continuously (2.6s sweep) while card is `active`. It no longer needs to "finish" at a specific moment — it just keeps sweeping until the real status flips to `done`, then disappears and the green ✓ appears.
 
-### 5. Brain reaction
-- Brain stays at 0.5 scale while any card is `active` or `pending`.
-- Optional: subtle pulse intensity tied to active scanning (already breathing — keep as is).
-- When all cards are `done`, brain returns to scale 1 after a short delay.
-
-### 6. Timing
-- `SCAN_DURATION_MS = 2600` (matches roughly the existing scan-beam sweep duration).
-- Scan beam animation duration synced to `SCAN_DURATION_MS` so the beam reaches the bottom exactly when the file is marked done.
-- Small 200ms gap between files for a clean handoff.
-
-### 7. i18n
-- "Scanning…" and "Scanned" micro-labels go through `t('hero.aiFlow.scanning')` / `t('hero.aiFlow.scanned')` — added to all 12 locale files (or at minimum en/ar with safe key fallback).
+### 5. Source of truth in CentralUploadHub
+Locate the documents query/hook and derive status:
+```ts
+const heroFiles = documents.map(d => ({
+  name: d.original_file_name,
+  status: deriveStatus(d), // reads d.status / d.parsed_at / d.processing_state
+}));
+```
+If the backend currently has only a binary "uploaded vs not", we'll need to also surface a "processing" flag — exploration of the documents hook will confirm what's already available. If nothing exists, fallback: treat freshly inserted rows (< N seconds old, no `parsed_at`) as `active`, rows with `parsed_at` as `done`.
 
 ## Files to change
-- `src/components/documents/AIDataFlowHero.tsx` — add `files` prop, sequential scan state machine, per-card `state`, per-card connector/chip gating, filename label, done check badge.
-- Parent that mounts `AIDataFlowHero` on the study-file tab — pass real `files` array (need to locate via search; likely a component under `src/features/.../study-file/` or the documents area).
-- Locale files — add 2 keys (`hero.aiFlow.scanning`, `hero.aiFlow.scanned`) across the 12 locales.
+- `src/components/documents/AIDataFlowHero.tsx` — extend `files` prop with `status`, remove timer state machine, drive card state from prop.
+- `src/components/documents/CentralUploadHub.tsx` — map real document records → `{name, status}` and pass down.
+- (Possibly) the documents hook/query file — only to read existing status fields, no schema changes unless exploration shows none exist.
 
 ## Verification
-- Upload 1 file → card shows filename, scans once, marks done, brain returns to full size.
-- Upload 5 files → cards appear; only the 1st has connectors + chips; after ~2.6s it's checkmarked, connectors switch to the 2nd card; continues sequentially through all 5; brain returns to full size after the 5th.
-- Add a 6th file mid-sequence → it appears as `pending`, gets scanned in turn.
-- Each card's title shows the real uploaded filename, truncated.
+- Upload 1 file → card is `active` (beam sweeping) for as long as backend is parsing; flips to `done` ✓ exactly when parsing finishes.
+- Upload 5 files at once → if backend processes them in parallel, multiple cards show `active` simultaneously, each flipping to `done` independently as their real processing finishes.
+- Brain returns to full size only after the LAST file actually finishes processing on the backend.
 
