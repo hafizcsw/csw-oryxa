@@ -231,7 +231,7 @@ export interface HydratedEngineState {
 
 /** Load every persisted analysis + proposal for the current user. */
 export async function hydrateEngineStateForUser(userId: string): Promise<HydratedEngineState> {
-  const empty: HydratedEngineState = { analyses: [], proposals: [] };
+  const empty: HydratedEngineState = { analyses: [], proposals: [], analysis_extras: [], proposal_decisions: [] };
 
   const [analysesRes, proposalsRes] = await Promise.all([
     supabase.from('document_analyses').select('*').eq('user_id', userId),
@@ -266,6 +266,13 @@ export async function hydrateEngineStateForUser(userId: string): Promise<Hydrate
     updated_at: r.updated_at as string,
   }));
 
+  const analysis_extras: HydratedAnalysisExtras[] = (analysesRes.data ?? []).map(r => ({
+    document_id: r.document_id,
+    document_filename: (r.document_filename as any) ?? null,
+    artifact_summary: (r.artifact_summary as any) ?? null,
+    structured_artifact_summary: (r.structured_artifact_summary as any) ?? null,
+  }));
+
   const proposals: ExtractionProposal[] = (proposalsRes.data ?? []).map(r => ({
     proposal_id: r.proposal_id,
     student_id: r.user_id,
@@ -282,11 +289,24 @@ export async function hydrateEngineStateForUser(userId: string): Promise<Hydrate
     updated_at: r.updated_at as string,
   }));
 
+  const proposal_decisions: HydratedProposalDecision[] = (proposalsRes.data ?? []).map(r => ({
+    proposal_id: r.proposal_id,
+    decided_by: ((r.decided_by as any) === 'user' || (r.decided_by as any) === 'engine') ? (r.decided_by as AcceptDecisionSource) : null,
+    decided_at: (r.decided_at as any) ?? null,
+  }));
+
+  const manualCount = proposal_decisions.filter(d => d.decided_by === 'user').length;
+  const autoCount = proposal_decisions.filter(d => d.decided_by === 'engine').length;
+
   console.log('[EnginePersistence:hydrate]', JSON.stringify({
     user_id: userId,
     analyses_loaded: analyses.length,
     proposals_loaded: proposals.length,
+    artifact_summaries_loaded: analysis_extras.filter(e => e.artifact_summary).length,
+    structured_summaries_loaded: analysis_extras.filter(e => e.structured_artifact_summary).length,
+    decisions_manual: manualCount,
+    decisions_auto: autoCount,
   }, null, 2));
 
-  return { analyses, proposals };
+  return { analyses, proposals, analysis_extras, proposal_decisions };
 }
