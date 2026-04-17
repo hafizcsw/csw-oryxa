@@ -17,9 +17,9 @@
 
 import { memo, useEffect, useId, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import brainAnatomical from "@/assets/brain-anatomical.svg";
 
 export type AIDataFlowHeroFileStatus = "pending" | "active" | "done" | "failed";
 
@@ -530,6 +530,9 @@ function AIDataFlowHeroComponent({
             fillProgress={fillProgress}
             isEnergized={isEnergized && !reduceMotion}
             allDone={allDone}
+            activeFileNames={fileList
+              .map((f, i) => (fileStatuses[i] === "active" ? f.name : null))
+              .filter((n): n is string => n !== null)}
           />
         </g>
       </svg>
@@ -931,6 +934,32 @@ interface BrainShapeProps {
   isEnergized?: boolean;
   /** true once every file has reached a terminal status */
   allDone?: boolean;
+  /** Names of currently-active files — drives ingestion ripples per lobe. */
+  activeFileNames?: string[];
+}
+
+/** Map a filename to a brain lobe ingestion target (in tech-layer coords). */
+function lobeForFileName(name: string): { x: number; y: number; key: string } {
+  const n = (name || "").toLowerCase();
+  // Keyword routing → distinct lobes
+  if (/(passport|جواز|بطاقة|id|national)/.test(n)) return { x: -52, y: -28, key: "frontal-l" };
+  if (/(grad|شهادة|diploma|degree|تخرج|بكالوريوس)/.test(n)) return { x: 0, y: -56, key: "parietal" };
+  if (/(transcript|كشف|درجات|grades|marks)/.test(n)) return { x: 56, y: -10, key: "temporal-r" };
+  if (/(ielts|toefl|english|عربي|language|لغة|سات)/.test(n)) return { x: -56, y: 28, key: "broca" };
+  if (/(cv|resume|سيرة)/.test(n)) return { x: 50, y: 32, key: "occipital-r" };
+  if (/(photo|صورة|image|picture)/.test(n)) return { x: -28, y: 50, key: "cerebellum-l" };
+  // Fallback: hash to one of 6 stable targets
+  const targets = [
+    { x: -52, y: -28, key: "frontal-l" },
+    { x: 0, y: -56, key: "parietal" },
+    { x: 56, y: -10, key: "temporal-r" },
+    { x: -56, y: 28, key: "broca" },
+    { x: 50, y: 32, key: "occipital-r" },
+    { x: -28, y: 50, key: "cerebellum-l" },
+  ];
+  let h = 0;
+  for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) | 0;
+  return targets[Math.abs(h) % targets.length];
 }
 
 /**
@@ -944,6 +973,7 @@ function BrainShape({
   fillProgress = 0,
   isEnergized = false,
   allDone = false,
+  activeFileNames = [],
 }: BrainShapeProps) {
   const SIZE = 630;
   // Brain is permanently rendered at compact scale — no resize behavior.
@@ -1148,6 +1178,65 @@ function BrainShape({
           })}
         </g>
 
+        {/* Per-file ingestion ripples — each active file pings its lobe */}
+        {animate &&
+          activeFileNames.map((fname, i) => {
+            const lobe = lobeForFileName(fname);
+            const delay = (i * 0.35) % 1.4;
+            return (
+              <g key={`ing-${i}-${lobe.key}`}>
+                {/* Outer ripple */}
+                <motion.circle
+                  cx={lobe.x}
+                  cy={lobe.y}
+                  r={4}
+                  fill="none"
+                  stroke="hsl(190 100% 75%)"
+                  strokeWidth={0.9}
+                  initial={{ opacity: 0 }}
+                  animate={{ r: [4, 22, 4], opacity: [0.85, 0, 0.85] }}
+                  transition={{
+                    duration: 1.6,
+                    repeat: Infinity,
+                    ease: "easeOut",
+                    delay,
+                  }}
+                  style={{ transformOrigin: `${lobe.x}px ${lobe.y}px` }}
+                />
+                {/* Inner hot core */}
+                <motion.circle
+                  cx={lobe.x}
+                  cy={lobe.y}
+                  r={2.4}
+                  fill="hsl(190 100% 88%)"
+                  animate={{ opacity: [0.6, 1, 0.6], r: [2, 3.2, 2] }}
+                  transition={{
+                    duration: 1.1,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay,
+                  }}
+                  style={{ transformOrigin: `${lobe.x}px ${lobe.y}px` }}
+                />
+                {/* Faint connecting trace from chip → lobe (data path) */}
+                <motion.line
+                  x1={0}
+                  y1={0}
+                  x2={lobe.x}
+                  y2={lobe.y}
+                  stroke="hsl(195 100% 80%)"
+                  strokeWidth={0.6}
+                  strokeDasharray="2 3"
+                  animate={{ strokeDashoffset: [0, -10], opacity: [0.25, 0.6, 0.25] }}
+                  transition={{
+                    strokeDashoffset: { duration: 1.4, repeat: Infinity, ease: "linear", delay },
+                    opacity: { duration: 1.4, repeat: Infinity, ease: "easeInOut", delay },
+                  }}
+                />
+              </g>
+            );
+          })}
+
         {/* Central AI chip — visual anchor (matches reference video) */}
         <g opacity={chipGlow} filter={`url(#chip-glow-${clipId})`}>
           {/* Pin stubs on every edge */}
@@ -1237,20 +1326,18 @@ function BrainShape({
   );
 
   const icon = (
-    <foreignObject x={-SIZE / 2} y={-SIZE / 2} width={SIZE} height={SIZE}>
-      <div
-        style={{
-          width: SIZE,
-          height: SIZE,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "hsl(265 85% 60%)",
-        }}
-      >
-        <Brain size={SIZE} strokeWidth={1.4} absoluteStrokeWidth />
-      </div>
-    </foreignObject>
+    <image
+      href={brainAnatomical}
+      x={-SIZE / 2}
+      y={-SIZE / 2}
+      width={SIZE}
+      height={SIZE}
+      preserveAspectRatio="xMidYMid meet"
+      style={{
+        filter:
+          "drop-shadow(0 0 8px hsl(200 100% 70% / 0.45)) drop-shadow(0 0 22px hsl(220 100% 60% / 0.25))",
+      }}
+    />
   );
 
   const content = (
