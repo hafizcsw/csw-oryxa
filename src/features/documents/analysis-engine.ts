@@ -35,14 +35,26 @@ import type { TranscriptIntermediate } from './parsers/transcript-structure';
 import type { CanonicalStudentFile } from '../student-file/canonical-model';
 import type { StructuredDocumentArtifact } from './structured-browser-artifact-model';
 import { buildStructuredBrowserArtifact } from './parsers/structured-artifact-builder';
+import { resolveStructuredArtifact } from './document-ai/resolver';
+import type { DocumentAIMode } from './document-ai/document-ai-provider';
 
 export interface AnalysisResult {
   analysis: DocumentAnalysis;
   proposals: ExtractionProposal[];
   /** Door 1: the structured reading artifact */
   artifact: ReadingArtifact;
-  /** In-Browser Document Intelligence: structured upstream artifact */
+  /** Document Intelligence: structured artifact (browser_heuristic OR paddle) */
   structured_artifact: StructuredDocumentArtifact;
+  /** Which provider produced structured_artifact at runtime. */
+  document_ai_mode: DocumentAIMode;
+  /** Diagnostic surface: what we tried with paddle (if anything). */
+  document_ai_diag: {
+    paddle_attempted: boolean;
+    paddle_status: string | null;
+    paddle_reason: string | null;
+    paddle_latency_ms: number | null;
+    paddle_error_message: string | null;
+  };
 }
 
 /**
@@ -68,11 +80,24 @@ export async function analyzeDocument(params: {
   studentId: string;
   slotHint: DocumentSlotType | null;
   canonicalFile: CanonicalStudentFile | null;
+  /** Storage path inside `documents` bucket. Required to attempt the
+   *  paddle_self_hosted provider; null/undefined disables it cleanly. */
+  storagePath?: string | null;
 }): Promise<AnalysisResult> {
-  const { file, documentId, studentId, slotHint, canonicalFile } = params;
+  const { file, documentId, studentId, slotHint, canonicalFile, storagePath } = params;
   const analysis = createPendingAnalysis(documentId, slotHint);
   const proposals: ExtractionProposal[] = [];
   const startTime = performance.now();
+
+  // Default diagnostic envelope (mutated when paddle is attempted)
+  let document_ai_mode: DocumentAIMode = 'browser_heuristic';
+  let document_ai_diag = {
+    paddle_attempted: false,
+    paddle_status: null as string | null,
+    paddle_reason: null as string | null,
+    paddle_latency_ms: null as number | null,
+    paddle_error_message: null as string | null,
+  };
 
   // ── Step 1: Read the document via the reading contract ───
   analysis.analysis_status = 'analyzing';
@@ -103,21 +128,45 @@ export async function analyzeDocument(params: {
     ].filter(Boolean).join(' | ');
     analysis.updated_at = new Date().toISOString();
     logArtifact(artifact, analysis);
+    const fallbackArtifact = buildStructuredBrowserArtifact(artifact);
     return {
       analysis,
       proposals,
       artifact,
-      structured_artifact: buildStructuredBrowserArtifact(artifact),
+      structured_artifact: fallbackArtifact,
+      document_ai_mode: fallbackArtifact.builder === 'none' ? 'none' : 'browser_heuristic',
+      document_ai_diag,
     };
   }
 
-  // ── In-Browser Document Intelligence: build structured upstream artifact ──
-  // Browser-only. Pure heuristics. No outbound HTTP. No LLM. Never throws.
-  const structured_artifact = buildStructuredBrowserArtifact(artifact);
-  console.log('[BrowserDocAI:StructuredArtifact]', JSON.stringify({
+  // ── Document AI Resolver: paddle (if available) → browser fallback ──
+  // Fail-closed: missing PADDLE_STRUCTURE_ENDPOINT secret returns
+  // status='unavailable' reason='no_endpoint_configured'; engine then
+  // uses the browser_heuristic artifact and tags document_ai_mode
+  // accordingly. No crash. No fake success. No hidden fallback.
+  const resolved = await resolveStructuredArtifact({
+    reading_artifact: artifact,
+    ai_request: {
+      document_id: documentId,
+      storage_path: storagePath ?? null,
+      mime_type: file.type || 'application/octet-stream',
+      file_name: file.name,
+    },
+  });
+  const structured_artifact = resolved.artifact;
+  document_ai_mode = resolved.mode_used;
+  document_ai_diag = {
+    paddle_attempted: resolved.paddle_attempted,
+    paddle_status: resolved.paddle_status,
+    paddle_reason: resolved.paddle_reason,
+    paddle_latency_ms: resolved.paddle_latency_ms,
+    paddle_error_message: resolved.paddle_error_message,
+  };
+
+  console.log('[DocumentAI:Resolved]', JSON.stringify({
     file: file.name,
+    mode_used: document_ai_mode,
     builder: structured_artifact.builder,
-    local_only: structured_artifact.local_only,
     pages: structured_artifact.summary.pages_analyzed,
     rows_total: structured_artifact.summary.total_row_candidates,
     rows_tabular: structured_artifact.summary.tabular_row_candidates,
@@ -126,7 +175,9 @@ export async function analyzeDocument(params: {
     footers: structured_artifact.summary.footer_groups,
     avg_quality: Number(structured_artifact.summary.avg_quality_score.toFixed(3)),
     build_ms: Math.round(structured_artifact.build_time_ms),
+    paddle: document_ai_diag,
   }, null, 2));
+
 
   // readable | degraded → continue, but mark surface honestly.
   // Honesty: a 'degraded' artifact MUST surface as 'degraded', never 'readable'.
@@ -360,7 +411,7 @@ export async function analyzeDocument(params: {
 
   logArtifact(artifact, analysis);
   console.info('[Door1:TotalMs]', Math.round(performance.now() - startTime));
-  return { analysis, proposals, artifact, structured_artifact };
+  return { analysis, proposals, artifact, structured_artifact, document_ai_mode, document_ai_diag };
 }
 
 function logArtifact(artifact: ReadingArtifact, analysis: DocumentAnalysis): void {

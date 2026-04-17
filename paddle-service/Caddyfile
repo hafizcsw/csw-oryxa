@@ -1,0 +1,11 @@
+# Replace paddle.example.com with your real hostname.
+paddle.example.com {
+    encode zstd gzip
+    reverse_proxy paddle:8000 {
+        flush_interval -1
+    }
+    @health path /healthz
+    handle @health {
+        reverse_proxy paddle:8000
+    }
+}

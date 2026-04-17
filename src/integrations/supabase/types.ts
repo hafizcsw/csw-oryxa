@@ -7905,6 +7905,54 @@ export type Database = {
         }
         Relationships: []
       }
+      paddle_structure_runs: {
+        Row: {
+          block_count: number | null
+          created_at: string
+          document_id: string
+          error_message: string | null
+          id: string
+          latency_ms: number | null
+          page_count: number | null
+          provider: string
+          reason: string | null
+          status: string
+          storage_path: string | null
+          table_count: number | null
+          user_id: string
+        }
+        Insert: {
+          block_count?: number | null
+          created_at?: string
+          document_id: string
+          error_message?: string | null
+          id?: string
+          latency_ms?: number | null
+          page_count?: number | null
+          provider: string
+          reason?: string | null
+          status: string
+          storage_path?: string | null
+          table_count?: number | null
+          user_id: string
+        }
+        Update: {
+          block_count?: number | null
+          created_at?: string
+          document_id?: string
+          error_message?: string | null
+          id?: string
+          latency_ms?: number | null
+          page_count?: number | null
+          provider?: string
+          reason?: string | null
+          status?: string
+          storage_path?: string | null
+          table_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       page_activity_log: {
         Row: {
           action_type: string
