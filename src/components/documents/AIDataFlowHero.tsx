@@ -968,39 +968,49 @@ function BrainShape({
     "C 10 78, -10 78, -20 68 " +
     "C -70 70, -100 30, -90 -10 Z";
 
-  // Circuit polylines — drawn inside the brain. Each line reveals when its
-  // index threshold is reached by fillProgress.
-  const circuitLines: string[] = [
-    "M -70 -20 L -40 -20 L -40 0 L -10 0",
-    "M 70 -20 L 40 -20 L 40 0 L 10 0",
-    "M -60 20 L -30 20 L -30 40 L 0 40",
-    "M 60 20 L 30 20 L 30 40 L 0 40",
-    "M -75 0 L -55 0 L -55 -40 L -25 -40",
-    "M 75 0 L 55 0 L 55 -40 L 25 -40",
-    "M 0 -55 L 0 -30 L -20 -30 L -20 -10",
-    "M 0 -55 L 0 -30 L 20 -30 L 20 -10",
-    "M -50 50 L -20 50 L -20 30",
-    "M 50 50 L 20 50 L 20 30",
-    "M -80 -40 L -60 -40",
-    "M 80 -40 L 60 -40",
+  // ─────────────────────────────────────────────────────────────
+  // Reference: a glowing AI chip sits at the brain's center with
+  // circuit traces fanning OUTWARD from each chip pin into the
+  // surrounding brain tissue (PCB-style right-angle traces).
+  // ─────────────────────────────────────────────────────────────
+
+  // Central chip geometry
+  const CHIP_W = 44;
+  const CHIP_H = 32;
+  const CHIP_X = -CHIP_W / 2;
+  const CHIP_Y = -CHIP_H / 2;
+
+  // Pin positions on each side of the chip + the trace each pin extends.
+  // Traces use right-angle PCB routing and end at synapse nodes near the
+  // brain perimeter. Each is revealed progressively with fillProgress.
+  type Trace = { pin: { x: number; y: number }; d: string; node: { x: number; y: number } };
+  const TRACES: Trace[] = [
+    // Top pins → upper hemisphere
+    { pin: { x: -14, y: -16 }, d: "M -14 -16 L -14 -34 L -40 -34 L -40 -52", node: { x: -40, y: -52 } },
+    { pin: { x:  -4, y: -16 }, d: "M -4 -16 L -4 -42 L -22 -42 L -22 -60",   node: { x: -22, y: -60 } },
+    { pin: { x:   4, y: -16 }, d: "M 4 -16 L 4 -42 L 22 -42 L 22 -60",       node: { x:  22, y: -60 } },
+    { pin: { x:  14, y: -16 }, d: "M 14 -16 L 14 -34 L 40 -34 L 40 -52",     node: { x:  40, y: -52 } },
+    // Bottom pins → lower hemisphere
+    { pin: { x: -14, y:  16 }, d: "M -14 16 L -14 36 L -34 36 L -34 56",     node: { x: -34, y:  56 } },
+    { pin: { x:  -4, y:  16 }, d: "M -4 16 L -4 44 L -16 44 L -16 64",       node: { x: -16, y:  64 } },
+    { pin: { x:   4, y:  16 }, d: "M 4 16 L 4 44 L 16 44 L 16 64",           node: { x:  16, y:  64 } },
+    { pin: { x:  14, y:  16 }, d: "M 14 16 L 14 36 L 34 36 L 34 56",         node: { x:  34, y:  56 } },
+    // Left pins → left hemisphere
+    { pin: { x: -22, y:  -8 }, d: "M -22 -8 L -44 -8 L -44 -22 L -68 -22",   node: { x: -68, y: -22 } },
+    { pin: { x: -22, y:   8 }, d: "M -22 8 L -44 8 L -44 22 L -68 22",       node: { x: -68, y:  22 } },
+    // Right pins → right hemisphere
+    { pin: { x:  22, y:  -8 }, d: "M 22 -8 L 44 -8 L 44 -22 L 68 -22",       node: { x:  68, y: -22 } },
+    { pin: { x:  22, y:   8 }, d: "M 22 8 L 44 8 L 44 22 L 68 22",           node: { x:  68, y:  22 } },
   ];
-  const totalLines = circuitLines.length;
+  const totalTraces = TRACES.length;
 
-  // Synapse nodes positioned at line intersections / endpoints.
-  const synapses: Array<{ x: number; y: number }> = [
-    { x: -40, y: -20 }, { x: 40, y: -20 },
-    { x: -10, y: 0 },   { x: 10, y: 0 },
-    { x: -30, y: 40 },  { x: 30, y: 40 },
-    { x: 0, y: -30 },   { x: 0, y: 40 },
-  ];
+  // Binary rain — vertical streams of 1/0 chars in the background.
+  const rainColumns = [-70, -45, 45, 70];
 
-  // Binary rain — vertical streams of 1/0 chars.
-  const rainColumns = [-60, -30, 0, 30, 60];
-
-  // Chip glow opacity scales with progress; min visible always.
-  const chipOpacity = 0.25 + 0.7 * fillProgress;
-  // Circuit base opacity also scales — keeps the brain visually "filling up".
-  const circuitBase = 0.15 + 0.55 * fillProgress;
+  // Chip glow scales with progress; minimum visible from the start so the
+  // chip is always the visual anchor of the brain.
+  const chipGlow = 0.55 + 0.45 * fillProgress;
+  const traceBase = 0.25 + 0.55 * fillProgress;
 
   const techLayer = (
     <g>
@@ -1008,115 +1018,58 @@ function BrainShape({
         <clipPath id={`brain-tech-clip-${clipId}`}>
           <path d={BRAIN_CLIP_D} />
         </clipPath>
+        {/* Cyan radial halo behind the chip */}
         <radialGradient id={`brain-core-${clipId}`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="hsl(190 100% 75%)" stopOpacity="0.95" />
-          <stop offset="60%" stopColor="hsl(220 95% 65%)" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="hsl(265 90% 60%)" stopOpacity="0" />
+          <stop offset="0%" stopColor="hsl(190 100% 80%)" stopOpacity="0.95" />
+          <stop offset="45%" stopColor="hsl(200 100% 60%)" stopOpacity="0.45" />
+          <stop offset="100%" stopColor="hsl(220 95% 55%)" stopOpacity="0" />
         </radialGradient>
+        {/* Chip face gradient — bright cyan/blue like the reference */}
+        <linearGradient id={`chip-face-${clipId}`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="hsl(195 100% 60%)" stopOpacity="0.95" />
+          <stop offset="100%" stopColor="hsl(220 100% 45%)" stopOpacity="0.95" />
+        </linearGradient>
+        {/* Soft glow filter for the chip */}
+        <filter id={`chip-glow-${clipId}`} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2.4" result="b" />
+          <feMerge>
+            <feMergeNode in="b" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
 
       <g clipPath={`url(#brain-tech-clip-${clipId})`}>
-        {/* Soft inner radial glow that intensifies with progress + energy */}
+        {/* Soft cyan halo intensifies with progress + active energy */}
         <circle
           cx={0}
           cy={0}
-          r={90}
+          r={95}
           fill={`url(#brain-core-${clipId})`}
-          opacity={0.25 + 0.5 * fillProgress + (isEnergized ? 0.15 : 0)}
+          opacity={0.35 + 0.5 * fillProgress + (isEnergized ? 0.15 : 0)}
         />
 
-        {/* Circuit traces — revealed progressively */}
-        <g
-          stroke="hsl(190 95% 70%)"
-          strokeWidth={0.9}
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          {circuitLines.map((d, i) => {
-            const threshold = i / totalLines;
-            const revealed = fillProgress >= threshold;
-            // Even un-revealed lines get a faint trace so the brain isn't empty.
-            const baseOpacity = revealed ? circuitBase + 0.3 : 0.08;
-            if (animate && isEnergized && revealed) {
-              return (
-                <motion.path
-                  key={`cl-${i}`}
-                  d={d}
-                  opacity={baseOpacity}
-                  animate={{ opacity: [baseOpacity, baseOpacity + 0.35, baseOpacity] }}
-                  transition={{
-                    duration: 1.8 + (i % 4) * 0.3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: (i * 0.12) % 1.4,
-                  }}
-                />
-              );
-            }
-            return <path key={`cl-${i}`} d={d} opacity={baseOpacity} />;
-          })}
-        </g>
-
-        {/* Synapse dots — light up one-by-one with progress */}
-        <g>
-          {synapses.map((s, i) => {
-            const threshold = i / synapses.length;
-            const lit = fillProgress >= threshold;
-            const op = lit ? 0.9 : 0.18;
-            if (animate && isEnergized && lit) {
-              return (
-                <motion.circle
-                  key={`sy-${i}`}
-                  cx={s.x}
-                  cy={s.y}
-                  r={1.8}
-                  fill="hsl(190 100% 80%)"
-                  animate={{ opacity: [op, 1, op], r: [1.6, 2.4, 1.6] }}
-                  transition={{
-                    duration: 1.4 + (i % 3) * 0.4,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: (i * 0.18) % 1.2,
-                  }}
-                  style={{ transformOrigin: `${s.x}px ${s.y}px` }}
-                />
-              );
-            }
-            return (
-              <circle
-                key={`sy-${i}`}
-                cx={s.x}
-                cy={s.y}
-                r={1.6}
-                fill="hsl(190 100% 80%)"
-                opacity={op}
-              />
-            );
-          })}
-        </g>
-
-        {/* Binary rain — only flows while energized */}
+        {/* Background binary rain — only flows while energized */}
         {animate && isEnergized && (
           <g
             fontFamily="ui-monospace, SFMono-Regular, monospace"
-            fontSize={5}
-            fill="hsl(190 95% 70%)"
-            opacity={0.35}
+            fontSize={4.5}
+            fill="hsl(190 95% 75%)"
+            opacity={0.28}
           >
             {rainColumns.map((cx, ci) => (
               <motion.g
                 key={`rain-${ci}`}
-                animate={{ y: [-60, 60] }}
+                animate={{ y: [-70, 70] }}
                 transition={{
-                  duration: 2.4 + (ci % 3) * 0.5,
+                  duration: 2.6 + (ci % 3) * 0.5,
                   repeat: Infinity,
                   ease: "linear",
                   delay: (ci * 0.4) % 1.8,
                 }}
               >
-                {[0, 10, 20, 30, 40, 50, 60].map((dy, di) => (
-                  <text key={`r-${ci}-${di}`} x={cx} y={-60 + dy} textAnchor="middle">
+                {[0, 9, 18, 27, 36, 45, 54, 63, 72].map((dy, di) => (
+                  <text key={`r-${ci}-${di}`} x={cx} y={-72 + dy} textAnchor="middle">
                     {(ci + di) % 2 === 0 ? "1" : "0"}
                   </text>
                 ))}
@@ -1125,62 +1078,156 @@ function BrainShape({
           </g>
         )}
 
-        {/* Inner AI chip — central glowing square */}
-        <g opacity={chipOpacity}>
+        {/* Circuit traces fanning OUT from chip pins (PCB-style) */}
+        <g
+          stroke="hsl(190 100% 72%)"
+          strokeWidth={0.9}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="miter"
+        >
+          {TRACES.map((tr, i) => {
+            const threshold = i / totalTraces;
+            const revealed = fillProgress >= threshold;
+            const op = revealed ? traceBase + 0.35 : 0.12;
+            if (animate && isEnergized && revealed) {
+              return (
+                <motion.path
+                  key={`tr-${i}`}
+                  d={tr.d}
+                  opacity={op}
+                  animate={{ opacity: [op, op + 0.35, op] }}
+                  transition={{
+                    duration: 1.6 + (i % 4) * 0.3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: (i * 0.1) % 1.4,
+                  }}
+                />
+              );
+            }
+            return <path key={`tr-${i}`} d={tr.d} opacity={op} />;
+          })}
+        </g>
+
+        {/* Synapse end-nodes at trace tips */}
+        <g>
+          {TRACES.map((tr, i) => {
+            const threshold = i / totalTraces;
+            const lit = fillProgress >= threshold;
+            const op = lit ? 0.95 : 0.18;
+            if (animate && isEnergized && lit) {
+              return (
+                <motion.circle
+                  key={`nd-${i}`}
+                  cx={tr.node.x}
+                  cy={tr.node.y}
+                  r={2}
+                  fill="hsl(190 100% 85%)"
+                  animate={{ opacity: [op, 1, op], r: [1.8, 2.6, 1.8] }}
+                  transition={{
+                    duration: 1.4 + (i % 3) * 0.4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: (i * 0.15) % 1.2,
+                  }}
+                  style={{ transformOrigin: `${tr.node.x}px ${tr.node.y}px` }}
+                />
+              );
+            }
+            return (
+              <circle
+                key={`nd-${i}`}
+                cx={tr.node.x}
+                cy={tr.node.y}
+                r={1.8}
+                fill="hsl(190 100% 85%)"
+                opacity={op}
+              />
+            );
+          })}
+        </g>
+
+        {/* Central AI chip — visual anchor (matches reference video) */}
+        <g opacity={chipGlow} filter={`url(#chip-glow-${clipId})`}>
+          {/* Pin stubs on every edge */}
+          <g stroke="hsl(190 100% 75%)" strokeWidth={1}>
+            {[-14, -4, 4, 14].map((px) => (
+              <g key={`pt-${px}`}>
+                <line x1={px} y1={-CHIP_H / 2} x2={px} y2={-CHIP_H / 2 - 4} />
+                <line x1={px} y1={CHIP_H / 2}  x2={px} y2={CHIP_H / 2 + 4} />
+              </g>
+            ))}
+            {[-8, 8].map((py) => (
+              <g key={`pl-${py}`}>
+                <line x1={-CHIP_W / 2} y1={py} x2={-CHIP_W / 2 - 4} y2={py} />
+                <line x1={CHIP_W / 2}  y1={py} x2={CHIP_W / 2 + 4}  y2={py} />
+              </g>
+            ))}
+          </g>
+
+          {/* Chip body */}
           <rect
-            x={-14}
-            y={-10}
-            width={28}
-            height={20}
-            rx={3}
-            fill="hsl(220 90% 55%)"
-            fillOpacity={0.35}
-            stroke="hsl(190 100% 75%)"
-            strokeWidth={0.8}
+            x={CHIP_X}
+            y={CHIP_Y}
+            width={CHIP_W}
+            height={CHIP_H}
+            rx={4}
+            fill={`url(#chip-face-${clipId})`}
+            stroke="hsl(190 100% 85%)"
+            strokeWidth={1}
           />
-          {/* Chip pins */}
-          {[-10, -4, 2, 8].map((px) => (
-            <g key={`pin-${px}`} stroke="hsl(190 95% 70%)" strokeWidth={0.6}>
-              <line x1={px} y1={-12} x2={px} y2={-14} />
-              <line x1={px} y1={10} x2={px} y2={12} />
-            </g>
-          ))}
+          {/* Inner bevel */}
+          <rect
+            x={CHIP_X + 2.5}
+            y={CHIP_Y + 2.5}
+            width={CHIP_W - 5}
+            height={CHIP_H - 5}
+            rx={2.5}
+            fill="none"
+            stroke="hsl(195 100% 88%)"
+            strokeOpacity={0.55}
+            strokeWidth={0.6}
+          />
+          {/* "AI" label */}
           <text
             x={0}
-            y={2}
+            y={4}
             textAnchor="middle"
-            fontSize={7}
-            fontWeight={700}
-            fill="hsl(190 100% 88%)"
-            fontFamily="ui-monospace, SFMono-Regular, monospace"
+            fontSize={14}
+            fontWeight={800}
+            fill="hsl(0 0% 100%)"
+            fontFamily="ui-sans-serif, system-ui, sans-serif"
+            style={{ letterSpacing: "0.5px" }}
           >
             AI
           </text>
+
           {animate && isEnergized && (
             <motion.rect
-              x={-14}
-              y={-10}
-              width={28}
-              height={20}
-              rx={3}
+              x={CHIP_X - 2}
+              y={CHIP_Y - 2}
+              width={CHIP_W + 4}
+              height={CHIP_H + 4}
+              rx={5}
               fill="none"
-              stroke="hsl(190 100% 80%)"
-              strokeWidth={0.8}
-              animate={{ opacity: [0.2, 0.9, 0.2] }}
+              stroke="hsl(190 100% 85%)"
+              strokeWidth={0.9}
+              animate={{ opacity: [0.25, 0.95, 0.25] }}
               transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
             />
           )}
           {allDone && (
             <motion.rect
-              x={-16}
-              y={-12}
-              width={32}
-              height={24}
-              rx={4}
+              x={CHIP_X - 4}
+              y={CHIP_Y - 4}
+              width={CHIP_W + 8}
+              height={CHIP_H + 8}
+              rx={6}
               fill="none"
               stroke="hsl(142 70% 55%)"
-              strokeWidth={0.7}
-              animate={{ opacity: [0.5, 0.85, 0.5] }}
+              strokeWidth={0.8}
+              animate={{ opacity: [0.5, 0.9, 0.5] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             />
           )}
