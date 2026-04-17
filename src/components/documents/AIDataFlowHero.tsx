@@ -678,4 +678,3 @@ function BrainShape({ animate }: BrainShapeProps) {
     </motion.g>
   );
 }
-}
