@@ -623,8 +623,14 @@ function DocumentCard({
           : `M ${W} 0 L ${W - 18} 0 L ${W} 18 Z`}
         fill="hsl(var(--muted))"
       />
-      {/* Filename strip — replaces generic header block */}
+      {/* Filename strip — replaces generic header block. Text is clipped to
+          the strip so long / RTL filenames never overflow the card. */}
       <g>
+        <defs>
+          <clipPath id={`title-clip-${shadowId}-${x}-${y}`}>
+            <rect x={10} y={9} width={W - 20} height={18} rx={3} />
+          </clipPath>
+        </defs>
         <rect
           x={8}
           y={8}
@@ -641,9 +647,11 @@ function DocumentCard({
           fontSize={9}
           fontWeight={600}
           fill="hsl(var(--background))"
-          style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif" }}
+          direction="ltr"
+          clipPath={`url(#title-clip-${shadowId}-${x}-${y})`}
+          style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif", direction: "ltr", unicodeBidi: "plaintext" }}
         >
-          {truncateName(label, 18)}
+          {truncateName(label, 14)}
         </text>
       </g>
 
