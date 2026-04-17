@@ -17,9 +17,9 @@
 
 import { memo, useEffect, useId, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import brainAnatomical from "@/assets/brain-anatomical.svg";
 
 export type AIDataFlowHeroFileStatus = "pending" | "active" | "done" | "failed";
 
