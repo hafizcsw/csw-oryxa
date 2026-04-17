@@ -590,6 +590,10 @@ export function CentralUploadHub({
           <AIDataFlowHero
             intensity={isProcessing ? 'lively' : 'normal'}
             ariaLabel={t('portal.uploadHub.title')}
+            fileCount={records.length}
+            hasFiles={records.length > 0}
+            isDragOver={isDragOver}
+            isProcessing={isProcessing}
           />
         </div>
 

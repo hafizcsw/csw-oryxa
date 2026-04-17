@@ -25,8 +25,16 @@ export interface AIDataFlowHeroProps {
   intensity?: "calm" | "normal" | "lively";
   /** Localized aria-label */
   ariaLabel?: string;
-  /** Visible cards per side (default 3, fan supports up to 5) */
+  /** Max visible cards per side cap (fan supports up to 5) */
   visibleCardsPerSide?: number;
+  /** STATE: number of uploaded files (drives doc count per side) */
+  fileCount?: number;
+  /** STATE: any files exist → render document clusters + connectors */
+  hasFiles?: boolean;
+  /** STATE: user is dragging files over the dropzone */
+  isDragOver?: boolean;
+  /** STATE: upload/extraction in progress → animate chips faster */
+  isProcessing?: boolean;
 }
 
 const VIEWBOX_W = 960;
@@ -70,10 +78,22 @@ function AIDataFlowHeroComponent({
   intensity = "normal",
   ariaLabel,
   visibleCardsPerSide = 3,
+  fileCount = 0,
+  hasFiles = false,
+  isDragOver = false,
+  isProcessing = false,
 }: AIDataFlowHeroProps) {
   const reduceMotion = useReducedMotion();
   const uid = useId().replace(/:/g, "");
-  const cfg = INTENSITY_MAP[intensity];
+  // Derive intensity from state when processing
+  const effectiveIntensity = isProcessing ? "lively" : isDragOver ? "normal" : intensity;
+  const cfg = INTENSITY_MAP[effectiveIntensity];
+
+  // State machine: idle | dragOver | active (hasFiles) | processing
+  const showDocuments = hasFiles || isProcessing;
+  const showConnectors = showDocuments;
+  const showChips = isProcessing; // extraction packets only while reading
+  const dragHint = isDragOver && !showDocuments;
 
   const ids = useMemo(
     () => ({
@@ -86,19 +106,27 @@ function AIDataFlowHeroComponent({
     [uid],
   );
 
-  const cardsPerSide = Math.max(1, Math.min(5, visibleCardsPerSide));
-
   // Cluster anchor points
   const LEFT_ANCHOR  = { x: 168, y: 180 };
   const RIGHT_ANCHOR = { x: 660, y: 180 };
 
-  const leftCards = FAN.slice(0, cardsPerSide).map((f, i) => ({
+  // Distribute fileCount across two sides; cap by visibleCardsPerSide (≤5)
+  const maxPerSide = Math.max(1, Math.min(5, visibleCardsPerSide));
+  const totalDocs = Math.max(0, fileCount);
+  const leftCountRaw  = showDocuments ? Math.min(maxPerSide, Math.ceil(totalDocs / 2)) : 0;
+  const rightCountRaw = showDocuments ? Math.min(maxPerSide, Math.floor(totalDocs / 2)) : 0;
+  // If hasFiles flagged but count is 0, fall back to a single card per side
+  const lc = showDocuments && leftCountRaw === 0 && rightCountRaw === 0 ? 1 : leftCountRaw;
+  const rc = showDocuments && leftCountRaw === 0 && rightCountRaw === 0 ? 1 : rightCountRaw;
+  const cardsPerSide = Math.max(lc, rc, 1);
+
+  const leftCards = FAN.slice(0, lc).map((f, i) => ({
     ...f,
     x: LEFT_ANCHOR.x + f.dx,
     y: LEFT_ANCHOR.y + f.dy,
     index: i,
   }));
-  const rightCards = FAN.slice(0, cardsPerSide).map((f, i) => ({
+  const rightCards = FAN.slice(0, rc).map((f, i) => ({
     ...f,
     x: RIGHT_ANCHOR.x + f.dx,
     y: RIGHT_ANCHOR.y + f.dy,
@@ -217,26 +245,28 @@ function AIDataFlowHeroComponent({
           </marker>
         </defs>
 
-        {/* ═══ Background document silhouettes ═══ */}
-        <g>
-          {[...BG_LAYERS_LEFT, ...BG_LAYERS_RIGHT].map((b, i) => (
-            <g
-              key={`bg-${i}`}
-              transform={`translate(${b.x}, ${b.y}) rotate(${b.rotate}) scale(${b.scale})`}
-              opacity={b.opacity}
-            >
-              <rect
-                width={CARD_W}
-                height={CARD_H}
-                rx={6}
-                fill="hsl(var(--card))"
-                stroke="hsl(var(--foreground))"
-                strokeOpacity={0.35}
-                strokeWidth={1}
-              />
-            </g>
-          ))}
-        </g>
+        {/* ═══ Background document silhouettes (only when documents exist) ═══ */}
+        {showDocuments && (
+          <g>
+            {[...BG_LAYERS_LEFT, ...BG_LAYERS_RIGHT].map((b, i) => (
+              <g
+                key={`bg-${i}`}
+                transform={`translate(${b.x}, ${b.y}) rotate(${b.rotate}) scale(${b.scale})`}
+                opacity={b.opacity}
+              >
+                <rect
+                  width={CARD_W}
+                  height={CARD_H}
+                  rx={6}
+                  fill="hsl(var(--card))"
+                  stroke="hsl(var(--foreground))"
+                  strokeOpacity={0.35}
+                  strokeWidth={1}
+                />
+              </g>
+            ))}
+          </g>
+        )}
 
         {/* ═══ Glow halo behind brain ═══ */}
         <g>
@@ -292,21 +322,23 @@ function AIDataFlowHeroComponent({
           </g>
         )}
 
-        {/* ═══ Connector paths with arrowheads ═══ */}
-        <g fill="none" strokeLinecap="round">
-          {connectors.map((p, i) => (
-            <ConnectorPath
-              key={p.key}
-              d={p.d}
-              animate={!reduceMotion}
-              delay={i * 0.1}
-              markerId={ids.arrowHead}
-            />
-          ))}
-        </g>
+        {/* ═══ Connector paths with arrowheads (only when documents exist) ═══ */}
+        {showConnectors && (
+          <g fill="none" strokeLinecap="round">
+            {connectors.map((p, i) => (
+              <ConnectorPath
+                key={p.key}
+                d={p.d}
+                animate={!reduceMotion}
+                delay={i * 0.1}
+                markerId={ids.arrowHead}
+              />
+            ))}
+          </g>
+        )}
 
-        {/* ═══ Mid-flight document chips riding the paths ═══ */}
-        {!reduceMotion && (
+        {/* ═══ Mid-flight extraction chips (only while processing) ═══ */}
+        {showChips && !reduceMotion && (
           <g>
             {connectors.map((p, i) => (
               <DocumentChip
@@ -319,39 +351,57 @@ function AIDataFlowHeroComponent({
           </g>
         )}
 
-        {/* ═══ Document clusters ═══ */}
-        <g>
-          {leftCards.map((c, i) => (
-            <DocumentCard
-              key={`L-${i}`}
-              x={c.x}
-              y={c.y}
-              rotate={c.rotate}
-              scale={c.scale}
-              opacity={c.opacity}
-              shadowId={ids.paperShadow}
-              accentVariant={i % 3}
-              float={!reduceMotion}
-              floatDelay={i * 0.45}
-              mirrored={false}
-            />
-          ))}
-          {rightCards.map((c, i) => (
-            <DocumentCard
-              key={`R-${i}`}
-              x={c.x}
-              y={c.y}
-              rotate={-c.rotate}
-              scale={c.scale}
-              opacity={c.opacity}
-              shadowId={ids.paperShadow}
-              accentVariant={(i + 1) % 3}
-              float={!reduceMotion}
-              floatDelay={i * 0.45 + 0.7}
-              mirrored
-            />
-          ))}
-        </g>
+        {/* ═══ Document clusters (only when files exist) ═══ */}
+        {showDocuments && (
+          <g>
+            {leftCards.map((c, i) => (
+              <DocumentCard
+                key={`L-${i}`}
+                x={c.x}
+                y={c.y}
+                rotate={c.rotate}
+                scale={c.scale}
+                opacity={c.opacity}
+                shadowId={ids.paperShadow}
+                accentVariant={i % 3}
+                float={!reduceMotion}
+                floatDelay={i * 0.45}
+                mirrored={false}
+              />
+            ))}
+            {rightCards.map((c, i) => (
+              <DocumentCard
+                key={`R-${i}`}
+                x={c.x}
+                y={c.y}
+                rotate={-c.rotate}
+                scale={c.scale}
+                opacity={c.opacity}
+                shadowId={ids.paperShadow}
+                accentVariant={(i + 1) % 3}
+                float={!reduceMotion}
+                floatDelay={i * 0.45 + 0.7}
+                mirrored
+              />
+            ))}
+          </g>
+        )}
+
+        {/* ═══ Drag-over hint: subtle inward pulse ring around brain ═══ */}
+        {dragHint && !reduceMotion && (
+          <motion.circle
+            cx={CX}
+            cy={CY}
+            r={130}
+            fill="none"
+            stroke="hsl(265 90% 70%)"
+            strokeOpacity={0.4}
+            strokeWidth={1.2}
+            strokeDasharray="4 6"
+            animate={{ r: [150, 110, 150], opacity: [0.15, 0.55, 0.15] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          />
+        )}
 
         {/* ═══ Brain (anatomical, top-down, two hemispheres) ═══ */}
         <g transform={`translate(${CX}, ${CY})`}>
