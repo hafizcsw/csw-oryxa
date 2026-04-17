@@ -799,7 +799,9 @@
     "verifyEmail": "अपना ईमेल सत्यापित करें",
     "verificationCodeSentTo": "सत्यापन कोड भेजा गया",
     "verificationCodeSent": "सत्यापन कोड भेजा गया",
-    "codeSentAgain": "कोड पुनः भेजा गया"
+    "codeSentAgain": "कोड पुनः भेजा गया",
+    "signingIn": "साइन इन हो रहे हैं...",
+    "welcomeBackUser": "वापसी पर स्वागत है, {name}"
   },
   "account": {
     "myAccount": "मेरा खाता",

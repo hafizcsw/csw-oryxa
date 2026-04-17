@@ -1009,7 +1009,9 @@
     "verifyEmail": "Verify your email",
     "verificationCodeSentTo": "A verification code was sent to",
     "verificationCodeSent": "Verification code sent",
-    "codeSentAgain": "Code resent successfully"
+    "codeSentAgain": "Code resent successfully",
+    "signingIn": "Signing you in...",
+    "welcomeBackUser": "Welcome back, {name}"
   },
   "account": {
     "myAccount": "My Account",

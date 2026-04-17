@@ -799,7 +799,9 @@
     "verifyEmail": "メールを確認",
     "verificationCodeSentTo": "確認コードが送信されました",
     "verificationCodeSent": "確認コードを送信しました",
-    "codeSentAgain": "コードを再送しました"
+    "codeSentAgain": "コードを再送しました",
+    "signingIn": "サインイン中...",
+    "welcomeBackUser": "お帰りなさい、{name}さん"
   },
   "account": {
     "myAccount": "マイアカウント",

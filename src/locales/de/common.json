@@ -799,7 +799,9 @@
     "verifyEmail": "E-Mail bestätigen",
     "verificationCodeSentTo": "Ein Bestätigungscode wurde gesendet an",
     "verificationCodeSent": "Bestätigungscode gesendet",
-    "codeSentAgain": "Code erneut gesendet"
+    "codeSentAgain": "Code erneut gesendet",
+    "signingIn": "Anmeldung läuft...",
+    "welcomeBackUser": "Willkommen zurück, {name}"
   },
   "account": {
     "myAccount": "Mein Konto",

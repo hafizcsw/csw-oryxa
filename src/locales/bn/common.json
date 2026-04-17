@@ -799,7 +799,9 @@
     "verifyEmail": "আপনার ইমেইল যাচাই করুন",
     "verificationCodeSentTo": "একটি যাচাইকরণ কোড পাঠানো হয়েছে",
     "verificationCodeSent": "যাচাইকরণ কোড পাঠানো হয়েছে",
-    "codeSentAgain": "কোড পুনরায় পাঠানো হয়েছে"
+    "codeSentAgain": "কোড পুনরায় পাঠানো হয়েছে",
+    "signingIn": "সাইন ইন হচ্ছে...",
+    "welcomeBackUser": "আবার স্বাগতম, {name}"
   },
   "account": {
     "myAccount": "আমার অ্যাকাউন্ট",

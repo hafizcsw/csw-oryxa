@@ -799,7 +799,9 @@
     "verifyEmail": "Vérifiez votre email",
     "verificationCodeSentTo": "Un code de vérification a été envoyé à",
     "verificationCodeSent": "Code de vérification envoyé",
-    "codeSentAgain": "Code renvoyé"
+    "codeSentAgain": "Code renvoyé",
+    "signingIn": "Connexion en cours...",
+    "welcomeBackUser": "Bon retour, {name}"
   },
   "account": {
     "myAccount": "Mon compte",

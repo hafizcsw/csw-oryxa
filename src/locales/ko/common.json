@@ -799,7 +799,9 @@
     "verifyEmail": "이메일 인증",
     "verificationCodeSentTo": "인증 코드가 전송되었습니다",
     "verificationCodeSent": "인증 코드 전송됨",
-    "codeSentAgain": "코드가 재전송되었습니다"
+    "codeSentAgain": "코드가 재전송되었습니다",
+    "signingIn": "로그인 중...",
+    "welcomeBackUser": "다시 오신 것을 환영합니다, {name}님"
   },
   "account": {
     "myAccount": "내 계정",
