@@ -104,10 +104,11 @@ export function useDocumentAnalysis({
   const [proposals, setProposals] = useState<ExtractionProposal[]>([]);
   const [promotedFields, setPromotedFields] = useState<PromotedField[]>([]);
   const [artifacts, setArtifacts] = useState<Record<string, ReadingArtifact>>({});
+  const [hydratedArtifactSurfaces, setHydratedArtifactSurfaces] = useState<Record<string, HydratedArtifactSurface>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const analyzingCount = useRef(0);
   const fileCache = useRef(new Map<string, { file: File; slotHint: DocumentSlotType | null }>());
-  /** Track manual_accepted proposals so hydration preserves provenance. */
+  /** Track manual_accepted proposals so derivation distinguishes user vs engine. */
   const manualAcceptedRef = useRef<Set<string>>(new Set());
   const hydratedFor = useRef<string | null>(null);
 
@@ -118,11 +119,24 @@ export function useDocumentAnalysis({
     hydratedFor.current = studentId;
     let cancelled = false;
     (async () => {
-      const { analyses: ha, proposals: hp } = await hydrateEngineStateForUser(studentId);
+      const { analyses: ha, proposals: hp, analysis_extras, proposal_decisions } = await hydrateEngineStateForUser(studentId);
       if (cancelled) return;
+      manualAcceptedRef.current = new Set(
+        proposal_decisions.filter(d => d.decided_by === 'user').map(d => d.proposal_id),
+      );
       setAnalyses(ha);
       setProposals(hp);
-      setPromotedFields(derivePromotedFromProposals(hp));
+      setPromotedFields(derivePromotedFromProposals(hp, manualAcceptedRef.current));
+      const surfaces: Record<string, HydratedArtifactSurface> = {};
+      for (const ex of analysis_extras) {
+        surfaces[ex.document_id] = {
+          documentId: ex.document_id,
+          documentFilename: ex.document_filename,
+          artifactSummary: ex.artifact_summary,
+          structuredArtifactSummary: ex.structured_artifact_summary,
+        };
+      }
+      setHydratedArtifactSurfaces(surfaces);
     })();
     return () => { cancelled = true; };
   }, [studentId]);
