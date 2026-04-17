@@ -195,7 +195,7 @@ function AIDataFlowHeroComponent({
       <svg
         viewBox={`0 0 ${VIEWBOX_W} ${VIEWBOX_H}`}
         xmlns="http://www.w3.org/2000/svg"
-        className="block w-full h-auto"
+        className="block w-full h-auto overflow-visible"
         preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={ariaLabel}
@@ -649,7 +649,7 @@ interface BrainShapeProps {
  * via foreignObject so the rest of the scene stays pure SVG.
  */
 function BrainShape({ animate }: BrainShapeProps) {
-  const SIZE = 660;
+  const SIZE = 420;
   const icon = (
     <foreignObject x={-SIZE / 2} y={-SIZE / 2} width={SIZE} height={SIZE}>
       <div
