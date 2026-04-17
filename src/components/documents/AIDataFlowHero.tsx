@@ -20,6 +20,8 @@ import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import brainAnatomical from "@/assets/brain-anatomical.svg";
+import { BrainIngestionVisualizer } from "@/components/intelligence/BrainIngestionVisualizer";
+import { mapFileStatusesToBrainStage } from "@/utils/mapUploadPipelineToBrainStage";
 
 export type AIDataFlowHeroFileStatus = "pending" | "active" | "done" | "failed";
 
@@ -142,6 +144,12 @@ function AIDataFlowHeroComponent({
   const doneCount = fileStatuses.filter((s) => s === "done" || s === "failed").length;
   const fillProgress = totalDocs > 0 ? doneCount / totalDocs : 0; // 0..1
   const isEnergized = activeCount > 0;
+
+  // Derive new brain pipeline state (stage + progress) from per-file statuses.
+  const brainPipeline = useMemo(
+    () => mapFileStatusesToBrainStage(fileStatuses, { isDragOver, isUploading: isProcessing }),
+    [fileStatuses, isDragOver, isProcessing],
+  );
 
   const ids = useMemo(
     () => ({
@@ -523,7 +531,17 @@ function AIDataFlowHeroComponent({
           />
         )}
 
-        {/* ═══ Brain (compact, never resizes) + inner tech fill ═══ */}
+        {/* ═══ Brain — new stateful BrainIngestionVisualizer ═══ */}
+        <foreignObject x={CX - 320} y={CY - 240} width={640} height={480}>
+          <BrainIngestionVisualizer
+            stage={brainPipeline.stage}
+            progress={brainPipeline.progress}
+            showFileNode={false}
+            animate={!reduceMotion}
+            reducedMotion={!!reduceMotion}
+          />
+        </foreignObject>
+        {/* Legacy inner-tech kept for ingestion ripples per active file */}
         <g transform={`translate(${CX}, ${CY})`}>
           <BrainShape
             animate={!reduceMotion}
