@@ -41,11 +41,20 @@ export interface PromotedField {
   source: 'auto_accepted' | 'manual_accepted';
 }
 
+/** Hydrated artifact summary surface — visible truth after reload. */
+export interface HydratedArtifactSurface {
+  documentId: string;
+  documentFilename: string | null;
+  artifactSummary: PersistedArtifactSummary | null;
+  structuredArtifactSummary: PersistedStructuredArtifactSummary | null;
+}
+
 interface UseDocumentAnalysisResult {
   analyses: DocumentAnalysis[];
   proposals: ExtractionProposal[];
   promotedFields: PromotedField[];
   artifacts: Record<string, ReadingArtifact>;
+  hydratedArtifactSurfaces: Record<string, HydratedArtifactSurface>;
   isAnalyzing: boolean;
   analyzeFile: (file: File, documentId: string, slotHint: DocumentSlotType | null) => Promise<AnalysisResult | null>;
   acceptProposal: (proposalId: string) => void;
@@ -67,7 +76,15 @@ function laneFromClassification(c: string | null | undefined): 'passport' | 'tra
   return 'unknown';
 }
 
-function derivePromotedFromProposals(proposals: ExtractionProposal[]): PromotedField[] {
+/**
+ * Derive promoted fields from proposals + provenance map.
+ * Honest provenance: a proposal accepted by the user is `manual_accepted`;
+ * an engine-auto-accepted proposal is `auto_accepted`. Reload-safe.
+ */
+function derivePromotedFromProposals(
+  proposals: ExtractionProposal[],
+  manualAcceptedIds: Set<string>,
+): PromotedField[] {
   return proposals
     .filter(p => p.proposal_status === 'auto_accepted' && p.proposed_value != null)
     .map(p => ({
@@ -75,7 +92,7 @@ function derivePromotedFromProposals(proposals: ExtractionProposal[]): PromotedF
       value: p.proposed_value!,
       proposalId: p.proposal_id,
       documentId: p.document_id,
-      source: 'auto_accepted' as const,
+      source: manualAcceptedIds.has(p.proposal_id) ? 'manual_accepted' as const : 'auto_accepted' as const,
     }));
 }
 
