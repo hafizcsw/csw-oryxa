@@ -15,10 +15,15 @@
 //   - Not connected to the reading engine.
 // ═══════════════════════════════════════════════════════════════
 
-import { memo, useId, useMemo } from "react";
+import { memo, useEffect, useId, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+export interface AIDataFlowHeroFile {
+  name: string;
+}
 
 export interface AIDataFlowHeroProps {
   className?: string;
@@ -28,7 +33,9 @@ export interface AIDataFlowHeroProps {
   ariaLabel?: string;
   /** Max visible cards per side cap (fan supports up to 5) */
   visibleCardsPerSide?: number;
-  /** STATE: number of uploaded files (drives doc count per side) */
+  /** STATE: real list of uploaded files — drives doc cards + filenames + scan order */
+  files?: AIDataFlowHeroFile[];
+  /** STATE: number of uploaded files (fallback if `files` not provided) */
   fileCount?: number;
   /** STATE: any files exist → render document clusters + connectors */
   hasFiles?: boolean;
@@ -37,6 +44,11 @@ export interface AIDataFlowHeroProps {
   /** STATE: upload/extraction in progress → animate chips faster */
   isProcessing?: boolean;
 }
+
+/** Time per file scan, ms */
+const SCAN_DURATION_MS = 2600;
+/** Gap between files, ms */
+const SCAN_GAP_MS = 200;
 
 const VIEWBOX_W = 960;
 const VIEWBOX_H = 720;
