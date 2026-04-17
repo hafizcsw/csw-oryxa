@@ -1450,6 +1450,36 @@ export type Database = {
         }
         Relationships: []
       }
+      city_import_staging: {
+        Row: {
+          applied: boolean
+          city: string
+          country: string
+          created_at: string
+          id: number
+          matched_university_id: string | null
+          name: string
+        }
+        Insert: {
+          applied?: boolean
+          city: string
+          country: string
+          created_at?: string
+          id?: number
+          matched_university_id?: string | null
+          name: string
+        }
+        Update: {
+          applied?: boolean
+          city?: string
+          country?: string
+          created_at?: string
+          id?: number
+          matched_university_id?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
       comm_messages: {
         Row: {
           attachment_name: string | null
