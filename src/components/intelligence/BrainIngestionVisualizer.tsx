@@ -19,7 +19,7 @@
 import { memo, useId } from "react";
 import { useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import brainAnatomical from "@/assets/brain-anatomical.svg";
+import brainTechnical from "@/assets/brain-technical.svg";
 import { useBrainIngestionAnimation } from "./useBrainIngestionAnimation";
 import type { BrainIngestionVisualizerProps } from "./BrainIngestionVisualizer.types";
 import "./brain-ingestion.css";
