@@ -43,8 +43,18 @@ export interface AnalysisResult {
   proposals: ExtractionProposal[];
   /** Door 1: the structured reading artifact */
   artifact: ReadingArtifact;
-  /** In-Browser Document Intelligence: structured upstream artifact */
+  /** Document Intelligence: structured artifact (browser_heuristic OR paddle) */
   structured_artifact: StructuredDocumentArtifact;
+  /** Which provider produced structured_artifact at runtime. */
+  document_ai_mode: DocumentAIMode;
+  /** Diagnostic surface: what we tried with paddle (if anything). */
+  document_ai_diag: {
+    paddle_attempted: boolean;
+    paddle_status: string | null;
+    paddle_reason: string | null;
+    paddle_latency_ms: number | null;
+    paddle_error_message: string | null;
+  };
 }
 
 /**

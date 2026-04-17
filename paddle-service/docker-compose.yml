@@ -1,0 +1,39 @@
+version: "3.9"
+
+# Self-hosted PaddleOCR PP-StructureV3 service.
+# After `docker compose up -d`, set these Supabase secrets:
+#   PADDLE_STRUCTURE_ENDPOINT = https://<your-host>/v1/structure
+#   PADDLE_API_KEY            = <random long string, same as below>
+
+services:
+  paddle:
+    build: .
+    image: paddle-structure:latest
+    restart: unless-stopped
+    environment:
+      PADDLE_API_KEY: "${PADDLE_API_KEY:-change-me}"
+      DOWNLOAD_TIMEOUT_S: "20"
+      MAX_BYTES: "26214400"      # 25 MB
+    ports:
+      - "127.0.0.1:8000:8000"     # bind localhost; expose via Caddy/Nginx
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [paddle]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
