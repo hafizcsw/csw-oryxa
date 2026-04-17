@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
@@ -14,7 +15,11 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { trackRegisterStart, trackRegisterComplete } from '@/lib/decisionTracking';
 import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
-import { WelcomeOverlay } from './WelcomeOverlay';
+import {
+  markWelcomePending,
+  isExternalUrl,
+  type WelcomeTargetKind,
+} from '@/lib/welcomeTransition';
 
 /** Check persistent staff cache for instant post-login redirect */
 function getStaffFastRedirect(): string | null {
