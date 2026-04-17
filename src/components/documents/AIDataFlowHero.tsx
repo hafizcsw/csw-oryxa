@@ -537,7 +537,7 @@ function AIDataFlowHeroComponent({
 
         {/* ═══ Brain (lucide-react icon — same as used elsewhere in app) ═══ */}
         <g transform={`translate(${CX}, ${CY})`}>
-          <BrainShape animate={!reduceMotion} shrink={showDocuments} />
+          <BrainShape animate={!reduceMotion} shrink={brainShrink} />
         </g>
       </svg>
     </div>
