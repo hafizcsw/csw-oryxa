@@ -91,6 +91,7 @@ function AIDataFlowHeroComponent({
   intensity = "normal",
   ariaLabel,
   visibleCardsPerSide = 5,
+  files,
   fileCount = 0,
   hasFiles = false,
   isDragOver = false,
@@ -98,19 +99,60 @@ function AIDataFlowHeroComponent({
 }: AIDataFlowHeroProps) {
   const reduceMotion = useReducedMotion();
   const uid = useId().replace(/:/g, "");
+  const { t } = useLanguage();
+
   // Derive intensity from state when processing
   const effectiveIntensity = isProcessing ? "lively" : isDragOver ? "normal" : intensity;
   const cfg = INTENSITY_MAP[effectiveIntensity];
 
-  // STRICT state machine — documents are derived ONLY from real fileCount.
-  // Idle (fileCount=0, !isProcessing): brain only. No docs, no connectors, no chips.
-  // Drag-over (fileCount=0): subtle hint ring only. Still no permanent docs.
-  // hasFiles / isProcessing: render docs + connectors. Chips animate while processing.
-  const totalDocs = Math.max(0, Math.floor(fileCount));
+  // STRICT state machine — documents are derived ONLY from real files/fileCount.
+  const fileList: AIDataFlowHeroFile[] = useMemo(() => {
+    if (files && files.length > 0) return files;
+    const n = Math.max(0, Math.floor(fileCount));
+    return Array.from({ length: n }).map((_, i) => ({ name: `Document ${i + 1}` }));
+  }, [files, fileCount]);
+
+  const totalDocs = fileList.length;
   const showDocuments = totalDocs > 0;
-  const showConnectors = showDocuments;
-  const showChips = showDocuments;
   const dragHint = isDragOver && !showDocuments;
+
+  // ───── Sequential scan state machine ─────
+  // activeIndex advances every SCAN_DURATION_MS + SCAN_GAP_MS while there are
+  // still un-scanned files. When new files arrive after completion, resume.
+  const [activeIndex, setActiveIndex] = useState(0);
+  const prevTotalRef = useRef(0);
+
+  useEffect(() => {
+    // If new files were added after we finished, resume from the first new index
+    if (totalDocs > prevTotalRef.current && activeIndex >= prevTotalRef.current) {
+      setActiveIndex(prevTotalRef.current);
+    }
+    // If total dropped to 0, reset
+    if (totalDocs === 0) {
+      setActiveIndex(0);
+    }
+    prevTotalRef.current = totalDocs;
+  }, [totalDocs, activeIndex]);
+
+  useEffect(() => {
+    if (totalDocs === 0) return;
+    if (activeIndex >= totalDocs) return; // all done
+    if (reduceMotion) {
+      // No animation: mark all done immediately
+      setActiveIndex(totalDocs);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setActiveIndex((idx) => Math.min(idx + 1, totalDocs));
+    }, SCAN_DURATION_MS + SCAN_GAP_MS);
+    return () => window.clearTimeout(timer);
+  }, [activeIndex, totalDocs, reduceMotion]);
+
+  const allDone = totalDocs > 0 && activeIndex >= totalDocs;
+
+  // Brain stays shrunk while any file is pending or active. Returns to full
+  // size once the last file is scanned.
+  const brainShrink = showDocuments && !allDone;
 
   const ids = useMemo(
     () => ({
@@ -133,10 +175,17 @@ function AIDataFlowHeroComponent({
   const rc = Math.min(maxPerSide, Math.floor(totalDocs / 2));
   const cardsPerSide = Math.max(lc, rc, 1);
 
-  // Helper: evenly distribute N cards vertically within the viewbox column,
-  // with a small horizontal jitter and slight rotation for a paper-stack feel.
-  const distributeColumn = (count: number, anchorX: number, mirrored: boolean) => {
-    if (count === 0) return [] as Array<{ x: number; y: number; rotate: number; scale: number; opacity: number; index: number }>;
+  // Helper: evenly distribute N cards vertically within the viewbox column.
+  // Returns positions including the GLOBAL file index (gIdx) so we can map
+  // each card to its file in `fileList` and to scan state.
+  const distributeColumn = (
+    count: number,
+    anchorX: number,
+    mirrored: boolean,
+    gIdxStart: number,
+  ) => {
+    if (count === 0)
+      return [] as Array<{ x: number; y: number; rotate: number; scale: number; opacity: number; index: number; gIdx: number }>;
     const TOP = 60;
     const BOTTOM = VIEWBOX_H - CARD_H - 60;
     const span = BOTTOM - TOP;
@@ -146,18 +195,25 @@ function AIDataFlowHeroComponent({
       const jitter = ((i % 2 === 0 ? 1 : -1) * (10 + (i * 7) % 14));
       const x = anchorX + (mirrored ? -jitter : jitter);
       const rotate = (mirrored ? -1 : 1) * (-6 + ((i * 5) % 12));
-      return { x, y, rotate, scale: 1, opacity: 1, index: i };
+      return { x, y, rotate, scale: 1, opacity: 1, index: i, gIdx: gIdxStart + i };
     });
   };
 
-  const leftCards = distributeColumn(lc, LEFT_X, false);
-  const rightCards = distributeColumn(rc, RIGHT_X, true);
+  // Reading order: left column top→bottom (gIdx 0..lc-1), then right column (gIdx lc..lc+rc-1)
+  const leftCards = distributeColumn(lc, LEFT_X, false, 0);
+  const rightCards = distributeColumn(rc, RIGHT_X, true, lc);
 
-  // Connector paths — 3 gentle S-curves PER card (top, middle, bottom of page)
-  // emerging from the inner edge of each document and flowing into the brain.
+  // Helper: compute per-card visual state from activeIndex
+  const cardState = (gIdx: number): "pending" | "active" | "done" => {
+    if (gIdx < activeIndex) return "done";
+    if (gIdx === activeIndex) return "active";
+    return "pending";
+  };
+
+  // Connector paths — generated for ALL cards, but rendered only for the
+  // currently-active card so chips/arrows visibly switch from file to file.
   const connectors = useMemo(() => {
-    const paths: Array<{ d: string; key: string; side: "L" | "R"; cardIdx: number; lineIdx: number }> = [];
-    const LINES_PER_CARD = 3;
+    const paths: Array<{ d: string; key: string; side: "L" | "R"; cardIdx: number; lineIdx: number; gIdx: number }> = [];
     const CARD_LINE_OFFSETS = [CARD_H * 0.28, CARD_H * 0.5, CARD_H * 0.72];
 
     leftCards.forEach((c, i) => {
@@ -176,6 +232,7 @@ function AIDataFlowHeroComponent({
           side: "L",
           cardIdx: i,
           lineIdx: li,
+          gIdx: c.gIdx,
         });
       });
     });
@@ -196,12 +253,32 @@ function AIDataFlowHeroComponent({
           side: "R",
           cardIdx: i,
           lineIdx: li,
+          gIdx: c.gIdx,
         });
       });
     });
 
     return paths;
   }, [cardsPerSide, leftCards, rightCards]);
+
+  // Only the active file's connectors stream into the brain.
+  const activeConnectors = useMemo(
+    () => connectors.filter((p) => p.gIdx === activeIndex),
+    [connectors, activeIndex],
+  );
+
+  const showConnectors = showDocuments && !allDone;
+  const showChips = showConnectors;
+
+  // Localized micro-labels with safe fallbacks
+  const scanningLabel = (() => {
+    const v = t("hero.aiFlow.scanning");
+    return typeof v === "string" && v && v !== "hero.aiFlow.scanning" ? v : "Scanning…";
+  })();
+  const scannedLabel = (() => {
+    const v = t("hero.aiFlow.scanned");
+    return typeof v === "string" && v && v !== "hero.aiFlow.scanned" ? v : "Scanned";
+  })();
 
   // Sparkle positions around brain glow
   const sparkles = useMemo(() => {
