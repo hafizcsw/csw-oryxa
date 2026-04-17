@@ -244,13 +244,15 @@ function AIDataFlowHeroComponent({
     return paths;
   }, [cardsPerSide, leftCards, rightCards]);
 
-  // Only the active file's connectors stream into the brain.
+  // Only ACTIVE files' connectors stream into the brain. Multiple may be
+  // active at once if the backend processes files in parallel — that matches
+  // reality, the brain visibly pulls from every file currently being parsed.
   const activeConnectors = useMemo(
-    () => connectors.filter((p) => p.gIdx === activeIndex),
-    [connectors, activeIndex],
+    () => connectors.filter((p) => fileStatuses[p.gIdx] === "active"),
+    [connectors, fileStatuses],
   );
 
-  const showConnectors = showDocuments && !allDone;
+  const showConnectors = showDocuments && activeConnectors.length > 0;
   const showChips = showConnectors;
 
   // Localized micro-labels with safe fallbacks
@@ -420,7 +422,7 @@ function AIDataFlowHeroComponent({
           <g fill="none" strokeLinecap="round">
             {activeConnectors.map((p) => (
               <ConnectorPath
-                key={`act-${p.key}-${activeIndex}`}
+                key={`act-${p.key}`}
                 d={p.d}
                 animate={!reduceMotion}
                 delay={0.15 + p.lineIdx * 0.08}
@@ -435,7 +437,7 @@ function AIDataFlowHeroComponent({
           <g>
             {activeConnectors.map((p, i) => (
               <DocumentChip
-                key={`chip-${p.key}-${activeIndex}`}
+                key={`chip-${p.key}`}
                 pathD={p.d}
                 duration={cfg.chipDuration}
                 delay={(0.5 + p.lineIdx * 0.5 + (i * 0.15)) % cfg.chipDuration}
