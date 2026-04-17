@@ -106,14 +106,19 @@ function AIDataFlowHeroComponent({
     [uid],
   );
 
+  // Cluster anchor points
+  const LEFT_ANCHOR  = { x: 168, y: 180 };
+  const RIGHT_ANCHOR = { x: 660, y: 180 };
+
   // Distribute fileCount across two sides; cap by visibleCardsPerSide (≤5)
   const maxPerSide = Math.max(1, Math.min(5, visibleCardsPerSide));
   const totalDocs = Math.max(0, fileCount);
-  const leftCount  = showDocuments ? Math.min(maxPerSide, Math.ceil(totalDocs / 2)) : 0;
-  const rightCount = showDocuments ? Math.min(maxPerSide, Math.floor(totalDocs / 2)) : 0;
+  const leftCountRaw  = showDocuments ? Math.min(maxPerSide, Math.ceil(totalDocs / 2)) : 0;
+  const rightCountRaw = showDocuments ? Math.min(maxPerSide, Math.floor(totalDocs / 2)) : 0;
   // If hasFiles flagged but count is 0, fall back to a single card per side
-  const lc = showDocuments && leftCount === 0 && rightCount === 0 ? 1 : leftCount;
-  const rc = showDocuments && leftCount === 0 && rightCount === 0 ? 1 : rightCount;
+  const lc = showDocuments && leftCountRaw === 0 && rightCountRaw === 0 ? 1 : leftCountRaw;
+  const rc = showDocuments && leftCountRaw === 0 && rightCountRaw === 0 ? 1 : rightCountRaw;
+  const cardsPerSide = Math.max(lc, rc, 1);
 
   const leftCards = FAN.slice(0, lc).map((f, i) => ({
     ...f,
