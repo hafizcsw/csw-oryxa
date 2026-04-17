@@ -412,31 +412,9 @@ export default function AnomalyOrb({
     }
   }, []);
 
-  // Calculate glow intensity based on audio
-  const glowIntensity = 0.4 + effectiveAudioLevel * 0.6;
-  const glowColor = isDark ? "rgba(0, 255, 255, " : "rgba(99, 102, 241, ";
-
   return (
     <div className={`orx-anomaly-orb relative ${className}`} style={{ width: size, height: size }}>
-      {/* Outer glow layers */}
-      <div 
-        className="absolute inset-0 rounded-full blur-3xl pointer-events-none"
-        style={{
-          background: `radial-gradient(circle, ${glowColor}${glowIntensity * 0.3}) 0%, transparent 70%)`,
-          transform: `scale(${1.2 + effectiveAudioLevel * 0.2})`,
-          transition: "transform 0.15s ease-out",
-        }}
-      />
-      <div 
-        className="absolute inset-0 rounded-full blur-2xl pointer-events-none"
-        style={{
-          background: `radial-gradient(circle, ${glowColor}${glowIntensity * 0.4}) 0%, transparent 60%)`,
-          transform: `scale(${1.1 + effectiveAudioLevel * 0.15})`,
-          transition: "transform 0.1s ease-out",
-        }}
-      />
-      
-      {/* Three.js container - transparent background to blend with hero */}
+      {/* Three.js container - transparent background, no rectangular halo */}
       <div 
         ref={containerRef}
         id="three-container" 
