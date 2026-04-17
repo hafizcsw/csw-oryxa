@@ -346,8 +346,7 @@ function BrainIngestionVisualizerComponent({
           </g>
         )}
 
-        {/* Suppress unused-id warnings — chip/streamGrad reserved for future tier upgrades. */}
-        <use href={`#${ids.chipFace}`} x={-9999} y={-9999} />
+        {/* Reserve gradient ref for future stream usage. */}
         <use href={`#${ids.streamGrad}`} x={-9999} y={-9999} />
       </svg>
     </div>
