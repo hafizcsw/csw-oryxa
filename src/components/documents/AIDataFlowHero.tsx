@@ -111,29 +111,35 @@ function AIDataFlowHeroComponent({
     [uid],
   );
 
-  // Cluster anchor points
-  const LEFT_ANCHOR  = { x: 168, y: 180 };
-  const RIGHT_ANCHOR = { x: 660, y: 180 };
+  // Cluster anchor X (column) per side
+  const LEFT_X  = 110;
+  const RIGHT_X = 720;
 
   // Distribute REAL fileCount across two sides; cap by visibleCardsPerSide (≤5).
-  // No fallback — if totalDocs is 0, both sides are 0 and nothing renders.
   const maxPerSide = Math.max(1, Math.min(5, visibleCardsPerSide));
   const lc = Math.min(maxPerSide, Math.ceil(totalDocs / 2));
   const rc = Math.min(maxPerSide, Math.floor(totalDocs / 2));
   const cardsPerSide = Math.max(lc, rc, 1);
 
-  const leftCards = FAN.slice(0, lc).map((f, i) => ({
-    ...f,
-    x: LEFT_ANCHOR.x + f.dx,
-    y: LEFT_ANCHOR.y + f.dy,
-    index: i,
-  }));
-  const rightCards = FAN.slice(0, rc).map((f, i) => ({
-    ...f,
-    x: RIGHT_ANCHOR.x + f.dx,
-    y: RIGHT_ANCHOR.y + f.dy,
-    index: i,
-  }));
+  // Helper: evenly distribute N cards vertically within the viewbox column,
+  // with a small horizontal jitter and slight rotation for a paper-stack feel.
+  const distributeColumn = (count: number, anchorX: number, mirrored: boolean) => {
+    if (count === 0) return [] as Array<{ x: number; y: number; rotate: number; scale: number; opacity: number; index: number }>;
+    const TOP = 60;
+    const BOTTOM = VIEWBOX_H - CARD_H - 60;
+    const span = BOTTOM - TOP;
+    return Array.from({ length: count }).map((_, i) => {
+      const t = count === 1 ? 0.5 : i / (count - 1);
+      const y = TOP + span * t;
+      const jitter = ((i % 2 === 0 ? 1 : -1) * (10 + (i * 7) % 14));
+      const x = anchorX + (mirrored ? -jitter : jitter);
+      const rotate = (mirrored ? -1 : 1) * (-6 + ((i * 5) % 12));
+      return { x, y, rotate, scale: 1, opacity: 1, index: i };
+    });
+  };
+
+  const leftCards = distributeColumn(lc, LEFT_X, false);
+  const rightCards = distributeColumn(rc, RIGHT_X, true);
 
   // Connector paths — 3 gentle S-curves PER card (top, middle, bottom of page)
   // emerging from the inner edge of each document and flowing into the brain.
