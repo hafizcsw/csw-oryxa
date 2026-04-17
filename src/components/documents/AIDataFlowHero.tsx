@@ -135,39 +135,50 @@ function AIDataFlowHeroComponent({
     index: i,
   }));
 
-  // Connector paths — gentle S-curves from each card's inner edge to brain
+  // Connector paths — 3 gentle S-curves PER card (top, middle, bottom of page)
+  // emerging from the inner edge of each document and flowing into the brain.
   const connectors = useMemo(() => {
-    const paths: Array<{ d: string; key: string; side: "L" | "R" }> = [];
+    const paths: Array<{ d: string; key: string; side: "L" | "R"; cardIdx: number; lineIdx: number }> = [];
+    const LINES_PER_CARD = 3;
+    const CARD_LINE_OFFSETS = [CARD_H * 0.28, CARD_H * 0.5, CARD_H * 0.72];
 
     leftCards.forEach((c, i) => {
-      const sx = c.x + CARD_W;                          // right edge of left card
-      const sy = c.y + CARD_H * 0.45;
-      const ex = CX - 70;                                // brain left edge
-      const ey = CY + (i - (cardsPerSide - 1) / 2) * 14;
-      const c1x = sx + 70;
-      const c1y = sy + (i - (cardsPerSide - 1) / 2) * 6;
-      const c2x = ex - 60;
-      const c2y = ey;
-      paths.push({
-        d: `M ${sx} ${sy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${ex} ${ey}`,
-        key: `L-${i}`,
-        side: "L",
+      CARD_LINE_OFFSETS.forEach((yOff, li) => {
+        const sx = c.x + CARD_W;
+        const sy = c.y + yOff;
+        const ex = CX - 70;
+        const ey = CY + (i - (cardsPerSide - 1) / 2) * 18 + (li - 1) * 10;
+        const c1x = sx + 80;
+        const c1y = sy;
+        const c2x = ex - 70;
+        const c2y = ey;
+        paths.push({
+          d: `M ${sx} ${sy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${ex} ${ey}`,
+          key: `L-${i}-${li}`,
+          side: "L",
+          cardIdx: i,
+          lineIdx: li,
+        });
       });
     });
 
     rightCards.forEach((c, i) => {
-      const sx = c.x;                                    // left edge of right card
-      const sy = c.y + CARD_H * 0.45;
-      const ex = CX + 70;                                // brain right edge
-      const ey = CY + (i - (cardsPerSide - 1) / 2) * 14;
-      const c1x = sx - 70;
-      const c1y = sy + (i - (cardsPerSide - 1) / 2) * 6;
-      const c2x = ex + 60;
-      const c2y = ey;
-      paths.push({
-        d: `M ${sx} ${sy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${ex} ${ey}`,
-        key: `R-${i}`,
-        side: "R",
+      CARD_LINE_OFFSETS.forEach((yOff, li) => {
+        const sx = c.x;
+        const sy = c.y + yOff;
+        const ex = CX + 70;
+        const ey = CY + (i - (cardsPerSide - 1) / 2) * 18 + (li - 1) * 10;
+        const c1x = sx - 80;
+        const c1y = sy;
+        const c2x = ex + 70;
+        const c2y = ey;
+        paths.push({
+          d: `M ${sx} ${sy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${ex} ${ey}`,
+          key: `R-${i}-${li}`,
+          side: "R",
+          cardIdx: i,
+          lineIdx: li,
+        });
       });
     });
 
