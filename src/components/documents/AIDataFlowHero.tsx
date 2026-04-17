@@ -245,26 +245,28 @@ function AIDataFlowHeroComponent({
           </marker>
         </defs>
 
-        {/* ═══ Background document silhouettes ═══ */}
-        <g>
-          {[...BG_LAYERS_LEFT, ...BG_LAYERS_RIGHT].map((b, i) => (
-            <g
-              key={`bg-${i}`}
-              transform={`translate(${b.x}, ${b.y}) rotate(${b.rotate}) scale(${b.scale})`}
-              opacity={b.opacity}
-            >
-              <rect
-                width={CARD_W}
-                height={CARD_H}
-                rx={6}
-                fill="hsl(var(--card))"
-                stroke="hsl(var(--foreground))"
-                strokeOpacity={0.35}
-                strokeWidth={1}
-              />
-            </g>
-          ))}
-        </g>
+        {/* ═══ Background document silhouettes (only when documents exist) ═══ */}
+        {showDocuments && (
+          <g>
+            {[...BG_LAYERS_LEFT, ...BG_LAYERS_RIGHT].map((b, i) => (
+              <g
+                key={`bg-${i}`}
+                transform={`translate(${b.x}, ${b.y}) rotate(${b.rotate}) scale(${b.scale})`}
+                opacity={b.opacity}
+              >
+                <rect
+                  width={CARD_W}
+                  height={CARD_H}
+                  rx={6}
+                  fill="hsl(var(--card))"
+                  stroke="hsl(var(--foreground))"
+                  strokeOpacity={0.35}
+                  strokeWidth={1}
+                />
+              </g>
+            ))}
+          </g>
+        )}
 
         {/* ═══ Glow halo behind brain ═══ */}
         <g>
@@ -320,21 +322,23 @@ function AIDataFlowHeroComponent({
           </g>
         )}
 
-        {/* ═══ Connector paths with arrowheads ═══ */}
-        <g fill="none" strokeLinecap="round">
-          {connectors.map((p, i) => (
-            <ConnectorPath
-              key={p.key}
-              d={p.d}
-              animate={!reduceMotion}
-              delay={i * 0.1}
-              markerId={ids.arrowHead}
-            />
-          ))}
-        </g>
+        {/* ═══ Connector paths with arrowheads (only when documents exist) ═══ */}
+        {showConnectors && (
+          <g fill="none" strokeLinecap="round">
+            {connectors.map((p, i) => (
+              <ConnectorPath
+                key={p.key}
+                d={p.d}
+                animate={!reduceMotion}
+                delay={i * 0.1}
+                markerId={ids.arrowHead}
+              />
+            ))}
+          </g>
+        )}
 
-        {/* ═══ Mid-flight document chips riding the paths ═══ */}
-        {!reduceMotion && (
+        {/* ═══ Mid-flight extraction chips (only while processing) ═══ */}
+        {showChips && !reduceMotion && (
           <g>
             {connectors.map((p, i) => (
               <DocumentChip
@@ -347,39 +351,57 @@ function AIDataFlowHeroComponent({
           </g>
         )}
 
-        {/* ═══ Document clusters ═══ */}
-        <g>
-          {leftCards.map((c, i) => (
-            <DocumentCard
-              key={`L-${i}`}
-              x={c.x}
-              y={c.y}
-              rotate={c.rotate}
-              scale={c.scale}
-              opacity={c.opacity}
-              shadowId={ids.paperShadow}
-              accentVariant={i % 3}
-              float={!reduceMotion}
-              floatDelay={i * 0.45}
-              mirrored={false}
-            />
-          ))}
-          {rightCards.map((c, i) => (
-            <DocumentCard
-              key={`R-${i}`}
-              x={c.x}
-              y={c.y}
-              rotate={-c.rotate}
-              scale={c.scale}
-              opacity={c.opacity}
-              shadowId={ids.paperShadow}
-              accentVariant={(i + 1) % 3}
-              float={!reduceMotion}
-              floatDelay={i * 0.45 + 0.7}
-              mirrored
-            />
-          ))}
-        </g>
+        {/* ═══ Document clusters (only when files exist) ═══ */}
+        {showDocuments && (
+          <g>
+            {leftCards.map((c, i) => (
+              <DocumentCard
+                key={`L-${i}`}
+                x={c.x}
+                y={c.y}
+                rotate={c.rotate}
+                scale={c.scale}
+                opacity={c.opacity}
+                shadowId={ids.paperShadow}
+                accentVariant={i % 3}
+                float={!reduceMotion}
+                floatDelay={i * 0.45}
+                mirrored={false}
+              />
+            ))}
+            {rightCards.map((c, i) => (
+              <DocumentCard
+                key={`R-${i}`}
+                x={c.x}
+                y={c.y}
+                rotate={-c.rotate}
+                scale={c.scale}
+                opacity={c.opacity}
+                shadowId={ids.paperShadow}
+                accentVariant={(i + 1) % 3}
+                float={!reduceMotion}
+                floatDelay={i * 0.45 + 0.7}
+                mirrored
+              />
+            ))}
+          </g>
+        )}
+
+        {/* ═══ Drag-over hint: subtle inward pulse ring around brain ═══ */}
+        {dragHint && !reduceMotion && (
+          <motion.circle
+            cx={CX}
+            cy={CY}
+            r={130}
+            fill="none"
+            stroke="hsl(265 90% 70%)"
+            strokeOpacity={0.4}
+            strokeWidth={1.2}
+            strokeDasharray="4 6"
+            animate={{ r: [150, 110, 150], opacity: [0.15, 0.55, 0.15] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          />
+        )}
 
         {/* ═══ Brain (anatomical, top-down, two hemispheres) ═══ */}
         <g transform={`translate(${CX}, ${CY})`}>
