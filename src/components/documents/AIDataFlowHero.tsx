@@ -433,10 +433,16 @@ interface DocumentCardProps {
   float: boolean;
   floatDelay: number;
   mirrored?: boolean;
+  /** Emerge-from-user origin (bottom-center of viewbox) */
+  emergeFromX?: number;
+  emergeFromY?: number;
+  /** Stagger for emerge entrance */
+  emergeDelay?: number;
 }
 
 function DocumentCard({
   x, y, rotate, scale, opacity, shadowId, accentVariant, float, floatDelay, mirrored,
+  emergeFromX, emergeFromY, emergeDelay = 0,
 }: DocumentCardProps) {
   const W = CARD_W;
   const H = CARD_H;
