@@ -189,36 +189,37 @@
       }
     },
     "institutions": {
-      "badge": "For Institutions",
-      "title": "Partner With Us",
-      "subtitle": "Join the global network of universities and institutions reaching the right students worldwide",
-      "cta": "Register Your Institution",
+      "badge": "機関の方へ",
+      "title": "私たちと提携する",
+      "subtitle": "世界中の適切な学生にリーチする大学・機関のグローバルネットワークに参加しましょう",
+      "cta": "機関を登録する",
       "features": {
         "manage": {
-          "title": "Manage Your Profile",
-          "desc": "Control your institution public page, programs, and key information from one dashboard"
+          "title": "プロフィールを管理",
+          "desc": "機関の公開ページ、プログラム、重要情報を一つのダッシュボードから管理できます"
         },
         "students": {
-          "title": "Reach Qualified Students",
-          "desc": "Receive applications from students who match your programs and admission criteria"
+          "title": "適格な学生に届ける",
+          "desc": "プログラムと入学基準に合致する学生からの出願を受け取れます"
         },
         "analytics": {
-          "title": "Performance Insights",
-          "desc": "Track views, applications, and engagement with real-time analytics"
+          "title": "パフォーマンス分析",
+          "desc": "閲覧数、出願数、エンゲージメントをリアルタイムに追跡できます"
         },
         "verified": {
-          "title": "Verified Presence",
-          "desc": "Build trust with a verified institution badge and accurate program listings"
+          "title": "認証済みプレゼンス",
+          "desc": "認証バッジと正確なプログラム情報で信頼を獲得できます"
         },
         "visibility": {
           "title": "グローバルな可視性",
-          "desc": "世界中の留学機会を探す数千の留学生に貴校を紹介しましょう。"
+          "desc": "世界中で留学機会を探している何千もの国際学生に機関を紹介できます"
         },
         "partnership": {
           "title": "戦略的パートナーシップ",
-          "desc": "Connect Study Worldのネットワークを活用して新市場に進出しましょう。"
+          "desc": "Connect Study World のネットワークを活用し、新市場へ展開し長期的な関係を築けます"
         }
-      }
+      },
+      "exploreMap": "マップを見る"
     },
     "blog": {
       "title": "最新の記事",
@@ -426,6 +427,25 @@
       "minAgo": "{{n}}分前",
       "hourAgo": "{{n}}時間前",
       "dayAgo": "{{n}}日前"
+    },
+    "orx": {
+      "badge": "エビデンスに基づく評価システム",
+      "subtitle": "従来の評判ではなく、将来への準備度に焦点を当てた独自の評価システム — 3 つの分析レイヤーにわたる検証済みデータに基づいています",
+      "pillars": {
+        "country": {
+          "title": "国の文脈",
+          "desc": "大学が活動する文脈を理解するために、教育・経済・技術環境を分析します"
+        },
+        "university": {
+          "title": "大学の準備度",
+          "desc": "カリキュラム、インフラ、イノベーションの観点から、大学が将来の要請にどれだけ適応しているかを評価します"
+        },
+        "program": {
+          "title": "プログラムの関連性",
+          "desc": "プログラムが将来の労働市場とどれだけ整合しているか、また現代技術との統合度を測定します"
+        }
+      },
+      "cta": "ORX RANK の方法論を見る"
     }
   },
   "services": {

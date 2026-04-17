@@ -189,36 +189,37 @@
       }
     },
     "institutions": {
-      "badge": "For Institutions",
-      "title": "Partner With Us",
-      "subtitle": "Join the global network of universities and institutions reaching the right students worldwide",
-      "cta": "Register Your Institution",
+      "badge": "Para instituciones",
+      "title": "Asóciate con nosotros",
+      "subtitle": "Únete a la red global de universidades e instituciones que llegan a los estudiantes adecuados en todo el mundo",
+      "cta": "Registrar tu institución",
       "features": {
         "manage": {
-          "title": "Manage Your Profile",
-          "desc": "Control your institution public page, programs, and key information from one dashboard"
+          "title": "Gestiona tu perfil",
+          "desc": "Controla la página pública, los programas y la información clave de tu institución desde un único panel"
         },
         "students": {
-          "title": "Reach Qualified Students",
-          "desc": "Receive applications from students who match your programs and admission criteria"
+          "title": "Llega a estudiantes cualificados",
+          "desc": "Recibe solicitudes de estudiantes que coinciden con tus programas y criterios de admisión"
         },
         "analytics": {
-          "title": "Performance Insights",
-          "desc": "Track views, applications, and engagement with real-time analytics"
+          "title": "Análisis de rendimiento",
+          "desc": "Realiza un seguimiento de visitas, solicitudes y participación con análisis en tiempo real"
         },
         "verified": {
-          "title": "Verified Presence",
-          "desc": "Build trust with a verified institution badge and accurate program listings"
+          "title": "Presencia verificada",
+          "desc": "Genera confianza con una insignia verificada y listados de programas precisos"
         },
         "visibility": {
-          "title": "Visibilidad Global",
-          "desc": "Muestre su institución a miles de estudiantes internacionales en todo el mundo."
+          "title": "Visibilidad global",
+          "desc": "Muestra tu institución a miles de estudiantes internacionales que buscan oportunidades de estudio en todo el mundo"
         },
         "partnership": {
-          "title": "Alianza Estratégica",
-          "desc": "Aproveche la red de Connect Study World para expandirse a nuevos mercados."
+          "title": "Alianza estratégica",
+          "desc": "Aprovecha la red de Connect Study World para expandirte a nuevos mercados y construir relaciones duraderas"
         }
-      }
+      },
+      "exploreMap": "Explorar mapa"
     },
     "blog": {
       "title": "Artículos más recientes",
@@ -426,6 +427,25 @@
       "minAgo": "hace {{n}}m",
       "hourAgo": "hace {{n}}h",
       "dayAgo": "hace {{n}}d"
+    },
+    "orx": {
+      "badge": "Sistema de calificación basado en evidencia",
+      "subtitle": "Un sistema de calificación único centrado en la preparación para el futuro, no en la reputación tradicional — basado en evidencia verificada en tres capas analíticas",
+      "pillars": {
+        "country": {
+          "title": "Contexto del país",
+          "desc": "Análisis del entorno educativo, económico y tecnológico para comprender el contexto en el que opera la universidad"
+        },
+        "university": {
+          "title": "Preparación de la universidad",
+          "desc": "Evaluación de qué tan bien la universidad se adapta a las demandas futuras en términos de currículo, infraestructura e innovación"
+        },
+        "program": {
+          "title": "Relevancia del programa",
+          "desc": "Medición de la alineación del programa con los futuros mercados laborales y su integración con tecnologías modernas"
+        }
+      },
+      "cta": "Descubre la metodología ORX RANK"
     }
   },
   "services": {

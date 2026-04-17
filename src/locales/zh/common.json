@@ -190,36 +190,37 @@
       }
     },
     "institutions": {
-      "badge": "For Institutions",
-      "title": "Partner With Us",
-      "subtitle": "Join the global network of universities and institutions reaching the right students worldwide",
-      "cta": "Register Your Institution",
+      "badge": "面向机构",
+      "title": "与我们合作",
+      "subtitle": "加入全球大学与机构网络,精准触达世界各地的合适学生",
+      "cta": "注册您的机构",
       "features": {
         "manage": {
-          "title": "Manage Your Profile",
-          "desc": "Control your institution public page, programs, and key information from one dashboard"
+          "title": "管理您的资料",
+          "desc": "通过统一仪表板控制机构的公开页面、专业及关键信息"
         },
         "students": {
-          "title": "Reach Qualified Students",
-          "desc": "Receive applications from students who match your programs and admission criteria"
+          "title": "触达合格学生",
+          "desc": "接收符合您专业方向与录取标准的学生申请"
         },
         "analytics": {
-          "title": "Performance Insights",
-          "desc": "Track views, applications, and engagement with real-time analytics"
+          "title": "效果分析",
+          "desc": "通过实时数据追踪浏览量、申请数与互动情况"
         },
         "verified": {
-          "title": "Verified Presence",
-          "desc": "Build trust with a verified institution badge and accurate program listings"
+          "title": "认证身份",
+          "desc": "通过认证徽章和准确的专业信息建立信任"
         },
         "visibility": {
-          "title": "全球可见度",
-          "desc": "向全球数千名寻找留学机会的国际学生展示您的院校。"
+          "title": "全球曝光",
+          "desc": "向全球数千名寻找留学机会的国际学生展示您的机构"
         },
         "partnership": {
           "title": "战略合作",
-          "desc": "利用Connect Study World的网络拓展新市场并建立持久关系。"
+          "desc": "借助 Connect Study World 网络拓展新市场并建立长期合作关系"
         }
-      }
+      },
+      "exploreMap": "浏览地图"
     },
     "blog": {
       "title": "最新文章",
@@ -427,6 +428,25 @@
       "minAgo": "{{n}}分钟前",
       "hourAgo": "{{n}}小时前",
       "dayAgo": "{{n}}天前"
+    },
+    "orx": {
+      "badge": "循证评级体系",
+      "subtitle": "独特的评级体系,关注面向未来的能力而非传统声誉 — 基于三层分析的可验证数据",
+      "pillars": {
+        "country": {
+          "title": "国家环境",
+          "desc": "分析教育、经济与技术环境,理解大学所处的整体背景"
+        },
+        "university": {
+          "title": "大学准备度",
+          "desc": "评估大学在课程、基础设施与创新方面适应未来需求的能力"
+        },
+        "program": {
+          "title": "专业契合度",
+          "desc": "衡量专业与未来就业市场的契合度及与现代技术的融合程度"
+        }
+      },
+      "cta": "了解 ORX RANK 评估方法"
     }
   },
   "services": {

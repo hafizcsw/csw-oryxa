@@ -189,36 +189,37 @@
       }
     },
     "institutions": {
-      "badge": "For Institutions",
-      "title": "Partner With Us",
-      "subtitle": "Join the global network of universities and institutions reaching the right students worldwide",
-      "cta": "Register Your Institution",
+      "badge": "संस्थानों के लिए",
+      "title": "हमारे साथ साझेदार बनें",
+      "subtitle": "दुनिया भर के सही छात्रों तक पहुँचने वाले विश्वविद्यालयों और संस्थानों के वैश्विक नेटवर्क से जुड़ें",
+      "cta": "अपना संस्थान पंजीकृत करें",
       "features": {
         "manage": {
-          "title": "Manage Your Profile",
-          "desc": "Control your institution public page, programs, and key information from one dashboard"
+          "title": "अपना प्रोफ़ाइल प्रबंधित करें",
+          "desc": "एक ही डैशबोर्ड से अपने संस्थान के सार्वजनिक पृष्ठ, कार्यक्रम और मुख्य जानकारी नियंत्रित करें"
         },
         "students": {
-          "title": "Reach Qualified Students",
-          "desc": "Receive applications from students who match your programs and admission criteria"
+          "title": "योग्य छात्रों तक पहुँचें",
+          "desc": "उन छात्रों से आवेदन प्राप्त करें जो आपके कार्यक्रमों और प्रवेश मानदंडों से मेल खाते हैं"
         },
         "analytics": {
-          "title": "Performance Insights",
-          "desc": "Track views, applications, and engagement with real-time analytics"
+          "title": "प्रदर्शन अंतर्दृष्टि",
+          "desc": "रीयल-टाइम विश्लेषण के साथ दृश्य, आवेदन और संलग्नता ट्रैक करें"
         },
         "verified": {
-          "title": "Verified Presence",
-          "desc": "Build trust with a verified institution badge and accurate program listings"
+          "title": "सत्यापित उपस्थिति",
+          "desc": "सत्यापित संस्थान बैज और सटीक कार्यक्रम सूचियों के साथ विश्वास बनाएँ"
         },
         "visibility": {
           "title": "वैश्विक दृश्यता",
-          "desc": "दुनिया भर में अध्ययन के अवसर खोज रहे हजारों अंतरराष्ट्रीय छात्रों को अपना संस्थान दिखाएं।"
+          "desc": "दुनिया भर में अध्ययन के अवसर खोज रहे हजारों अंतरराष्ट्रीय छात्रों को अपना संस्थान दिखाएँ"
         },
         "partnership": {
           "title": "रणनीतिक साझेदारी",
-          "desc": "नए बाजारों में विस्तार के लिए Connect Study World के नेटवर्क का लाभ उठाएं।"
+          "desc": "Connect Study World के नेटवर्क का उपयोग करके नए बाजारों में विस्तार करें और स्थायी संबंध बनाएँ"
         }
-      }
+      },
+      "exploreMap": "मानचित्र देखें"
     },
     "blog": {
       "title": "नवीनतम लेख",
@@ -426,6 +427,25 @@
       "minAgo": "{{n}}मि पहले",
       "hourAgo": "{{n}}घं पहले",
       "dayAgo": "{{n}}दि पहले"
+    },
+    "orx": {
+      "badge": "साक्ष्य-आधारित रेटिंग प्रणाली",
+      "subtitle": "एक अनूठी रेटिंग प्रणाली जो पारंपरिक प्रतिष्ठा नहीं बल्कि भविष्य की तैयारी पर केंद्रित है — तीन विश्लेषणात्मक परतों में सत्यापित साक्ष्य पर आधारित",
+      "pillars": {
+        "country": {
+          "title": "देश संदर्भ",
+          "desc": "विश्वविद्यालय जिस संदर्भ में काम करता है उसे समझने के लिए शैक्षिक, आर्थिक और तकनीकी वातावरण का विश्लेषण"
+        },
+        "university": {
+          "title": "विश्वविद्यालय की तैयारी",
+          "desc": "पाठ्यक्रम, बुनियादी ढाँचे और नवाचार के संदर्भ में विश्वविद्यालय भविष्य की माँगों के अनुसार कितना अनुकूल है, इसका मूल्यांकन"
+        },
+        "program": {
+          "title": "कार्यक्रम प्रासंगिकता",
+          "desc": "कार्यक्रम का भविष्य के नौकरी बाज़ार के साथ संरेखण और आधुनिक तकनीकों के साथ एकीकरण का मापन"
+        }
+      },
+      "cta": "ORX RANK पद्धति जानें"
     }
   },
   "services": {

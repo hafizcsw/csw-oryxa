@@ -189,36 +189,37 @@
       }
     },
     "institutions": {
-      "badge": "For Institutions",
-      "title": "Partner With Us",
-      "subtitle": "Join the global network of universities and institutions reaching the right students worldwide",
-      "cta": "Register Your Institution",
+      "badge": "교육 기관용",
+      "title": "저희와 파트너가 되세요",
+      "subtitle": "세계 곳곳의 적합한 학생들에게 도달하는 대학·기관 글로벌 네트워크에 참여하세요",
+      "cta": "기관 등록하기",
       "features": {
         "manage": {
-          "title": "Manage Your Profile",
-          "desc": "Control your institution public page, programs, and key information from one dashboard"
+          "title": "프로필 관리",
+          "desc": "기관의 공개 페이지, 프로그램, 핵심 정보를 하나의 대시보드에서 관리하세요"
         },
         "students": {
-          "title": "Reach Qualified Students",
-          "desc": "Receive applications from students who match your programs and admission criteria"
+          "title": "적격 학생 도달",
+          "desc": "프로그램과 입학 기준에 부합하는 학생들의 지원을 받으세요"
         },
         "analytics": {
-          "title": "Performance Insights",
-          "desc": "Track views, applications, and engagement with real-time analytics"
+          "title": "성과 분석",
+          "desc": "실시간 분석으로 조회수, 지원 및 참여를 추적하세요"
         },
         "verified": {
-          "title": "Verified Presence",
-          "desc": "Build trust with a verified institution badge and accurate program listings"
+          "title": "인증된 존재감",
+          "desc": "인증 배지와 정확한 프로그램 정보로 신뢰를 구축하세요"
         },
         "visibility": {
           "title": "글로벌 가시성",
-          "desc": "전 세계 유학 기회를 찾는 수천 명의 국제 학생들에게 귀교를 소개하세요."
+          "desc": "전 세계에서 유학 기회를 찾는 수천 명의 국제 학생에게 기관을 소개하세요"
         },
         "partnership": {
           "title": "전략적 파트너십",
-          "desc": "Connect Study World의 네트워크를 활용하여 새로운 시장으로 확장하세요."
+          "desc": "Connect Study World 네트워크를 활용해 새로운 시장으로 확장하고 장기적인 관계를 구축하세요"
         }
-      }
+      },
+      "exploreMap": "지도 살펴보기"
     },
     "blog": {
       "title": "최신 기사",
@@ -426,6 +427,25 @@
       "minAgo": "{{n}}분 전",
       "hourAgo": "{{n}}시간 전",
       "dayAgo": "{{n}}일 전"
+    },
+    "orx": {
+      "badge": "근거 기반 평가 시스템",
+      "subtitle": "전통적 명성이 아닌 미래 준비도에 초점을 맞춘 고유한 평가 시스템 — 세 가지 분석 계층의 검증된 근거를 기반으로 합니다",
+      "pillars": {
+        "country": {
+          "title": "국가 맥락",
+          "desc": "대학이 활동하는 맥락을 이해하기 위해 교육·경제·기술 환경을 분석합니다"
+        },
+        "university": {
+          "title": "대학 준비도",
+          "desc": "커리큘럼, 인프라, 혁신 측면에서 대학이 미래 수요에 얼마나 잘 적응하는지 평가합니다"
+        },
+        "program": {
+          "title": "프로그램 적합성",
+          "desc": "프로그램이 미래 노동 시장과 얼마나 일치하는지, 현대 기술과의 통합 정도를 측정합니다"
+        }
+      },
+      "cta": "ORX RANK 평가 방법론 확인"
     }
   },
   "services": {
