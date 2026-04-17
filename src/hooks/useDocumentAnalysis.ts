@@ -180,7 +180,7 @@ export function useDocumentAnalysis({
       setArtifacts(prev => ({ ...prev, [documentId]: result.artifact }));
 
       // Promoted state is DERIVED from proposal status (auto_accepted).
-      const newPromoted = derivePromotedFromProposals(result.proposals);
+      const newPromoted = derivePromotedFromProposals(result.proposals, manualAcceptedRef.current);
       if (newPromoted.length > 0) {
         setPromotedFields(prev => {
           const filtered = prev.filter(pf => pf.documentId !== documentId);
@@ -333,6 +333,8 @@ export function useDocumentAnalysis({
     setProposals([]);
     setPromotedFields([]);
     setArtifacts({});
+    setHydratedArtifactSurfaces({});
+    manualAcceptedRef.current = new Set();
     if (studentId) {
       void deleteAllPersistedForUser(studentId);
     }
@@ -343,6 +345,7 @@ export function useDocumentAnalysis({
     proposals,
     promotedFields,
     artifacts,
+    hydratedArtifactSurfaces,
     isAnalyzing,
     analyzeFile,
     reanalyzeFile,
