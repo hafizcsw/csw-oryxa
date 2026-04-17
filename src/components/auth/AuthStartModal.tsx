@@ -249,15 +249,15 @@ export function AuthStartModal({ open, onOpenChange }: AuthStartModalProps) {
         if (result.redirect_url) {
           console.log('[AuthStartModal] ✅ Using canonical redirect_url (magic link)');
           sessionStorage.setItem('portal_auth_pending_until', String(Date.now() + 15000));
-          window.location.href = result.redirect_url;
+          goWithWelcome(result.redirect_url, 'student', null);
         } else if (result.student_portal_token) {
           console.log('[AuthStartModal] ⚠️ Fallback: using student_portal_token');
           sessionStorage.setItem('portal_auth_pending_until', String(Date.now() + 15000));
           sessionStorage.setItem('portal_exchange_token', result.student_portal_token);
-          window.location.href = '/account';
+          goWithWelcome('/account', 'student', null);
         } else {
           console.warn('[AuthStartModal] ⚠️ No redirect_url or token, navigating to /account');
-          window.location.href = '/account';
+          goWithWelcome('/account', 'student', null);
         }
       } else {
         setError(getErrorMessage(result));
@@ -273,15 +273,15 @@ export function AuthStartModal({ open, onOpenChange }: AuthStartModalProps) {
         if (result.redirect_url) {
           console.log('[AuthStartModal] ✅ Using canonical redirect_url (magic link)');
           sessionStorage.setItem('portal_auth_pending_until', String(Date.now() + 15000));
-          window.location.href = result.redirect_url;
+          goWithWelcome(result.redirect_url, 'student', null);
         } else if (result.student_portal_token) {
           console.log('[AuthStartModal] ⚠️ Fallback: using student_portal_token');
           sessionStorage.setItem('portal_auth_pending_until', String(Date.now() + 15000));
           sessionStorage.setItem('portal_exchange_token', result.student_portal_token);
-          window.location.href = '/account';
+          goWithWelcome('/account', 'student', null);
         } else {
           console.warn('[AuthStartModal] ⚠️ No redirect_url or token, navigating to /account');
-          window.location.href = '/account';
+          goWithWelcome('/account', 'student', null);
         }
       } else {
         setError(getErrorMessage(result));
@@ -307,7 +307,8 @@ export function AuthStartModal({ open, onOpenChange }: AuthStartModalProps) {
         
         if (isInstitutionUser) {
           const { resolveInstitutionLanding } = await import('@/lib/resolveInstitutionLanding');
-          window.location.href = await resolveInstitutionLanding();
+          const path = await resolveInstitutionLanding();
+          goWithWelcome(path, 'institution', null);
           return;
         }
       } else {
