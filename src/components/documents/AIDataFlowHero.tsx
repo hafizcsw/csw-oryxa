@@ -21,8 +21,12 @@ import { Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+export type AIDataFlowHeroFileStatus = "pending" | "active" | "done" | "failed";
+
 export interface AIDataFlowHeroFile {
   name: string;
+  /** Real backend processing status. Defaults to 'active' if omitted. */
+  status?: AIDataFlowHeroFileStatus;
 }
 
 export interface AIDataFlowHeroProps {
