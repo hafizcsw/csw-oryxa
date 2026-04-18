@@ -142,98 +142,227 @@ export function extractPassportTextFallback(text: string): Fields {
 }
 
 // ── Graduation certificate fields from text ──────────────────
+//
+// Engine v2 — robust to noisy OCR, mixed AR/EN, varied layouts.
+// All fields stay below AUTO_ACCEPT_THRESHOLD (0.85) — graduation lane
+// is review-first per HONESTY GATE 4. Confidence reflects pattern quality.
 export function extractGraduationFields(text: string): Fields {
   const f: Fields = {};
+  // Normalize: collapse whitespace, unify Arabic digits, strip tatweel
+  const norm = normalizeForExtraction(text);
 
-  // Credential type (check first — used to build credential name)
-  const typePatterns = [
-    /\b(bachelor(?:'?s)?)\b/i,
-    /\b(master(?:'?s)?)\b/i,
-    /\b(ph\.?d|doctorate)\b/i,
-    /\b(diploma)\b/i,
-    /\b(associate)\b/i,
-    /\b(بكالوريوس)\b/i,
-    /\b(ماجستير)\b/i,
-    /\b(دكتوراه)\b/i,
-    /\b(دبلوم)\b/i,
+  // ─── Credential type ──────────────────────────────────────
+  const typePatterns: Array<{ re: RegExp; canonical: string }> = [
+    { re: /\b(ph\.?\s*d|doctorate|doctoral)\b/i, canonical: 'phd' },
+    { re: /\bدكتوراه\b/, canonical: 'phd' },
+    { re: /\b(master(?:'?s)?|m\.?\s*sc|m\.?\s*a|mba)\b/i, canonical: 'master' },
+    { re: /\bماجستير\b/, canonical: 'master' },
+    { re: /\b(bachelor(?:'?s)?|b\.?\s*sc|b\.?\s*a|b\.?\s*eng|undergraduate)\b/i, canonical: 'bachelor' },
+    { re: /\bبكالوريوس\b/, canonical: 'bachelor' },
+    { re: /\b(higher\s*diploma|advanced\s*diploma)\b/i, canonical: 'higher_diploma' },
+    { re: /\b(diploma)\b/i, canonical: 'diploma' },
+    { re: /\bدبلوم\b/, canonical: 'diploma' },
+    { re: /\b(associate)\b/i, canonical: 'associate' },
   ];
-  for (const tp of typePatterns) {
-    const m = text.match(tp);
+  for (const { re, canonical } of typePatterns) {
+    const m = norm.match(re);
     if (m) {
-      f['academic.credential_type'] = field(m[1].toLowerCase(), m[0], 0.8, 'regex_heuristic', m[0]);
+      f['academic.credential_type'] = field(canonical, m[0], 0.8, 'regex_heuristic', m[0]);
       break;
     }
   }
 
-  // Degree/credential name — English patterns
-  const degreePatterns = [
-    /(?:degree|diploma|certificate)\s*(?:of|in|:)\s*([^\n,]{3,60})/i,
-    /(?:bachelor|master)(?:'?s)?\s*(?:of|in|degree\s+in)\s*([^\n,]{3,80})/i,
-    /awarded\s*(?:the\s*)?(?:degree\s*(?:of|in)\s*)?([^\n,]{3,60})/i,
+  // ─── Credential / program name ────────────────────────────
+  const degreePatterns: RegExp[] = [
+    /(?:degree|diploma|certificate)\s*(?:of|in|:)\s*([^\n,;]{3,80})/i,
+    /(?:bachelor|master|doctorate)(?:'?s)?\s*(?:of|in|degree\s+in)\s*([^\n,;]{3,80})/i,
+    /awarded\s*(?:the\s*)?(?:degree\s*(?:of|in)\s*)?([^\n,;]{3,80})/i,
+    /major(?:\s*in)?\s*:?\s*([^\n,;]{3,80})/i,
+    /field\s*of\s*study\s*:?\s*([^\n,;]{3,80})/i,
+    /شهادة\s*(?:ال)?(?:بكالوريوس|ماجستير|دكتوراه|دبلوم)\s*(?:في|ب)?\s*([^\n,;]{3,80})/i,
+    /درجة\s*(?:ال)?(?:بكالوريوس|ماجستير|دكتوراه)\s*(?:في|ب)?\s*([^\n,;]{3,80})/i,
+    /(?:التخصص|تخصص|القسم|قسم)\s*:?\s*([^\n,;]{3,80})/i,
   ];
-  // Arabic patterns for credential name
-  const degreeArabicPatterns = [
-    /شهادة\s*(?:ال)?(?:بكالوريوس|ماجستير|دكتوراه|دبلوم)\s*(?:في|ب)?\s*([^\n,]{3,60})/i,
-    /(?:تخصص|قسم)\s*:?\s*([^\n,]{3,60})/i,
-    /درجة\s*(?:ال)?(?:بكالوريوس|ماجستير)\s*(?:في|ب)?\s*([^\n,]{3,60})/i,
-  ];
-  for (const dp of [...degreePatterns, ...degreeArabicPatterns]) {
-    const m = text.match(dp);
-    if (m) {
-      f['academic.credential_name'] = field(m[1].trim(), m[0], 0.7, 'regex_heuristic', m[0]);
-      break;
+  for (const dp of degreePatterns) {
+    const m = norm.match(dp);
+    if (m && m[1]) {
+      const cleaned = cleanFieldValue(m[1]);
+      if (cleaned.length >= 3) {
+        f['academic.credential_name'] = field(cleaned, m[0], 0.72, 'regex_heuristic', m[0]);
+        break;
+      }
     }
   }
 
-  // Institution — English
-  const uniPatterns = [
-    /(?:university|college|institute|institution)\s*(?:of|:)?\s*([^\n,]{3,80})/i,
+  // ─── Institution ──────────────────────────────────────────
+  const uniPatterns: RegExp[] = [
+    // English: capture name AFTER "University of X" OR before "University"
+    /([A-Z][A-Za-z\u00C0-\u017F\.\s&'\-]{2,60})\s+university\b/i,
+    /\buniversity\s+of\s+([A-Z][A-Za-z\u00C0-\u017F\.\s&'\-]{2,60})/i,
+    /\b(?:university|college|institute|academy|school)\s*(?:of|:)?\s*([^\n,;]{3,80})/i,
+    /جامعة\s+([^\n,;]{3,80})/,
+    /كلية\s+([^\n,;]{3,80})/,
+    /معهد\s+([^\n,;]{3,80})/,
+    /أكاديمية\s+([^\n,;]{3,80})/,
   ];
-  // Institution — Arabic
-  const uniArabicPatterns = [
-    /جامعة\s+([^\n,]{3,80})/i,
-    /كلية\s+([^\n,]{3,80})/i,
-    /معهد\s+([^\n,]{3,80})/i,
-  ];
-  for (const up of [...uniPatterns, ...uniArabicPatterns]) {
-    const m = text.match(up);
-    if (m) {
-      f['academic.awarding_institution'] = field(m[1].trim(), m[0], 0.7, 'regex_heuristic', m[0]);
-      break;
+  for (const up of uniPatterns) {
+    const m = norm.match(up);
+    if (m && m[1]) {
+      const cleaned = cleanFieldValue(m[1]);
+      if (cleaned.length >= 3) {
+        f['academic.awarding_institution'] = field(cleaned, m[0], 0.72, 'regex_heuristic', m[0]);
+        break;
+      }
     }
   }
 
-  // Graduation year
-  const yearPatterns = [
-    /(?:graduated?|conferred|awarded|class\s+of)\s*:?\s*(\d{4})/i,
-    /(?:عام|سنة|دفعة)\s*:?\s*(\d{4})/i,
-    /(\d{4})\s*(?:م|ميلادي)/i,  // 2020م or 2020 ميلادي
-    /\b(20[0-2]\d|19[89]\d)\b/,   // fallback: any recent year
+  // ─── Graduation year ──────────────────────────────────────
+  const yearPatterns: Array<{ re: RegExp; conf: number }> = [
+    { re: /(?:graduated?|conferred|awarded|granted|class\s+of|completed)\s*(?:on|in)?\s*:?\s*(?:[A-Za-z]+\s+)?(\d{4})/i, conf: 0.8 },
+    { re: /(?:تخرج|تخرّج|التخرج|منحت?|بتاريخ)\s*(?:في|عام|سنة)?\s*:?\s*(?:[\u0600-\u06FF]+\s+)?(\d{4})/, conf: 0.8 },
+    { re: /(?:عام|سنة|دفعة)\s*:?\s*(\d{4})/, conf: 0.7 },
+    { re: /(\d{4})\s*(?:م|ميلادي|ميلادية)/, conf: 0.7 },
+    { re: /(?:date\s*of\s*(?:graduation|award|conferral))\s*:?\s*(?:\d{1,2}[\s\/\-\.][A-Za-z\d]{1,9}[\s\/\-\.])?(\d{4})/i, conf: 0.8 },
+    { re: /\b(20[0-3]\d|19[7-9]\d)\b/, conf: 0.45 }, // fallback: any plausible year
   ];
-  for (const yp of yearPatterns) {
-    const m = text.match(yp);
+  for (const { re, conf } of yearPatterns) {
+    const m = norm.match(re);
     if (m) {
-      f['academic.graduation_year'] = field(parseInt(m[1]), m[0], 0.7, 'regex_heuristic', m[0]);
-      break;
+      const yr = parseInt(m[1], 10);
+      if (yr >= 1970 && yr <= new Date().getFullYear() + 1) {
+        f['academic.graduation_year'] = field(yr, m[0], conf, 'regex_heuristic', m[0]);
+        break;
+      }
     }
   }
 
-  // Grade/GPA
-  const gpaPatterns = [
-    /(?:gpa|grade|cgpa|cumulative)\s*:?\s*([0-9]+\.?[0-9]*)\s*(?:\/|out\s*of)?\s*([0-9]+\.?[0-9]*)?/i,
-    /(?:معدل|التقدير|بتقدير)\s*:?\s*([^\n,]{2,30})/i,
-    /(?:المعدل\s*التراكمي)\s*:?\s*([0-9]+\.?[0-9]*)\s*(?:من)?\s*([0-9]+\.?[0-9]*)?/i,
-  ];
-  for (const gp of gpaPatterns) {
-    const m = text.match(gp);
-    if (m) {
-      f['academic.gpa_raw'] = field(m[1], m[0], 0.75, 'regex_heuristic', m[0]);
-      if (m[2]) f['academic.grading_scale'] = field(m[2], m[0], 0.7, 'regex_heuristic', m[0]);
-      break;
+  // ─── GPA + scale (multi-format) ───────────────────────────
+  const gpa = extractGpaWithScale(norm);
+  if (gpa) {
+    f['academic.gpa_raw'] = field(gpa.raw, gpa.evidence, gpa.confidence, 'regex_heuristic', gpa.evidence);
+    if (gpa.scale != null) {
+      f['academic.grading_scale'] = field(String(gpa.scale), gpa.evidence, gpa.confidence - 0.05, 'regex_heuristic', gpa.evidence);
     }
+  }
+
+  // ─── Honors / classification (تقدير) ──────────────────────
+  const honor = extractHonor(norm);
+  if (honor) {
+    f['academic.honors'] = field(honor.canonical, honor.evidence, honor.confidence, 'regex_heuristic', honor.evidence);
+  }
+
+  // ─── Certificate / serial number ──────────────────────────
+  const certNumMatch = norm.match(
+    /(?:certificate\s*(?:no|number|n[°o]\.?)|serial\s*(?:no|number)|رقم\s*(?:ال)?شهادة|الرقم\s*التسلسلي)\s*:?\s*([A-Z0-9\-\/]{4,30})/i,
+  );
+  if (certNumMatch) {
+    f['academic.certificate_number'] = field(certNumMatch[1], certNumMatch[0], 0.7, 'regex_heuristic', certNumMatch[0]);
   }
 
   return f;
+}
+
+// ─── Helpers ─────────────────────────────────────────────────
+
+function normalizeForExtraction(input: string): string {
+  if (!input) return '';
+  // Convert Arabic-Indic digits to ASCII digits
+  const arabicDigits = '٠١٢٣٤٥٦٧٨٩';
+  let out = input.replace(/[٠-٩]/g, (d) => String(arabicDigits.indexOf(d)));
+  // Strip tatweel
+  out = out.replace(/\u0640/g, '');
+  // Collapse runs of whitespace but preserve newlines
+  out = out.replace(/[ \t]+/g, ' ');
+  return out;
+}
+
+function cleanFieldValue(v: string): string {
+  return v
+    .replace(/\s+/g, ' ')
+    .replace(/[\.\-_:;،,]+$/g, '')
+    .replace(/^[\.\-_:;،,]+/g, '')
+    .trim();
+}
+
+interface GpaResult {
+  raw: string;
+  scale: number | null;
+  confidence: number;
+  evidence: string;
+}
+
+function extractGpaWithScale(text: string): GpaResult | null {
+  // Pattern 1: explicit "GPA: X / Y" or "X out of Y"
+  const explicit = text.match(
+    /(?:cgpa|gpa|cumulative\s*(?:gpa|average)|grade\s*point\s*average|المعدل\s*(?:التراكمي|العام)?|معدل)\s*:?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:\/|out\s*of|من|على)\s*([0-9]+(?:\.[0-9]+)?)/i,
+  );
+  if (explicit) {
+    const val = parseFloat(explicit[1]);
+    const scale = parseFloat(explicit[2]);
+    if (isPlausibleGpa(val, scale)) {
+      return { raw: explicit[1], scale, confidence: 0.85, evidence: explicit[0] };
+    }
+  }
+
+  // Pattern 2: "GPA: X" with no scale — infer from value range
+  const noScale = text.match(
+    /(?:cgpa|gpa|cumulative\s*(?:gpa|average)|grade\s*point\s*average|المعدل\s*(?:التراكمي|العام)?)\s*:?\s*([0-9]+(?:\.[0-9]+)?)\b/i,
+  );
+  if (noScale) {
+    const val = parseFloat(noScale[1]);
+    const inferred = inferScale(val);
+    if (inferred) {
+      return { raw: noScale[1], scale: inferred, confidence: 0.7, evidence: noScale[0] };
+    }
+  }
+
+  // Pattern 3: percentage "نسبة 85.5%" or "Average 85.5%"
+  const pct = text.match(
+    /(?:percentage|average|النسبة\s*المئوية|النسبة)\s*:?\s*([0-9]+(?:\.[0-9]+)?)\s*%/i,
+  );
+  if (pct) {
+    return { raw: pct[1], scale: 100, confidence: 0.8, evidence: pct[0] };
+  }
+
+  return null;
+}
+
+function isPlausibleGpa(val: number, scale: number): boolean {
+  if (!Number.isFinite(val) || !Number.isFinite(scale)) return false;
+  if (![4, 5, 10, 100].includes(scale)) return false;
+  return val >= 0 && val <= scale;
+}
+
+function inferScale(val: number): number | null {
+  if (val > 0 && val <= 4) return 4;
+  if (val > 4 && val <= 5) return 5;
+  if (val > 5 && val <= 10) return 10;
+  if (val > 10 && val <= 100) return 100;
+  return null;
+}
+
+function extractHonor(text: string): { canonical: string; confidence: number; evidence: string } | null {
+  const honors: Array<{ re: RegExp; canonical: string }> = [
+    { re: /summa\s*cum\s*laude/i, canonical: 'summa_cum_laude' },
+    { re: /magna\s*cum\s*laude/i, canonical: 'magna_cum_laude' },
+    { re: /cum\s*laude/i, canonical: 'cum_laude' },
+    { re: /first\s*class\s*(?:honou?rs)?/i, canonical: 'first_class' },
+    { re: /second\s*class\s*(?:honou?rs)?\s*(?:upper)?/i, canonical: 'second_class_upper' },
+    { re: /(?:with\s*)?distinction/i, canonical: 'distinction' },
+    { re: /(?:with\s*)?honou?rs/i, canonical: 'honors' },
+    { re: /ممتاز\s*مع\s*مرتبة\s*الشرف/, canonical: 'excellent_with_honors' },
+    { re: /مرتبة\s*الشرف/, canonical: 'with_honors' },
+    { re: /امتياز/, canonical: 'excellent' },
+    { re: /ممتاز/, canonical: 'excellent' },
+    { re: /جيد\s*جدا?ً?/, canonical: 'very_good' },
+    { re: /جيد/, canonical: 'good' },
+    { re: /مقبول/, canonical: 'pass' },
+  ];
+  for (const { re, canonical } of honors) {
+    const m = text.match(re);
+    if (m) return { canonical, confidence: 0.75, evidence: m[0] };
+  }
+  return null;
 }
 
 // ── Transcript fields from text ──────────────────────────────
