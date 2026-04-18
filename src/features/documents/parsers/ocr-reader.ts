@@ -81,8 +81,43 @@ async function preprocessImageBlob(srcBlob: Blob): Promise<Blob> {
 }
 
 /**
+ * Crop the bottom third of an image blob to a new PNG blob.
+ * Used for the MRZ-aware second OCR pass.
+ */
+async function cropBottomThird(srcBlob: Blob): Promise<Blob | null> {
+  const url = URL.createObjectURL(srcBlob);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error('image_decode_failed'));
+      el.src = url;
+    });
+    const cropY = Math.floor(img.height * 0.62);
+    const cropH = img.height - cropY;
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = cropH;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.drawImage(img, 0, cropY, img.width, cropH, 0, 0, img.width, cropH);
+    return await new Promise<Blob | null>(resolve =>
+      canvas.toBlob(resolve, 'image/png'),
+    );
+  } catch {
+    return null;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+const MRZ_LIKELY_RE = /(?:<{2,}|K{4,}|[PI][A-Z<]{4})/;
+const MRZ_CHAR_WHITELIST = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<';
+
+/**
  * OCR a single image file (JPEG/PNG/WEBP).
- * Returns a single-page reading.
+ * Returns a single-page reading. Runs an MRZ-aware second pass on the
+ * bottom third of the image when the first pass shows MRZ-like patterns.
  */
 export async function ocrImageFile(file: File): Promise<OcrResult> {
   const start = performance.now();
@@ -99,7 +134,6 @@ export async function ocrImageFile(file: File): Promise<OcrResult> {
 
     try {
       const { data } = await worker.recognize(url);
-      await worker.terminate();
 
       const blocks: TextBlock[] = (data.lines || []).map(
         (line: any) => ({
@@ -109,7 +143,52 @@ export async function ocrImageFile(file: File): Promise<OcrResult> {
         })
       );
 
-      const fullText = data.text?.trim() || '';
+      let fullText = data.text?.trim() || '';
+
+      // ── MRZ-aware second pass ──────────────────────────────────
+      // If the first pass shows MRZ-likely patterns, re-run the bottom
+      // third with a narrow whitelist (uppercase + digits + '<') to
+      // recover fillers that the multilingual model mangled into K/(/[/«.
+      if (MRZ_LIKELY_RE.test(fullText)) {
+        try {
+          const cropBlob = await cropBottomThird(blob);
+          if (cropBlob) {
+            const mrzWorker = await Tesseract.createWorker('eng', undefined, {
+              logger: () => {},
+            });
+            await mrzWorker.setParameters({
+              tessedit_char_whitelist: MRZ_CHAR_WHITELIST,
+              tessedit_pageseg_mode: '6' as any, // uniform block of text
+              preserve_interword_spaces: '0',
+            } as any);
+            const cropUrl = URL.createObjectURL(cropBlob);
+            try {
+              const mrzData = await mrzWorker.recognize(cropUrl);
+              const mrzText = (mrzData.data?.text || '').trim();
+              if (mrzText && /[<P][A-Z0-9<]{20,}/.test(mrzText)) {
+                // Append as separate trailing lines so parseMrz sees them.
+                fullText = `${fullText}\n${mrzText}`;
+                (mrzData.data?.lines || []).forEach((line: any) => {
+                  blocks.push({
+                    page: 1,
+                    text: line.text?.trim() || '',
+                    type: 'line' as const,
+                  });
+                });
+              }
+            } finally {
+              URL.revokeObjectURL(cropUrl);
+              await mrzWorker.terminate();
+            }
+          }
+        } catch (mrzErr) {
+          // Second pass is best-effort; never let it break the first pass.
+          console.warn('[OCR] MRZ second pass failed:', mrzErr);
+        }
+      }
+
+      await worker.terminate();
+
       const page: PageReading = {
         page_number: 1,
         text: fullText,
