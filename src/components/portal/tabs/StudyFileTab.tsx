@@ -1,8 +1,9 @@
-import { lazy, Suspense, useCallback, useRef, useEffect } from "react";
+import { lazy, Suspense, useCallback, useRef, useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
 import { CanonicalFileSummary } from "@/components/student-file/CanonicalFileSummary";
 import { CentralUploadHub } from "@/components/documents/CentralUploadHub";
+import { LiveProfileAssembly } from "@/components/documents/LiveProfileAssembly";
 import { DocumentAnalysisPanel } from "@/components/documents/DocumentAnalysisPanel";
 import { AcademicTruthPanel } from "@/components/decision/AcademicTruthPanel";
 import { DecisionPanel } from "@/components/decision/DecisionPanel";
