@@ -146,11 +146,13 @@ function DocBlock({
   doc,
   promotedFields,
   onDeleteDoc,
+  onEditField,
 }: {
   lane: DestinationLane;
   doc: LaneDoc;
   promotedFields: PromotedField[];
   onDeleteDoc?: (crmFileId: string | null, documentId: string) => Promise<boolean>;
+  onEditField?: (params: { documentId: string; fieldKey: string; newValue: string }) => void;
 }) {
   const { t } = useLanguage();
   const [deleting, setDeleting] = useState(false);
