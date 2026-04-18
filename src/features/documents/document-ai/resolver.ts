@@ -81,7 +81,7 @@ export async function resolveStructuredArtifact(params: {
   return {
     artifact: emptyStructuredArtifact(),
     mode_used: 'none',
-    paddle_attempted: reading_artifact.reader_implementation === 'paddle_self_hosted',
+    paddle_attempted: false,
     paddle_status: null,
     paddle_reason: reading_artifact.failure_reason ?? 'reader_not_paddle',
     paddle_latency_ms: null,
