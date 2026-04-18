@@ -4,6 +4,7 @@ import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
 import { CanonicalFileSummary } from "@/components/student-file/CanonicalFileSummary";
 import { CentralUploadHub } from "@/components/documents/CentralUploadHub";
 import { LiveProfileAssembly } from "@/components/documents/LiveProfileAssembly";
+import { SaveDocumentsBar } from "@/components/documents/SaveDocumentsBar";
 import { DocumentAnalysisPanel } from "@/components/documents/DocumentAnalysisPanel";
 import { AcademicTruthPanel } from "@/components/decision/AcademicTruthPanel";
 import { DecisionPanel } from "@/components/decision/DecisionPanel";
@@ -18,6 +19,7 @@ import { useAcademicTruth } from "@/hooks/useAcademicTruth";
 import { useDecisionEngine } from "@/hooks/useDecisionEngine";
 import { useProgramRequirements } from "@/hooks/useProgramRequirements";
 import { useShortlistRequirementsContext } from "@/hooks/useShortlistRequirementsContext";
+import { useUnsavedDocumentsGuard } from "@/hooks/useUnsavedDocumentsGuard";
 import type { FileQualityResult } from "@/features/file-quality/types";
 import type { DocumentTypeFilter } from "./DocumentsTab";
 
