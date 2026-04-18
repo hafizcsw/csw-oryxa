@@ -2204,7 +2204,13 @@
         "needs_review": "بحاجة للمراجعة",
         "needs_review_desc": "Documents whose lane could not be resolved automatically.",
         "doc_count": "{{count}} مستندات",
-        "waiting": "بانتظار مستند مناسب…"
+        "waiting": "بانتظار مستند مناسب…",
+        "delete_one": "حذف هذا الملف",
+        "delete_all": "حذف الكل",
+        "confirm_delete_one": "هل تريد حذف هذا الملف نهائياً؟",
+        "confirm_delete_all": "سيتم حذف {{count}} ملف(ات) نهائياً. هل أنت متأكد؟",
+        "delete_failed": "فشل حذف الملف",
+        "delete_done": "تم الحذف: {{ok}} نجاح / {{fail}} فشل"
       },
       "header": {
         "lane": "القسم",
