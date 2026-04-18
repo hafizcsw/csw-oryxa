@@ -656,12 +656,28 @@ export function CentralUploadHub({
                   default:
                     status = 'pending';
                 }
-                return { name: r.original_file_name || 'Document', status };
+                const key = recordPreviewKey(
+                  r.original_file_name || '',
+                  r.file_size_bytes || 0,
+                );
+                const previewUrl = previewUrls[key] || r.signed_url || r.file_url || undefined;
+                return {
+                  id: r.document_id,
+                  name: r.original_file_name || 'Document',
+                  status,
+                  previewUrl: previewUrl || undefined,
+                  mimeType: r.mime_type,
+                };
               })}
             fileCount={records.length}
             hasFiles={records.length > 0}
             isDragOver={isDragOver}
             isProcessing={isProcessing}
+            onDeleteFile={handleDelete}
+            deleteLabel={(() => {
+              const v = t('common.delete');
+              return typeof v === 'string' && v && v !== 'common.delete' ? v : 'Delete';
+            })()}
           />
         </div>
 
