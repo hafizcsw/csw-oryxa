@@ -699,6 +699,7 @@ function DocumentCard({
   scanningLabel = "Scanning…",
   scannedLabel = "Scanned",
   previewUrl,
+  previewUrls,
   mimeType,
   fileId,
   onDelete,
