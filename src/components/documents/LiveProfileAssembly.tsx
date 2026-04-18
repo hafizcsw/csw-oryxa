@@ -122,11 +122,11 @@ export function LiveProfileAssembly({
 
   // Build LaneDocs from analyses + per-doc data
   const { byLane } = useMemo(() => {
-    const buckets: Record<DestinationLane, LaneDoc[]> = {
-      identity: [],
-      academic: [],
-      language: [],
-      needs_review: [],
+    const laneMaps: Record<DestinationLane, Map<string, LaneDoc & { __sort: number }>> = {
+      identity: new Map(),
+      academic: new Map(),
+      language: new Map(),
+      needs_review: new Map(),
     };
 
     // Index helpers
@@ -148,30 +148,47 @@ export function LiveProfileAssembly({
 
     // ── Resolve real CRM file_id by filename (fallback for hydrated/CRM-loaded docs) ──
     const crmIdByFilename = new Map<string, string>();
+    const activeCrmFilenames = new Set<string>();
     for (const d of crmDocuments ?? []) {
-      if (d.file_name && !crmIdByFilename.has(d.file_name)) {
-        crmIdByFilename.set(d.file_name, d.id);
+      if (d.file_name) {
+        activeCrmFilenames.add(d.file_name);
+        if (!crmIdByFilename.has(d.file_name)) {
+          crmIdByFilename.set(d.file_name, d.id);
+        }
       }
     }
     const resolveCrmId = (filename: string | undefined, fallback: string | null): string | null => {
       if (filename && crmIdByFilename.has(filename)) return crmIdByFilename.get(filename)!;
-      // Only return fallback if it looks like a UUID actually present in CRM list
       return fallback;
     };
 
-    // Live analyses (only show docs the user has revealed)
+    const upsertLaneDoc = (lane: DestinationLane, dedupeKey: string, sortValue: number, doc: LaneDoc) => {
+      const existing = laneMaps[lane].get(dedupeKey);
+      if (!existing || sortValue >= existing.__sort) {
+        laneMaps[lane].set(dedupeKey, { ...doc, __sort: sortValue });
+      }
+    };
+
+    // Live analyses (show only current-session docs or docs still backed by current CRM files)
     for (const a of analyses) {
       if (!revealedIds.has(a.document_id)) continue;
       const rec = recordsById.get(a.document_id);
       const filename = rec?.original_file_name ?? hydratedArtifactSurfaces[a.document_id]?.documentFilename ?? a.document_id;
+      const resolvedCrmId = rec?.crm_file_id ?? resolveCrmId(filename, null);
+      const isCurrentBackedDoc = !!rec || (!!filename && activeCrmFilenames.has(filename));
+      if (!isCurrentBackedDoc) continue;
+
       const artifact = artifacts[a.document_id] ?? null;
       const { lane, subMode, reason } = resolveDestinationLane(
         a.classification_result,
         a.classification_confidence,
       );
-      buckets[lane].push({
+      const dedupeKey = resolvedCrmId ? `crm:${resolvedCrmId}` : filename ? `name:${filename}` : `doc:${a.document_id}`;
+      const sortValue = Date.parse(a.updated_at ?? a.created_at ?? '') || 0;
+
+      upsertLaneDoc(lane, dedupeKey, sortValue, {
         documentId: a.document_id,
-        crmFileId: rec?.crm_file_id ?? resolveCrmId(filename, null),
+        crmFileId: resolvedCrmId,
         filename,
         previewUrl: previewUrls[a.document_id] ?? null,
         analysis: a,
@@ -188,10 +205,13 @@ export function LiveProfileAssembly({
     for (const [docId, surface] of Object.entries(hydratedArtifactSurfaces)) {
       if (analyses.some(a => a.document_id === docId)) continue;
       const filename = surface.documentFilename ?? docId;
-      // Treat as needs_review minimally — no analysis data
-      buckets.needs_review.push({
+      if (!filename || !activeCrmFilenames.has(filename)) continue;
+      const resolvedCrmId = resolveCrmId(filename, null);
+      const dedupeKey = resolvedCrmId ? `crm:${resolvedCrmId}` : `name:${filename}`;
+
+      upsertLaneDoc('needs_review', dedupeKey, 0, {
         documentId: docId,
-        crmFileId: resolveCrmId(filename, null),
+        crmFileId: resolvedCrmId,
         filename,
         previewUrl: previewUrls[docId] ?? null,
         analysis: null,
@@ -203,7 +223,14 @@ export function LiveProfileAssembly({
       });
     }
 
-    return { byLane: buckets };
+    return {
+      byLane: {
+        identity: Array.from(laneMaps.identity.values()).map(({ __sort, ...doc }) => doc),
+        academic: Array.from(laneMaps.academic.values()).map(({ __sort, ...doc }) => doc),
+        language: Array.from(laneMaps.language.values()).map(({ __sort, ...doc }) => doc),
+        needs_review: Array.from(laneMaps.needs_review.values()).map(({ __sort, ...doc }) => doc),
+      },
+    };
   }, [
     analyses, revealedIds, records, proposals, artifacts,
     hydratedArtifactSurfaces, hydratedIds, previewUrls, subjectRows, crmDocuments,
