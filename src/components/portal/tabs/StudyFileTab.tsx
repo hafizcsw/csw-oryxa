@@ -253,17 +253,35 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     await refetchDocs({ silent: true });
   }, [analysisHook, guard, refetchDocs, t, toast]);
 
+  const autoPassportCleanupRef = useRef(new Set<string>());
+
   const handleFilesSelected = useCallback(async (files: File[]) => {
     // ─── Passport de-duplication gate ───────────────────────────
-    // If a passport is already in the file and the user is uploading
-    // another one, ask whether to REPLACE rather than silently keep two.
+    // Use both CRM category + prior analysis truth so we do not rely only
+    // on filename heuristics or legacy file_kind correctness.
     const incomingPassports = files.filter(
       f => guessSlotFromFileName(f.name) === 'passport'
     );
-    const existingPassports = (documents || []).filter(
-      d => (d.document_category || (d as any).file_kind) === 'passport'
-    );
 
+    const existingPassportMap = new Map<string, { crmFileId: string | null; documentId: string | null }>();
+
+    for (const d of documents || []) {
+      if ((d.document_category || (d as any).file_kind) === 'passport') {
+        existingPassportMap.set(`crm:${d.id}`, { crmFileId: d.id, documentId: null });
+      }
+    }
+
+    for (const a of analysisHook.analyses) {
+      if (a.classification_result !== 'passport') continue;
+      const rec = registry.records.find(r => r.document_id === a.document_id);
+      const filename = rec?.original_file_name ?? analysisHook.hydratedArtifactSurfaces[a.document_id]?.documentFilename ?? null;
+      const crmDoc = filename ? (documents || []).find(d => d.file_name === filename) : null;
+      const crmFileId = rec?.crm_file_id ?? crmDoc?.id ?? null;
+      const key = crmFileId ? `crm:${crmFileId}` : `analysis:${a.document_id}`;
+      existingPassportMap.set(key, { crmFileId, documentId: a.document_id });
+    }
+
+    const existingPassports = Array.from(existingPassportMap.values());
     let filesToUpload = files;
 
     if (incomingPassports.length > 0 && existingPassports.length > 0) {
@@ -276,17 +294,10 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         filesToUpload = files.filter(f => !passportNames.has(f.name));
         if (filesToUpload.length === 0) return;
       } else {
-        const deletions = await Promise.allSettled(
-          existingPassports.map(d => deleteFile(d.id))
-        );
-        const failed = deletions.filter(
-          r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok)
-        ).length;
-        if (failed > 0) {
-          toast({
-            title: 'تعذر حذف بعض الجوازات السابقة',
-            variant: 'destructive',
-          });
+        for (const existing of existingPassports) {
+          if (existing.crmFileId || existing.documentId) {
+            await handleDeleteDoc(existing.crmFileId, existing.documentId ?? `passport-replaced:${existing.crmFileId}`);
+          }
         }
         await refetchDocs({ silent: true });
       }
@@ -300,9 +311,41 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       fileNameToKeysRef.current.set(file.name, existing);
     }
     registry.enqueueFiles(filesToUpload, 'upload_hub');
-  }, [registry, documents, refetchDocs, toast]);
+  }, [registry, documents, analysisHook.analyses, analysisHook.hydratedArtifactSurfaces, handleDeleteDoc, refetchDocs]);
 
-  // ═══ Preview URLs collected from upload hub for assembly chips ═══
+  // If a newly analyzed upload resolves to passport after the fact
+  // (e.g. filename did not contain "passport"), keep only the newest one.
+  useEffect(() => {
+    const passportDocs = analysisHook.analyses
+      .filter(a => a.analysis_status === 'completed' && a.classification_result === 'passport')
+      .map(a => {
+        const rec = registry.records.find(r => r.document_id === a.document_id);
+        const filename = rec?.original_file_name ?? analysisHook.hydratedArtifactSurfaces[a.document_id]?.documentFilename ?? null;
+        const crmDoc = filename ? (documents || []).find(d => d.file_name === filename) : null;
+        return {
+          documentId: a.document_id,
+          crmFileId: rec?.crm_file_id ?? crmDoc?.id ?? null,
+          timestamp: Date.parse(a.updated_at || a.created_at || '') || 0,
+        };
+      })
+      .filter(d => d.crmFileId || d.documentId);
+
+    if (passportDocs.length <= 1) return;
+
+    passportDocs.sort((a, b) => b.timestamp - a.timestamp);
+    const [, ...duplicates] = passportDocs;
+    const actionable = duplicates.filter(d => !autoPassportCleanupRef.current.has(d.documentId));
+    if (actionable.length === 0) return;
+
+    actionable.forEach(d => autoPassportCleanupRef.current.add(d.documentId));
+
+    void (async () => {
+      for (const duplicate of actionable) {
+        await handleDeleteDoc(duplicate.crmFileId, duplicate.documentId);
+      }
+      await refetchDocs({ silent: true });
+    })();
+  }, [analysisHook.analyses, analysisHook.hydratedArtifactSurfaces, registry.records, documents, handleDeleteDoc, refetchDocs]);
   const [previewUrls, setPreviewUrls] = useState<Record<string, string | null>>({});
   const handlePreviewsReady = useCallback((documentId: string, previewUrl: string) => {
     setPreviewUrls(prev => prev[documentId] === previewUrl ? prev : { ...prev, [documentId]: previewUrl });
