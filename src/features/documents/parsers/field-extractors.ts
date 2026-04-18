@@ -84,58 +84,140 @@ function deriveIssueDateFromExpiry(expiryYmd: string, dobYmd: string): string | 
 // Used only when MRZ is absent. Returns weak-evidence fields tagged
 // 'regex_heuristic' so the promotion layer can refuse auto-accept.
 //
-// IMPORTANT: this lane is intentionally conservative. It must NOT
-// produce identity fields without an explicit nearby label — bare
-// numbers / bare names in arbitrary OCR noise are NOT enough.
+// Conservative-but-usable: every field requires an explicit nearby label
+// (English / Arabic / French / Spanish). Bare numbers in OCR noise are
+// NEVER promoted. Date patterns accept multiple separators (/ - . space)
+// and DD/MMM/YYYY (e.g. "01 NOV 2018") commonly seen in passport scans.
 export function extractPassportTextFallback(text: string): Fields {
   const f: Fields = {};
   if (!text || text.trim().length === 0) return f;
   const p: ParserType = 'regex_heuristic';
-  const lowConf = 0.45; // capped well below AUTO_ACCEPT_THRESHOLD
+  const lowConf = 0.55; // capped well below AUTO_ACCEPT_THRESHOLD
 
-  // Passport number (must be near explicit label)
+  // Reusable date sub-pattern: DD[sep]MMM-or-MM[sep]YYYY  OR  YYYY-MM-DD
+  const DATE = String.raw`(\d{1,2}[\s\/\-\.][0-9A-Za-z\u0600-\u06FF]{1,9}[\s\/\-\.]\d{2,4}|\d{4}[\-\/]\d{1,2}[\-\/]\d{1,2})`;
+
+  // ── Passport number (label-anchored; multi-language) ──────
   const numMatch = text.match(
-    /(?:passport\s*(?:no|number|n[°o]\.?)|رقم\s*(?:ال)?جواز)\s*:?\s*([A-Z0-9]{6,12})/i,
+    new RegExp(
+      `(?:passport\\s*(?:no|number|n[°o]\\.?)|رقم\\s*(?:ال)?جواز|n[°o]\\s*de\\s*(?:passeport|pasaporte)|reisepass[\\s-]*nr|护照号码?)\\s*[:.]?\\s*([A-Z0-9]{6,12})`,
+      'i',
+    ),
   );
   if (numMatch) {
     f['identity.passport_number'] = field(numMatch[1].toUpperCase(), numMatch[0], lowConf, p, numMatch[0]);
   }
 
-  // Date of birth (must be near explicit label)
+  // ── Surname / family name ─────────────────────────────────
+  const surnameMatch = text.match(
+    /(?:surname|family\s*name|last\s*name|nom(?:\s*de\s*famille)?|apellidos?|nachname|اللقب|الاسم\s*العائلي|اسم\s*العائلة)\s*[:.]?\s*([A-Z\u00C0-\u017F\u0600-\u06FF][A-Za-z\u00C0-\u017F\u0600-\u06FF\s\-']{1,40})/i,
+  );
+  if (surnameMatch) {
+    const surname = surnameMatch[1].trim().replace(/\s{2,}/g, ' ');
+    if (surname.length >= 2 && surname.length <= 40) {
+      f['identity.passport_surname'] = field(surname, surnameMatch[0], lowConf, p, surnameMatch[0]);
+    }
+  }
+
+  // ── Given names ───────────────────────────────────────────
+  const givenMatch = text.match(
+    /(?:given\s*names?|first\s*names?|fore[\s-]*names?|pr[ée]noms?|nombres?|vornamen?|الاسم(?:\s*الأول)?|الأسماء|الاسم\s*الكامل)\s*[:.]?\s*([A-Z\u00C0-\u017F\u0600-\u06FF][A-Za-z\u00C0-\u017F\u0600-\u06FF\s\-']{1,60})/i,
+  );
+  if (givenMatch) {
+    const given = givenMatch[1].trim().replace(/\s{2,}/g, ' ');
+    if (given.length >= 2 && given.length <= 60) {
+      f['identity.passport_given_names'] = field(given, givenMatch[0], lowConf, p, givenMatch[0]);
+    }
+  }
+
+  // ── Synthesize full passport name when both halves exist ──
+  const surnameVal = f['identity.passport_surname']?.value as string | undefined;
+  const givenVal = f['identity.passport_given_names']?.value as string | undefined;
+  if (givenVal && surnameVal) {
+    f['identity.passport_name'] = field(
+      `${givenVal} ${surnameVal}`,
+      `${givenMatch?.[0] ?? ''} | ${surnameMatch?.[0] ?? ''}`,
+      lowConf,
+      p,
+      `synthesized: given+surname`,
+    );
+  } else if (givenVal || surnameVal) {
+    // Single-half capture is still better than nothing.
+    f['identity.passport_name'] = field(
+      (givenVal ?? surnameVal)!,
+      (givenMatch ?? surnameMatch)![0],
+      lowConf - 0.1,
+      p,
+      'partial: one of (given|surname) only',
+    );
+  }
+
+  // ── Date of birth (label-anchored) ────────────────────────
   const dobMatch = text.match(
-    /(?:date\s*of\s*birth|d\.?o\.?b\.?|تاريخ\s*الميلاد)\s*:?\s*([0-9]{1,2}[\s\/\-\.][0-9A-Za-z]{1,9}[\s\/\-\.][0-9]{2,4}|\d{4}[\-\/]\d{2}[\-\/]\d{2})/i,
+    new RegExp(
+      `(?:date\\s*of\\s*birth|d\\.?o\\.?b\\.?|birth\\s*date|تاريخ\\s*(?:ال)?ميلاد|date\\s*de\\s*naissance|fecha\\s*de\\s*nacimiento|geburtsdatum|出生日期)\\s*[:.]?\\s*${DATE}`,
+      'i',
+    ),
   );
   if (dobMatch) {
     f['identity.date_of_birth'] = field(dobMatch[1].trim(), dobMatch[0], lowConf, p, dobMatch[0]);
   }
 
-  // Expiry date (must be near explicit label)
+  // ── Expiry date (label-anchored) ──────────────────────────
   const expMatch = text.match(
-    /(?:date\s*of\s*expiry|expiry|expires?|تاريخ\s*الانتهاء)\s*:?\s*([0-9]{1,2}[\s\/\-\.][0-9A-Za-z]{1,9}[\s\/\-\.][0-9]{2,4}|\d{4}[\-\/]\d{2}[\-\/]\d{2})/i,
+    new RegExp(
+      `(?:date\\s*of\\s*expiry|expiry(?:\\s*date)?|expires?(?:\\s*on)?|valid\\s*until|تاريخ\\s*(?:ال)?(?:انتهاء|الانتهاء|الإنتهاء)|date\\s*d[''']?expiration|fecha\\s*de\\s*caducidad|g[üu]ltig\\s*bis|有效期至)\\s*[:.]?\\s*${DATE}`,
+      'i',
+    ),
   );
   if (expMatch) {
     f['identity.passport_expiry_date'] = field(expMatch[1].trim(), expMatch[0], lowConf, p, expMatch[0]);
   }
 
-  // Issue date (must be near explicit label)
+  // ── Issue date (label-anchored) ───────────────────────────
   const issueMatch = text.match(
-    /(?:date\s*of\s*issue|issue\s*date|issued\s*on|تاريخ\s*(?:ال)?(?:إصدار|الإصدار|الاصدار))\s*:?\s*([0-9]{1,2}[\s\/\-\.][0-9A-Za-z]{1,9}[\s\/\-\.][0-9]{2,4}|\d{4}[\-\/]\d{2}[\-\/]\d{2})/i,
+    new RegExp(
+      `(?:date\\s*of\\s*issue|issue\\s*date|issued\\s*on|date\\s*of\\s*delivery|تاريخ\\s*(?:ال)?(?:إصدار|الإصدار|الاصدار)|date\\s*de\\s*d[ée]livrance|fecha\\s*de\\s*expedici[óo]n|ausstellungsdatum|签发日期)\\s*[:.]?\\s*${DATE}`,
+      'i',
+    ),
   );
   if (issueMatch) {
     f['identity.passport_issue_date'] = field(issueMatch[1].trim(), issueMatch[0], lowConf, p, issueMatch[0]);
   }
 
-  // Gender (must be near explicit label)
-  const genderMatch = text.match(/(?:sex|gender|الجنس)\s*:?\s*([MFmf])\b/);
+  // ── Sex / gender ──────────────────────────────────────────
+  const genderMatch = text.match(
+    /(?:sex|gender|sexe|sexo|geschlecht|الجنس|性别)\s*[:.]?\s*([MF]|male|female|masculin|f[ée]minin|masculino|femenino|m[äa]nnlich|weiblich|ذكر|أنثى)\b/i,
+  );
   if (genderMatch) {
     const v = genderMatch[1].toUpperCase();
-    f['identity.gender'] = field(v, genderMatch[0], lowConf, p, genderMatch[0]);
+    const norm = v.startsWith('M') || v === 'MASCULIN' || v === 'MASCULINO' || v === 'MÄNNLICH' || v === 'MANNLICH' || v === 'ذكر' ? 'M'
+              : v.startsWith('F') || v === 'WEIBLICH' || v === 'أنثى' ? 'F' : v;
+    f['identity.gender'] = field(norm, genderMatch[0], lowConf, p, genderMatch[0]);
   }
 
-  // Nationality (must be near explicit label)
-  const natMatch = text.match(/(?:nationality|الجنسية)\s*:?\s*([A-Z]{3}|[A-Za-z\u0600-\u06FF\s]{3,40})/);
+  // ── Nationality (label-anchored) ──────────────────────────
+  const natMatch = text.match(
+    /(?:nationality|nationalit[ée]|nacionalidad|staatsangeh[öo]rigkeit|الجنسية|国籍)\s*[:.]?\s*([A-Z]{3}\b|[A-Za-z\u00C0-\u017F\u0600-\u06FF][A-Za-z\u00C0-\u017F\u0600-\u06FF\s\-]{2,40})/i,
+  );
   if (natMatch) {
     f['identity.citizenship'] = field(natMatch[1].trim(), natMatch[0], lowConf, p, natMatch[0]);
+  }
+
+  // ── Issuing country / authority (label-anchored) ──────────
+  const issuingMatch = text.match(
+    /(?:issuing\s*(?:authority|country|state|office)|country\s*of\s*issue|pays\s*[ée]metteur|pa[íi]s\s*(?:de\s*)?expedici[óo]n|ausstellender\s*staat|جهة\s*(?:ال)?[إا]صدار|بلد\s*(?:ال)?[إا]صدار|签发国家?)\s*[:.]?\s*([A-Z]{3}\b|[A-Za-z\u00C0-\u017F\u0600-\u06FF][A-Za-z\u00C0-\u017F\u0600-\u06FF\s\-]{2,40})/i,
+  );
+  if (issuingMatch) {
+    f['identity.passport_issuing_country'] = field(issuingMatch[1].trim(), issuingMatch[0], lowConf, p, issuingMatch[0]);
+  }
+
+  // ── Place of birth (label-anchored, optional) ─────────────
+  const pobMatch = text.match(
+    /(?:place\s*of\s*birth|lieu\s*de\s*naissance|lugar\s*de\s*nacimiento|geburtsort|محل\s*(?:ال)?ميلاد|مكان\s*(?:ال)?ميلاد|出生地点?)\s*[:.]?\s*([A-Za-z\u00C0-\u017F\u0600-\u06FF][A-Za-z\u00C0-\u017F\u0600-\u06FF\s\-,]{2,60})/i,
+  );
+  if (pobMatch) {
+    f['identity.place_of_birth'] = field(pobMatch[1].trim(), pobMatch[0], lowConf, p, pobMatch[0]);
   }
 
   return f;
