@@ -69,6 +69,8 @@ interface UseDocumentAnalysisResult {
   getAnalysis: (documentId: string) => DocumentAnalysis | undefined;
   dismissAnalysis: (documentId: string) => void;
   clearAllAnalyses: () => void;
+  /** Inline-edit a field value for a document (creates proposal if missing). Always sets pending_review. */
+  editFieldValue: (params: { documentId: string; fieldKey: string; newValue: string }) => void;
 }
 
 function laneFromClassification(c: string | null | undefined): 'passport' | 'transcript' | 'graduation' | 'language' | 'unknown' {
