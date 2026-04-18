@@ -691,11 +691,13 @@ export function CentralUploadHub({
                   r.file_size_bytes || 0,
                 );
                 const previewUrl = previewUrls[key] || r.signed_url || r.file_url || undefined;
+                const pages = previewPages[key];
                 return {
                   id: r.document_id,
                   name: r.original_file_name || 'Document',
                   status,
                   previewUrl: previewUrl || undefined,
+                  previewUrls: pages && pages.length > 0 ? pages : undefined,
                   mimeType: r.mime_type,
                 };
               })}
