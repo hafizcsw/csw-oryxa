@@ -29,6 +29,7 @@ import {
   assessOcrQuality,
 } from '../reading-artifact-model';
 import type { PaddleStructureResponse, PaddlePage } from '../document-ai/paddle-output-mapper';
+import { storePaddleResponse } from '../document-ai/paddle-response-cache';
 
 /** Storage path is REQUIRED — Paddle reads via signed URL only. */
 export interface PaddleReadInput {
@@ -227,6 +228,9 @@ export const paddleReader: DocumentReader & {
       );
     }
 
+    // Cache the raw response so resolveStructuredArtifact() can
+    // reuse it without a second network round-trip to Paddle.
+    storePaddleResponse(document_id, envelope.result);
     return buildArtifactFromPaddle(envelope.result, file, startedAt);
   },
 };

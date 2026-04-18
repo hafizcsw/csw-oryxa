@@ -117,11 +117,8 @@ export async function readDocumentArtifact(
   return artifact;
 }
 
-/** Lower-level accessor kept for compatibility with code that
- *  needs the legacy reader directly. New code should call
- *  readDocumentArtifact() with a context instead. */
-export async function getActiveReader(): Promise<DocumentReader> {
-  // The "active" surface is now the router itself, but legacy stays
-  // accessible for callers that explicitly want it.
-  return getLegacyReader();
-}
+// NOTE: A `getActiveReader()` legacy getter previously lived here. It
+// was removed during the Paddle soft-cutover because the truth surface
+// is now the router (`readDocumentArtifact`) — there is no single
+// "active reader" anymore. Callers needing the legacy reader directly
+// must import `legacyBrowserReader` from `./parsers/legacy-browser-reader`.

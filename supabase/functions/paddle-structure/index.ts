@@ -91,25 +91,31 @@ Deno.serve(async (req) => {
     : storage_path;
 
   const adminClient = createClient(SUPABASE_URL, SERVICE_KEY);
-  // Look up profile_id for this auth user (the FileUploadSection writes
-  // `user/<profile_id>/...`, where profile_id = profiles.id).
+  // Resolve BOTH profile.id and profile.customer_id for this auth user.
+  // Different upload flows write under different prefixes:
+  //   - FileUploadSection (StudyFileTab) → `<customer_id>/<slot>/...`
+  //   - other flows                       → `<profile_id>/...` or `user/<auth_uid>/...`
+  // The privacy gate accepts ANY of them as long as it maps back to the
+  // calling user.
   let profile_id: string | null = null;
+  let customer_id: string | null = null;
   try {
     const { data: profileRow } = await adminClient
       .from("profiles")
       .select("id, customer_id")
       .eq("user_id", user_id)
       .maybeSingle();
-    profile_id = (profileRow?.id ?? profileRow?.customer_id ?? null) as string | null;
+    profile_id = (profileRow?.id ?? null) as string | null;
+    customer_id = (profileRow?.customer_id ?? null) as string | null;
   } catch (_e) {
-    // profile lookup is best-effort; the path check below still allows
-    // the auth-uid form which other flows use.
+    // best-effort
   }
 
   const acceptedPrefixes = [
     `${user_id}/`,
     `user/${user_id}/`,
     ...(profile_id ? [`${profile_id}/`, `user/${profile_id}/`] : []),
+    ...(customer_id ? [`${customer_id}/`, `user/${customer_id}/`] : []),
   ];
   const belongsToCaller = acceptedPrefixes.some((p) =>
     normalizedPath.startsWith(p) || normalizedPath.includes(`/${p}`),
@@ -120,6 +126,7 @@ Deno.serve(async (req) => {
       normalizedPath,
       user_id,
       profile_id,
+      customer_id,
       acceptedPrefixes,
     });
     return failClosed("storage_path_forbidden");
