@@ -56,6 +56,8 @@ export interface AnalysisResult {
     paddle_latency_ms: number | null;
     paddle_error_message: string | null;
   };
+  /** Unified passport output (only present for passport lane with viable MRZ). */
+  passport_output: PassportOutput | null;
 }
 
 /**
