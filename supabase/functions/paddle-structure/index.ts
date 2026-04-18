@@ -41,6 +41,7 @@ function jsonResp(body: unknown, init: ResponseInit = {}) {
 }
 
 function failClosed(reason: string, error_message: string | null = null) {
+  console.log("[paddle-structure] ✗ failClosed", { reason, error_message });
   // Always HTTP 200 so the supabase-js invoke() does not raise a generic
   // FunctionsError; the client interprets ok:false as fail-closed.
   return jsonResp({ ok: false, reason, error_message });
@@ -48,6 +49,8 @@ function failClosed(reason: string, error_message: string | null = null) {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  console.log("[paddle-structure] ▶ request received", { method: req.method, ts: Date.now() });
 
   // ── Auth ───────────────────────────────────────────────────
   const authHeader = req.headers.get("Authorization");
