@@ -378,17 +378,42 @@ const PASSPORT_CO_LABELS = new Set([
   'sex', 'gender', 'date', 'place', 'office', 'type', 'code',
   'name', 'nom', 'no', 'num', 'dob', 'pob', 'doe', 'doi',
   'mrz', 'passport', 'country', 'nat', 'sig',
+  'issue', 'expiry', 'expiration', 'birth', 'issuing', 'authority',
+  'of', 'and', 'the', 'state', 'national',
 ]);
+
+// Known nationality adjectives/demonyms commonly printed on passports.
+// When a label-anchored window contains one of these (even fused with
+// noise like "8EGYPTIAN"), we prefer it as the citizenship value.
+const NATIONALITY_DEMONYMS = [
+  'EGYPTIAN', 'SAUDI', 'EMIRATI', 'JORDANIAN', 'LEBANESE', 'SYRIAN',
+  'IRAQI', 'PALESTINIAN', 'KUWAITI', 'QATARI', 'BAHRAINI', 'OMANI',
+  'YEMENI', 'MOROCCAN', 'ALGERIAN', 'TUNISIAN', 'LIBYAN', 'SUDANESE',
+  'AMERICAN', 'BRITISH', 'CANADIAN', 'AUSTRALIAN', 'GERMAN', 'FRENCH',
+  'ITALIAN', 'SPANISH', 'TURKISH', 'INDIAN', 'PAKISTANI', 'CHINESE',
+  'JAPANESE', 'KOREAN', 'RUSSIAN', 'BRAZILIAN', 'MEXICAN', 'NIGERIAN',
+];
 
 /**
  * Pick the first plausible value-token after a label, skipping over
  * known co-labels. Returns null if none found within window.
+ *
+ * Hardening: strips leading digits (OCR noise like "8EGYPTIAN" → "EGYPTIAN")
+ * and prefers known nationality demonyms when present anywhere in window.
  */
 function pickFirstNonLabelToken(window: string): string | null {
   if (!window) return null;
+
+  // Priority 1: scan whole window for a known demonym (handles fused tokens)
+  const upper = window.toUpperCase();
+  for (const demonym of NATIONALITY_DEMONYMS) {
+    if (upper.includes(demonym)) return demonym;
+  }
+
+  // Priority 2: token scan with digit-prefix stripping
   const tokens = window
     .split(/[\s:;,.\/\\|]+/)
-    .map(t => t.trim())
+    .map(t => t.trim().replace(/^\d+/, '')) // strip leading digits ("8EGYPTIAN" → "EGYPTIAN")
     .filter(t => t.length > 0);
   for (const tok of tokens) {
     if (PASSPORT_CO_LABELS.has(tok.toLowerCase())) continue;
