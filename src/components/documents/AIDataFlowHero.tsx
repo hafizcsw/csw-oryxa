@@ -477,19 +477,23 @@ function AIDataFlowHeroComponent({
           </g>
         )}
 
-        {/* ═══ Connector tubes — glowing 3-cable pipeline for the active file ═══ */}
+        {/* ═══ Connector tubes — PERSISTENT 3 cables per file, color = status ═══ */}
         {showConnectors && (
           <g fill="none" strokeLinecap="round">
-            {activeConnectors.map((p) => (
-              <ConnectorTube
-                key={`act-${p.key}`}
-                d={p.d}
-                animate={!reduceMotion}
-                delay={0.15 + p.lineIdx * 0.08}
-                markerId={ids.arrowHead}
-                tone="active"
-              />
-            ))}
+            {connectors.map((p) => {
+              const tone = tubeToneFor(p.gIdx);
+              const markerId = tone === "error" ? `${ids.arrowHead}-err` : ids.arrowHead;
+              return (
+                <ConnectorTube
+                  key={`tube-${p.key}`}
+                  d={p.d}
+                  animate={!reduceMotion}
+                  delay={0.1 + p.lineIdx * 0.06}
+                  markerId={markerId}
+                  tone={tone}
+                />
+              );
+            })}
           </g>
         )}
 
@@ -502,23 +506,6 @@ function AIDataFlowHeroComponent({
                 pathD={p.d}
                 duration={cfg.chipDuration}
                 delay={(0.5 + p.lineIdx * 0.5 + (i * 0.15)) % cfg.chipDuration}
-              />
-            ))}
-          </g>
-        )}
-
-
-        {/* ═══ Issue connector tubes — RED cable look, for failed/weak files ═══ */}
-        {showDocuments && issuedConnectors.length > 0 && (
-          <g fill="none" strokeLinecap="round">
-            {issuedConnectors.map((p) => (
-              <ConnectorTube
-                key={`err-${p.key}`}
-                d={p.d}
-                animate={!reduceMotion}
-                delay={0.1 + p.lineIdx * 0.06}
-                markerId={`${ids.arrowHead}-err`}
-                tone="error"
               />
             ))}
           </g>
