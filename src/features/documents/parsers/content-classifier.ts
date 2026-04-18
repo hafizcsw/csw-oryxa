@@ -66,16 +66,47 @@ interface WeightedPattern {
 }
 
 const PASSPORT_PATTERNS: WeightedPattern[] = [
+  // Universal MRZ start patterns — strongest signal possible
+  { pattern: /P<[A-Z]{3}/, weight: 5 },           // TD3 line 1
+  { pattern: /^[IAC][A-Z<][A-Z<]{3}/m, weight: 4 }, // TD1 line 1
+  // English
   { pattern: /passport/i, weight: 3 },
-  { pattern: /P<[A-Z]{3}/, weight: 5 },           // MRZ line 1 — very strong
-  { pattern: /\b[A-Z0-9]{9}\d\b/, weight: 2 },    // passport number
+  { pattern: /\b[A-Z0-9]{9}\d\b/, weight: 2 },
   { pattern: /nationality/i, weight: 1.5 },
   { pattern: /date.?of.?birth/i, weight: 1 },
-  { pattern: /issuing.?authority/i, weight: 2 },
-  { pattern: /جواز/i, weight: 3 },                 // Arabic: passport
-  { pattern: /سفر/i, weight: 2 },                  // Arabic: travel
+  { pattern: /issuing.?(?:authority|country|state)/i, weight: 2 },
   { pattern: /place.?of.?birth/i, weight: 1.5 },
   { pattern: /expiry|expiration/i, weight: 1.5 },
+  // Arabic
+  { pattern: /جواز/i, weight: 3 },
+  { pattern: /سفر/i, weight: 2 },
+  { pattern: /الجنسية/i, weight: 1.5 },
+  { pattern: /تاريخ\s*الميلاد/i, weight: 1.5 },
+  // French
+  { pattern: /passeport/i, weight: 3 },
+  { pattern: /république/i, weight: 1.5 },
+  { pattern: /royaume/i, weight: 1.5 },
+  { pattern: /date\s*de\s*(?:naissance|délivrance|expiration)/i, weight: 2 },
+  { pattern: /nationalité/i, weight: 1.5 },
+  // Spanish
+  { pattern: /pasaporte/i, weight: 3 },
+  { pattern: /república/i, weight: 1.5 },
+  { pattern: /fecha\s*de\s*(?:nacimiento|expedición|caducidad)/i, weight: 2 },
+  { pattern: /nacionalidad/i, weight: 1.5 },
+  // German
+  { pattern: /reisepass/i, weight: 3 },
+  { pattern: /ausstellungsdatum/i, weight: 2 },
+  { pattern: /staatsangehörigkeit/i, weight: 1.5 },
+  // Russian (Cyrillic)
+  { pattern: /паспорт/i, weight: 3 },
+  { pattern: /гражданство/i, weight: 1.5 },
+  { pattern: /дата\s*рождения/i, weight: 1.5 },
+  // Chinese (Simplified)
+  { pattern: /护照/, weight: 3 },
+  { pattern: /中华人民共和国/, weight: 2 },
+  { pattern: /国籍/, weight: 1.5 },
+  // Portuguese / Italian short keywords
+  { pattern: /passaporto|passaporte/i, weight: 3 },
 ];
 
 const GRADUATION_CERT_PATTERNS: WeightedPattern[] = [
@@ -177,15 +208,34 @@ function scoreWeightedPatterns(text: string, patterns: WeightedPattern[]): { sco
  * cannot upgrade lane strength on their own.
  */
 const PASSPORT_HIGH_SIGNAL_TEXT_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
+  // English
   { pattern: /passport\s*(?:no|number|n[°o]\.?)/i, label: 'passport_number_label' },
   { pattern: /\bissuing\s*(?:authority|country|state)\b/i, label: 'issuing_authority' },
   { pattern: /\bdate\s*of\s*(?:birth|expiry|issue)\b/i, label: 'passport_date_label' },
   { pattern: /\bplace\s*of\s*birth\b/i, label: 'place_of_birth' },
   { pattern: /\bnationality\b/i, label: 'nationality_label' },
+  // Arabic
   { pattern: /جواز\s*(?:ال)?سفر/i, label: 'arabic_passport' },
   { pattern: /رقم\s*(?:ال)?جواز/i, label: 'arabic_passport_number' },
   { pattern: /تاريخ\s*(?:الميلاد|الانتهاء|الإصدار)/i, label: 'arabic_passport_date' },
   { pattern: /جهة\s*الإصدار/i, label: 'arabic_issuing_authority' },
+  // French
+  { pattern: /passeport/i, label: 'french_passport' },
+  { pattern: /n[°o]\s*de\s*passeport/i, label: 'french_passport_number' },
+  { pattern: /date\s*de\s*(?:naissance|délivrance|expiration)/i, label: 'french_passport_date' },
+  // Spanish
+  { pattern: /pasaporte/i, label: 'spanish_passport' },
+  { pattern: /n[°o]\s*de\s*pasaporte/i, label: 'spanish_passport_number' },
+  { pattern: /fecha\s*de\s*(?:nacimiento|expedición|caducidad)/i, label: 'spanish_passport_date' },
+  // German
+  { pattern: /reisepass/i, label: 'german_passport' },
+  { pattern: /ausstellungsdatum/i, label: 'german_issue_date' },
+  // Russian
+  { pattern: /паспорт/i, label: 'russian_passport' },
+  { pattern: /дата\s*рождения/i, label: 'russian_birth_date' },
+  // Chinese
+  { pattern: /护照/, label: 'chinese_passport' },
+  { pattern: /中华人民共和国/, label: 'chinese_prc' },
 ];
 
 /**
@@ -200,7 +250,7 @@ const PASSPORT_HIGH_SIGNAL_TEXT_PATTERNS: Array<{ pattern: RegExp; label: string
  * stray "P<X" fragments inside non-passport scans. The double-`<<` filler
  * is the cheapest reliable discriminator vs accidental OCR garbage.
  */
-const MRZ_PATTERN_RE = /^P[<A-Z][A-Z<]{3}[A-Z<]*<<[A-Z<]{2,}/m;
+const MRZ_PATTERN_RE = /^(?:P[<A-Z][A-Z<]{3}[A-Z<]*<<[A-Z<]{2,}|[IAC][<A-Z][A-Z<]{3}[A-Z0-9<]{15,})/m;
 
 /**
  * Compute passport lane strength.

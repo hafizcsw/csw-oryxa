@@ -37,6 +37,7 @@ import type { StructuredDocumentArtifact } from './structured-browser-artifact-m
 import { buildStructuredBrowserArtifact } from './parsers/structured-artifact-builder';
 import { resolveStructuredArtifact } from './document-ai/resolver';
 import type { DocumentAIMode } from './document-ai/document-ai-provider';
+import { buildPassportOutput, type PassportOutput } from './passport-output-schema';
 
 export interface AnalysisResult {
   analysis: DocumentAnalysis;
@@ -55,6 +56,8 @@ export interface AnalysisResult {
     paddle_latency_ms: number | null;
     paddle_error_message: string | null;
   };
+  /** Unified passport output (only present for passport lane with viable MRZ). */
+  passport_output: PassportOutput | null;
 }
 
 /**
@@ -88,6 +91,7 @@ export async function analyzeDocument(params: {
   const analysis = createPendingAnalysis(documentId, slotHint);
   const proposals: ExtractionProposal[] = [];
   const startTime = performance.now();
+  let passport_output: PassportOutput | null = null;
 
   // Default diagnostic envelope (mutated when paddle is attempted)
   let document_ai_mode: DocumentAIMode = 'browser_heuristic';
@@ -136,6 +140,7 @@ export async function analyzeDocument(params: {
       structured_artifact: fallbackArtifact,
       document_ai_mode: fallbackArtifact.builder === 'none' ? 'none' : 'browser_heuristic',
       document_ai_diag,
+      passport_output,
     };
   }
 
@@ -213,6 +218,32 @@ export async function analyzeDocument(params: {
         // Strong evidence path: MRZ is the primary truth source.
         extractedFields = extractPassportFields(mrzResult);
         analysis.parser_type = 'mrz';
+
+        // Build unified PassportOutput payload (university-ready JSON).
+        const derivedIssue =
+          (extractedFields['identity.passport_issue_date']?.value as string | null) ?? null;
+        passport_output = buildPassportOutput({
+          mrz: mrzResult,
+          derived_issue_date: derivedIssue,
+          processing_time_ms: performance.now() - startTime,
+          parser_chain: [
+            artifact.parser_used,
+            `mrz_${(mrzResult.format ?? 'unknown').toLowerCase()}`,
+          ],
+          ocr_used:
+            artifact.parser_used === 'tesseract_ocr' ||
+            artifact.parser_used === 'pdfjs_render_ocr',
+        });
+
+        // MRZ trust boost: a verified-checksum MRZ raises classification
+        // confidence to at least 0.95 — the document is mathematically a
+        // valid passport, no matter how weak the surrounding keywords.
+        if (mrzResult.checksum_verified) {
+          analysis.classification_confidence = Math.max(
+            analysis.classification_confidence,
+            0.95,
+          );
+        }
       } else if (laneStrength === 'passport_strong') {
         // No MRZ but classifier saw strong passport text evidence.
         // Allow weak text fallback — these fields are tagged
@@ -411,7 +442,7 @@ export async function analyzeDocument(params: {
 
   logArtifact(artifact, analysis);
   console.info('[Door1:TotalMs]', Math.round(performance.now() - startTime));
-  return { analysis, proposals, artifact, structured_artifact, document_ai_mode, document_ai_diag };
+  return { analysis, proposals, artifact, structured_artifact, document_ai_mode, document_ai_diag, passport_output };
 }
 
 function logArtifact(artifact: ReadingArtifact, analysis: DocumentAnalysis): void {
