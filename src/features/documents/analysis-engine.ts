@@ -139,7 +139,11 @@ export async function analyzeDocument(params: {
 
   // ── Step 1: Read the document via the reading contract ───
   analysis.analysis_status = 'analyzing';
+  emit('reading', `${file.name} · ${(file.size / 1024).toFixed(0)} KB`);
   const artifact = await readDocumentArtifact(file);
+  if (artifact.parser_used === 'tesseract_ocr' || artifact.parser_used === 'pdfjs_render_ocr') {
+    emit('ocr', `${artifact.pages_processed}/${artifact.total_page_count} pages`);
+  }
 
   // Mirror reading verdict onto analysis surface
   if (artifact.parser_used === 'pdfjs_text') {
