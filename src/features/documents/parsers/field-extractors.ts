@@ -163,26 +163,42 @@ export function extractPassportTextFallback(text: string): Fields {
     f['identity.date_of_birth'] = field(dobMatch[1].trim(), dobMatch[0], lowConf, p, dobMatch[0]);
   }
 
-  // ── Expiry date (label-anchored) ──────────────────────────
-  const expMatch = text.match(
+  // ── Expiry date (label-anchored, layout-aware) ───────────
+  // Bilingual passport layouts often print "Date of Issue  Date of Expiry"
+  // with TWO dates following on the next line ("01/11/2018  31/10/2025").
+  // A naive regex `expiry ... DATE` captures the FIRST date which is the
+  // ISSUE date. We capture up to TWO dates after the expiry label and
+  // prefer the LATER one (heuristic: expiry > issue).
+  const expWindow = text.match(
     new RegExp(
-      `(?:date\\s*of\\s*expiry|expiry(?:\\s*date)?|expires?(?:\\s*on)?|valid\\s*until|تاريخ\\s*(?:ال)?(?:انتهاء|الانتهاء|الإنتهاء)|date\\s*d[''']?expiration|fecha\\s*de\\s*caducidad|g[üu]ltig\\s*bis|有效期至)\\s*[:.]?\\s*${DATE}`,
+      `(?:date\\s*of\\s*expiry|expiry(?:\\s*date)?|expires?(?:\\s*on)?|valid\\s*until|تاريخ\\s*(?:ال)?(?:انتهاء|الانتهاء|الإنتهاء)|date\\s*d[''']?expiration|fecha\\s*de\\s*caducidad|g[üu]ltig\\s*bis|有效期至)\\s*[:.]?\\s*${DATE}(?:[\\s\\S]{0,30}?${DATE})?`,
       'i',
     ),
   );
-  if (expMatch) {
-    f['identity.passport_expiry_date'] = field(expMatch[1].trim(), expMatch[0], lowConf, p, expMatch[0]);
+  if (expWindow) {
+    const d1 = expWindow[1]?.trim();
+    const d2 = expWindow[2]?.trim();
+    const chosen = pickLaterDate(d1, d2) || d1;
+    if (chosen) {
+      f['identity.passport_expiry_date'] = field(chosen, expWindow[0], lowConf, p, expWindow[0]);
+    }
   }
 
   // ── Issue date (label-anchored) ───────────────────────────
-  const issueMatch = text.match(
+  // Symmetrical: capture two dates, prefer the EARLIER one as issue.
+  const issueWindow = text.match(
     new RegExp(
-      `(?:date\\s*of\\s*issue|issue\\s*date|issued\\s*on|date\\s*of\\s*delivery|تاريخ\\s*(?:ال)?(?:إصدار|الإصدار|الاصدار)|date\\s*de\\s*d[ée]livrance|fecha\\s*de\\s*expedici[óo]n|ausstellungsdatum|签发日期)\\s*[:.]?\\s*${DATE}`,
+      `(?:date\\s*of\\s*issue|issue\\s*date|issued\\s*on|date\\s*of\\s*delivery|تاريخ\\s*(?:ال)?(?:إصدار|الإصدار|الاصدار)|date\\s*de\\s*d[ée]livrance|fecha\\s*de\\s*expedici[óo]n|ausstellungsdatum|签发日期)\\s*[:.]?\\s*${DATE}(?:[\\s\\S]{0,30}?${DATE})?`,
       'i',
     ),
   );
-  if (issueMatch) {
-    f['identity.passport_issue_date'] = field(issueMatch[1].trim(), issueMatch[0], lowConf, p, issueMatch[0]);
+  if (issueWindow) {
+    const d1 = issueWindow[1]?.trim();
+    const d2 = issueWindow[2]?.trim();
+    const chosen = pickEarlierDate(d1, d2) || d1;
+    if (chosen) {
+      f['identity.passport_issue_date'] = field(chosen, issueWindow[0], lowConf, p, issueWindow[0]);
+    }
   }
 
   // ── Sex / gender ──────────────────────────────────────────
@@ -196,12 +212,21 @@ export function extractPassportTextFallback(text: string): Fields {
     f['identity.gender'] = field(norm, genderMatch[0], lowConf, p, genderMatch[0]);
   }
 
-  // ── Nationality (label-anchored) ──────────────────────────
-  const natMatch = text.match(
-    /(?:nationality|nationalit[ée]|nacionalidad|staatsangeh[öo]rigkeit|الجنسية|国籍)\s*[:.]?\s*([A-Z]{3}\b|[A-Za-z\u00C0-\u017F\u0600-\u06FF][A-Za-z\u00C0-\u017F\u0600-\u06FF\s\-]{2,40})/i,
+  // ── Nationality (label-anchored, label-token guard) ──────
+  // Bilingual passports print "Nationality  Sex" on one line and
+  // "EGYPTIAN  M" on the next. The naive regex captured "Sex" as a
+  // 3-letter alpha-3. We scan up to the next 80 chars for a value that
+  // is NOT a known co-label (sex/gender/date/place/office/type/code).
+  const natRe = new RegExp(
+    `(?:nationality|nationalit[ée]|nacionalidad|staatsangeh[öo]rigkeit|الجنسية|国籍)\\s*[:.]?\\s*([\\s\\S]{1,80})`,
+    'i',
   );
-  if (natMatch) {
-    f['identity.citizenship'] = field(natMatch[1].trim(), natMatch[0], lowConf, p, natMatch[0]);
+  const natRaw = text.match(natRe);
+  if (natRaw) {
+    const natValue = pickFirstNonLabelToken(natRaw[1]);
+    if (natValue) {
+      f['identity.citizenship'] = field(natValue, natRaw[0], lowConf, p, natRaw[0]);
+    }
   }
 
   // ── Issuing country / authority (label-anchored) ──────────
@@ -345,6 +370,81 @@ export function extractGraduationFields(text: string): Fields {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────
+
+// Words that look like 3-letter alpha codes but are actually CO-LABELS
+// printed next to "Nationality" on bilingual passports. We must never
+// promote these as the nationality value.
+const PASSPORT_CO_LABELS = new Set([
+  'sex', 'gender', 'date', 'place', 'office', 'type', 'code',
+  'name', 'nom', 'no', 'num', 'dob', 'pob', 'doe', 'doi',
+  'mrz', 'passport', 'country', 'nat', 'sig',
+]);
+
+/**
+ * Pick the first plausible value-token after a label, skipping over
+ * known co-labels. Returns null if none found within window.
+ */
+function pickFirstNonLabelToken(window: string): string | null {
+  if (!window) return null;
+  const tokens = window
+    .split(/[\s:;,.\/\\|]+/)
+    .map(t => t.trim())
+    .filter(t => t.length > 0);
+  for (const tok of tokens) {
+    if (PASSPORT_CO_LABELS.has(tok.toLowerCase())) continue;
+    if (/^\d+$/.test(tok)) continue;
+    if (tok.length < 2) continue;
+    if (/^[A-Z]{3}$/.test(tok)) return tok;
+    if (/^[A-Za-z\u00C0-\u017F\u0600-\u06FF][A-Za-z\u00C0-\u017F\u0600-\u06FF\-']{2,30}$/.test(tok)) {
+      return tok;
+    }
+  }
+  return null;
+}
+
+/** Parse loose date string → ms epoch (NaN if unparseable). */
+function parseLooseDateMs(s: string | null | undefined): number {
+  if (!s) return NaN;
+  const t = s.trim();
+  let m = t.match(/^(\d{4})[\-\/](\d{1,2})[\-\/](\d{1,2})$/);
+  if (m) return Date.UTC(+m[1], +m[2] - 1, +m[3]);
+  m = t.match(/^(\d{1,2})[\s\/\-\.](\d{1,2})[\s\/\-\.](\d{2,4})$/);
+  if (m) {
+    const yr = +m[3] < 100 ? (+m[3] > 30 ? 1900 + +m[3] : 2000 + +m[3]) : +m[3];
+    return Date.UTC(yr, +m[2] - 1, +m[1]);
+  }
+  m = t.match(/^(\d{1,2})[\s\/\-\.]([A-Za-z]{3,9})[\s\/\-\.](\d{2,4})$/);
+  if (m) {
+    const months: Record<string, number> = {
+      jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+      jul: 6, aug: 7, sep: 8, sept: 8, oct: 9, nov: 10, dec: 11,
+    };
+    const idx = months[m[2].toLowerCase().slice(0, 3)];
+    if (idx === undefined) return NaN;
+    const yr = +m[3] < 100 ? (+m[3] > 30 ? 1900 + +m[3] : 2000 + +m[3]) : +m[3];
+    return Date.UTC(yr, idx, +m[1]);
+  }
+  return NaN;
+}
+
+function pickLaterDate(a?: string, b?: string): string | null {
+  const ma = parseLooseDateMs(a);
+  const mb = parseLooseDateMs(b);
+  if (!isNaN(ma) && !isNaN(mb)) return mb > ma ? (b ?? null) : (a ?? null);
+  if (!isNaN(ma)) return a ?? null;
+  if (!isNaN(mb)) return b ?? null;
+  return null;
+}
+
+function pickEarlierDate(a?: string, b?: string): string | null {
+  const ma = parseLooseDateMs(a);
+  const mb = parseLooseDateMs(b);
+  if (!isNaN(ma) && !isNaN(mb)) return ma < mb ? (a ?? null) : (b ?? null);
+  if (!isNaN(ma)) return a ?? null;
+  if (!isNaN(mb)) return b ?? null;
+  return null;
+}
+
 
 function normalizeForExtraction(input: string): string {
   if (!input) return '';
