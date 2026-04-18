@@ -2180,6 +2180,132 @@
         "teacher_education": "شهادة تدريس أو دبلوم أو درجة علمية.",
         "teacher_supporting": "أي مستندات داعمة إضافية (اختياري)."
       }
+    },
+    "assembly": {
+      "title": "التجميع المباشر للملف",
+      "subtitle": "كل ملف يكتمل تحليله ينزل إلى قسمه ويُظهر ما تم استخراجه.",
+      "dropping": "جاري إنزال المستند…",
+      "lane": {
+        "identity": "الهوية",
+        "identity_desc": "Passport-derived identity fields.",
+        "academic": "الأكاديمي",
+        "academic_desc": "Transcript & graduation details, extraction-driven.",
+        "language": "اللغة",
+        "language_desc": "English-test fields.",
+        "needs_review": "بحاجة للمراجعة",
+        "needs_review_desc": "Documents whose lane could not be resolved automatically.",
+        "doc_count": "{{count}} مستندات",
+        "waiting": "بانتظار مستند مناسب…"
+      },
+      "header": {
+        "lane": "القسم",
+        "reading_route": "مسار القراءة",
+        "parser_used": "المحلّل المستخدم",
+        "classification": "التصنيف",
+        "readability": "القراءة",
+        "failure_reason": "الفشل",
+        "route_reason": "السبب",
+        "parser_type": "نوع المحلّل"
+      },
+      "reading_route": {
+        "born_digital_pdf": "Born-digital PDF",
+        "scanned_pdf": "Scanned PDF",
+        "image": "Image",
+        "unsupported": "Unsupported"
+      },
+      "classification": {
+        "passport": "Passport",
+        "transcript": "Transcript",
+        "graduation_certificate": "Graduation certificate",
+        "language_certificate": "Language certificate",
+        "other": "Other",
+        "unknown": "Unknown"
+      },
+      "readability": {
+        "readable": "Readable",
+        "degraded": "Degraded",
+        "unreadable": "Unreadable",
+        "unknown": "Unknown"
+      },
+      "failure_reason": {
+        "unsupported_file_type": "Unsupported file type",
+        "unreadable_scan": "Unreadable scan",
+        "low_ocr_quality": "Low OCR quality",
+        "reader_crashed": "Reader crashed",
+        "empty_document": "Empty document"
+      },
+      "route_reason": {
+        "classification_uncertain": "التصنيف غير مؤكد",
+        "low_confidence": "ثقة منخفضة",
+        "unreadable_unclassified": "غير مقروء وغير مصنف"
+      },
+      "status": {
+        "accepted": "مقبول",
+        "pending": "بانتظار المراجعة",
+        "unresolved": "غير محسوم",
+        "empty": "فارغ"
+      },
+      "reason": {
+        "rejected": "تم رفض المقترح",
+        "not_extracted": "لم يُستخرج من هذا المستند"
+      },
+      "academic": {
+        "no_fields_extracted": "لم تُستخرج أي حقول أكاديمية من هذا المستند.",
+        "subject_rows_label": "صفوف المواد",
+        "more_rows": "+{{count}} مواد إضافية تم تحليلها",
+        "metric": {
+          "extracted": "حقول مستخرجة",
+          "missing": "حقول متوقعة مفقودة",
+          "subject_rows": "صفوف مواد محللة"
+        }
+      },
+      "subject_family": {
+        "chemistry": "Chemistry",
+        "biology": "Biology",
+        "physics": "Physics",
+        "mathematics": "Mathematics",
+        "english": "English",
+        "computer_science": "Computer Science",
+        "economics": "Economics",
+        "business": "Business",
+        "social_science": "Social Science",
+        "other": "Other"
+      },
+      "field": {
+        "identity": {
+          "passport_name": "Full name",
+          "passport_number": "Passport number",
+          "citizenship": "Citizenship",
+          "date_of_birth": "Date of birth",
+          "gender": "Gender",
+          "passport_expiry_date": "Passport expiry",
+          "passport_issuing_country": "Issuing country",
+          "passport_issue_date": "Passport issue date"
+        },
+        "language": {
+          "english_test_type": "English test type",
+          "english_total_score": "Overall score",
+          "english_reading": "Reading",
+          "english_writing": "Writing",
+          "english_listening": "Listening",
+          "english_speaking": "Speaking",
+          "test_date": "Test date",
+          "expiry_date": "Expiry date"
+        },
+        "academic": {
+          "credential_name": "Credential name",
+          "credential_type": "Credential type",
+          "awarding_institution": "Awarding institution",
+          "graduation_year": "Graduation year",
+          "degree_conferral_date": "Degree conferral date",
+          "gpa_raw": "GPA (raw)",
+          "gpa_normalized": "GPA (normalized)",
+          "grading_scale": "Grading scale",
+          "institution_name": "Institution name",
+          "country_of_education": "Country of education",
+          "transcript_language": "Transcript language"
+        }
+      }
     }
   },
   "compare_action": "+ مقارنة",
