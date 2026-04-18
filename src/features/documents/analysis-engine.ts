@@ -91,6 +91,7 @@ export async function analyzeDocument(params: {
   const analysis = createPendingAnalysis(documentId, slotHint);
   const proposals: ExtractionProposal[] = [];
   const startTime = performance.now();
+  let passport_output: PassportOutput | null = null;
 
   // Default diagnostic envelope (mutated when paddle is attempted)
   let document_ai_mode: DocumentAIMode = 'browser_heuristic';
@@ -139,6 +140,7 @@ export async function analyzeDocument(params: {
       structured_artifact: fallbackArtifact,
       document_ai_mode: fallbackArtifact.builder === 'none' ? 'none' : 'browser_heuristic',
       document_ai_diag,
+      passport_output,
     };
   }
 
@@ -414,7 +416,7 @@ export async function analyzeDocument(params: {
 
   logArtifact(artifact, analysis);
   console.info('[Door1:TotalMs]', Math.round(performance.now() - startTime));
-  return { analysis, proposals, artifact, structured_artifact, document_ai_mode, document_ai_diag };
+  return { analysis, proposals, artifact, structured_artifact, document_ai_mode, document_ai_diag, passport_output };
 }
 
 function logArtifact(artifact: ReadingArtifact, analysis: DocumentAnalysis): void {
