@@ -94,6 +94,20 @@ export function extractPassportTextFallback(text: string): Fields {
   const p: ParserType = 'regex_heuristic';
   const lowConf = 0.55; // capped well below AUTO_ACCEPT_THRESHOLD
 
+  // Pre-process: split fused date pairs like "01/11/201831/10/2025" into
+  // "01/11/2018 31/10/2025" so DATE regex can capture both. Pattern:
+  //   DD/MM/YYYY immediately followed by DD/MM/YYYY (8 digits + 2 slashes
+  //   abutting another DD with no separator).
+  const FUSED_DATES = /(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4})(?=\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/g;
+  text = text.replace(FUSED_DATES, '$1 ');
+
+  // Diagnostic — surface raw text so we can see exactly what Paddle delivered
+  // when extraction comes back near-empty. Trial-safe: console only.
+  if (typeof console !== 'undefined' && console.debug) {
+    console.debug('[DIAG-PASSPORT-FALLBACK] text_len=%d sample=%s',
+      text.length, text.slice(0, 600).replace(/\s+/g, ' '));
+  }
+
   // Reusable date sub-pattern: DD[sep]MMM-or-MM[sep]YYYY  OR  YYYY-MM-DD
   const DATE = String.raw`(\d{1,2}[\s\/\-\.][0-9A-Za-z\u0600-\u06FF]{1,9}[\s\/\-\.]\d{2,4}|\d{4}[\-\/]\d{1,2}[\-\/]\d{1,2})`;
 
