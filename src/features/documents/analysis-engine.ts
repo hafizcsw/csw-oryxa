@@ -232,6 +232,7 @@ export async function analyzeDocument(params: {
 
   try {
     // ── Step 2: Classify ─────────────────────────────────────
+    emit('classifying', `${artifact.full_text.length} chars`);
     const textContent = artifact.full_text;
     const classification = classifyDocument({
       fileName: file.name,
@@ -241,6 +242,7 @@ export async function analyzeDocument(params: {
 
     analysis.classification_result = classification.best;
     analysis.classification_confidence = classification.confidence;
+    emit('classifying', `${classification.best} · ${(classification.confidence * 100).toFixed(0)}%`);
 
     // ── Step 3: Extract fields based on classification ─────
     let extractedFields: Record<string, ExtractedField> = {};
