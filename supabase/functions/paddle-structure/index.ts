@@ -49,6 +49,8 @@ function failClosed(reason: string, error_message: string | null = null) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  console.log("[paddle-structure] ▶ request received", { method: req.method, ts: Date.now() });
+
   // ── Auth ───────────────────────────────────────────────────
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) return failClosed("unauthenticated");
