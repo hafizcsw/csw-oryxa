@@ -290,6 +290,8 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         promotedFields={analysisHook.promotedFields}
         subjectRows={academicTruthHook.subjectRows}
         previewUrls={previewUrls}
+        onDeleteDoc={handleDeleteDoc}
+        onDeleteAll={handleDeleteAll}
       />
 
       {/* ═══ Save bar: shows only when there are unsaved uploads ═══ */}
