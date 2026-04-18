@@ -2,34 +2,24 @@
 // Document AI Resolver — Door 1.5 (single-call discipline)
 // ═══════════════════════════════════════════════════════════════
 // Single entry the engine calls. Resolves the structured artifact
-// without ever calling Paddle twice for the same document:
+// without ever calling Paddle twice for the same document.
 //
-//   1. If PaddleReader already produced this artifact (the soft-
-//      cutover primary path), we look up the cached raw Paddle
-//      response and map it locally to a StructuredDocumentArtifact.
-//      ZERO additional network round-trips.
-//
-//   2. If the reading_artifact came from legacy_browser_fallback /
-//      legacy_browser (Paddle never ran or failed at the reading
-//      stage), we DO NOT retry Paddle. The reading-stage decision
-//      is authoritative — re-attempting here would contradict it
-//      and cost a second round-trip. We build the structured
-//      artifact in-browser.
-//
-//   3. If reading was skipped entirely (e.g. unsupported MIME),
-//      we fall back to the browser builder and tag mode='none'.
-//
-// Diagnostic surface (paddle_attempted etc.) reflects what the
-// READING stage tried, not a separate attempt here.
+// HARD-CUTOVER RULE:
+//   - If Paddle produced the reading artifact, reuse the cached raw
+//     Paddle response locally.
+//   - If Paddle did not produce a usable artifact, FAIL CLOSED.
+//   - No in-browser structured fallback remains active here.
 // ═══════════════════════════════════════════════════════════════
 
 import type { DocumentAIRequest, DocumentAIMode, DocumentAIStatus } from './document-ai-provider';
 import { readPaddleResponse } from './paddle-response-cache';
 import { mapPaddleResponseToArtifact } from './paddle-output-mapper';
 import { persistDocumentAIRun } from './persist-run';
-import { buildStructuredBrowserArtifact } from '../parsers/structured-artifact-builder';
 import type { ReadingArtifact } from '../reading-artifact-model';
-import type { StructuredDocumentArtifact } from '../structured-browser-artifact-model';
+import {
+  emptyStructuredArtifact,
+  type StructuredDocumentArtifact,
+} from '../structured-browser-artifact-model';
 
 export interface ResolvedStructured {
   artifact: StructuredDocumentArtifact;
@@ -76,12 +66,10 @@ export async function resolveStructuredArtifact(params: {
       });
       return resolved;
     }
-    // Cache miss is unexpected (reader said paddle ran). Fall through
-    // to browser fallback and tag honestly.
-    const browserArtifact = buildStructuredBrowserArtifact(reading_artifact);
+
     return {
-      artifact: browserArtifact,
-      mode_used: browserArtifact.builder === 'none' ? 'none' : 'browser_heuristic',
+      artifact: emptyStructuredArtifact(),
+      mode_used: 'none',
       paddle_attempted: true,
       paddle_status: 'error',
       paddle_reason: 'cache_miss',
@@ -90,23 +78,13 @@ export async function resolveStructuredArtifact(params: {
     };
   }
 
-  // ── Path 2: reading came from legacy_*  → DO NOT re-call Paddle ──
-  // The reader-stage router already made an authoritative decision
-  // about Paddle availability (success / failure / unavailable).
-  // Re-trying here would create the very double-call we're closing.
-  const browserArtifact = buildStructuredBrowserArtifact(reading_artifact);
-  const isLegacyFallback = reading_artifact.reader_implementation === 'legacy_browser_fallback';
   return {
-    artifact: browserArtifact,
-    mode_used: browserArtifact.builder === 'none' ? 'none' : 'browser_heuristic',
-    paddle_attempted: isLegacyFallback,
-    paddle_status: isLegacyFallback ? 'error' : null,
-    paddle_reason: isLegacyFallback
-      ? (reading_artifact.failure_reason ?? 'paddle_failed_at_reader')
-      : null,
+    artifact: emptyStructuredArtifact(),
+    mode_used: 'none',
+    paddle_attempted: reading_artifact.reader_implementation === 'paddle_self_hosted',
+    paddle_status: null,
+    paddle_reason: reading_artifact.failure_reason ?? 'reader_not_paddle',
     paddle_latency_ms: null,
-    paddle_error_message: isLegacyFallback
-      ? (reading_artifact.failure_detail ?? null)
-      : null,
+    paddle_error_message: reading_artifact.failure_detail ?? null,
   };
 }
