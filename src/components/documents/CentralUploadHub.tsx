@@ -587,8 +587,8 @@ export function CentralUploadHub({
           className={cn(
             'mx-auto transition-all duration-500 ease-out',
             records.length > 0 || isDragOver || isProcessing
-              ? 'w-full max-w-3xl'
-              : 'w-40 sm:w-48',
+              ? 'w-full max-w-[56rem]'
+              : 'w-60 sm:w-72',
           )}
         >
           <AIDataFlowHero
