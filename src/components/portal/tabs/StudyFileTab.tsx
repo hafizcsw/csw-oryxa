@@ -254,6 +254,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         subjectRows={academicTruthHook.subjectRows}
         previewUrls={previewUrls}
       />
+
+      {/* ═══ Save bar: shows only when there are unsaved uploads ═══ */}
+      <SaveDocumentsBar
+        pendingCount={guard.getPendingCount()}
+        onSave={handleSaveDocuments}
+      />
     </div>
   );
 }
