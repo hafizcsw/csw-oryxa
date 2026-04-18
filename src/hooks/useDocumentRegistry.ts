@@ -84,7 +84,10 @@ export function useDocumentRegistry({
             prepare: 'uploading',
             upload: 'uploading',
             confirm: 'confirming',
-            done: 'registered',
+            // IMPORTANT: do not mark as `registered` here.
+            // The final success payload carries `storage_path`/`crm_file_id`, and
+            // Door 3 must not start analysis before those values are attached.
+            done: 'confirming',
             error: 'upload_failed',
           };
           updateRecord(record.document_id, {
