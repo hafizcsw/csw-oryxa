@@ -64,6 +64,7 @@ export function LiveProfileAssembly({
   crmDocuments,
   onDeleteDoc,
   onDeleteAll,
+  onEditField,
 }: LiveProfileAssemblyProps) {
   const { t } = useLanguage();
 
