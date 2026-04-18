@@ -33,6 +33,9 @@ export interface AIDataFlowHeroFile {
   id?: string;
   /** Object URL or remote URL to a real preview thumbnail (image or PDF first-page) */
   previewUrl?: string;
+  /** Multi-page preview URLs (e.g. one per PDF page). When present and > 1,
+   *  the card cycles through them while `status === 'active'` to mimic a live scan. */
+  previewUrls?: string[];
   /** MIME type (used to decide if previewUrl is renderable as image) */
   mimeType?: string;
 }
@@ -497,6 +500,7 @@ function AIDataFlowHeroComponent({
                   emergeDelay={i * 0.12}
                   label={fileList[c.gIdx]?.name ?? ""}
                   previewUrl={fileList[c.gIdx]?.previewUrl}
+                  previewUrls={fileList[c.gIdx]?.previewUrls}
                   mimeType={fileList[c.gIdx]?.mimeType}
                   fileId={fileList[c.gIdx]?.id}
                   onDelete={onDeleteFile}
@@ -528,6 +532,7 @@ function AIDataFlowHeroComponent({
                   emergeDelay={i * 0.12 + 0.06}
                   label={fileList[c.gIdx]?.name ?? ""}
                   previewUrl={fileList[c.gIdx]?.previewUrl}
+                  previewUrls={fileList[c.gIdx]?.previewUrls}
                   mimeType={fileList[c.gIdx]?.mimeType}
                   fileId={fileList[c.gIdx]?.id}
                   onDelete={onDeleteFile}
@@ -659,6 +664,9 @@ interface DocumentCardProps {
   scannedLabel?: string;
   /** Real preview thumbnail URL (image/* or generated PDF preview) */
   previewUrl?: string;
+  /** Multi-page preview URLs — when length > 1 the card cycles through them
+   *  during the active scan so the user sees pages flip live. */
+  previewUrls?: string[];
   /** MIME type for the file behind previewUrl */
   mimeType?: string;
   /** Stable id passed back via onDelete */
