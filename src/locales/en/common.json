@@ -1521,6 +1521,20 @@
         "pending_review": "pending review",
         "rejected": "rejected",
         "superseded": "superseded"
+      },
+      "engine": {
+        "title": "Engine activity — what is happening right now",
+        "stage": {
+          "reading": "Reading file",
+          "ocr": "Running OCR",
+          "classifying": "Classifying document",
+          "mrz": "Parsing passport MRZ",
+          "extracting": "Extracting fields",
+          "transcript_rows": "Parsing transcript rows",
+          "building_proposals": "Building proposals",
+          "completed": "Completed",
+          "failed": "Failed"
+        }
       }
     },
     "nav": {
