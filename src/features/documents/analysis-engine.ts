@@ -138,21 +138,44 @@ export async function analyzeDocument(params: {
   };
 
   // ── Step 1: Read the document via the reading contract ───
+  // PRIMARY = Paddle (PP-StructureV3) when storage_path is present.
+  // FALLBACK = legacy_browser (pdf.js + Tesseract.js).
+  // The router tags `reader_implementation` honestly so audit can
+  // prove which engine actually produced this artifact.
   analysis.analysis_status = 'analyzing';
   emit('reading', `${file.name} · ${(file.size / 1024).toFixed(0)} KB`);
-  const artifact = await readDocumentArtifact(file);
+  const artifact = await readDocumentArtifact(file, {
+    storage_path: storagePath ?? null,
+    document_id: documentId,
+  });
   if (artifact.parser_used === 'tesseract_ocr' || artifact.parser_used === 'pdfjs_render_ocr') {
     emit('ocr', `${artifact.pages_processed}/${artifact.total_page_count} pages`);
+  } else if (artifact.parser_used === 'paddle_pp_structure_v3') {
+    emit('ocr', `paddle · ${artifact.pages_processed}/${artifact.total_page_count} pages`);
   }
 
   // Mirror reading verdict onto analysis surface
   if (artifact.parser_used === 'pdfjs_text') {
     analysis.parser_type = 'pdf_text';
-  } else if (artifact.parser_used === 'tesseract_ocr' || artifact.parser_used === 'pdfjs_render_ocr') {
+  } else if (
+    artifact.parser_used === 'tesseract_ocr' ||
+    artifact.parser_used === 'pdfjs_render_ocr' ||
+    artifact.parser_used === 'paddle_pp_structure_v3'
+  ) {
     analysis.parser_type = 'image_ocr';
   } else {
     analysis.parser_type = 'none';
   }
+
+  console.log('[DocumentReader:Resolved]', JSON.stringify({
+    file: file.name,
+    reader_implementation: artifact.reader_implementation,
+    parser_used: artifact.parser_used,
+    readability: artifact.readability,
+    pages: artifact.pages_processed,
+    chars: artifact.full_text.length,
+    failure_reason: artifact.failure_reason,
+  }));
 
   // ── Honesty gate ─────────────────────────────────────────
   // unreadable artifacts MUST NOT flow downstream as a normal success.

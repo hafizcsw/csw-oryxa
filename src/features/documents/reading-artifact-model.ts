@@ -14,18 +14,25 @@ export type ReadingRoute =
 
 // ── Parser used ──────────────────────────────────────────────
 export type ReaderParser =
-  | 'pdfjs_text'         // pdfjs-dist text extraction
-  | 'tesseract_ocr'      // Tesseract.js OCR
-  | 'pdfjs_render_ocr'   // PDF rendered to canvas → OCR
-  | 'none';              // no parser could run
+  | 'pdfjs_text'              // pdfjs-dist text extraction
+  | 'tesseract_ocr'           // Tesseract.js OCR
+  | 'pdfjs_render_ocr'        // PDF rendered to canvas → OCR
+  | 'paddle_pp_structure_v3'  // self-hosted PaddleOCR PP-StructureV3 (server-side)
+  | 'none';                   // no parser could run
 
 // ── Reader implementation tag ────────────────────────────────
-// Identifies WHICH reader produced this artifact.
-// Today: only legacy_browser (pdf.js + tesseract.js in-browser).
-// Tomorrow: server_worker, paddle_ocr, etc.
-// This makes repo truth honest — current path is REPLACEABLE.
+// Identifies WHICH reader produced this artifact. This is the
+// truth surface — every artifact must say which engine produced it.
+//
+// Cutover state (Soft cutover):
+//   primary  = paddle_self_hosted (PP-StructureV3 via edge proxy)
+//   fallback = legacy_browser_fallback (pdf.js + Tesseract.js, only on Paddle failure)
+//   legacy_browser remains as a tag for historical/audit rows produced
+//   before the cutover.
 export type ReaderImplementation =
-  | 'legacy_browser'     // TEMP: in-browser pdf.js + Tesseract.js
+  | 'paddle_self_hosted'        // PRIMARY: server-side PP-StructureV3
+  | 'legacy_browser_fallback'   // FALLBACK: in-browser pdf.js + Tesseract.js (Paddle failed)
+  | 'legacy_browser'            // HISTORICAL: pre-cutover artifacts
   | 'none';
 
 // ── Reading-stage failure taxonomy ───────────────────────────
