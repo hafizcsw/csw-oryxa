@@ -180,6 +180,19 @@ export function useDocumentAnalysis({
         studentId,
         slotHint,
         canonicalFile,
+        onStage: (event) => {
+          setLiveStages(prev => ({
+            ...prev,
+            [documentId]: {
+              documentId,
+              filename: file.name,
+              stage: event.stage,
+              detail: event.detail ?? null,
+              elapsed_ms: event.elapsed_ms,
+              updated_at: Date.now(),
+            },
+          }));
+        },
       });
 
       setAnalyses(prev => {
