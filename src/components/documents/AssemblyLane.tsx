@@ -142,12 +142,40 @@ function DocBlock({
   lane,
   doc,
   promotedFields,
+  onDeleteDoc,
 }: {
   lane: DestinationLane;
   doc: LaneDoc;
   promotedFields: PromotedField[];
+  onDeleteDoc?: (crmFileId: string) => Promise<boolean>;
 }) {
   const { t } = useLanguage();
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!onDeleteDoc || !doc.crmFileId || deleting) return;
+    if (!window.confirm(t('portal.assembly.lane.confirm_delete_one'))) return;
+    setDeleting(true);
+    try {
+      await onDeleteDoc(doc.crmFileId);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const DeleteBtn = onDeleteDoc && doc.crmFileId ? (
+    <Button
+      size="icon"
+      variant="ghost"
+      className="h-7 w-7 ms-auto text-destructive hover:text-destructive hover:bg-destructive/10"
+      onClick={handleDelete}
+      disabled={deleting}
+      aria-label={t('portal.assembly.lane.delete_one')}
+      title={t('portal.assembly.lane.delete_one')}
+    >
+      {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+    </Button>
+  ) : null;
 
   const proposalByKey = useMemo(() => {
     const m = new Map<string, ExtractionProposal>();
@@ -228,12 +256,13 @@ function DocBlock({
   // Lane assignment for needs_review
   if (lane === 'needs_review') {
     return (
-      <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-2">
+      <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3 space-y-2">
         <div className="flex items-center gap-2">
           <AssemblyDocChip filename={doc.filename} previewUrl={doc.previewUrl} />
-          <span className="text-[10px] uppercase tracking-wide text-amber-700 font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">
+          <span className="text-[10px] uppercase tracking-wide text-destructive font-semibold px-1.5 py-0.5 rounded bg-destructive/10 border border-destructive/30">
             {t(`portal.assembly.route_reason.${doc.routeReason ?? 'classification_uncertain'}`)}
           </span>
+          {DeleteBtn}
         </div>
         <DocAssemblyHeader
           destinationLane={lane}
@@ -249,6 +278,7 @@ function DocBlock({
     <div className="rounded-lg border border-border/60 bg-background/60 p-3 space-y-3">
       <div className="flex items-center gap-2">
         <AssemblyDocChip filename={doc.filename} previewUrl={doc.previewUrl} />
+        {DeleteBtn}
       </div>
 
       <DocAssemblyHeader
@@ -361,7 +391,7 @@ function SubjectRowLine({ row, animate, delay }: { row: SubjectRow; animate: boo
 }
 
 // Tiny hook to avoid useState/useEffect repetition
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 function useReveal(animate: boolean, delay: number): [boolean, (b: boolean) => void] {
   const [shown, setShown] = useState(!animate);
   useEffect(() => {
