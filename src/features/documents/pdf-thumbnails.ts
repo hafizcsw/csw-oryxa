@@ -66,7 +66,7 @@ export async function renderPdfPagesToThumbnails(
       const ctx = canvas.getContext("2d");
       if (!ctx) continue;
 
-      await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+      await page.render({ canvasContext: ctx, viewport }).promise;
 
       const blob: Blob | null = await new Promise((resolve) =>
         canvas.toBlob((b) => resolve(b), "image/jpeg", quality),
