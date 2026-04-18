@@ -493,10 +493,12 @@ export async function analyzeDocument(params: {
 
     analysis.analysis_status = 'completed';
     analysis.updated_at = new Date().toISOString();
+    emit('completed', `${analysis.classification_result ?? 'unknown'} · ${Object.keys(analysis.extracted_fields).length} fields`);
   } catch (err) {
     analysis.analysis_status = 'failed';
     analysis.rejection_reason = err instanceof Error ? err.message : 'Analysis failed';
     analysis.updated_at = new Date().toISOString();
+    emit('failed', analysis.rejection_reason);
   }
 
   logArtifact(artifact, analysis);
