@@ -27,12 +27,18 @@ function getSessionId(): string {
   return id;
 }
 
+// Circuit breaker: once events insert fails (e.g. RLS 403), stop trying
+// for the rest of the session to avoid wasted network + console noise that
+// slows down navigation.
+let trackingDisabled = false;
+
 async function trackEvent(name: string, properties: Record<string, any> = {}) {
+  if (trackingDisabled) return;
   try {
     const visitorId = getVisitorId();
     const traffic = classifyTraffic(visitorId);
 
-    await supabase.from("events").insert({
+    const { error } = await supabase.from("events").insert({
       name,
       visitor_id: visitorId,
       session_id: getSessionId(),
@@ -49,6 +55,18 @@ async function trackEvent(name: string, properties: Record<string, any> = {}) {
         ts: new Date().toISOString(),
       },
     } as any);
+
+    if (error) {
+      // RLS / permission errors → trip the breaker for the session
+      if (error.code === "42501" || (error as any).status === 403) {
+        trackingDisabled = true;
+        if (import.meta.env.DEV) {
+          console.debug("[DecisionTracking] Disabled for session (RLS/403)");
+        }
+      } else if (import.meta.env.DEV) {
+        console.debug("[DecisionTracking] insert error:", error);
+      }
+    }
   } catch (e) {
     if (import.meta.env.DEV) console.debug("[DecisionTracking] Failed:", e);
   }
