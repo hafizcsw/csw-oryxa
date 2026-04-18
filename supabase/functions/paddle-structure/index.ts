@@ -2,14 +2,17 @@
 // Edge Function: paddle-structure
 // ═══════════════════════════════════════════════════════════════
 // Privacy / safety:
-//   - JWT auth required (verify_jwt = true via signing keys)
+//   - JWT auth required (validated in code via getUser)
 //   - Validates that the requested storage_path belongs to the
-//     calling user (path prefix match documents/<user_id>/...)
+//     calling user (path prefix match user/<profile_id>/...)
 //   - Issues a SHORT-LIVED signed URL (60s) for Paddle to fetch.
 //   - Forwards ONLY: signed_url, mime_type, file_name to Paddle.
 //   - Fail-closed: missing PADDLE_STRUCTURE_ENDPOINT or any
 //     downstream error → returns { ok:false, reason } with HTTP 200
 //     so the client can fall back gracefully without a network error.
+//
+// Bucket: student-docs (single source of truth — matches
+// FileUploadSection.tsx and customer_files.storage_path).
 // ═══════════════════════════════════════════════════════════════
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -22,8 +25,6 @@ const corsHeaders = {
 
 const TIMEOUT_MS = 25_000;
 const SIGNED_URL_TTL = 60;
-// Single source of truth for student documents. Must match the bucket
-// used by FileUploadSection.tsx and customer_files.storage_path.
 const DOCUMENTS_BUCKET = "student-docs";
 
 interface ReqBody {
@@ -42,8 +43,6 @@ function jsonResp(body: unknown, init: ResponseInit = {}) {
 
 function failClosed(reason: string, error_message: string | null = null) {
   console.log("[paddle-structure] ✗ failClosed", { reason, error_message });
-  // Always HTTP 200 so the supabase-js invoke() does not raise a generic
-  // FunctionsError; the client interprets ok:false as fail-closed.
   return jsonResp({ ok: false, reason, error_message });
 }
 
@@ -83,17 +82,46 @@ Deno.serve(async (req) => {
   }
 
   // Privacy gate: storage_path must belong to caller.
-  // student-docs convention is `user/<profile_id>/...` (matches
-  // FileUploadSection.tsx). We accept any path that contains the
-  // caller's user id as a segment so this stays robust as conventions evolve.
+  // student-docs convention is `user/<profile_id>/...` — but profile_id
+  // ≠ auth user_id. We resolve the caller's profile_id from the profiles
+  // table, and accept the path if it matches either auth user_id or
+  // profile_id (which is what the upload flow actually writes).
   const normalizedPath = storage_path.startsWith(`${DOCUMENTS_BUCKET}/`)
     ? storage_path.slice(DOCUMENTS_BUCKET.length + 1)
     : storage_path;
-  const belongsToCaller =
-    normalizedPath.startsWith(`${user_id}/`) ||
-    normalizedPath.includes(`/${user_id}/`) ||
-    normalizedPath.startsWith(`user/${user_id}/`);
+
+  const adminClient = createClient(SUPABASE_URL, SERVICE_KEY);
+  // Look up profile_id for this auth user (the FileUploadSection writes
+  // `user/<profile_id>/...`, where profile_id = profiles.id).
+  let profile_id: string | null = null;
+  try {
+    const { data: profileRow } = await adminClient
+      .from("profiles")
+      .select("id, customer_id")
+      .eq("user_id", user_id)
+      .maybeSingle();
+    profile_id = (profileRow?.id ?? profileRow?.customer_id ?? null) as string | null;
+  } catch (_e) {
+    // profile lookup is best-effort; the path check below still allows
+    // the auth-uid form which other flows use.
+  }
+
+  const acceptedPrefixes = [
+    `${user_id}/`,
+    `user/${user_id}/`,
+    ...(profile_id ? [`${profile_id}/`, `user/${profile_id}/`] : []),
+  ];
+  const belongsToCaller = acceptedPrefixes.some((p) =>
+    normalizedPath.startsWith(p) || normalizedPath.includes(`/${p}`),
+  );
+
   if (!belongsToCaller) {
+    console.log("[paddle-structure] ✗ storage_path_forbidden", {
+      normalizedPath,
+      user_id,
+      profile_id,
+      acceptedPrefixes,
+    });
     return failClosed("storage_path_forbidden");
   }
 
@@ -105,7 +133,6 @@ Deno.serve(async (req) => {
   }
 
   // ── Signed URL (short TTL) ────────────────────────────────
-  const adminClient = createClient(SUPABASE_URL, SERVICE_KEY);
   const { data: signed, error: signErr } = await adminClient
     .storage
     .from(DOCUMENTS_BUCKET)
@@ -129,7 +156,6 @@ Deno.serve(async (req) => {
         signed_url: signed.signedUrl,
         mime_type,
         file_name,
-        // Hint to the service that the URL expires soon.
         url_ttl_seconds: SIGNED_URL_TTL,
       }),
       signal: controller.signal,
