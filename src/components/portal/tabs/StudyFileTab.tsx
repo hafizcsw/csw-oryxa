@@ -195,6 +195,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     }
   }, [registry.records, analysisHook, guard]);
 
+  // Reconcile pending IDs against actual CRM documents — drops stale entries
+  // (files deleted in another tab/session, or that never finished saving server-side).
+  useEffect(() => {
+    guard.reconcileWithValidIds(documents.map(d => d.id));
+  }, [documents, guard]);
+
   const handleSaveDocuments = useCallback(async () => {
     guard.confirmAllSaved();
     await refetchDocs({ silent: true });
