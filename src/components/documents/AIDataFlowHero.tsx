@@ -1184,7 +1184,6 @@ function DocumentCard({
             style={{ overflow: "visible" }}
           >
             <div
-              xmlns="http://www.w3.org/1999/xhtml"
               style={{
                 fontFamily: "ui-sans-serif, system-ui, sans-serif",
                 fontSize: "10px",
