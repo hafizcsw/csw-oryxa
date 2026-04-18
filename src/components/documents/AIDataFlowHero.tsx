@@ -500,6 +500,8 @@ function AIDataFlowHeroComponent({
               />
             ))}
           </g>
+        )}
+
 
         {/* ═══ Issue connector paths — RED, for files that failed reading or
                 are weak/unknown quality. Always shown (no animation gating)
