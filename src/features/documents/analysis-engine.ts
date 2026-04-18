@@ -261,6 +261,13 @@ export async function analyzeDocument(params: {
       fileName: file.name,
       textContent,
       mimeType: file.type,
+      // Door 1.5: feed Paddle's structural summary so a tabular layout
+      // can override a text-only graduation/certificate verdict.
+      structuralHints: {
+        table_like_region_count: structured_artifact.summary.table_like_region_count,
+        total_row_candidates: structured_artifact.summary.total_row_candidates,
+        tabular_row_candidates: structured_artifact.summary.tabular_row_candidates,
+      },
     });
 
     analysis.classification_result = classification.best;

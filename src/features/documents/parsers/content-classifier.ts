@@ -23,6 +23,20 @@ export interface ClassificationScore {
  */
 export type PassportLaneStrength = 'passport_strong' | 'passport_weak' | null;
 
+/**
+ * Structural hints from the Paddle structured artifact (Door 1.5).
+ * The classifier MAY use these to override a text-only verdict when the
+ * page layout itself is overwhelmingly tabular (transcript-shaped).
+ */
+export interface StructuralHints {
+  /** Number of table-like regions Paddle detected on the page(s). */
+  table_like_region_count: number;
+  /** Total row candidates emitted by Paddle (header + body). */
+  total_row_candidates: number;
+  /** Subset of row_candidates that are tabular (≥2 cells). */
+  tabular_row_candidates: number;
+}
+
 export interface ClassificationOutput {
   best: DocumentSlotType | 'unknown' | 'unsupported';
   confidence: number;
@@ -304,8 +318,12 @@ export function classifyDocument(params: {
   fileName: string;
   textContent: string;
   mimeType: string;
+  /** Optional structural hints from Door 1.5 (Paddle structured artifact).
+   *  When present, table-shaped layouts can flip a near-tie to transcript
+   *  even if the text-only score landed on graduation_certificate. */
+  structuralHints?: StructuralHints | null;
 }): ClassificationOutput {
-  const { fileName, textContent, mimeType } = params;
+  const { fileName, textContent, mimeType, structuralHints } = params;
   const combined = `${fileName}\n${textContent}`;
 
   // Fixed MIME gate: check exact MIME type
@@ -343,6 +361,45 @@ export function classifyDocument(params: {
     (transcriptSignals.grade_pattern_hits >= 3 ? 2 : transcriptSignals.grade_pattern_hits) +
     (transcriptSignals.credit_pattern_hits >= 2 ? 2 : transcriptSignals.credit_pattern_hits) +
     (transcriptSignals.row_like_lines >= 3 ? 2 : transcriptSignals.row_like_lines >= 1 ? 1 : 0);
+
+  // ─── STRUCTURAL HINT BOOST (Door 1.5 — Paddle structured artifact) ──
+  // Paddle's layout analysis sees the page geometry the text-only classifier
+  // is blind to. A document with ≥1 table region OR ≥6 tabular rows is
+  // overwhelmingly transcript-shaped — even when the OCR text is too noisy
+  // for transcript vocabulary patterns to fire and even when the file has
+  // a "certificate-like" header line that boosts graduation score.
+  //
+  // This boost ONLY raises the transcript score; it never touches passport
+  // or language. The passport disqualifier below still runs as before.
+  let structural_boost_applied: string | null = null;
+  if (structuralHints) {
+    const hasStrongTables =
+      structuralHints.table_like_region_count >= 1 ||
+      structuralHints.tabular_row_candidates >= 6;
+    if (hasStrongTables) {
+      const transcriptEntry = scores.find(s => s.slot === 'transcript');
+      if (transcriptEntry) {
+        const before = transcriptEntry.score;
+        // Synthesize a strong transcript score so a weak text-only graduation
+        // win cannot bury a clearly tabular layout. Cap at 0.85 so it never
+        // displaces a real high-evidence text classification (e.g. IELTS).
+        const target = structuralHints.table_like_region_count >= 2 ? 0.75 : 0.6;
+        if (before < target) {
+          transcriptEntry.score = Math.min(0.85, target);
+          transcriptEntry.evidence.push(
+            `[structural_boost: tables=${structuralHints.table_like_region_count} tabular_rows=${structuralHints.tabular_row_candidates}]`,
+          );
+          structural_boost_applied =
+            `transcript ${before.toFixed(2)}→${transcriptEntry.score.toFixed(2)} ` +
+            `(tables=${structuralHints.table_like_region_count}, ` +
+            `tabular_rows=${structuralHints.tabular_row_candidates})`;
+          // Re-sort after boost
+          scores.sort((a, b) => b.score - a.score);
+          top = scores[0];
+        }
+      }
+    }
+  }
 
   // ─── PASSPORT DISQUALIFIER ────────────────────────────────────
   // A passport classification is FAKE when none of the truly
