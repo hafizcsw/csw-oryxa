@@ -14,7 +14,7 @@
 // unaffected.
 // ═══════════════════════════════════════════════════════════════
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { deleteFile } from '@/api/crmStorage';
 
 const STORAGE_KEY = 'unsaved_documents_v1';
@@ -40,9 +40,7 @@ function writePending(ids: string[]) {
 }
 
 interface UseUnsavedDocumentsGuardOptions {
-  /** Whether the guard should be active (e.g. only after profile/student is ready) */
   enabled?: boolean;
-  /** Called after orphan cleanup completes so the UI can refresh its document list */
   onCleanupComplete?: () => void;
 }
 
@@ -50,8 +48,16 @@ export function useUnsavedDocumentsGuard({
   enabled = true,
   onCleanupComplete,
 }: UseUnsavedDocumentsGuardOptions = {}) {
-  const pendingRef = useRef<Set<string>>(new Set(readPending()));
+  const [pendingIds, setPendingIds] = useState<string[]>(() => readPending());
+  const pendingRef = useRef<Set<string>>(new Set(pendingIds));
   const cleanupRanRef = useRef(false);
+
+  const sync = useCallback((next: Set<string>) => {
+    pendingRef.current = next;
+    const arr = Array.from(next);
+    writePending(arr);
+    setPendingIds(arr);
+  }, []);
 
   // ─── 1. On mount: clean up any orphans from a previous session ───
   useEffect(() => {
@@ -59,10 +65,7 @@ export function useUnsavedDocumentsGuard({
     cleanupRanRef.current = true;
 
     const orphans = readPending();
-    if (orphans.length === 0) {
-      pendingRef.current = new Set();
-      return;
-    }
+    if (orphans.length === 0) return;
 
     let cancelled = false;
     (async () => {
@@ -74,8 +77,7 @@ export function useUnsavedDocumentsGuard({
           stillFailing.push(orphans[i]);
         }
       });
-      writePending(stillFailing);
-      pendingRef.current = new Set(stillFailing);
+      sync(new Set(stillFailing));
       if (import.meta.env.DEV) {
         console.log('[unsaved-guard] orphan cleanup', {
           attempted: orphans.length,
@@ -88,7 +90,7 @@ export function useUnsavedDocumentsGuard({
     return () => {
       cancelled = true;
     };
-  }, [enabled, onCleanupComplete]);
+  }, [enabled, onCleanupComplete, sync]);
 
   // ─── 2. beforeunload: warn the user if there are unsaved docs ───
   useEffect(() => {
@@ -96,7 +98,6 @@ export function useUnsavedDocumentsGuard({
     const handler = (e: BeforeUnloadEvent) => {
       if (pendingRef.current.size === 0) return;
       e.preventDefault();
-      // Modern browsers ignore the custom string and show their own message.
       e.returnValue = '';
       return '';
     };
@@ -106,32 +107,28 @@ export function useUnsavedDocumentsGuard({
 
   // ─── API ─────────────────────────────────────────────────────────
   const trackDocument = useCallback((documentId: string) => {
-    if (!documentId) return;
-    pendingRef.current.add(documentId);
-    writePending(Array.from(pendingRef.current));
-  }, []);
+    if (!documentId || pendingRef.current.has(documentId)) return;
+    const next = new Set(pendingRef.current);
+    next.add(documentId);
+    sync(next);
+  }, [sync]);
 
   const untrackDocument = useCallback((documentId: string) => {
-    if (!documentId) return;
-    if (pendingRef.current.delete(documentId)) {
-      writePending(Array.from(pendingRef.current));
-    }
-  }, []);
+    if (!documentId || !pendingRef.current.has(documentId)) return;
+    const next = new Set(pendingRef.current);
+    next.delete(documentId);
+    sync(next);
+  }, [sync]);
 
-  /** Mark all currently tracked documents as saved (clears the guard list). */
   const confirmAllSaved = useCallback(() => {
-    pendingRef.current = new Set();
-    writePending([]);
-  }, []);
-
-  const getPendingCount = useCallback(() => pendingRef.current.size, []);
-  const getPendingIds = useCallback(() => Array.from(pendingRef.current), []);
+    sync(new Set());
+  }, [sync]);
 
   return {
+    pendingCount: pendingIds.length,
+    pendingIds,
     trackDocument,
     untrackDocument,
     confirmAllSaved,
-    getPendingCount,
-    getPendingIds,
   };
 }
