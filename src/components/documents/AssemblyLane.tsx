@@ -132,6 +132,7 @@ export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDelete
               doc={doc}
               promotedFields={promotedFields}
               onDeleteDoc={onDeleteDoc}
+              onEditField={onEditField}
             />
           ))}
         </div>
