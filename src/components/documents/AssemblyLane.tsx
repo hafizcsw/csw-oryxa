@@ -48,10 +48,10 @@ interface AssemblyLaneProps {
   lane: DestinationLane;
   docs: LaneDoc[];
   promotedFields: PromotedField[];
-  /** Delete a single document by its CRM file_id */
-  onDeleteDoc?: (crmFileId: string) => Promise<boolean>;
+  /** Delete a single document — passes CRM file_id (may be null for local-only) and document_id */
+  onDeleteDoc?: (crmFileId: string | null, documentId: string) => Promise<boolean>;
   /** Bulk-delete all docs in this lane */
-  onDeleteAll?: (crmFileIds: string[]) => Promise<void>;
+  onDeleteAll?: (items: Array<{ crmFileId: string | null; documentId: string }>) => Promise<void>;
 }
 
 const LANE_CONFIG: Record<DestinationLane, { titleKey: string; descKey: string; tone: string }> = {
@@ -67,18 +67,18 @@ export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDelete
   const isEmpty = docs.length === 0;
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
-  const deletableIds = useMemo(
-    () => docs.map(d => d.crmFileId).filter((x): x is string => !!x),
+  const deletableItems = useMemo(
+    () => docs.map(d => ({ crmFileId: d.crmFileId ?? null, documentId: d.documentId })),
     [docs],
   );
 
   const handleBulkDelete = async () => {
-    if (!onDeleteAll || deletableIds.length === 0 || bulkDeleting) return;
-    const confirmMsg = t('portal.assembly.lane.confirm_delete_all', { count: deletableIds.length });
+    if (!onDeleteAll || deletableItems.length === 0 || bulkDeleting) return;
+    const confirmMsg = t('portal.assembly.lane.confirm_delete_all', { count: deletableItems.length });
     if (!window.confirm(confirmMsg)) return;
     setBulkDeleting(true);
     try {
-      await onDeleteAll(deletableIds);
+      await onDeleteAll(deletableItems);
     } finally {
       setBulkDeleting(false);
     }
