@@ -273,24 +273,28 @@ function AIDataFlowHeroComponent({
     return paths;
   }, [cardsPerSide, leftCards, rightCards]);
 
-  // Only ACTIVE files' connectors stream into the brain. Multiple may be
-  // active at once if the backend processes files in parallel — that matches
-  // reality, the brain visibly pulls from every file currently being parsed.
+  // Tubes are PERSISTENT — once a file exists, its 3 cables stay rendered
+  // for the whole session. Color/animation reflect the per-file status:
+  //   active  → purple/cyan flowing energy
+  //   done    → calm green steady glow
+  //   failed  → red steady glow (with issue) or red flowing
+  //   pending → dim foreground, no flow
+  const tubeToneFor = (gIdx: number): "active" | "done" | "error" | "pending" => {
+    if (fileList[gIdx]?.issue) return "error";
+    const s = fileStatuses[gIdx];
+    if (s === "failed") return "error";
+    if (s === "done") return "done";
+    if (s === "active") return "active";
+    return "pending";
+  };
+
   const activeConnectors = useMemo(
     () => connectors.filter((p) => fileStatuses[p.gIdx] === "active"),
     [connectors, fileStatuses],
   );
 
-  // Connectors for files flagged with an `issue` (failed/weak/unknown). These
-  // are rendered in red — separate from the live "active" stream — so the user
-  // immediately sees which file the engine could not understand.
-  const issuedConnectors = useMemo(
-    () => connectors.filter((p) => !!fileList[p.gIdx]?.issue),
-    [connectors, fileList],
-  );
-
-  const showConnectors = showDocuments && activeConnectors.length > 0;
-  const showChips = showConnectors;
+  const showConnectors = showDocuments && connectors.length > 0;
+  const showChips = showDocuments && activeConnectors.length > 0;
 
   // Localized micro-labels with safe fallbacks
   const scanningLabel = (() => {
