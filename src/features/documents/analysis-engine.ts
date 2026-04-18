@@ -310,11 +310,13 @@ export async function analyzeDocument(params: {
         extractedFields = {};
       }
     } else if (classification.best === 'graduation_certificate') {
+      emit('extracting', 'graduation fields');
       extractedFields = extractGraduationFields(textContent);
     } else if (classification.best === 'transcript') {
       // Order 2: structured parser + truthful partial intermediate.
       // BrowserDocAI: pass structured artifact so transcript lane can recover
       // tabular row_candidates the line-by-line regex pass missed.
+      emit('transcript_rows', 'parsing subjects');
       const result = parseTranscript(textContent, structured_artifact);
       transcriptIntermediate = result.intermediate;
       extractedFields = result.header_fields;
