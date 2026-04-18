@@ -22,6 +22,8 @@ import {
   persistAnalysis,
   persistProposals,
   persistProposalStatus,
+  persistProposalValue,
+  persistManualProposal,
   deletePersistedDocument,
   deleteAllPersistedForUser,
   type PersistedArtifactSummary,
