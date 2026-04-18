@@ -133,8 +133,27 @@ async function readArtifact(file: File): Promise<ReadingArtifact> {
   }
 }
 
+/**
+ * MRZ rescue: detect if OCR output contains a viable MRZ pattern.
+ * Even garbage-quality OCR can yield a valid MRZ for passports —
+ * the MRZ is in OCR-B font designed for machine reading.
+ * If detected, we MUST NOT block downstream — passport lane needs MRZ.
+ */
+function detectMrzPattern(text: string): boolean {
+  if (!text) return false;
+  const upper = text.toUpperCase().replace(/\s+/g, '');
+  // TD3: 2 lines × 44 — look for "<<<<" runs (filler) AND a digits-heavy line
+  const hasFiller = /<{4,}/.test(upper);
+  // Document line: starts with P/I/A/C followed by letters/<
+  const hasDocLine = /[PIAC][A-Z<][A-Z]{3}/.test(upper);
+  // Data line: 9 alnum + 1 digit + 3 letters + 6 digits + 1 digit + [MFX<]
+  const hasDataLine = /[A-Z0-9<]{9}\d[A-Z]{3}\d{6}\d[MFX<]/.test(upper);
+  return hasFiller && (hasDocLine || hasDataLine);
+}
+
 /** Honesty gate for OCR routes.
  *  garbage  → unreadable + low_ocr_quality (no downstream success)
+ *           UNLESS an MRZ pattern survived → degraded (passport rescue)
  *  partial  → degraded (downstream allowed but flagged)
  *  good     → readable
  */
@@ -143,6 +162,20 @@ function applyOcrGate(
   quality: ReturnType<typeof assessOcrQuality>,
 ): void {
   if (quality.quality_label === 'garbage' || !quality.is_coherent) {
+    // MRZ rescue: a viable MRZ in the OCR output overrides garbage verdict.
+    if (detectMrzPattern(artifact.full_text)) {
+      console.info('[Door1:LegacyReader:MrzRescue]', {
+        file: artifact.input_filename,
+        quality_label: quality.quality_label,
+        char_quality: Number(quality.char_quality.toFixed(2)),
+        word_coherence: Number(quality.word_coherence.toFixed(2)),
+        action: 'rescued_as_degraded',
+      });
+      artifact.readability = 'degraded';
+      artifact.is_readable = true;
+      artifact.confidence = Math.max(artifact.confidence * 0.6, 0.4);
+      return;
+    }
     artifact.readability = 'unreadable';
     artifact.is_readable = false;
     artifact.failure_reason = 'low_ocr_quality';
