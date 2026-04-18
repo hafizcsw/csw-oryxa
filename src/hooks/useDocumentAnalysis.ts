@@ -52,6 +52,18 @@ export interface HydratedArtifactSurface {
   structuredArtifactSummary: PersistedStructuredArtifactSummary | null;
 }
 
+/** Live activity surface — one stage event per document, replaced as the
+ *  engine progresses. UI reads it to show "what is the engine doing right
+ *  now". Cleared automatically when the document completes/fails. */
+export interface LiveStageState {
+  documentId: string;
+  filename: string;
+  stage: EngineStageEvent['stage'];
+  detail: string | null;
+  elapsed_ms: number;
+  updated_at: number;
+}
+
 interface UseDocumentAnalysisResult {
   analyses: DocumentAnalysis[];
   proposals: ExtractionProposal[];
@@ -59,6 +71,8 @@ interface UseDocumentAnalysisResult {
   artifacts: Record<string, ReadingArtifact>;
   hydratedArtifactSurfaces: Record<string, HydratedArtifactSurface>;
   isAnalyzing: boolean;
+  /** Per-document live engine activity (stage + friendly detail). */
+  liveStages: Record<string, LiveStageState>;
   analyzeFile: (file: File, documentId: string, slotHint: DocumentSlotType | null) => Promise<AnalysisResult | null>;
   acceptProposal: (proposalId: string) => void;
   rejectProposal: (proposalId: string) => void;
