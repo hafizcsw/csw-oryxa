@@ -52,6 +52,8 @@ interface AssemblyLaneProps {
   onDeleteDoc?: (crmFileId: string | null, documentId: string) => Promise<boolean>;
   /** Bulk-delete all docs in this lane */
   onDeleteAll?: (items: Array<{ crmFileId: string | null; documentId: string }>) => Promise<void>;
+  /** Inline-edit a field value (always lands as pending_review) */
+  onEditField?: (params: { documentId: string; fieldKey: string; newValue: string }) => void;
 }
 
 const LANE_CONFIG: Record<DestinationLane, { titleKey: string; descKey: string; tone: string }> = {
