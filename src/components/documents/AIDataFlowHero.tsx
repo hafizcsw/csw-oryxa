@@ -555,6 +555,7 @@ function AIDataFlowHeroComponent({
                   scanDurationSec={SCAN_DURATION_MS / 1000}
                   scanningLabel={scanningLabel}
                   scannedLabel={scannedLabel}
+                  issue={fileList[c.gIdx]?.issue ?? null}
                 />
               );
             })}
