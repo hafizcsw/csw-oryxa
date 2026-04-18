@@ -718,6 +718,12 @@ export function CentralUploadHub({
                 const previewUrl = previewUrls[key] || r.signed_url || r.file_url || undefined;
                 const pages = previewPages[key];
                 const issue = issuesByDocId?.[r.document_id] ?? null;
+                // If the analysis layer reported an issue (reader_crashed,
+                // unreadable_scan, etc.), surface it as a failed file so the
+                // orb turns red instead of staying in the success palette.
+                if (issue) {
+                  status = 'failed';
+                }
                 return {
                   id: r.document_id,
                   name: r.original_file_name || 'Document',
