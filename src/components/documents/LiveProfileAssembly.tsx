@@ -35,6 +35,8 @@ interface LiveProfileAssemblyProps {
   promotedFields: PromotedField[];
   subjectRows: SubjectRow[];
   previewUrls: Record<string, string | null>;
+  /** CRM-listed documents — used to resolve real CRM file_id by filename */
+  crmDocuments?: Array<{ id: string; file_name: string }>;
   /** Delete a single CRM file (by file_id) and refresh */
   onDeleteDoc?: (crmFileId: string) => Promise<boolean>;
   /** Bulk-delete multiple CRM files */
@@ -57,6 +59,7 @@ export function LiveProfileAssembly({
   promotedFields,
   subjectRows,
   previewUrls,
+  crmDocuments,
   onDeleteDoc,
   onDeleteAll,
 }: LiveProfileAssemblyProps) {
@@ -143,6 +146,19 @@ export function LiveProfileAssembly({
       subjectRowsByDoc.set(r.source_document_id, arr);
     }
 
+    // ── Resolve real CRM file_id by filename (fallback for hydrated/CRM-loaded docs) ──
+    const crmIdByFilename = new Map<string, string>();
+    for (const d of crmDocuments ?? []) {
+      if (d.file_name && !crmIdByFilename.has(d.file_name)) {
+        crmIdByFilename.set(d.file_name, d.id);
+      }
+    }
+    const resolveCrmId = (filename: string | undefined, fallback: string | null): string | null => {
+      if (filename && crmIdByFilename.has(filename)) return crmIdByFilename.get(filename)!;
+      // Only return fallback if it looks like a UUID actually present in CRM list
+      return fallback;
+    };
+
     // Live analyses (only show docs the user has revealed)
     for (const a of analyses) {
       if (!revealedIds.has(a.document_id)) continue;
@@ -155,7 +171,7 @@ export function LiveProfileAssembly({
       );
       buckets[lane].push({
         documentId: a.document_id,
-        crmFileId: rec?.crm_file_id ?? a.document_id,
+        crmFileId: rec?.crm_file_id ?? resolveCrmId(filename, null),
         filename,
         previewUrl: previewUrls[a.document_id] ?? null,
         analysis: a,
@@ -171,11 +187,12 @@ export function LiveProfileAssembly({
     // Pure-hydrated docs that don't have a live analysis entry
     for (const [docId, surface] of Object.entries(hydratedArtifactSurfaces)) {
       if (analyses.some(a => a.document_id === docId)) continue;
+      const filename = surface.documentFilename ?? docId;
       // Treat as needs_review minimally — no analysis data
       buckets.needs_review.push({
         documentId: docId,
-        crmFileId: docId,
-        filename: surface.documentFilename ?? docId,
+        crmFileId: resolveCrmId(filename, null),
+        filename,
         previewUrl: previewUrls[docId] ?? null,
         analysis: null,
         artifact: null,
@@ -189,7 +206,7 @@ export function LiveProfileAssembly({
     return { byLane: buckets };
   }, [
     analyses, revealedIds, records, proposals, artifacts,
-    hydratedArtifactSurfaces, hydratedIds, previewUrls, subjectRows,
+    hydratedArtifactSurfaces, hydratedIds, previewUrls, subjectRows, crmDocuments,
   ]);
 
   const totalRevealed =

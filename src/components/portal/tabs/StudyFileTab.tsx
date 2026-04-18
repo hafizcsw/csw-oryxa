@@ -204,7 +204,9 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
 
   const handleDeleteDoc = useCallback(async (crmFileId: string): Promise<boolean> => {
     const res = await deleteFile(crmFileId);
-    if (!res.ok) {
+    // Treat NOT_FOUND as success — the file is already gone server-side; just refresh UI
+    const effectivelyOk = res.ok || res.error === 'FILE_NOT_FOUND';
+    if (!effectivelyOk) {
       console.error('[StudyFileTab] delete failed', res.error);
       toast({
         title: t('portal.assembly.lane.delete_failed'),
@@ -222,7 +224,8 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     const results = await Promise.allSettled(crmFileIds.map(id => deleteFile(id)));
     let ok = 0; let fail = 0;
     results.forEach((r, i) => {
-      if (r.status === 'fulfilled' && r.value.ok) {
+      const okish = r.status === 'fulfilled' && (r.value.ok || r.value.error === 'FILE_NOT_FOUND');
+      if (okish) {
         ok++;
         guard.untrackDocument(crmFileIds[i]);
       } else {
@@ -290,6 +293,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         promotedFields={analysisHook.promotedFields}
         subjectRows={academicTruthHook.subjectRows}
         previewUrls={previewUrls}
+        crmDocuments={documents.map(d => ({ id: d.id, file_name: d.file_name }))}
         onDeleteDoc={handleDeleteDoc}
         onDeleteAll={handleDeleteAll}
       />
