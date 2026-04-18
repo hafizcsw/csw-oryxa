@@ -73,7 +73,12 @@ interface UseDocumentAnalysisResult {
   isAnalyzing: boolean;
   /** Per-document live engine activity (stage + friendly detail). */
   liveStages: Record<string, LiveStageState>;
-  analyzeFile: (file: File, documentId: string, slotHint: DocumentSlotType | null) => Promise<AnalysisResult | null>;
+  analyzeFile: (
+    file: File,
+    documentId: string,
+    slotHint: DocumentSlotType | null,
+    storagePath?: string | null,
+  ) => Promise<AnalysisResult | null>;
   acceptProposal: (proposalId: string) => void;
   rejectProposal: (proposalId: string) => void;
   removePromotedField: (proposalId: string) => void;
@@ -165,6 +170,7 @@ export function useDocumentAnalysis({
     file: File,
     documentId: string,
     slotHint: DocumentSlotType | null,
+    storagePath: string | null = null,
   ): Promise<AnalysisResult | null> => {
     if (!studentId) return null;
 
@@ -180,6 +186,7 @@ export function useDocumentAnalysis({
         studentId,
         slotHint,
         canonicalFile,
+        storagePath,
         onStage: (event) => {
           setLiveStages(prev => ({
             ...prev,
