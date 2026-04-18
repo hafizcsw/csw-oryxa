@@ -355,6 +355,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         crmDocuments={documents.map(d => ({ id: d.id, file_name: d.file_name }))}
         onDeleteDoc={handleDeleteDoc}
         onDeleteAll={handleDeleteAll}
+        onEditField={analysisHook.editFieldValue}
       />
 
     </div>
