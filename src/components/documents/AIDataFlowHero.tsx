@@ -754,6 +754,7 @@ function DocumentCard({
   fileId,
   onDelete,
   deleteLabel = "Delete",
+  issue = null,
 }: DocumentCardProps) {
   const W = CARD_W;
   const H = CARD_H;
@@ -1167,6 +1168,43 @@ function DocumentCard({
           />
         </g>
       )}
+
+      {/* Issue banner — small floating summary above the card explaining
+          why the engine could not understand this file. Rendered as
+          foreignObject so it can use real (RTL-safe) text + wrap. */}
+      {issue && (
+        <g pointerEvents="none">
+          {/* connector dot from banner to card top */}
+          <circle cx={W / 2} cy={-4} r={2.5} fill="hsl(var(--destructive))" />
+          <foreignObject
+            x={-12}
+            y={-46}
+            width={W + 24}
+            height={42}
+            style={{ overflow: "visible" }}
+          >
+            <div
+              xmlns="http://www.w3.org/1999/xhtml"
+              style={{
+                fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                fontSize: "10px",
+                lineHeight: 1.25,
+                fontWeight: 600,
+                color: "hsl(var(--destructive-foreground))",
+                background: "hsl(var(--destructive))",
+                padding: "4px 6px",
+                borderRadius: "6px",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.18)",
+                textAlign: "center",
+                wordBreak: "break-word",
+              }}
+            >
+              {issue.reason}
+            </div>
+          </foreignObject>
+        </g>
+      )}
+
     </g>
   );
 
