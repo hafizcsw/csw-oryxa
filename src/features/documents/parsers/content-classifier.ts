@@ -273,12 +273,9 @@ export function classifyDocument(params: {
   // Sort by score descending
   scores.sort((a, b) => b.score - a.score);
 
-  const top = scores[0];
+  let top = scores[0];
 
-  // Compute passport-lane strength up-front (used in any return that lands on passport)
   const passportEval = evaluatePassportStrength(textContent);
-  // Order-2: compute transcript multi-signal evidence (NOT tabular-only).
-  // Used for transcript ↔ graduation disambiguation and lane strength.
   const transcriptSignals = computeTranscriptSignals(textContent || '');
   const transcriptEvidenceCount =
     transcriptSignals.vocabulary_hits.length * 2 +
@@ -286,6 +283,43 @@ export function classifyDocument(params: {
     (transcriptSignals.grade_pattern_hits >= 3 ? 2 : transcriptSignals.grade_pattern_hits) +
     (transcriptSignals.credit_pattern_hits >= 2 ? 2 : transcriptSignals.credit_pattern_hits) +
     (transcriptSignals.row_like_lines >= 3 ? 2 : transcriptSignals.row_like_lines >= 1 ? 1 : 0);
+
+  // ─── PASSPORT DISQUALIFIER ────────────────────────────────────
+  // A passport classification is FAKE when none of the truly
+  // passport-specific signals fired (no MRZ, no high-signal labels
+  // like "passport no", "issuing authority", "جواز السفر" …).
+  //
+  // In that case the passport lane only "won" because of generic
+  // shared patterns (date of birth, nationality, expiry) that also
+  // appear on graduation certificates and transcripts. We then flip
+  // to the strongest meaningful academic / language alternative.
+  if (top.slot === 'passport') {
+    const passportTrustworthy =
+      passportEval.mrz_pattern_in_text || passportEval.text_evidence.length >= 2;
+
+    if (!passportTrustworthy) {
+      const altSlots: DocumentSlotType[] = [
+        'graduation_certificate',
+        'transcript',
+        'language_certificate',
+      ];
+      const bestAlt = scores
+        .filter(s => altSlots.includes(s.slot as DocumentSlotType))
+        .sort((a, b) => b.score - a.score)[0];
+
+      // Flip whenever an alternative shows non-trivial evidence (>=0.18).
+      // Passport here is by definition untrustworthy → prefer real
+      // academic signal even if its raw score is lower.
+      if (bestAlt && bestAlt.score >= 0.18) {
+        scores.sort((a, b) => {
+          if (a.slot === bestAlt.slot) return -1;
+          if (b.slot === bestAlt.slot) return 1;
+          return b.score - a.score;
+        });
+        top = scores[0];
+      }
+    }
+  }
 
   // Require minimum score to classify
   if (top.score < 0.15) {
@@ -302,13 +336,6 @@ export function classifyDocument(params: {
     };
   }
 
-  // ── Order-2 disambiguation: transcript vs graduation (multi-signal) ──
-  //
-  // Old rule "tabular = transcript only" is REMOVED. We now use a basket
-  // of independent signals: transcript vocabulary, GPA/CGPA/cumulative
-  // hits, grade pattern density, credit-system hits, AND row-like lines.
-  // Any 2+ baskets present → keep transcript even if grad weight is high.
-  // Otherwise, if grad evidence is comparable, prefer graduation.
   const gradScore = scores.find(s => s.slot === 'graduation_certificate');
   const transScore = scores.find(s => s.slot === 'transcript');
 
@@ -345,7 +372,6 @@ export function classifyDocument(params: {
     disambiguationReason = `solo_transcript evidence=${transcriptEvidenceCount}`;
   }
 
-  // Check if top two are too close (ambiguous)
   const second = scores[1];
   const ambiguous = second && (top.score - second.score) < 0.1 && second.score > 0.15;
 
