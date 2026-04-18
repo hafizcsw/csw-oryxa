@@ -331,12 +331,14 @@ export async function analyzeDocument(params: {
         }
       } else if (laneStrength === 'passport_strong') {
         // No MRZ but classifier saw strong passport text evidence.
-        // Allow weak text fallback — these fields are tagged
-        // 'regex_heuristic' and the promotion layer will refuse auto-accept.
+        // [DIAG-PASSPORT-FALLBACK] dump full raw text so we can see exactly
+        // what regex is being asked to chew on.
+        console.log('[DIAG-PASSPORT-FALLBACK] no MRZ found, running text fallback. Full raw text:\n---\n' + textContent + '\n---');
         extractedFields = extractPassportTextFallback(textContent);
+        console.log('[DIAG-PASSPORT-FALLBACK] extracted fields:', JSON.stringify(extractedFields, null, 2));
       } else {
         // PASSPORT LANE GATE: weak classification + no MRZ ⇒ no fake success.
-        // Do not extract identity fields from weak/ambiguous text.
+        console.log('[DIAG-PASSPORT-FALLBACK] gate blocked: laneStrength=', laneStrength, 'mrzFound=', mrzFound, '. Raw text preview:\n', textContent?.slice(0, 1500));
         extractedFields = {};
       }
     } else if (classification.best === 'graduation_certificate') {
