@@ -35,6 +35,10 @@ interface LiveProfileAssemblyProps {
   promotedFields: PromotedField[];
   subjectRows: SubjectRow[];
   previewUrls: Record<string, string | null>;
+  /** Delete a single CRM file (by file_id) and refresh */
+  onDeleteDoc?: (crmFileId: string) => Promise<boolean>;
+  /** Bulk-delete multiple CRM files */
+  onDeleteAll?: (crmFileIds: string[]) => Promise<void>;
 }
 
 interface QueueEntry {
