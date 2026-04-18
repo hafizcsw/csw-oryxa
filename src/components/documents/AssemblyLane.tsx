@@ -63,7 +63,7 @@ const LANE_CONFIG: Record<DestinationLane, { titleKey: string; descKey: string; 
   needs_review: { titleKey: 'portal.assembly.lane.needs_review', descKey: 'portal.assembly.lane.needs_review_desc', tone: 'border-amber-500/30' },
 };
 
-export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDeleteAll }: AssemblyLaneProps) {
+export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDeleteAll, onEditField }: AssemblyLaneProps) {
   const { t } = useLanguage();
   const cfg = LANE_CONFIG[lane];
   const isEmpty = docs.length === 0;
