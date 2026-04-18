@@ -500,9 +500,28 @@ function AIDataFlowHeroComponent({
               />
             ))}
           </g>
+
+        {/* ═══ Issue connector paths — RED, for files that failed reading or
+                are weak/unknown quality. Always shown (no animation gating)
+                so the user immediately spots which file the engine cannot
+                process. Only the wire is colored — the brain itself is not
+                "feeding" from these files. ═══ */}
+        {showDocuments && issuedConnectors.length > 0 && (
+          <g fill="none" strokeLinecap="round">
+            {issuedConnectors.map((p) => (
+              <path
+                key={`err-${p.key}`}
+                d={p.d}
+                stroke="hsl(var(--destructive))"
+                strokeOpacity={0.85}
+                strokeWidth={1.6}
+                strokeDasharray="4 3"
+                markerEnd={`url(#${ids.arrowHead}-err)`}
+              />
+            ))}
+          </g>
         )}
 
-        {/* ═══ Document clusters (only when files exist) ═══ */}
         {showDocuments && (
           <g>
             {leftCards.map((c, i) => {
