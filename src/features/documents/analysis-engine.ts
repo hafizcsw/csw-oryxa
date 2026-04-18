@@ -39,6 +39,28 @@ import { resolveStructuredArtifact } from './document-ai/resolver';
 import type { DocumentAIMode } from './document-ai/document-ai-provider';
 import { buildPassportOutput, type PassportOutput } from './passport-output-schema';
 
+/** Live engine activity stage. Emitted via `onStage` callback so the UI
+ *  can show students what the engine is actually doing right now. */
+export type EngineStage =
+  | 'reading'           // opening + extracting text from the file
+  | 'ocr'               // running OCR (image/scan)
+  | 'classifying'       // detecting document type
+  | 'mrz'               // parsing the passport MRZ zone
+  | 'extracting'        // pulling fields (name, dates, GPA, …)
+  | 'transcript_rows'   // parsing transcript subject rows
+  | 'building_proposals'// creating field proposals + promotion rules
+  | 'completed'         // ✅ done
+  | 'failed';           // ✗ failed
+
+export interface EngineStageEvent {
+  stage: EngineStage;
+  /** Optional human detail (e.g. "page 2/4", "MRZ TD3 line 1"). Always
+   *  parser-side English; the UI maps the stage to a translated label. */
+  detail?: string | null;
+  /** Monotonic ms since analyzeDocument() started. */
+  elapsed_ms: number;
+}
+
 export interface AnalysisResult {
   analysis: DocumentAnalysis;
   proposals: ExtractionProposal[];
