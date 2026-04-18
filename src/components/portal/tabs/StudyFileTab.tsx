@@ -152,7 +152,13 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     onBatchComplete: handleBatchComplete,
   });
 
-  // Trigger analysis when records become registered
+  // ═══ Unsaved-documents guard: warn on unload + auto-cleanup orphans ═══
+  const guard = useUnsavedDocumentsGuard({
+    enabled: !!profile?.user_id,
+    onCleanupComplete: () => refetchDocs({ silent: true }),
+  });
+
+  // Trigger analysis when records become registered + track for save guard
   const prevRecordsRef = useRef<string[]>([]);
   useEffect(() => {
     const registeredIds = registry.records
@@ -165,7 +171,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     for (const id of newlyRegistered) {
       const record = registry.records.find(r => r.document_id === id);
       if (!record) continue;
-      
+
+      // Track this newly uploaded file as "unsaved" until user confirms
+      if (record.crm_file_id) {
+        guard.trackDocument(record.crm_file_id);
+      }
+
       // Find the file by name, consuming one key at a time to handle duplicates
       const keys = fileNameToKeysRef.current.get(record.original_file_name);
       if (keys && keys.length > 0) {
@@ -180,7 +191,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         }
       }
     }
-  }, [registry.records, analysisHook]);
+  }, [registry.records, analysisHook, guard]);
+
+  const handleSaveDocuments = useCallback(async () => {
+    guard.confirmAllSaved();
+    await refetchDocs({ silent: true });
+  }, [guard, refetchDocs]);
 
   const handleFilesSelected = useCallback((files: File[]) => {
     for (const file of files) {
