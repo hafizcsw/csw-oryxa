@@ -35,7 +35,7 @@ export function DocAssemblyHeader({
 
   const parserType = analysis?.parser_type ?? null;
   const showParserTypeSecondary =
-    parserType && parserType !== 'none' && parserType !== parserUsed;
+    parserType && parserType !== 'none' && String(parserType) !== String(parserUsed);
 
   const conf = analysis ? Math.round((analysis.classification_confidence ?? 0) * 100) : null;
 
