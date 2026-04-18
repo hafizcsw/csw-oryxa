@@ -4,7 +4,7 @@
 // Realistic top-down brain with progressive illumination
 // ═══════════════════════════════════════════════════════════════
 
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DocumentRecord, ProcessingStatus } from '@/features/documents/document-registry-model';
@@ -536,7 +536,44 @@ export function CentralUploadHub({
 }: CentralUploadHubProps) {
   const { t } = useLanguage();
   const [isDragOver, setIsDragOver] = useState(false);
+  const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Build previewUrl key — match record by file_name + size, since we can't
+  // pass File objects through the registry layer. Falls back to file name only.
+  const recordPreviewKey = useCallback(
+    (name: string, size: number) => `${name}::${size}`,
+    [],
+  );
+
+  // Generate object URLs for any newly-selected image files, then forward
+  // the originals to the upstream handler.
+  const handleFilesSelected = useCallback(
+    (files: File[]) => {
+      const next: Record<string, string> = {};
+      files.forEach((f) => {
+        if (f.type.startsWith('image/')) {
+          next[recordPreviewKey(f.name, f.size)] = URL.createObjectURL(f);
+        }
+      });
+      if (Object.keys(next).length > 0) {
+        setPreviewUrls((prev) => ({ ...prev, ...next }));
+      }
+      onFilesSelected(files);
+    },
+    [onFilesSelected, recordPreviewKey],
+  );
+
+  // Revoke object URLs on unmount to avoid leaks
+  useEffect(() => {
+    return () => {
+      Object.values(previewUrls).forEach((url) => {
+        try { URL.revokeObjectURL(url); } catch { /* noop */ }
+      });
+    };
+    // intentionally empty: only on unmount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -556,14 +593,21 @@ export function CentralUploadHub({
     setIsDragOver(false);
     if (disabled) return;
     const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) onFilesSelected(files);
-  }, [disabled, onFilesSelected]);
+    if (files.length > 0) handleFilesSelected(files);
+  }, [disabled, handleFilesSelected]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length > 0) onFilesSelected(files);
+    if (files.length > 0) handleFilesSelected(files);
     if (fileInputRef.current) fileInputRef.current.value = '';
-  }, [onFilesSelected]);
+  }, [handleFilesSelected]);
+
+  const handleDelete = useCallback(
+    (documentId: string) => {
+      onDismiss(documentId);
+    },
+    [onDismiss],
+  );
 
   const isProcessing = isUploading || records.some(r =>
     r.processing_status === 'uploading' || r.processing_status === 'confirming'
@@ -612,12 +656,28 @@ export function CentralUploadHub({
                   default:
                     status = 'pending';
                 }
-                return { name: r.original_file_name || 'Document', status };
+                const key = recordPreviewKey(
+                  r.original_file_name || '',
+                  r.file_size_bytes || 0,
+                );
+                const previewUrl = previewUrls[key] || r.signed_url || r.file_url || undefined;
+                return {
+                  id: r.document_id,
+                  name: r.original_file_name || 'Document',
+                  status,
+                  previewUrl: previewUrl || undefined,
+                  mimeType: r.mime_type,
+                };
               })}
             fileCount={records.length}
             hasFiles={records.length > 0}
             isDragOver={isDragOver}
             isProcessing={isProcessing}
+            onDeleteFile={handleDelete}
+            deleteLabel={(() => {
+              const v = t('common.delete');
+              return typeof v === 'string' && v && v !== 'common.delete' ? v : 'Delete';
+            })()}
           />
         </div>
 
