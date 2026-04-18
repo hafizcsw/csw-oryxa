@@ -5220,7 +5220,17 @@ Deno.serve(async (req) => {
             if (!PADDLE_ENDPOINT) {
               return paddleEnvelope({ ok: false, stage: 'config', reason: 'no_endpoint_configured', error_message: 'PADDLE_STRUCTURE_ENDPOINT not set' });
             }
-...
+            // ── Ownership resolution ──────────────────────────────
+            let resolvedBucket = storage_bucket || 'student-docs';
+            let resolvedPath = storage_path || '';
+
+            if (file_id) {
+              const { data: fileRec, error: fileErr } = await crmStorageClient
+                .from('customer_files')
+                .select('storage_bucket, storage_path, customer_id')
+                .eq('id', file_id)
+                .maybeSingle();
+
               if (fileErr || !fileRec) {
                 return paddleEnvelope({ ok: false, stage: 'ownership', reason: 'file_not_found', error_message: fileErr?.message ?? null });
               }
@@ -5253,7 +5263,42 @@ Deno.serve(async (req) => {
               console.log('[paddle_proxy] ✗ sign failed', { resolvedBucket, resolvedPath, err: signErr?.message });
               return paddleEnvelope({ ok: false, stage: 'sign', reason: 'signed_url_failed', error_message: signErr?.message ?? null });
             }
-...
+            // ── Call Paddle service ──────────────────────────────
+            console.log('[paddle_proxy] ▶ calling Paddle', {
+              endpoint: PADDLE_ENDPOINT,
+              bucket: resolvedBucket,
+              path_prefix: resolvedPath.split('/').slice(0, 2).join('/'),
+              file_name,
+              mime_type,
+            });
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), PADDLE_TIMEOUT_MS);
+            const startedAt = Date.now();
+            try {
+              const paddleResp = await fetch(PADDLE_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...(PADDLE_API_KEY ? { Authorization: `Bearer ${PADDLE_API_KEY}` } : {}),
+                },
+                body: JSON.stringify({
+                  signed_url: signed.signedUrl,
+                  mime_type,
+                  file_name,
+                  url_ttl_seconds: PADDLE_TTL,
+                }),
+                signal: controller.signal,
+              });
+              clearTimeout(timer);
+
+              const rawText = await paddleResp.text().catch(() => '');
+              const latency_ms = Date.now() - startedAt;
+              console.log('[paddle_proxy] upstream', {
+                status: paddleResp.status,
+                latency_ms,
+                preview: rawText.slice(0, 200),
+              });
+
               if (!paddleResp.ok) {
                 return paddleEnvelope({
                   ok: false,
