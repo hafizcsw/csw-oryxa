@@ -19,6 +19,8 @@ interface CentralUploadHubProps {
   onCancel: (documentId: string) => void;
   onDismiss: (documentId: string) => void;
   onClearCompleted: () => void;
+  /** Called when a preview is ready for a registered document (page-1 thumbnail). */
+  onPreviewsReady?: (documentId: string, previewUrl: string) => void;
 }
 
 const ACCEPTED_TYPES = '.pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx';
@@ -534,6 +536,7 @@ export function CentralUploadHub({
   onCancel,
   onDismiss,
   onClearCompleted,
+  onPreviewsReady,
 }: CentralUploadHubProps) {
   const { t } = useLanguage();
   const [isDragOver, setIsDragOver] = useState(false);
@@ -604,6 +607,23 @@ export function CentralUploadHub({
     // intentionally empty: only on unmount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Forward preview URLs to upstream consumers (e.g. LiveProfileAssembly) once
+  // each record has a real document_id. Fired at most once per (docId, url).
+  const forwardedPreviewsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!onPreviewsReady) return;
+    for (const r of records) {
+      if (!r.document_id || !r.original_file_name) continue;
+      const key = recordPreviewKey(r.original_file_name, r.file_size_bytes || 0);
+      const url = previewUrls[key];
+      if (!url) continue;
+      const sig = `${r.document_id}::${url}`;
+      if (forwardedPreviewsRef.current.has(sig)) continue;
+      forwardedPreviewsRef.current.add(sig);
+      onPreviewsReady(r.document_id, url);
+    }
+  }, [records, previewUrls, onPreviewsReady, recordPreviewKey]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();

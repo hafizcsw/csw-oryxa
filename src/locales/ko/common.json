@@ -1901,6 +1901,132 @@
         "rejected": "거부됨",
         "superseded": "대체됨"
       }
+    },
+    "assembly": {
+      "title": "Live Profile Assembly",
+      "subtitle": "Each completed file lands in its lane and reveals what was extracted.",
+      "dropping": "Placing document…",
+      "lane": {
+        "identity": "Identity",
+        "identity_desc": "Passport-derived identity fields.",
+        "academic": "Academic",
+        "academic_desc": "Transcript & graduation details, extraction-driven.",
+        "language": "Language",
+        "language_desc": "English-test fields.",
+        "needs_review": "Needs Review",
+        "needs_review_desc": "Documents whose lane could not be resolved automatically.",
+        "doc_count": "{{count}} documents",
+        "waiting": "Waiting for a matching document…"
+      },
+      "header": {
+        "lane": "Lane",
+        "reading_route": "Reading route",
+        "parser_used": "Parser used",
+        "classification": "Classification",
+        "readability": "Readability",
+        "failure_reason": "Failure",
+        "route_reason": "Reason",
+        "parser_type": "Parser type"
+      },
+      "reading_route": {
+        "born_digital_pdf": "Born-digital PDF",
+        "scanned_pdf": "Scanned PDF",
+        "image": "Image",
+        "unsupported": "Unsupported"
+      },
+      "classification": {
+        "passport": "Passport",
+        "transcript": "Transcript",
+        "graduation_certificate": "Graduation certificate",
+        "language_certificate": "Language certificate",
+        "other": "Other",
+        "unknown": "Unknown"
+      },
+      "readability": {
+        "readable": "Readable",
+        "degraded": "Degraded",
+        "unreadable": "Unreadable",
+        "unknown": "Unknown"
+      },
+      "failure_reason": {
+        "unsupported_file_type": "Unsupported file type",
+        "unreadable_scan": "Unreadable scan",
+        "low_ocr_quality": "Low OCR quality",
+        "reader_crashed": "Reader crashed",
+        "empty_document": "Empty document"
+      },
+      "route_reason": {
+        "classification_uncertain": "Classification uncertain",
+        "low_confidence": "Low confidence",
+        "unreadable_unclassified": "Unreadable & unclassified"
+      },
+      "status": {
+        "accepted": "Accepted",
+        "pending": "Pending",
+        "unresolved": "Unresolved",
+        "empty": "Empty"
+      },
+      "reason": {
+        "rejected": "Proposal rejected",
+        "not_extracted": "Not extracted from this document"
+      },
+      "academic": {
+        "no_fields_extracted": "No academic fields were extracted from this document.",
+        "subject_rows_label": "Subject rows",
+        "more_rows": "+{{count}} more subjects parsed",
+        "metric": {
+          "extracted": "fields extracted",
+          "missing": "expected fields missing",
+          "subject_rows": "subject rows parsed"
+        }
+      },
+      "subject_family": {
+        "chemistry": "Chemistry",
+        "biology": "Biology",
+        "physics": "Physics",
+        "mathematics": "Mathematics",
+        "english": "English",
+        "computer_science": "Computer Science",
+        "economics": "Economics",
+        "business": "Business",
+        "social_science": "Social Science",
+        "other": "Other"
+      },
+      "field": {
+        "identity": {
+          "passport_name": "Full name",
+          "passport_number": "Passport number",
+          "citizenship": "Citizenship",
+          "date_of_birth": "Date of birth",
+          "gender": "Gender",
+          "passport_expiry_date": "Passport expiry",
+          "passport_issuing_country": "Issuing country",
+          "passport_issue_date": "Passport issue date"
+        },
+        "language": {
+          "english_test_type": "English test type",
+          "english_total_score": "Overall score",
+          "english_reading": "Reading",
+          "english_writing": "Writing",
+          "english_listening": "Listening",
+          "english_speaking": "Speaking",
+          "test_date": "Test date",
+          "expiry_date": "Expiry date"
+        },
+        "academic": {
+          "credential_name": "Credential name",
+          "credential_type": "Credential type",
+          "awarding_institution": "Awarding institution",
+          "graduation_year": "Graduation year",
+          "degree_conferral_date": "Degree conferral date",
+          "gpa_raw": "GPA (raw)",
+          "gpa_normalized": "GPA (normalized)",
+          "grading_scale": "Grading scale",
+          "institution_name": "Institution name",
+          "country_of_education": "Country of education",
+          "transcript_language": "Transcript language"
+        }
+      }
     }
   },
   "studio": {

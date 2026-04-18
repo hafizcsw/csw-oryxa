@@ -1,8 +1,9 @@
-import { lazy, Suspense, useCallback, useRef, useEffect } from "react";
+import { lazy, Suspense, useCallback, useRef, useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
 import { CanonicalFileSummary } from "@/components/student-file/CanonicalFileSummary";
 import { CentralUploadHub } from "@/components/documents/CentralUploadHub";
+import { LiveProfileAssembly } from "@/components/documents/LiveProfileAssembly";
 import { DocumentAnalysisPanel } from "@/components/documents/DocumentAnalysisPanel";
 import { AcademicTruthPanel } from "@/components/decision/AcademicTruthPanel";
 import { DecisionPanel } from "@/components/decision/DecisionPanel";
@@ -190,6 +191,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     registry.enqueueFiles(files, 'upload_hub');
   }, [registry]);
 
+  // ═══ Preview URLs collected from upload hub for assembly chips ═══
+  const [previewUrls, setPreviewUrls] = useState<Record<string, string | null>>({});
+  const handlePreviewsReady = useCallback((documentId: string, previewUrl: string) => {
+    setPreviewUrls(prev => prev[documentId] === previewUrl ? prev : { ...prev, [documentId]: previewUrl });
+  }, []);
+
   return (
     <div className="space-y-8" data-canonical-status={canonicalFile?.file_status.profile_completion_status ?? 'none'}>
       {/* Top: Avatar + Page Title */}
@@ -214,8 +221,21 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           onCancel={registry.cancelRecord}
           onDismiss={registry.dismissRecord}
           onClearCompleted={registry.clearCompleted}
+          onPreviewsReady={handlePreviewsReady}
         />
       </section>
+
+      {/* ═══ Live Profile Assembly (lower experience) ═══ */}
+      <LiveProfileAssembly
+        records={registry.records}
+        analyses={analysisHook.analyses}
+        proposals={analysisHook.proposals}
+        artifacts={analysisHook.artifacts}
+        hydratedArtifactSurfaces={analysisHook.hydratedArtifactSurfaces}
+        promotedFields={analysisHook.promotedFields}
+        subjectRows={academicTruthHook.subjectRows}
+        previewUrls={previewUrls}
+      />
     </div>
   );
 }
