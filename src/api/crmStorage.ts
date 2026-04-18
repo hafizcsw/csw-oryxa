@@ -14,7 +14,7 @@
 import { portalInvoke } from "./portalInvoke";
 
 // ✅ CRM Storage sub-actions
-export type CrmStorageAction = 
+export type CrmStorageAction =
   | 'prepare_upload'
   | 'confirm_upload'
   | 'list_files'
@@ -22,7 +22,8 @@ export type CrmStorageAction =
   | 'set_avatar'
   | 'delete_file'
   | 'clear_all_files'
-  | 'purge_all_files';  // ✅ Added for clean cutover
+  | 'purge_all_files'         // ✅ Added for clean cutover
+  | 'paddle_structure_proxy'; // ✅ CRM-aware Paddle OCR/Structure proxy
 
 export interface PrepareUploadResult {
   bucket: string;
@@ -184,4 +185,45 @@ export async function purgeAllFiles(): Promise<{ ok: boolean; purged_count?: num
     };
   }
   return { ok: false, error: result.error };
+}
+
+/**
+ * ✅ CRM-aware Paddle Structure proxy.
+ * Resolves the file from CRM truth (customer_id ownership), signs a
+ * short-lived URL on CRM storage, then forwards to the Paddle endpoint.
+ * The client never has to know whether the file lives in app or CRM.
+ *
+ * Pass either `file_id` (preferred — DB ownership check) or
+ * `storage_path` (fallback — `<customerId>/...` prefix check).
+ */
+export interface PaddleStructureProxyResult {
+  ok: boolean;
+  result?: unknown;
+  /** Stage at which a failure occurred. */
+  stage?: 'request' | 'config' | 'ownership' | 'sign' | 'provider' | 'network';
+  reason?: string;
+  error_message?: string | null;
+  latency_ms?: number;
+}
+
+export async function callPaddleStructureProxy(params: {
+  document_id: string;
+  storage_path?: string;
+  storage_bucket?: string;
+  file_id?: string;
+  mime_type: string;
+  file_name: string;
+}): Promise<PaddleStructureProxyResult> {
+  const result = await callCrmStorage<PaddleStructureProxyResult>('paddle_structure_proxy', params);
+  // Edge wraps the body inside `data`; unwrap and surface as a flat envelope.
+  if (result.ok && result.data) {
+    return result.data as PaddleStructureProxyResult;
+  }
+  // Outer transport failure — surface as a network-stage error.
+  return {
+    ok: false,
+    stage: 'network',
+    reason: result.error || 'transport_failed',
+    error_message: result.details ?? null,
+  };
 }

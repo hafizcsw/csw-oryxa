@@ -2,21 +2,26 @@
 // Paddle Reader — Door 1: PRIMARY reader implementation
 // ═══════════════════════════════════════════════════════════════
 // Implements the DocumentReader contract using the self-hosted
-// PaddleOCR PP-StructureV3 service via the `paddle-structure`
-// edge proxy.
+// PaddleOCR PP-StructureV3 service via the CRM-aware proxy
+// `student-portal-api → crm_storage → paddle_structure_proxy`.
+//
+// Why the proxy (not the direct `paddle-structure` edge):
+// student documents are uploaded through the CRM project (separate
+// Supabase) under `<customer_id>/<file_kind>/...`. Only the portal
+// proxy can resolve CRM ownership and sign URLs against CRM storage.
+// Calling the app-local edge directly produced storage_path_forbidden
+// because the file does not live in app storage.
 //
 // Returns a full ReadingArtifact (full_text, pages, readability,
-// failure_reason) — NOT just a structured overlay. This is the
-// real cutover surface: when this reader succeeds, downstream
-// extraction runs against Paddle text, not legacy text.
-//
-// Fail-closed: any failure path returns an unreadable artifact
-// with a stable failure_reason. The DocumentReaderRouter (in
-// document-reader-contract.ts) decides whether to invoke the
-// legacy fallback based on those reasons.
+// failure_reason). Failure_detail is namespaced by stage so audit
+// can distinguish provider/network from reading failures:
+//   - paddle_provider:<reason>   (Paddle returned non-2xx / bad JSON)
+//   - paddle_network:<reason>    (timeout / fetch error)
+//   - paddle_ownership:<reason>  (CRM ownership / signing rejected)
+//   - paddle_reading:<reason>    (Paddle OK but text unusable)
 // ═══════════════════════════════════════════════════════════════
 
-import { supabase } from '@/integrations/supabase/client';
+import { callPaddleStructureProxy } from '@/api/crmStorage';
 import type { DocumentReader } from '../document-reader-contract';
 import {
   type ReadingArtifact,
@@ -36,17 +41,16 @@ export interface PaddleReadInput {
   file: File;
   storage_path: string;
   document_id: string;
+  /** Optional: when known, lets the proxy verify ownership via the
+   *  customer_files row directly (preferred over prefix match). */
+  file_id?: string;
+  storage_bucket?: string;
 }
 
-/** Builds the per-page text from Paddle's response, preferring the
- *  pre-assembled `text` field, falling back to concatenating block texts. */
 function pageText(p: PaddlePage): string {
   if (typeof p.text === 'string' && p.text.trim().length > 0) return p.text;
   const blocks = p.blocks ?? [];
-  return blocks
-    .map(b => (b.text ?? '').trim())
-    .filter(Boolean)
-    .join('\n');
+  return blocks.map(b => (b.text ?? '').trim()).filter(Boolean).join('\n');
 }
 
 function pageBlocks(p: PaddlePage): TextBlock[] {
@@ -92,7 +96,6 @@ function buildArtifactFromPaddle(
   const full_text = assembleFullText(pages);
   const ocr_quality = assessOcrQuality(full_text);
 
-  // Readability verdict — honest gate.
   let readability: ReadingArtifact['readability'];
   let failure_reason: ReadingFailureReason = null;
   let failure_detail: string | null = null;
@@ -100,11 +103,11 @@ function buildArtifactFromPaddle(
   if (pages.length === 0 || full_text.trim().length === 0) {
     readability = 'unreadable';
     failure_reason = 'unreadable_scan';
-    failure_detail = 'paddle_returned_empty_text';
+    failure_detail = 'paddle_reading:empty_text';
   } else if (ocr_quality.quality_label === 'garbage') {
     readability = 'unreadable';
     failure_reason = 'low_ocr_quality';
-    failure_detail = `coherence=${ocr_quality.word_coherence.toFixed(2)} char_q=${ocr_quality.char_quality.toFixed(2)}`;
+    failure_detail = `paddle_reading:low_quality coherence=${ocr_quality.word_coherence.toFixed(2)} char_q=${ocr_quality.char_quality.toFixed(2)}`;
   } else if (ocr_quality.quality_label === 'partial') {
     readability = 'degraded';
   } else {
@@ -150,18 +153,12 @@ function unreadableArtifact(
   };
 }
 
-/** PaddleReader — supports PDF and image MIME types. Other types must
- *  be filtered out by the router (DOC/DOCX/XLSX have no reading lane). */
 export const paddleReader: DocumentReader & {
   readWithStorage: (input: PaddleReadInput) => Promise<ReadingArtifact>;
 } = {
   implementation: 'paddle_self_hosted',
 
   async readDocumentArtifact(file: File): Promise<ReadingArtifact> {
-    // This reader REQUIRES a storage_path. Direct file reads must use
-    // readWithStorage() instead. The router will only call this path
-    // when storage_path is unavailable, in which case we fail-closed
-    // so the legacy reader can take over.
     const startedAt = performance.now();
     return unreadableArtifact(
       file,
@@ -172,7 +169,7 @@ export const paddleReader: DocumentReader & {
   },
 
   async readWithStorage(input: PaddleReadInput): Promise<ReadingArtifact> {
-    const { file, storage_path, document_id } = input;
+    const { file, storage_path, document_id, file_id, storage_bucket } = input;
     const startedAt = performance.now();
 
     const route = resolveReadingRoute(file.type);
@@ -181,56 +178,36 @@ export const paddleReader: DocumentReader & {
         file,
         startedAt,
         'unsupported_file_type',
-        `mime=${file.type}`,
+        `paddle_reading:mime=${file.type}`,
       );
     }
 
-    let envelope: { ok: boolean; reason?: string; error_message?: string | null; result?: PaddleStructureResponse } | null = null;
+    let envelope: Awaited<ReturnType<typeof callPaddleStructureProxy>>;
     try {
-      const { data, error } = await supabase.functions.invoke('paddle-structure', {
-        body: {
-          document_id,
-          storage_path,
-          mime_type: file.type || 'application/octet-stream',
-          file_name: file.name,
-        },
+      envelope = await callPaddleStructureProxy({
+        document_id,
+        storage_path,
+        storage_bucket,
+        file_id,
+        mime_type: file.type || 'application/octet-stream',
+        file_name: file.name,
       });
-      if (error) {
-        return unreadableArtifact(
-          file,
-          startedAt,
-          'reader_crashed',
-          `edge_invoke_failed: ${error.message ?? 'unknown'}`,
-        );
-      }
-      envelope = data as typeof envelope;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'unknown_error';
-      return unreadableArtifact(file, startedAt, 'reader_crashed', `client_exception: ${msg}`);
+      return unreadableArtifact(file, startedAt, 'reader_crashed', `paddle_network:client_exception:${msg}`);
     }
 
-    if (!envelope || typeof envelope !== 'object') {
-      return unreadableArtifact(file, startedAt, 'reader_crashed', 'empty_envelope');
-    }
     if (!envelope.ok || !envelope.result) {
+      const stage = envelope.stage ?? 'provider';
       const reason = envelope.reason ?? 'paddle_unavailable';
-      // Map edge-side reason → reading failure bucket.
-      const failure: ReadingFailureReason =
-        reason === 'no_endpoint_configured' ? 'reader_crashed'
-        : reason === 'timeout' ? 'reader_crashed'
-        : reason === 'service_5xx' || reason === 'network_error' ? 'reader_crashed'
-        : 'reader_crashed';
-      return unreadableArtifact(
-        file,
-        startedAt,
-        failure,
-        `paddle_${reason}: ${envelope.error_message ?? ''}`.slice(0, 200),
-      );
+      const detail = `paddle_${stage}:${reason}${envelope.error_message ? `:${envelope.error_message}` : ''}`.slice(0, 240);
+      return unreadableArtifact(file, startedAt, 'reader_crashed', detail);
     }
 
-    // Cache the raw response so resolveStructuredArtifact() can
-    // reuse it without a second network round-trip to Paddle.
-    storePaddleResponse(document_id, envelope.result);
-    return buildArtifactFromPaddle(envelope.result, file, startedAt);
+    // Cache the raw response so resolveStructuredArtifact() can reuse it
+    // without a second network round-trip.
+    const result = envelope.result as PaddleStructureResponse;
+    storePaddleResponse(document_id, result);
+    return buildArtifactFromPaddle(result, file, startedAt);
   },
 };

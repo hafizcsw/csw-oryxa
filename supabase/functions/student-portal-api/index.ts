@@ -248,14 +248,15 @@ async function verifyCrmStaffRole(
 }
 
 type CrmStorageAction = 
-  | 'prepare_upload'   // Get signed URL for upload
-  | 'confirm_upload'   // Register file in CRM after PUT
-  | 'list_files'       // List student files from CRM
-  | 'sign_file'        // Get signed URL for download
-  | 'set_avatar'       // Update avatar
-  | 'delete_file'      // Delete file from CRM
-  | 'clear_all_files'  // Delete ALL files for student
-  | 'purge_all_files'; // ✅ Soft delete ALL for clean cutover
+  | 'prepare_upload'         // Get signed URL for upload
+  | 'confirm_upload'         // Register file in CRM after PUT
+  | 'list_files'             // List student files from CRM
+  | 'sign_file'              // Get signed URL for download
+  | 'set_avatar'             // Update avatar
+  | 'delete_file'            // Delete file from CRM
+  | 'clear_all_files'        // Delete ALL files for student
+  | 'purge_all_files'        // ✅ Soft delete ALL for clean cutover
+  | 'paddle_structure_proxy';// ✅ CRM-aware Paddle OCR/Structure proxy
 
 // ============= Pricing Constants (Server-Side - Source of Truth) =============
 const COUNTRY_BASE_PRICES: Record<string, number> = {
@@ -5174,7 +5175,189 @@ Deno.serve(async (req) => {
             console.log('[crm_storage] ✅ sign_file success');
             return Response.json({ ok: true, signed_url: signedData.signedUrl }, { headers: corsHeaders });
           }
-          
+
+          // ============= PADDLE STRUCTURE PROXY (CRM-aware) =============
+          // Resolves the file from CRM truth (customer_id ownership), signs a
+          // short-lived URL on CRM storage, and forwards to the Paddle endpoint.
+          // This is the single entry point used by PaddleReader so the client
+          // never has to know whether storage lives in app or CRM.
+          case 'paddle_structure_proxy': {
+            const PADDLE_ENDPOINT = Deno.env.get('PADDLE_STRUCTURE_ENDPOINT');
+            const PADDLE_API_KEY = Deno.env.get('PADDLE_API_KEY');
+            const PADDLE_TIMEOUT_MS = 25_000;
+            const PADDLE_TTL = 60;
+
+            const { document_id, storage_path, storage_bucket, file_id, mime_type, file_name } = payload as {
+              document_id?: string;
+              storage_path?: string;
+              storage_bucket?: string;
+              file_id?: string;
+              mime_type?: string;
+              file_name?: string;
+            };
+
+            if (!document_id || !mime_type || !file_name) {
+              return Response.json(
+                { ok: false, stage: 'request', reason: 'missing_fields', error_message: 'document_id, mime_type, file_name required' },
+                { headers: corsHeaders },
+              );
+            }
+            if (!file_id && !storage_path) {
+              return Response.json(
+                { ok: false, stage: 'request', reason: 'missing_fields', error_message: 'file_id or storage_path required' },
+                { headers: corsHeaders },
+              );
+            }
+            if (!PADDLE_ENDPOINT) {
+              return Response.json(
+                { ok: false, stage: 'config', reason: 'no_endpoint_configured', error_message: 'PADDLE_STRUCTURE_ENDPOINT not set' },
+                { headers: corsHeaders },
+              );
+            }
+
+            // ── Ownership resolution ──────────────────────────────
+            // Path A (preferred): file_id → look up customer_files row,
+            //                     verify customer_id matches, take storage_bucket+path from DB.
+            // Path B (fallback):  storage_path provided → verify it begins
+            //                     with `<customerId>/`.
+            let resolvedBucket = storage_bucket || 'student-docs';
+            let resolvedPath = storage_path || '';
+
+            if (file_id) {
+              const { data: fileRec, error: fileErr } = await crmStorageClient
+                .from('customer_files')
+                .select('storage_bucket, storage_path, customer_id')
+                .eq('id', file_id)
+                .maybeSingle();
+
+              if (fileErr || !fileRec) {
+                return Response.json(
+                  { ok: false, stage: 'ownership', reason: 'file_not_found', error_message: fileErr?.message ?? null },
+                  { headers: corsHeaders },
+                );
+              }
+              if (fileRec.customer_id !== customerId) {
+                console.log('[paddle_proxy] ✗ ownership mismatch', { fileCustomer: fileRec.customer_id, caller: customerId });
+                return Response.json(
+                  { ok: false, stage: 'ownership', reason: 'storage_path_forbidden', error_message: 'customer_id mismatch' },
+                  { headers: corsHeaders },
+                );
+              }
+              resolvedBucket = fileRec.storage_bucket || resolvedBucket;
+              resolvedPath = fileRec.storage_path || resolvedPath;
+            } else {
+              // storage_path-only path: enforce <customerId>/ prefix
+              const normalized = resolvedPath.startsWith(`${resolvedBucket}/`)
+                ? resolvedPath.slice(resolvedBucket.length + 1)
+                : resolvedPath;
+              const ownedPrefixes = [`${customerId}/`, `user/${customerId}/`];
+              const owned = ownedPrefixes.some((p) => normalized.startsWith(p));
+              if (!owned) {
+                console.log('[paddle_proxy] ✗ path not owned', { normalized, customerId });
+                return Response.json(
+                  { ok: false, stage: 'ownership', reason: 'storage_path_forbidden', error_message: 'path prefix mismatch' },
+                  { headers: corsHeaders },
+                );
+              }
+              resolvedPath = normalized;
+            }
+
+            // ── Sign short-lived URL on CRM storage ──────────────
+            const { data: signed, error: signErr } = await crmStorageClient.storage
+              .from(resolvedBucket)
+              .createSignedUrl(resolvedPath, PADDLE_TTL);
+
+            if (signErr || !signed?.signedUrl) {
+              console.log('[paddle_proxy] ✗ sign failed', { resolvedBucket, resolvedPath, err: signErr?.message });
+              return Response.json(
+                { ok: false, stage: 'sign', reason: 'signed_url_failed', error_message: signErr?.message ?? null },
+                { headers: corsHeaders },
+              );
+            }
+
+            console.log('[paddle_proxy] ▶ calling Paddle', {
+              endpoint: PADDLE_ENDPOINT,
+              bucket: resolvedBucket,
+              path_prefix: resolvedPath.split('/').slice(0, 2).join('/'),
+              file_name,
+              mime_type,
+            });
+
+            // ── Call Paddle service ──────────────────────────────
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), PADDLE_TIMEOUT_MS);
+            const startedAt = Date.now();
+            try {
+              const paddleResp = await fetch(PADDLE_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...(PADDLE_API_KEY ? { Authorization: `Bearer ${PADDLE_API_KEY}` } : {}),
+                },
+                body: JSON.stringify({
+                  signed_url: signed.signedUrl,
+                  mime_type,
+                  file_name,
+                  url_ttl_seconds: PADDLE_TTL,
+                }),
+                signal: controller.signal,
+              });
+              clearTimeout(timer);
+
+              const rawText = await paddleResp.text().catch(() => '');
+              const latency_ms = Date.now() - startedAt;
+              console.log('[paddle_proxy] upstream', {
+                status: paddleResp.status,
+                latency_ms,
+                preview: rawText.slice(0, 200),
+              });
+
+              if (!paddleResp.ok) {
+                return Response.json(
+                  {
+                    ok: false,
+                    stage: 'provider',
+                    reason: paddleResp.status >= 500 ? 'service_5xx' : 'service_error',
+                    error_message: `status=${paddleResp.status} ${rawText.slice(0, 200)}`,
+                    latency_ms,
+                  },
+                  { headers: corsHeaders },
+                );
+              }
+
+              let result: unknown = null;
+              try { result = JSON.parse(rawText); } catch { /* noop */ }
+              if (!result || typeof result !== 'object' || !Array.isArray((result as { pages?: unknown }).pages)) {
+                return Response.json(
+                  {
+                    ok: false,
+                    stage: 'provider',
+                    reason: 'invalid_paddle_response',
+                    error_message: `body=${rawText.slice(0, 200)}`,
+                    latency_ms,
+                  },
+                  { headers: corsHeaders },
+                );
+              }
+
+              return Response.json({ ok: true, result, latency_ms }, { headers: corsHeaders });
+            } catch (err) {
+              clearTimeout(timer);
+              const msg = err instanceof Error ? err.message : 'unknown_error';
+              const isAbort = msg.toLowerCase().includes('abort');
+              return Response.json(
+                {
+                  ok: false,
+                  stage: 'network',
+                  reason: isAbort ? 'timeout' : 'network_error',
+                  error_message: msg,
+                  latency_ms: Date.now() - startedAt,
+                },
+                { headers: corsHeaders },
+              );
+            }
+          }
+
           // ============= SET AVATAR =============
           case 'set_avatar': {
             const { path } = payload as { path: string };
