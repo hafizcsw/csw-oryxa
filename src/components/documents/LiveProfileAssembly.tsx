@@ -172,6 +172,20 @@ export function LiveProfileAssembly({
     // Live analyses (show only current-session docs or docs still backed by current CRM files)
     for (const a of analyses) {
       if (!revealedIds.has(a.document_id)) continue;
+
+      // ── Hide failed / weak / unknown docs from the lower assembly ──
+      // Per UX decision: these surface ONLY in the upper visualizer
+      // (red wire + floating reason banner above the file). They must NOT
+      // appear in the "Needs Review" lane below alongside successful files.
+      const isFailedRead =
+        a.analysis_status === 'failed' || a.analysis_status === 'skipped';
+      const isUnknownOrWeak =
+        a.classification_result === 'unknown' ||
+        a.classification_result === 'unsupported' ||
+        a.usefulness_status === 'not_useful' ||
+        a.readability_status === 'unreadable';
+      if (isFailedRead || isUnknownOrWeak) continue;
+
       const rec = recordsById.get(a.document_id);
       const filename = rec?.original_file_name ?? hydratedArtifactSurfaces[a.document_id]?.documentFilename ?? a.document_id;
       const resolvedCrmId = rec?.crm_file_id ?? resolveCrmId(filename, null);
