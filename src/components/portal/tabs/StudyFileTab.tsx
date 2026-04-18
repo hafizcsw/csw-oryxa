@@ -187,7 +187,10 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         const fileKey = keys.shift()!;
         const entry = pendingFilesRef.current.get(fileKey);
         if (entry && !analysisHook.getAnalysis(id)) {
-          analysisHook.analyzeFile(entry.file, id, record.slot_hint);
+          // CRITICAL: pass storage_path so the engine can attempt the
+          // self-hosted paddle provider via the edge proxy. Without it,
+          // resolver.shouldAttemptPaddle() short-circuits to browser_heuristic.
+          analysisHook.analyzeFile(entry.file, id, record.slot_hint, record.storage_path);
           pendingFilesRef.current.delete(fileKey);
         }
         if (keys.length === 0) {
