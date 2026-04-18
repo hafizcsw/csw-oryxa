@@ -1239,27 +1239,35 @@ interface ConnectorTubeProps {
   animate: boolean;
   delay: number;
   markerId: string;
-  tone: "active" | "error";
+  tone: "active" | "done" | "error" | "pending";
 }
 
 /**
- * Renders a single connector as a glowing cable/tube:
+ * Renders a single connector as a glowing cable/tube. Always visible.
  *   - outer casing (thick, soft) → physical "pipe"
- *   - inner core (thin, bright) → conductor
- *   - flowing energy dashes → live data transfer
- * Combined with the 3 lines per card, this reads as 3 illuminated tubes.
+ *   - inner core (thin, bright) → conductor (color = status)
+ *   - flowing energy dashes → only when status is "active"
+ * Tones:
+ *   active  → purple/cyan with flowing pulse
+ *   done    → calm green steady
+ *   error   → red steady
+ *   pending → dim foreground steady
  */
 function ConnectorTube({ d, animate, delay, markerId, tone }: ConnectorTubeProps) {
-  const isError = tone === "error";
-  const casingStroke = isError ? "hsl(var(--destructive))" : "hsl(var(--foreground))";
-  const coreStroke = isError ? "hsl(var(--destructive))" : "hsl(265 95% 78%)";
-  const flowStroke = isError ? "hsl(var(--destructive))" : "hsl(190 100% 80%)";
+  const palette = {
+    active:  { casing: "hsl(var(--foreground))",   core: "hsl(265 95% 78%)", flow: "hsl(190 100% 80%)", coreOpacity: 0.85, casingOpacity: 0.32 },
+    done:    { casing: "hsl(142 70% 42%)",         core: "hsl(142 76% 55%)", flow: "hsl(142 76% 55%)",  coreOpacity: 0.9,  casingOpacity: 0.35 },
+    error:   { casing: "hsl(var(--destructive))",  core: "hsl(var(--destructive))", flow: "hsl(var(--destructive))", coreOpacity: 0.9, casingOpacity: 0.45 },
+    pending: { casing: "hsl(var(--foreground))",   core: "hsl(var(--foreground))", flow: "hsl(var(--foreground))", coreOpacity: 0.5, casingOpacity: 0.22 },
+  }[tone];
+
+  const isFlowing = tone === "active";
 
   const casing = (
     <path
       d={d}
-      stroke={casingStroke}
-      strokeOpacity={isError ? 0.45 : 0.32}
+      stroke={palette.casing}
+      strokeOpacity={palette.casingOpacity}
       strokeWidth={5}
       fill="none"
       strokeLinecap="round"
@@ -1269,8 +1277,8 @@ function ConnectorTube({ d, animate, delay, markerId, tone }: ConnectorTubeProps
   const core = (
     <path
       d={d}
-      stroke={coreStroke}
-      strokeOpacity={isError ? 0.9 : 0.85}
+      stroke={palette.core}
+      strokeOpacity={palette.coreOpacity}
       strokeWidth={1.6}
       fill="none"
       strokeLinecap="round"
@@ -1292,35 +1300,37 @@ function ConnectorTube({ d, animate, delay, markerId, tone }: ConnectorTubeProps
       {casing}
       <motion.path
         d={d}
-        stroke={coreStroke}
+        stroke={palette.core}
         strokeWidth={1.6}
         fill="none"
         strokeLinecap="round"
         markerEnd={`url(#${markerId})`}
         initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: isError ? 0.9 : 0.85 }}
+        animate={{ pathLength: 1, opacity: palette.coreOpacity }}
         transition={{
-          pathLength: { duration: 1.2, delay, ease: "easeInOut" },
+          pathLength: { duration: 1.0, delay, ease: "easeInOut" },
           opacity: { duration: 0.4, delay },
         }}
       />
-      {/* Flowing energy pulse inside the tube */}
-      <motion.path
-        d={d}
-        stroke={flowStroke}
-        strokeOpacity={0.95}
-        strokeWidth={2.2}
-        fill="none"
-        strokeLinecap="round"
-        strokeDasharray="6 22"
-        initial={{ strokeDashoffset: 0, opacity: 0 }}
-        animate={{ strokeDashoffset: -560, opacity: [0, 1, 1, 1] }}
-        transition={{
-          strokeDashoffset: { duration: isError ? 2.6 : 1.6, delay: delay + 0.4, repeat: Infinity, ease: "linear" },
-          opacity: { duration: 0.6, delay: delay + 0.4 },
-        }}
-        style={{ filter: "blur(0.4px)" }}
-      />
+      {/* Flowing energy pulse — only while transferring (active) */}
+      {isFlowing && (
+        <motion.path
+          d={d}
+          stroke={palette.flow}
+          strokeOpacity={0.95}
+          strokeWidth={2.2}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray="6 22"
+          initial={{ strokeDashoffset: 0, opacity: 0 }}
+          animate={{ strokeDashoffset: -560, opacity: 1 }}
+          transition={{
+            strokeDashoffset: { duration: 1.6, delay: delay + 0.4, repeat: Infinity, ease: "linear" },
+            opacity: { duration: 0.6, delay: delay + 0.4 },
+          }}
+          style={{ filter: "blur(0.4px)" }}
+        />
+      )}
     </g>
   );
 }
