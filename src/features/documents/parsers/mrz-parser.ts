@@ -346,31 +346,56 @@ function scoreConfidence(r: MrzResult): number {
 export function parseMrz(text: string): MrzResult {
   if (!text || text.length < 30) return emptyResult();
 
-  const rawLines = text.split(/\n|\r/).map(l => l.trim()).filter(l => l.length >= 28);
-  const cleaned = rawLines.map(cleanMrz);
+  const rawLines = text.split(/\n|\r/).map(l => l.trim()).filter(l => l.length >= 20);
+  // Cleaned lines, preserving order. Each line stripped to [A-Z0-9<].
+  const cleaned = rawLines.map(cleanMrz).filter(l => l.length >= 28);
 
   const isViable = (r: MrzResult | null): r is MrzResult =>
     !!r && !!r.passport_number && !!r.date_of_birth && !!r.expiry_date;
 
-  // ── TD3 attempt (44 chars) ─────────────────────────────────
-  for (let i = 0; i < cleaned.length - 1; i++) {
-    if (cleaned[i].length >= 44 && /^P[<A-Z]/.test(cleaned[i])) {
-      const l1 = cleaned[i].slice(0, 44);
-      for (let j = i + 1; j < cleaned.length; j++) {
-        if (cleaned[j].length >= 44) {
-          const l2 = cleaned[j].slice(0, 44);
-          const r = parseTD3(l1, l2);
-          if (isViable(r)) return r;
-          break;
-        }
-      }
+  /**
+   * Locate a TD3-style document line within a cleaned string.
+   * Returns the 44-char window starting at the doc-type marker, or null.
+   * MRZ may have leading OCR noise — we scan for the canonical pattern.
+   */
+  const findTD3Line1 = (s: string): string | null => {
+    if (s.length < 44) return null;
+    const m = s.match(/[PI][A-Z<][A-Z<]{3}/);
+    if (!m || m.index === undefined) return null;
+    if (m.index + 44 > s.length) {
+      // Tail too short — pad with '<' (filler) so check digits over surname zone still work
+      const window = s.slice(m.index).padEnd(44, '<');
+      return window.length >= 44 ? window.slice(0, 44) : null;
+    }
+    return s.slice(m.index, m.index + 44);
+  };
+
+  const findTD3Line2 = (s: string): string | null => {
+    if (s.length < 44) return null;
+    // line 2 is mostly alnum + '<'; pick the longest such window
+    return s.slice(0, 44);
+  };
+
+  // ── TD3 attempt (2 × 44) ───────────────────────────────────
+  for (let i = 0; i < cleaned.length; i++) {
+    const l1 = findTD3Line1(cleaned[i]);
+    if (!l1) continue;
+    for (let j = i + 1; j < cleaned.length; j++) {
+      const l2 = findTD3Line2(cleaned[j]);
+      if (!l2) continue;
+      const r = parseTD3(l1, l2);
+      if (isViable(r)) return r;
+      break;
     }
   }
 
-  // ── TD2 attempt (36 chars) ─────────────────────────────────
+  // ── TD2 attempt (2 × 36) ───────────────────────────────────
   for (let i = 0; i < cleaned.length - 1; i++) {
-    if (cleaned[i].length >= 36 && cleaned[i].length < 44 && /^[PI][<A-Z]/.test(cleaned[i])) {
-      const l1 = cleaned[i].slice(0, 36);
+    if (cleaned[i].length >= 36 && cleaned[i].length < 44) {
+      const m = cleaned[i].match(/[PI][A-Z<][A-Z<]{3}/);
+      if (!m || m.index === undefined) continue;
+      const l1 = cleaned[i].slice(m.index, m.index + 36);
+      if (l1.length < 36) continue;
       for (let j = i + 1; j < cleaned.length; j++) {
         if (cleaned[j].length >= 36 && cleaned[j].length < 44) {
           const l2 = cleaned[j].slice(0, 36);
@@ -384,11 +409,13 @@ export function parseMrz(text: string): MrzResult {
 
   // ── TD1 attempt (3 × 30) ───────────────────────────────────
   for (let i = 0; i < cleaned.length - 2; i++) {
-    if (cleaned[i].length >= 30 && cleaned[i].length < 36 && /^[IAC][<A-Z]/.test(cleaned[i])) {
-      const l1 = cleaned[i].slice(0, 30);
+    if (cleaned[i].length >= 30 && cleaned[i].length < 36) {
+      const m = cleaned[i].match(/[IAC][A-Z<][A-Z<]{3}/);
+      if (!m || m.index === undefined) continue;
+      const l1 = cleaned[i].slice(m.index, m.index + 30);
       const l2 = cleaned[i + 1]?.length >= 30 ? cleaned[i + 1].slice(0, 30) : null;
       const l3 = cleaned[i + 2]?.length >= 30 ? cleaned[i + 2].slice(0, 30) : null;
-      if (l2 && l3) {
+      if (l1.length === 30 && l2 && l3) {
         const r = parseTD1(l1, l2, l3);
         if (isViable(r)) return r;
       }
