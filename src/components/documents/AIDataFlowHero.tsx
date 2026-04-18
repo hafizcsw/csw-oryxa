@@ -38,6 +38,9 @@ export interface AIDataFlowHeroFile {
   previewUrls?: string[];
   /** MIME type (used to decide if previewUrl is renderable as image) */
   mimeType?: string;
+  /** When set: this file failed reading or has weak/unknown quality.
+   *  The connector wire turns red and a small summary banner floats above the card. */
+  issue?: { reason: string } | null;
 }
 
 export interface AIDataFlowHeroProps {
