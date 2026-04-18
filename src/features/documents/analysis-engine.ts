@@ -328,6 +328,7 @@ export async function analyzeDocument(params: {
         final_rows: transcriptIntermediate.rows.length,
       }, null, 2));
     } else if (classification.best === 'language_certificate') {
+      emit('extracting', 'language test fields');
       extractedFields = extractLanguageCertFields(textContent);
     }
 
