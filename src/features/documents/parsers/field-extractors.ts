@@ -35,7 +35,49 @@ export function extractPassportFields(mrz: MrzResult): Fields {
   if (mrz.expiry_date) f['identity.passport_expiry_date'] = field(mrz.expiry_date, mrz.raw_mrz, mrz.confidence, p, mrz.raw_mrz);
   if (mrz.issuing_country) f['identity.passport_issuing_country'] = field(mrz.issuing_country, mrz.raw_mrz, mrz.confidence, p, mrz.raw_mrz);
 
+  // Derive issue date from expiry (MRZ does NOT encode issue date).
+  // Standard validity: 10 years for adults, 5 years for minors (<16 at issue).
+  // Tagged as 'regex_heuristic' with lower confidence so the promotion layer
+  // keeps it as pending_review (never auto-accepted) — student/staff confirms.
+  if (mrz.expiry_date && mrz.date_of_birth) {
+    const derived = deriveIssueDateFromExpiry(mrz.expiry_date, mrz.date_of_birth);
+    if (derived) {
+      f['identity.passport_issue_date'] = field(
+        derived,
+        mrz.raw_mrz,
+        0.55,
+        'regex_heuristic',
+        `derived from expiry ${mrz.expiry_date} − typical validity`,
+      );
+    }
+  }
+
   return f;
+}
+
+/**
+ * Derive passport issue date from expiry + DOB.
+ * Standard validity: 10 years (adult) or 5 years (minor <16 at issue).
+ * Returns YYYY-MM-DD or null if unparseable.
+ */
+function deriveIssueDateFromExpiry(expiryYmd: string, dobYmd: string): string | null {
+  const exp = new Date(expiryYmd);
+  const dob = new Date(dobYmd);
+  if (isNaN(exp.getTime()) || isNaN(dob.getTime())) return null;
+
+  // Probe 10-year validity first
+  const probe = new Date(exp);
+  probe.setFullYear(exp.getFullYear() - 10);
+  const ageAtIssue10 = probe.getFullYear() - dob.getFullYear();
+  const validityYears = ageAtIssue10 < 16 ? 5 : 10;
+
+  const issue = new Date(exp);
+  issue.setFullYear(exp.getFullYear() - validityYears);
+
+  const yyyy = issue.getFullYear();
+  const mm = String(issue.getMonth() + 1).padStart(2, '0');
+  const dd = String(issue.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 // ── Passport TEXT FALLBACK (NO MRZ) ───────────────────────────
@@ -73,6 +115,14 @@ export function extractPassportTextFallback(text: string): Fields {
   );
   if (expMatch) {
     f['identity.passport_expiry_date'] = field(expMatch[1].trim(), expMatch[0], lowConf, p, expMatch[0]);
+  }
+
+  // Issue date (must be near explicit label)
+  const issueMatch = text.match(
+    /(?:date\s*of\s*issue|issue\s*date|issued\s*on|تاريخ\s*(?:ال)?(?:إصدار|الإصدار|الاصدار))\s*:?\s*([0-9]{1,2}[\s\/\-\.][0-9A-Za-z]{1,9}[\s\/\-\.][0-9]{2,4}|\d{4}[\-\/]\d{2}[\-\/]\d{2})/i,
+  );
+  if (issueMatch) {
+    f['identity.passport_issue_date'] = field(issueMatch[1].trim(), issueMatch[0], lowConf, p, issueMatch[0]);
   }
 
   // Gender (must be near explicit label)
