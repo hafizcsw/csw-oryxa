@@ -1,149 +1,98 @@
 
 
-## الفهم
-نبني `BrainIngestionVisualizer` كنظام بصري stateful متكامل (ليس loader) يعبّر عن رحلة الملف: Upload → Scan → Extract → Transfer عبر القنوات الخارجية → Brain fill-up → Complete. الأصل: `src/assets/brain-anatomical.svg` الموجود فعلياً، نعيد تفكيكه لطبقات قابلة للتحكم.
+## Live Profile Assembly — Final Plan (v4, approved with 3 fixes)
 
-## استكشاف مطلوب قبل التنفيذ
-1. قراءة `src/assets/brain-anatomical.svg` لفهم بنيته (هل paths منفصلة قابلة للتجميع semantic؟ أم مسار واحد؟).
-2. قراءة `src/components/documents/AIDataFlowHero.tsx` الحالي لفهم نقاط الربط مع upload pipeline (`files`, `status`, `lobeForFileName`).
-3. تحديد كيف يُستدعى `AIDataFlowHero` (props الحالية) ليبقى التكامل سلساً.
+Same as v3, with three mandatory amendments.
 
-## التصميم المعماري
+### Fix 1 — Separate reading route from destination lane
 
-### 1. هيكل الملفات الجديد
-```
-src/components/intelligence/
-  BrainIngestionVisualizer.tsx       (المكوّن الرئيسي — inline SVG كامل)
-  BrainIngestionVisualizer.types.ts  (الأنواع: Stage, Props)
-  useBrainIngestionAnimation.ts      (hook يحول stage+progress → motion values)
-  brain-ingestion.css                (CSS vars + keyframes للأداء)
-src/utils/
-  mapUploadPipelineToBrainStage.ts   (adapter من upload state → BrainIngestionStage)
-```
+Two distinct concepts, never conflated:
 
-### 2. State machine (7 حالات)
-```ts
-type BrainIngestionStage = 
-  'idle' | 'uploading' | 'scanning' | 'extracting' 
-  | 'interpreting' | 'complete' | 'error';
-```
+- **reading_route** (from artifact `chosen_route`): `born_digital_pdf` | `scanned_pdf` | `image` | `unsupported`. Shown in `DocAssemblyHeader` as a diagnostic, labeled with key `portal.assembly.header.reading_route`.
+- **destination_lane** (UI assignment): `identity` | `academic` | `language` | `needs_review`. Shown separately, labeled with key `portal.assembly.header.lane`.
 
-### 3. بنية الـ SVG المعاد تنظيمها (inline داخل المكوّن)
-```
-<svg>
-  <defs>
-    - linearGradient: stream-gradient (cool→warm)
-    - radialGradient: brain-fill-gradient
-    - radialGradient: completion-aura
-    - filter: soft-glow (feGaussianBlur محسوب)
-    - clipPath: brain-silhouette (المسار الخارجي للعقل)
-    - mask: brain-region-masks (6 segments)
-  </defs>
+Header strip order:
+1. destination_lane
+2. reading_route (artifact `chosen_route`)
+3. parser_used (artifact)
+4. classification + confidence (analysis)
+5. readability (analysis)
+6. failure_reason (artifact, if any)
+7. parser_type (analysis, secondary/dim, only when differs from parser_used)
 
-  <g id="layer-1-base-geometry">       — العقل الشفاف الأساسي (دائماً مرئي)
-  <g id="layer-2-branch-skeleton">     — الفروع الخارجية باهتة (دائماً)
-  <g id="layer-3-active-streams">      — الفروع المضيئة (stroke-dashoffset animated)
-    <g id="branches-tier-outer">
-    <g id="branches-tier-mid">
-    <g id="branches-tier-terminal">
-  <g id="layer-4-nodes">               — العقد المضيئة sequential
-  <g id="layer-5-inflow-bridges">      — جسور دخول العقل
-  <g id="layer-6-brain-fill" clip-path="url(#brain-silhouette)">
-    <g id="region-left-lower">
-    <g id="region-left-mid">
-    <g id="region-left-upper">
-    <g id="region-right-lower">
-    <g id="region-right-mid">
-    <g id="region-right-upper">
-    <g id="region-core-seam">
-  <g id="layer-7-completion-glow">     — هالة الاكتمال
-  <g id="file-node">                   — بطاقة الملف + pulse
-</svg>
-```
+If artifact lacks `chosen_route` or `parser_used`, render "—". No fabrication.
 
-### 4. منطق التحريك (CSS vars driven للأداء)
-```ts
-// useBrainIngestionAnimation.ts
-{
-  branchActivation: 0..1,   // كم فرع مضيء
-  streamIntensity: 0..1,    // سرعة/سطوع التدفق
-  brainFill: 0..1,          // نسبة fill داخل العقل
-  stableGlow: 0|1,          // هالة الاكتمال
-  errorDampening: 0|1,      // وضع الخطأ
-}
-```
-تُحقن كـ CSS custom properties على root → keyframes تستهلكها بدون React re-renders.
+### Fix 2 — Lane assignment requires resolved classification
 
-### 5. Progress mapping (segment thresholds)
-```
-0–10%   : file wake-up + outer nodes تستيقظ
-10–35%  : outer + mid branches تضيء بالتتابع
-35–65%  : terminal branches + bridges تنقل البيانات
-65–90%  : brain regions تمتلئ (lower→mid→upper, left&right متوازيين)
-90–100% : core seam + completion glow stable
-```
+Routing is only applied when classification is actually resolved AND confidence is sufficient:
 
-### 6. Adapter للربط مع upload pipeline الحالي
-```ts
-// mapUploadPipelineToBrainStage.ts
-mapPipelineToBrainStage({ uploadStatus, parseStatus, progress })
-  → { stage, progress }
-```
-يقرأ من نفس مصدر `files[]` الحالي في `AIDataFlowHero` (status: 'idle'|'active'|'done'|'failed') ويحوّله للـ 7 stages.
+- `passport` (resolved) → Identity
+- `transcript` (resolved) → Academic
+- `graduation_certificate` (resolved) → Academic
+- `language_certificate` (resolved) → Language
+- `unknown` / `other` / classification_uncertain / low confidence / no classification → **Needs review** zone (NOT Identity/Academic/Language)
 
-### 7. التكامل مع `AIDataFlowHero`
-- نُبقي `AIDataFlowHero` كـ orchestrator (يعرض البطاقات + الموصلات).
-- نستبدل البلوك الحالي للعقل (`<image brain-anatomical.svg>` + الطبقات الداخلية) بـ `<BrainIngestionVisualizer stage={derivedStage} progress={derivedProgress} />`.
-- نشتق `stage`/`progress` من `files[]` عبر الـ adapter.
+Unreadable docs:
+- If classification IS resolved despite unreadability → drop to the resolved lane, render template fields as unresolved with the doc-level failure_reason.
+- If classification is NOT resolved → drop to **Needs review**, NOT to a content lane.
 
-### 8. الألوان (من design tokens فقط)
-- cool: `hsl(var(--primary))` (أزرق سماوي)
-- warm: `hsl(var(--accent))` أو tone ذهبي من النظام
-- error: desaturated amber (لا أحمر صاخب)
-- لا hex hardcoded — كل شيء عبر CSS vars الموجودة في `index.css`.
+The Needs review zone is a real visible region above the 3 lanes. Chips land there with a visible reason chip (e.g. "classification_uncertain", "low_confidence", "unreadable + unclassified").
 
-### 9. i18n + a11y
-- صفر نص hardcoded داخل المكوّن. `fileLabel` يأتي من خارج (parent يستخدم `t()`).
-- `aria-hidden="true"` على SVG (decorative).
-- `prefers-reduced-motion` → تعطيل keyframes، يبقى static visualization مع stage indication بصرية بسيطة (opacity step فقط).
-- 12-language ready: لا strings داخل المكوّن.
+### Fix 3 — Hook must expose artifacts/hydrated surfaces as state
 
-### 10. الأداء
-- `memo` على المكوّن.
-- CSS vars بدلاً من Framer Motion لكل path (نستخدم Framer فقط للـ orchestration على مستوى الطبقات، ~7 motion elements لا أكثر).
-- `will-change` محدود على الطبقات النشطة فقط.
-- Staged activation: لا نحدّث كل path كل frame.
+`LiveProfileAssembly` reads artifact truth from state, not console. If `useDocumentAnalysis` does not already expose `artifacts` and `hydratedArtifactSurfaces` as returned state, edit it.
 
-### 11. Error state
-- خفض opacity العام إلى 0.6 تدريجياً (transition 600ms).
-- تجميد brainFill عند قيمته الحالية (لا يكتمل).
-- إضافة amber tint خفيف على completion-glow layer (desaturated، opacity 0.3 max).
-- بعض nodes تنطفئ بالتتابع (stagger 80ms).
+Updated edited-files list:
+- `src/hooks/useDocumentAnalysis.ts` — ensure `artifacts` (live, per-doc) and `hydratedArtifactSurfaces` (reload-safe) are part of the returned API. If already exposed, no change. Verified during implementation by reading the hook first.
+- `src/components/portal/tabs/StudyFileTab.tsx`
+- `src/components/documents/CentralUploadHub.tsx` (single `onPreviewsReady` callback only)
+- 12 locale files
 
-## ملفات سنعدّلها
-| ملف | الإجراء |
-|---|---|
-| `src/components/intelligence/BrainIngestionVisualizer.tsx` | جديد |
-| `src/components/intelligence/BrainIngestionVisualizer.types.ts` | جديد |
-| `src/components/intelligence/useBrainIngestionAnimation.ts` | جديد |
-| `src/components/intelligence/brain-ingestion.css` | جديد |
-| `src/utils/mapUploadPipelineToBrainStage.ts` | جديد |
-| `src/components/documents/AIDataFlowHero.tsx` | استبدال بلوك العقل بالمكوّن الجديد + استدعاء الـ adapter |
-| `src/assets/brain-anatomical.svg` | يبقى كما هو (مرجع بصري للـ silhouette) |
+### Fix 4 — Accepted status reflects actual proposal/promoted state only, never template
 
-## معايير القبول (QA)
-1. Idle: عقل شفاف، فروع باهتة، صفر تدفق.
-2. Uploading: file node ينبض، outer nodes تستيقظ.
-3. Scanning: outer+mid branches تحمل تدفقات لونية واضحة الاتجاه inward.
-4. Extracting: terminal branches + bridges مضيئة، أول regions تبدأ تمتلئ.
-5. Interpreting: brain fill ينتشر من lower→upper بشكل region-by-region.
-6. Complete: full luminous state + هالة مستقرة + خفوت الحركة السريعة.
-7. Error: خفوت محترم، لا اكتمال، tint محدود.
-8. تغيير `progress` من 0→100 يعكس fill حقيقي (ليس cosmetic).
-9. `prefers-reduced-motion` → static gracefully.
-10. صفر hardcoded text، 12-language ready.
-11. لا regression في `AIDataFlowHero` (البطاقات والموصلات تعمل).
+The UI MUST NOT assume acceptance for any field based on template membership. Specifically:
 
-## ملاحظة حول الـ SVG الأصلي
-الـ `brain-anatomical.svg` الحالي قد يكون paths كثيرة غير مصنفة. الخطة: نستخدمه كـ **base layer** فقط (مرجع silhouette + تفاصيل تشريحية باهتة)، ونبني فوقه الطبقات 2–7 يدوياً بـ paths/shapes منظمة semantic. هذا أسرع وأنظف من محاولة auto-classify كل path في الأصل.
+- Language fields are NOT pre-marked accepted just because Door 3 has a narrow auto-accept whitelist for `english_test_type` and `english_total_score`.
+- A field is rendered **accepted** ONLY when one of these is true at runtime:
+  - the proposal exists with `proposal_status === 'auto_accepted'`, OR
+  - the field key is present in `promotedFields`
+- Otherwise: pending (proposal `pending_review`), unresolved (proposal `rejected` or no proposal for an expected template field), or empty for academic (extraction-driven).
+
+No optimistic acceptance. No template-driven status. Status is always derived from live state.
+
+### Everything else from v3 stands
+
+- Identity + Language fixed deterministic templates; Academic extraction-driven
+- Deterministic field order arrays in `assembly-field-templates.ts`
+- Transcript: first 6 subject rows animated + "+N more" summary
+- Academic honesty footer = 3 metric pills (extracted / missing / subject_rows) via translation keys
+- Animation sequence: queued → dropping → lane_pulse → chip_pinned → header_reveal → fields_reveal → settled
+- Hydrated docs render in settled state, no animation
+- All visible strings via `t()` keys under `portal.assembly.*` across 12 locales
+- No changes to orb, upload hub visuals, analysis engine, proposals, promotion rules, persistence
+
+### Files
+
+**New**
+- `src/components/documents/LiveProfileAssembly.tsx`
+- `src/components/documents/AssemblyLane.tsx`
+- `src/components/documents/AssemblyFieldRow.tsx`
+- `src/components/documents/AssemblyDocChip.tsx`
+- `src/components/documents/DocAssemblyHeader.tsx`
+- `src/features/documents/assembly-field-templates.ts`
+
+**Edited**
+- `src/hooks/useDocumentAnalysis.ts` (only if artifacts/hydrated surfaces are not already in returned API)
+- `src/components/portal/tabs/StudyFileTab.tsx`
+- `src/components/documents/CentralUploadHub.tsx`
+- 12 locale files (`portal.assembly.*` including `header.lane`, `header.reading_route`, `needs_review.*`, metric keys)
+
+### Acceptance proof on the surface
+
+- Passport (resolved) drop → Identity lane, header shows lane=identity AND reading_route=scanned_pdf|born_digital_pdf separately, 8 fields in fixed order; accepted ONLY where proposal/promoted state confirms it.
+- Graduation cert drop → Academic lane, footer shows 3 metric pills with real counts.
+- Transcript drop → Academic lane, base fields + capped 6 subject rows + "+N more".
+- Language cert drop → Language lane, 8 fixed fields; `english_test_type` / `english_total_score` shown as accepted ONLY if proposals confirm — never by template.
+- Unreadable + unclassified doc → drops to **Needs review**, not to a content lane.
+- Unreadable + classified doc → drops to its lane, all template fields unresolved with visible doc-level failure_reason.
 
