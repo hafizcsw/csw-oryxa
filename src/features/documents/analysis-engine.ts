@@ -218,6 +218,32 @@ export async function analyzeDocument(params: {
         // Strong evidence path: MRZ is the primary truth source.
         extractedFields = extractPassportFields(mrzResult);
         analysis.parser_type = 'mrz';
+
+        // Build unified PassportOutput payload (university-ready JSON).
+        const derivedIssue =
+          (extractedFields['identity.passport_issue_date']?.value as string | null) ?? null;
+        passport_output = buildPassportOutput({
+          mrz: mrzResult,
+          derived_issue_date: derivedIssue,
+          processing_time_ms: performance.now() - startTime,
+          parser_chain: [
+            artifact.parser_used,
+            `mrz_${(mrzResult.format ?? 'unknown').toLowerCase()}`,
+          ],
+          ocr_used:
+            artifact.parser_used === 'tesseract_ocr' ||
+            artifact.parser_used === 'pdfjs_render_ocr',
+        });
+
+        // MRZ trust boost: a verified-checksum MRZ raises classification
+        // confidence to at least 0.95 — the document is mathematically a
+        // valid passport, no matter how weak the surrounding keywords.
+        if (mrzResult.checksum_verified) {
+          analysis.classification_confidence = Math.max(
+            analysis.classification_confidence,
+            0.95,
+          );
+        }
       } else if (laneStrength === 'passport_strong') {
         // No MRZ but classifier saw strong passport text evidence.
         // Allow weak text fallback — these fields are tagged
