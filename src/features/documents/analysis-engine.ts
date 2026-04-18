@@ -211,9 +211,20 @@ export async function analyzeDocument(params: {
       classification.passport_strength ?? null;
 
     if (classification.best === 'passport') {
+      // [DIAG-MRZ] log the raw text the parser is about to chew on
+      console.log('[DIAG-MRZ] textContent length:', textContent?.length, 'first 800 chars:\n' + (textContent || '').slice(0, 800));
       const mrzResult = parseMrz(textContent);
       mrzFound = mrzResult.found;
-
+      console.log('[DIAG-MRZ] parseMrz result:', {
+        found: mrzResult.found,
+        format: mrzResult.format,
+        passport_number: mrzResult.passport_number,
+        date_of_birth: mrzResult.date_of_birth,
+        expiry_date: mrzResult.expiry_date,
+        checksum_verified: mrzResult.checksum_verified,
+        checksum_breakdown: mrzResult.checksum_breakdown,
+        confidence: mrzResult.confidence,
+      });
       if (mrzResult.found) {
         // Strong evidence path: MRZ is the primary truth source.
         extractedFields = extractPassportFields(mrzResult);

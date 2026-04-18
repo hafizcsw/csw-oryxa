@@ -354,6 +354,8 @@ export function parseMrz(text: string): MrzResult {
   // Cleaned lines, preserving order. Each line stripped to [A-Z0-9<].
   // NOTE: cleanMrz uppercases-only filter; recoveryline runs per-attempt.
   const cleaned = rawLines.map(cleanMrz).filter(l => l.length >= 24);
+  // [DIAG-MRZ] which lines did the parser actually consider?
+  console.log('[DIAG-MRZ-parser] cleaned candidate lines (' + cleaned.length + '):', cleaned.map(l => `[${l.length}] ${l}`));
 
   const isViable = (r: MrzResult | null): r is MrzResult =>
     !!r && !!r.passport_number && !!r.date_of_birth && !!r.expiry_date;
