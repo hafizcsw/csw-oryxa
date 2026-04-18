@@ -94,6 +94,20 @@ export function extractPassportTextFallback(text: string): Fields {
   const p: ParserType = 'regex_heuristic';
   const lowConf = 0.55; // capped well below AUTO_ACCEPT_THRESHOLD
 
+  // Pre-process: split fused date pairs like "01/11/201831/10/2025" into
+  // "01/11/2018 31/10/2025" so DATE regex can capture both. Pattern:
+  //   DD/MM/YYYY immediately followed by DD/MM/YYYY (8 digits + 2 slashes
+  //   abutting another DD with no separator).
+  const FUSED_DATES = /(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4})(?=\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/g;
+  text = text.replace(FUSED_DATES, '$1 ');
+
+  // Diagnostic — surface raw text so we can see exactly what Paddle delivered
+  // when extraction comes back near-empty. Trial-safe: console only.
+  if (typeof console !== 'undefined' && console.debug) {
+    console.debug('[DIAG-PASSPORT-FALLBACK] text_len=%d sample=%s',
+      text.length, text.slice(0, 600).replace(/\s+/g, ' '));
+  }
+
   // Reusable date sub-pattern: DD[sep]MMM-or-MM[sep]YYYY  OR  YYYY-MM-DD
   const DATE = String.raw`(\d{1,2}[\s\/\-\.][0-9A-Za-z\u0600-\u06FF]{1,9}[\s\/\-\.]\d{2,4}|\d{4}[\-\/]\d{1,2}[\-\/]\d{1,2})`;
 
@@ -380,6 +394,13 @@ const PASSPORT_CO_LABELS = new Set([
   'mrz', 'passport', 'country', 'nat', 'sig',
   'issue', 'expiry', 'expiration', 'birth', 'issuing', 'authority',
   'of', 'and', 'the', 'state', 'national',
+  // Single-letter / 2-letter OCR noise commonly printed in identity zone
+  'm', 'f', 'ss', 'sy', 'sa', 'eg', 'co',
+  // French / Spanish / German co-labels
+  'sexe', 'sexo', 'geschlecht', 'fecha', 'lugar', 'lieu',
+  'naissance', 'nacimiento', 'geburt', 'geboren',
+  'expiration', 'caducidad', 'gultig', 'gültig',
+  'delivrance', 'expedicion', 'expedición', 'ausstellung',
 ]);
 
 // Known nationality adjectives/demonyms commonly printed on passports.
@@ -404,21 +425,31 @@ const NATIONALITY_DEMONYMS = [
 function pickFirstNonLabelToken(window: string): string | null {
   if (!window) return null;
 
-  // Priority 1: scan whole window for a known demonym (handles fused tokens)
+  // Priority 1: scan whole window for a known demonym (handles fused tokens
+  // like "8EGYPTIAN", noise prefix/suffix, etc.). Matches as substring.
   const upper = window.toUpperCase();
   for (const demonym of NATIONALITY_DEMONYMS) {
     if (upper.includes(demonym)) return demonym;
   }
 
-  // Priority 2: token scan with digit-prefix stripping
+  // Priority 2: token scan with digit-prefix stripping. Stop at the first
+  // co-label encountered (e.g. "Sex", "Date") — anything PAST a co-label is
+  // guaranteed to belong to a different field on the same line, not to
+  // nationality. This prevents "Nationality Sex M SS sy Date of Issue" from
+  // returning "Issue" by walking past two co-labels.
   const tokens = window
     .split(/[\s:;,.\/\\|]+/)
     .map(t => t.trim().replace(/^\d+/, '')) // strip leading digits ("8EGYPTIAN" → "EGYPTIAN")
     .filter(t => t.length > 0);
   for (const tok of tokens) {
-    if (PASSPORT_CO_LABELS.has(tok.toLowerCase())) continue;
+    const lower = tok.toLowerCase();
+    if (PASSPORT_CO_LABELS.has(lower)) {
+      // Hit a co-label → the value (if any) was before it. Bail out;
+      // returning null leaves the field empty rather than wrong.
+      return null;
+    }
     if (/^\d+$/.test(tok)) continue;
-    if (tok.length < 2) continue;
+    if (tok.length < 3) continue; // require 3+ chars to avoid "M", "SS", "sy"
     if (/^[A-Z]{3}$/.test(tok)) return tok;
     if (/^[A-Za-z\u00C0-\u017F\u0600-\u06FF][A-Za-z\u00C0-\u017F\u0600-\u06FF\-']{2,30}$/.test(tok)) {
       return tok;

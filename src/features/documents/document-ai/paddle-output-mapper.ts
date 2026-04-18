@@ -173,7 +173,46 @@ export function mapPaddleResponseToArtifact(
     for (const t of (p.tables ?? [])) {
       rowCandidates.push(...buildRowCandidatesFromTable(p.page_number, t));
     }
-    const regions = buildTableLikeRegions(p.page_number, rowCandidates, p.tables ?? []);
+    let regions = buildTableLikeRegions(p.page_number, rowCandidates, p.tables ?? []);
+
+    // ─── TEXT-DERIVED ROW FALLBACK ───────────────────────────
+    // Many transcripts come back from Paddle with `tables: []` even when
+    // the page IS visually tabular — the table-detector is finicky on
+    // photos / low-DPI scans. We can still recover a tabular signal by
+    // scanning `p.text`: lines with ≥2 columns separated by 2+ spaces
+    // (or tabs) are treated as row candidates. A page that yields ≥4
+    // such rows synthesizes ONE table_like_region so the classifier's
+    // structural boost can fire and the doc is routed to transcript.
+    if (rowCandidates.length === 0 && (p.text ?? '').trim().length > 0) {
+      const lines = (p.text ?? '').split(/\r?\n/);
+      const synthRows: RowCandidate[] = [];
+      const COL_SPLIT = /\s{2,}|\t+/;
+      for (const ln of lines) {
+        const trimmed = ln.trim();
+        if (trimmed.length < 4) continue;
+        const cells = trimmed.split(COL_SPLIT).map(c => c.trim()).filter(Boolean);
+        if (cells.length >= 2) {
+          synthRows.push({
+            page_number: p.page_number,
+            raw_line: trimmed,
+            cells,
+            is_tabular: cells.length >= 2,
+            row_confidence: 0.4, // synthetic, lower than real Paddle table rows
+          });
+        }
+      }
+      if (synthRows.length >= 4) {
+        rowCandidates.push(...synthRows);
+        regions = [
+          {
+            page_number: p.page_number,
+            row_indices: synthRows.map((_, i) => i),
+            approx_columns: Math.max(...synthRows.map(r => r.cells.length), 0),
+            row_count: synthRows.length,
+          },
+        ];
+      }
+    }
     const quality = deriveQuality(p);
     const text = (p.text ?? lineGroups.map(g => g.text).join('\n')).trim();
     const line_count = text ? text.split(/\r?\n/).filter(l => l.trim().length > 0).length : 0;
