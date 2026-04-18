@@ -269,6 +269,8 @@ export async function analyzeDocument(params: {
       });
       if (mrzResult.found) {
         // Strong evidence path: MRZ is the primary truth source.
+        emit('mrz', `${mrzResult.format} · checksum ${mrzResult.checksum_verified ? '✓' : '✗'}`);
+        emit('extracting', 'passport identity');
         extractedFields = extractPassportFields(mrzResult);
         analysis.parser_type = 'mrz';
 
