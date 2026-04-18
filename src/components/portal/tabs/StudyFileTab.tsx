@@ -202,32 +202,40 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
 
   const { toast } = useToast();
 
-  const handleDeleteDoc = useCallback(async (crmFileId: string): Promise<boolean> => {
-    const res = await deleteFile(crmFileId);
-    // Treat NOT_FOUND as success — the file is already gone server-side; just refresh UI
-    const effectivelyOk = res.ok || res.error === 'FILE_NOT_FOUND';
-    if (!effectivelyOk) {
-      console.error('[StudyFileTab] delete failed', res.error);
-      toast({
-        title: t('portal.assembly.lane.delete_failed'),
-        description: res.error ?? '',
-        variant: 'destructive',
-      });
-      return false;
+  const handleDeleteDoc = useCallback(async (crmFileId: string | null, documentId: string): Promise<boolean> => {
+    // 1. Try to delete the CRM file if we have an ID. Treat missing/not-found as success.
+    let crmOk = true;
+    if (crmFileId) {
+      const res = await deleteFile(crmFileId);
+      crmOk = res.ok || res.error === 'FILE_NOT_FOUND';
+      if (!crmOk) {
+        console.error('[StudyFileTab] delete failed', res.error);
+        toast({
+          title: t('portal.assembly.lane.delete_failed'),
+          description: res.error ?? '',
+          variant: 'destructive',
+        });
+        return false;
+      }
+      guard.untrackDocument(crmFileId);
     }
-    guard.untrackDocument(crmFileId);
+    // 2. Always remove the local analysis/proposal record so the card disappears.
+    analysisHook.dismissAnalysis(documentId);
     await refetchDocs({ silent: true });
     return true;
-  }, [guard, refetchDocs, t, toast]);
+  }, [analysisHook, guard, refetchDocs, t, toast]);
 
-  const handleDeleteAll = useCallback(async (crmFileIds: string[]) => {
-    const results = await Promise.allSettled(crmFileIds.map(id => deleteFile(id)));
+  const handleDeleteAll = useCallback(async (items: Array<{ crmFileId: string | null; documentId: string }>) => {
+    const results = await Promise.allSettled(
+      items.map(it => it.crmFileId ? deleteFile(it.crmFileId) : Promise.resolve({ ok: true } as any)),
+    );
     let ok = 0; let fail = 0;
     results.forEach((r, i) => {
       const okish = r.status === 'fulfilled' && (r.value.ok || r.value.error === 'FILE_NOT_FOUND');
       if (okish) {
         ok++;
-        guard.untrackDocument(crmFileIds[i]);
+        if (items[i].crmFileId) guard.untrackDocument(items[i].crmFileId!);
+        analysisHook.dismissAnalysis(items[i].documentId);
       } else {
         fail++;
       }
@@ -236,7 +244,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       title: t('portal.assembly.lane.delete_done', { ok, fail }),
     });
     await refetchDocs({ silent: true });
-  }, [guard, refetchDocs, t, toast]);
+  }, [analysisHook, guard, refetchDocs, t, toast]);
 
   const handleFilesSelected = useCallback((files: File[]) => {
     for (const file of files) {

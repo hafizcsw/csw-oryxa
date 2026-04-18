@@ -102,7 +102,7 @@ export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDelete
           <span className="text-[11px] text-muted-foreground">
             {t('portal.assembly.lane.doc_count', { count: docs.length })}
           </span>
-          {lane === 'needs_review' && deletableIds.length > 0 && onDeleteAll && (
+          {lane === 'needs_review' && deletableItems.length > 0 && onDeleteAll && (
             <Button
               size="sm"
               variant="ghost"
@@ -147,23 +147,23 @@ function DocBlock({
   lane: DestinationLane;
   doc: LaneDoc;
   promotedFields: PromotedField[];
-  onDeleteDoc?: (crmFileId: string) => Promise<boolean>;
+  onDeleteDoc?: (crmFileId: string | null, documentId: string) => Promise<boolean>;
 }) {
   const { t } = useLanguage();
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!onDeleteDoc || !doc.crmFileId || deleting) return;
+    if (!onDeleteDoc || deleting) return;
     if (!window.confirm(t('portal.assembly.lane.confirm_delete_one'))) return;
     setDeleting(true);
     try {
-      await onDeleteDoc(doc.crmFileId);
+      await onDeleteDoc(doc.crmFileId ?? null, doc.documentId);
     } finally {
       setDeleting(false);
     }
   };
 
-  const DeleteBtn = onDeleteDoc && doc.crmFileId ? (
+  const DeleteBtn = onDeleteDoc ? (
     <Button
       size="icon"
       variant="ghost"
