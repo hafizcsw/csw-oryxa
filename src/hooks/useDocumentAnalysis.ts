@@ -467,6 +467,7 @@ export function useDocumentAnalysis({
     artifacts,
     hydratedArtifactSurfaces,
     isAnalyzing,
+    liveStages,
     analyzeFile,
     reanalyzeFile,
     acceptProposal,
