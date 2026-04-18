@@ -254,6 +254,7 @@ export async function analyzeDocument(params: {
     if (classification.best === 'passport') {
       // [DIAG-MRZ] log the raw text the parser is about to chew on
       console.log('[DIAG-MRZ] textContent length:', textContent?.length, 'first 800 chars:\n' + (textContent || '').slice(0, 800));
+      emit('mrz', 'scanning MRZ zone');
       const mrzResult = parseMrz(textContent);
       mrzFound = mrzResult.found;
       console.log('[DIAG-MRZ] parseMrz result:', {
