@@ -41,8 +41,7 @@ export function SaveDocumentsBar({ pendingCount, onSave, className }: SaveDocume
   return (
     <div
       className={cn(
-        'sticky bottom-0 z-30 -mx-4 mt-6 border-t border-amber-300/60 bg-amber-50/95 px-4 py-3 backdrop-blur',
-        'dark:border-amber-700/60 dark:bg-amber-950/80',
+        'sticky bottom-0 z-30 -mx-4 mt-6 border-t border-destructive/30 bg-destructive/10 px-4 py-3 backdrop-blur',
         'sm:mx-0 sm:rounded-lg sm:border',
         className,
       )}
@@ -51,12 +50,12 @@ export function SaveDocumentsBar({ pendingCount, onSave, className }: SaveDocume
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
-          <ShieldAlert className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-700 dark:text-amber-300" />
+          <ShieldAlert className="mt-0.5 h-5 w-5 flex-shrink-0 text-destructive" />
           <div className="text-sm">
-            <p className="font-medium text-amber-900 dark:text-amber-100">
+            <p className="font-medium text-foreground">
               {t('portal.saveDocs.title', { count: pendingCount, defaultValue: '{{count}} unsaved document(s)' })}
             </p>
-            <p className="text-xs text-amber-800/80 dark:text-amber-200/80">
+            <p className="text-xs text-muted-foreground">
               {t(
                 'portal.saveDocs.warning',
                 'If you leave or refresh without saving, these files will be deleted automatically.',
@@ -73,7 +72,7 @@ export function SaveDocumentsBar({ pendingCount, onSave, className }: SaveDocume
               onCheckedChange={v => setAgreed(v === true)}
               disabled={saving}
             />
-            <Label htmlFor="save-docs-consent" className="cursor-pointer text-xs text-amber-900 dark:text-amber-100">
+            <Label htmlFor="save-docs-consent" className="cursor-pointer text-xs text-foreground">
               {t('portal.saveDocs.consent', 'I agree to the terms')}
             </Label>
           </div>
