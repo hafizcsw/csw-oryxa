@@ -78,6 +78,7 @@ interface UseDocumentAnalysisResult {
     documentId: string,
     slotHint: DocumentSlotType | null,
     storagePath?: string | null,
+    crmFileId?: string | null,
   ) => Promise<AnalysisResult | null>;
   acceptProposal: (proposalId: string) => void;
   rejectProposal: (proposalId: string) => void;

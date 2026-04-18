@@ -107,14 +107,16 @@ export async function analyzeDocument(params: {
   studentId: string;
   slotHint: DocumentSlotType | null;
   canonicalFile: CanonicalStudentFile | null;
-  /** Storage path inside `documents` bucket. Required to attempt the
-   *  paddle_self_hosted provider; null/undefined disables it cleanly. */
+  /** Storage path inside CRM `student-docs` bucket. Required (or crmFileId)
+   *  to attempt the paddle_self_hosted provider. */
   storagePath?: string | null;
-  /** Live activity callback. Optional — silent if omitted. Use it to drive
-   *  a "what is the engine doing right now" strip in the UI. */
+  /** CRM customer_files.id — preferred ownership signal. When present, the
+   *  proxy resolves bucket/path from the DB row instead of trusting the path. */
+  crmFileId?: string | null;
+  /** Live activity callback. Optional — silent if omitted. */
   onStage?: (event: EngineStageEvent) => void;
 }): Promise<AnalysisResult> {
-  const { file, documentId, studentId, slotHint, canonicalFile, storagePath, onStage } = params;
+  const { file, documentId, studentId, slotHint, canonicalFile, storagePath, crmFileId, onStage } = params;
   const analysis = createPendingAnalysis(documentId, slotHint);
   const proposals: ExtractionProposal[] = [];
   const startTime = performance.now();
@@ -129,8 +131,8 @@ export async function analyzeDocument(params: {
     }
   };
 
-  // Default diagnostic envelope (mutated when paddle is attempted)
-  let document_ai_mode: DocumentAIMode = 'browser_heuristic';
+  // Diagnostic envelope (mutated when paddle is attempted)
+  let document_ai_mode: DocumentAIMode = 'none';
   let document_ai_diag = {
     paddle_attempted: false,
     paddle_status: null as string | null,
@@ -140,19 +142,16 @@ export async function analyzeDocument(params: {
   };
 
   // ── Step 1: Read the document via the reading contract ───
-  // PRIMARY = Paddle (PP-StructureV3) when storage_path is present.
-  // FALLBACK = legacy_browser (pdf.js + Tesseract.js).
-  // The router tags `reader_implementation` honestly so audit can
-  // prove which engine actually produced this artifact.
+  // Hard cutover: Paddle is the only reader. Router fails closed when
+  // neither storage_path nor crm_file_id is present.
   analysis.analysis_status = 'analyzing';
   emit('reading', `${file.name} · ${(file.size / 1024).toFixed(0)} KB`);
   const artifact = await readDocumentArtifact(file, {
     storage_path: storagePath ?? null,
     document_id: documentId,
+    file_id: crmFileId ?? null,
   });
-  if (artifact.parser_used === 'tesseract_ocr' || artifact.parser_used === 'pdfjs_render_ocr') {
-    emit('ocr', `${artifact.pages_processed}/${artifact.total_page_count} pages`);
-  } else if (artifact.parser_used === 'paddle_pp_structure_v3') {
+  if (artifact.parser_used === 'paddle_pp_structure_v3') {
     emit('ocr', `paddle · ${artifact.pages_processed}/${artifact.total_page_count} pages`);
   }
 
