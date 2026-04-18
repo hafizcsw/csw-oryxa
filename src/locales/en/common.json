@@ -2263,6 +2263,17 @@
         "rejected": "Proposal rejected",
         "not_extracted": "Not extracted from this document"
       },
+      "edit": {
+        "edit": "Edit",
+        "save": "Save",
+        "cancel": "Cancel",
+        "continue": "Continue",
+        "add_manually": "Add manually",
+        "placeholder": "Enter the correct value…",
+        "pending_notice": "Saved as pending — our team will review before it becomes confirmed.",
+        "confirm_title": "Edit a confirmed field",
+        "confirm_body": "This field was previously confirmed. Editing it will move it back to \"Pending review\" until our team verifies the new value. Continue?"
+      },
       "academic": {
         "no_fields_extracted": "No academic fields were extracted from this document.",
         "subject_rows_label": "Subject rows",
