@@ -723,25 +723,25 @@ function DocumentCard({
     (mimeType?.startsWith("image/") ||
       /\.(png|jpe?g|webp|gif|svg)$/i.test(label));
   const previewClipId = `prev-clip-${shadowId}-${x}-${y}`;
-  // Body region under the title strip
-  const PREVIEW_X = 6;
-  const PREVIEW_Y = 32;
-  const PREVIEW_W = W - 12;
-  const PREVIEW_H = H - 38;
+  // Body region under the title strip — image gets nearly the full card
+  const PREVIEW_X = 4;
+  const PREVIEW_Y = 30;
+  const PREVIEW_W = W - 8;
+  const PREVIEW_H = H - 34;
 
   const sheet = (
     <g filter={`url(#${shadowId})`} opacity={bodyOpacity}>
-      {/* Page */}
+      {/* Page background — neutral so letterboxing around the image is clean */}
       <rect
         width={W}
         height={H}
         rx={6}
-        fill="hsl(var(--card))"
+        fill={isImagePreview ? "hsl(var(--muted))" : "hsl(var(--card))"}
         stroke={isDone ? "hsl(142 70% 42%)" : "hsl(var(--foreground))"}
         strokeOpacity={isDone ? 0.7 : 0.55}
         strokeWidth={1.1}
       />
-      {/* Real preview image (if available) — clipped to card body */}
+      {/* Real preview image — fits the body fully, preserves real aspect ratio */}
       {isImagePreview && (
         <g>
           <defs>
@@ -751,7 +751,7 @@ function DocumentCard({
                 y={PREVIEW_Y}
                 width={PREVIEW_W}
                 height={PREVIEW_H}
-                rx={4}
+                rx={3}
               />
             </clipPath>
           </defs>
@@ -761,7 +761,7 @@ function DocumentCard({
             y={PREVIEW_Y}
             width={PREVIEW_W}
             height={PREVIEW_H}
-            preserveAspectRatio="xMidYMid slice"
+            preserveAspectRatio="xMidYMid meet"
             clipPath={`url(#${previewClipId})`}
           />
         </g>
