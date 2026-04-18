@@ -287,6 +287,11 @@ function AIDataFlowHeroComponent({
     const v = t("hero.aiFlow.scanned");
     return typeof v === "string" && v && v !== "hero.aiFlow.scanned" ? v : "Scanned";
   })();
+  const resolvedDeleteLabel = (() => {
+    if (deleteLabel) return deleteLabel;
+    const v = t("common.delete");
+    return typeof v === "string" && v && v !== "common.delete" ? v : "Delete";
+  })();
 
   // Sparkle positions around brain glow
   const sparkles = useMemo(() => {
