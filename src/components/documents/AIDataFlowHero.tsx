@@ -588,6 +588,7 @@ function AIDataFlowHeroComponent({
                   scanDurationSec={SCAN_DURATION_MS / 1000}
                   scanningLabel={scanningLabel}
                   scannedLabel={scannedLabel}
+                  issue={fileList[c.gIdx]?.issue ?? null}
                 />
               );
             })}
@@ -722,6 +723,8 @@ interface DocumentCardProps {
   onDelete?: (id: string) => void;
   /** Localized delete aria-label */
   deleteLabel?: string;
+  /** When set, render a small red banner above the card with the issue reason */
+  issue?: { reason: string } | null;
 }
 
 /** Truncate a filename for display (keep extension if short) */
