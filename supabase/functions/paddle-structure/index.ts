@@ -22,7 +22,9 @@ const corsHeaders = {
 
 const TIMEOUT_MS = 25_000;
 const SIGNED_URL_TTL = 60;
-const DOCUMENTS_BUCKET = "documents";
+// Single source of truth for student documents. Must match the bucket
+// used by FileUploadSection.tsx and customer_files.storage_path.
+const DOCUMENTS_BUCKET = "student-docs";
 
 interface ReqBody {
   document_id?: string;
@@ -77,13 +79,18 @@ Deno.serve(async (req) => {
     return failClosed("missing_fields");
   }
 
-  // Privacy gate: storage_path must belong to caller
-  // Convention: documents/<user_id>/... — adjust if your bucket layout differs.
-  // We accept either "<user_id>/..." or "documents/<user_id>/..." prefixes.
+  // Privacy gate: storage_path must belong to caller.
+  // student-docs convention is `user/<profile_id>/...` (matches
+  // FileUploadSection.tsx). We accept any path that contains the
+  // caller's user id as a segment so this stays robust as conventions evolve.
   const normalizedPath = storage_path.startsWith(`${DOCUMENTS_BUCKET}/`)
     ? storage_path.slice(DOCUMENTS_BUCKET.length + 1)
     : storage_path;
-  if (!normalizedPath.startsWith(`${user_id}/`) && !normalizedPath.includes(`/${user_id}/`)) {
+  const belongsToCaller =
+    normalizedPath.startsWith(`${user_id}/`) ||
+    normalizedPath.includes(`/${user_id}/`) ||
+    normalizedPath.startsWith(`user/${user_id}/`);
+  if (!belongsToCaller) {
     return failClosed("storage_path_forbidden");
   }
 
