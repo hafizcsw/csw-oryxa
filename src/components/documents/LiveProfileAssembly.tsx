@@ -37,10 +37,10 @@ interface LiveProfileAssemblyProps {
   previewUrls: Record<string, string | null>;
   /** CRM-listed documents — used to resolve real CRM file_id by filename */
   crmDocuments?: Array<{ id: string; file_name: string }>;
-  /** Delete a single CRM file (by file_id) and refresh */
-  onDeleteDoc?: (crmFileId: string) => Promise<boolean>;
-  /** Bulk-delete multiple CRM files */
-  onDeleteAll?: (crmFileIds: string[]) => Promise<void>;
+  /** Delete a single doc — by CRM file_id (may be null if local-only) and document_id */
+  onDeleteDoc?: (crmFileId: string | null, documentId: string) => Promise<boolean>;
+  /** Bulk-delete — list of {crmFileId, documentId} */
+  onDeleteAll?: (items: Array<{ crmFileId: string | null; documentId: string }>) => Promise<void>;
 }
 
 interface QueueEntry {
