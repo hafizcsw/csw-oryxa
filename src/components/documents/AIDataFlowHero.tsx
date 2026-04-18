@@ -766,13 +766,15 @@ function DocumentCard({
           />
         </g>
       )}
-      {/* Folded corner */}
-      <path
-        d={mirrored
-          ? `M 0 0 L 18 0 L 0 18 Z`
-          : `M ${W} 0 L ${W - 18} 0 L ${W} 18 Z`}
-        fill="hsl(var(--muted))"
-      />
+      {/* Folded corner — hidden when a real preview is rendered */}
+      {!isImagePreview && (
+        <path
+          d={mirrored
+            ? `M 0 0 L 18 0 L 0 18 Z`
+            : `M ${W} 0 L ${W - 18} 0 L ${W} 18 Z`}
+          fill="hsl(var(--muted))"
+        />
+      )}
       {/* Filename strip — replaces generic header block. Text is clipped to
           the strip so long / RTL filenames never overflow the card. */}
       <g>
