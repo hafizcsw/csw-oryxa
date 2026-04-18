@@ -371,6 +371,81 @@ export function extractGraduationFields(text: string): Fields {
 
 // ─── Helpers ─────────────────────────────────────────────────
 
+// Words that look like 3-letter alpha codes but are actually CO-LABELS
+// printed next to "Nationality" on bilingual passports. We must never
+// promote these as the nationality value.
+const PASSPORT_CO_LABELS = new Set([
+  'sex', 'gender', 'date', 'place', 'office', 'type', 'code',
+  'name', 'nom', 'no', 'num', 'dob', 'pob', 'doe', 'doi',
+  'mrz', 'passport', 'country', 'nat', 'sig',
+]);
+
+/**
+ * Pick the first plausible value-token after a label, skipping over
+ * known co-labels. Returns null if none found within window.
+ */
+function pickFirstNonLabelToken(window: string): string | null {
+  if (!window) return null;
+  const tokens = window
+    .split(/[\s:;,.\/\\|]+/)
+    .map(t => t.trim())
+    .filter(t => t.length > 0);
+  for (const tok of tokens) {
+    if (PASSPORT_CO_LABELS.has(tok.toLowerCase())) continue;
+    if (/^\d+$/.test(tok)) continue;
+    if (tok.length < 2) continue;
+    if (/^[A-Z]{3}$/.test(tok)) return tok;
+    if (/^[A-Za-z\u00C0-\u017F\u0600-\u06FF][A-Za-z\u00C0-\u017F\u0600-\u06FF\-']{2,30}$/.test(tok)) {
+      return tok;
+    }
+  }
+  return null;
+}
+
+/** Parse loose date string → ms epoch (NaN if unparseable). */
+function parseLooseDateMs(s: string | null | undefined): number {
+  if (!s) return NaN;
+  const t = s.trim();
+  let m = t.match(/^(\d{4})[\-\/](\d{1,2})[\-\/](\d{1,2})$/);
+  if (m) return Date.UTC(+m[1], +m[2] - 1, +m[3]);
+  m = t.match(/^(\d{1,2})[\s\/\-\.](\d{1,2})[\s\/\-\.](\d{2,4})$/);
+  if (m) {
+    const yr = +m[3] < 100 ? (+m[3] > 30 ? 1900 + +m[3] : 2000 + +m[3]) : +m[3];
+    return Date.UTC(yr, +m[2] - 1, +m[1]);
+  }
+  m = t.match(/^(\d{1,2})[\s\/\-\.]([A-Za-z]{3,9})[\s\/\-\.](\d{2,4})$/);
+  if (m) {
+    const months: Record<string, number> = {
+      jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+      jul: 6, aug: 7, sep: 8, sept: 8, oct: 9, nov: 10, dec: 11,
+    };
+    const idx = months[m[2].toLowerCase().slice(0, 3)];
+    if (idx === undefined) return NaN;
+    const yr = +m[3] < 100 ? (+m[3] > 30 ? 1900 + +m[3] : 2000 + +m[3]) : +m[3];
+    return Date.UTC(yr, idx, +m[1]);
+  }
+  return NaN;
+}
+
+function pickLaterDate(a?: string, b?: string): string | null {
+  const ma = parseLooseDateMs(a);
+  const mb = parseLooseDateMs(b);
+  if (!isNaN(ma) && !isNaN(mb)) return mb > ma ? (b ?? null) : (a ?? null);
+  if (!isNaN(ma)) return a ?? null;
+  if (!isNaN(mb)) return b ?? null;
+  return null;
+}
+
+function pickEarlierDate(a?: string, b?: string): string | null {
+  const ma = parseLooseDateMs(a);
+  const mb = parseLooseDateMs(b);
+  if (!isNaN(ma) && !isNaN(mb)) return ma < mb ? (a ?? null) : (b ?? null);
+  if (!isNaN(ma)) return a ?? null;
+  if (!isNaN(mb)) return b ?? null;
+  return null;
+}
+
+
 function normalizeForExtraction(input: string): string {
   if (!input) return '';
   // Convert Arabic-Indic digits to ASCII digits
