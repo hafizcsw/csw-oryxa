@@ -195,6 +195,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     }
   }, [registry.records, analysisHook, guard]);
 
+  // Reconcile pending IDs against actual CRM documents — drops stale entries
+  // (files deleted in another tab/session, or that never finished saving server-side).
+  useEffect(() => {
+    guard.reconcileWithValidIds(documents.map(d => d.id));
+  }, [documents, guard]);
+
   const handleSaveDocuments = useCallback(async () => {
     guard.confirmAllSaved();
     await refetchDocs({ silent: true });
@@ -276,6 +282,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       </div>
 
 
+      {/* ═══ Save bar: shows only when there are unsaved uploads (top placement) ═══ */}
+      <SaveDocumentsBar
+        pendingCount={guard.pendingCount}
+        onSave={handleSaveDocuments}
+      />
+
       {/* ═══ Door 2: Central Upload Hub ═══ */}
       <section>
         <h2 className="text-base font-semibold text-foreground mb-3">{t('portal.uploadHub.title')}</h2>
@@ -306,11 +318,6 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         onDeleteAll={handleDeleteAll}
       />
 
-      {/* ═══ Save bar: shows only when there are unsaved uploads ═══ */}
-      <SaveDocumentsBar
-        pendingCount={guard.pendingCount}
-        onSave={handleSaveDocuments}
-      />
     </div>
   );
 }
