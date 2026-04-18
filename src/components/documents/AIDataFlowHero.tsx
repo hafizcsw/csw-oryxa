@@ -473,16 +473,17 @@ function AIDataFlowHeroComponent({
           </g>
         )}
 
-        {/* ═══ Connector paths — ONLY for the currently active file ═══ */}
+        {/* ═══ Connector tubes — glowing 3-cable pipeline for the active file ═══ */}
         {showConnectors && (
           <g fill="none" strokeLinecap="round">
             {activeConnectors.map((p) => (
-              <ConnectorPath
+              <ConnectorTube
                 key={`act-${p.key}`}
                 d={p.d}
                 animate={!reduceMotion}
                 delay={0.15 + p.lineIdx * 0.08}
                 markerId={ids.arrowHead}
+                tone="active"
               />
             ))}
           </g>
@@ -503,22 +504,17 @@ function AIDataFlowHeroComponent({
         )}
 
 
-        {/* ═══ Issue connector paths — RED, for files that failed reading or
-                are weak/unknown quality. Always shown (no animation gating)
-                so the user immediately spots which file the engine cannot
-                process. Only the wire is colored — the brain itself is not
-                "feeding" from these files. ═══ */}
+        {/* ═══ Issue connector tubes — RED cable look, for failed/weak files ═══ */}
         {showDocuments && issuedConnectors.length > 0 && (
           <g fill="none" strokeLinecap="round">
             {issuedConnectors.map((p) => (
-              <path
+              <ConnectorTube
                 key={`err-${p.key}`}
                 d={p.d}
-                stroke="hsl(var(--destructive))"
-                strokeOpacity={0.85}
-                strokeWidth={1.6}
-                strokeDasharray="4 3"
-                markerEnd={`url(#${ids.arrowHead}-err)`}
+                animate={!reduceMotion}
+                delay={0.1 + p.lineIdx * 0.06}
+                markerId={`${ids.arrowHead}-err`}
+                tone="error"
               />
             ))}
           </g>
@@ -1247,37 +1243,94 @@ function DocumentCard({
   );
 }
 
-interface ConnectorPathProps {
+interface ConnectorTubeProps {
   d: string;
   animate: boolean;
   delay: number;
   markerId: string;
+  tone: "active" | "error";
 }
 
-function ConnectorPath({ d, animate, delay, markerId }: ConnectorPathProps) {
-  const stroke = "hsl(var(--foreground))";
-  const common = {
-    d,
-    stroke,
-    strokeOpacity: 0.72,
-    strokeWidth: 1.4,
-    fill: "none" as const,
-    markerEnd: `url(#${markerId})`,
-  };
+/**
+ * Renders a single connector as a glowing cable/tube:
+ *   - outer casing (thick, soft) → physical "pipe"
+ *   - inner core (thin, bright) → conductor
+ *   - flowing energy dashes → live data transfer
+ * Combined with the 3 lines per card, this reads as 3 illuminated tubes.
+ */
+function ConnectorTube({ d, animate, delay, markerId, tone }: ConnectorTubeProps) {
+  const isError = tone === "error";
+  const casingStroke = isError ? "hsl(var(--destructive))" : "hsl(var(--foreground))";
+  const coreStroke = isError ? "hsl(var(--destructive))" : "hsl(265 95% 78%)";
+  const flowStroke = isError ? "hsl(var(--destructive))" : "hsl(190 100% 80%)";
+
+  const casing = (
+    <path
+      d={d}
+      stroke={casingStroke}
+      strokeOpacity={isError ? 0.45 : 0.32}
+      strokeWidth={5}
+      fill="none"
+      strokeLinecap="round"
+    />
+  );
+
+  const core = (
+    <path
+      d={d}
+      stroke={coreStroke}
+      strokeOpacity={isError ? 0.9 : 0.85}
+      strokeWidth={1.6}
+      fill="none"
+      strokeLinecap="round"
+      markerEnd={`url(#${markerId})`}
+    />
+  );
 
   if (!animate) {
-    return <path {...common} />;
+    return (
+      <g>
+        {casing}
+        {core}
+      </g>
+    );
   }
+
   return (
-    <motion.path
-      {...common}
-      initial={{ pathLength: 0, opacity: 0 }}
-      animate={{ pathLength: 1, opacity: 0.78 }}
-      transition={{
-        pathLength: { duration: 1.4, delay, ease: "easeInOut" },
-        opacity:    { duration: 0.5, delay },
-      }}
-    />
+    <g>
+      {casing}
+      <motion.path
+        d={d}
+        stroke={coreStroke}
+        strokeWidth={1.6}
+        fill="none"
+        strokeLinecap="round"
+        markerEnd={`url(#${markerId})`}
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: isError ? 0.9 : 0.85 }}
+        transition={{
+          pathLength: { duration: 1.2, delay, ease: "easeInOut" },
+          opacity: { duration: 0.4, delay },
+        }}
+      />
+      {/* Flowing energy pulse inside the tube */}
+      <motion.path
+        d={d}
+        stroke={flowStroke}
+        strokeOpacity={0.95}
+        strokeWidth={2.2}
+        fill="none"
+        strokeLinecap="round"
+        strokeDasharray="6 22"
+        initial={{ strokeDashoffset: 0, opacity: 0 }}
+        animate={{ strokeDashoffset: -560, opacity: [0, 1, 1, 1] }}
+        transition={{
+          strokeDashoffset: { duration: isError ? 2.6 : 1.6, delay: delay + 0.4, repeat: Infinity, ease: "linear" },
+          opacity: { duration: 0.6, delay: delay + 0.4 },
+        }}
+        style={{ filter: "blur(0.4px)" }}
+      />
+    </g>
   );
 }
 
