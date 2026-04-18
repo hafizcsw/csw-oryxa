@@ -23,6 +23,20 @@ export interface ClassificationScore {
  */
 export type PassportLaneStrength = 'passport_strong' | 'passport_weak' | null;
 
+/**
+ * Structural hints from the Paddle structured artifact (Door 1.5).
+ * The classifier MAY use these to override a text-only verdict when the
+ * page layout itself is overwhelmingly tabular (transcript-shaped).
+ */
+export interface StructuralHints {
+  /** Number of table-like regions Paddle detected on the page(s). */
+  table_like_region_count: number;
+  /** Total row candidates emitted by Paddle (header + body). */
+  total_row_candidates: number;
+  /** Subset of row_candidates that are tabular (≥2 cells). */
+  tabular_row_candidates: number;
+}
+
 export interface ClassificationOutput {
   best: DocumentSlotType | 'unknown' | 'unsupported';
   confidence: number;
@@ -304,8 +318,12 @@ export function classifyDocument(params: {
   fileName: string;
   textContent: string;
   mimeType: string;
+  /** Optional structural hints from Door 1.5 (Paddle structured artifact).
+   *  When present, table-shaped layouts can flip a near-tie to transcript
+   *  even if the text-only score landed on graduation_certificate. */
+  structuralHints?: StructuralHints | null;
 }): ClassificationOutput {
-  const { fileName, textContent, mimeType } = params;
+  const { fileName, textContent, mimeType, structuralHints } = params;
   const combined = `${fileName}\n${textContent}`;
 
   // Fixed MIME gate: check exact MIME type
