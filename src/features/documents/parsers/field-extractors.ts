@@ -380,6 +380,13 @@ const PASSPORT_CO_LABELS = new Set([
   'mrz', 'passport', 'country', 'nat', 'sig',
   'issue', 'expiry', 'expiration', 'birth', 'issuing', 'authority',
   'of', 'and', 'the', 'state', 'national',
+  // Single-letter / 2-letter OCR noise commonly printed in identity zone
+  'm', 'f', 'ss', 'sy', 'sa', 'eg', 'co',
+  // French / Spanish / German co-labels
+  'sexe', 'sexo', 'geschlecht', 'fecha', 'lugar', 'lieu',
+  'naissance', 'nacimiento', 'geburt', 'geboren',
+  'expiration', 'caducidad', 'gultig', 'gültig',
+  'delivrance', 'expedicion', 'expedición', 'ausstellung',
 ]);
 
 // Known nationality adjectives/demonyms commonly printed on passports.
@@ -404,21 +411,31 @@ const NATIONALITY_DEMONYMS = [
 function pickFirstNonLabelToken(window: string): string | null {
   if (!window) return null;
 
-  // Priority 1: scan whole window for a known demonym (handles fused tokens)
+  // Priority 1: scan whole window for a known demonym (handles fused tokens
+  // like "8EGYPTIAN", noise prefix/suffix, etc.). Matches as substring.
   const upper = window.toUpperCase();
   for (const demonym of NATIONALITY_DEMONYMS) {
     if (upper.includes(demonym)) return demonym;
   }
 
-  // Priority 2: token scan with digit-prefix stripping
+  // Priority 2: token scan with digit-prefix stripping. Stop at the first
+  // co-label encountered (e.g. "Sex", "Date") — anything PAST a co-label is
+  // guaranteed to belong to a different field on the same line, not to
+  // nationality. This prevents "Nationality Sex M SS sy Date of Issue" from
+  // returning "Issue" by walking past two co-labels.
   const tokens = window
     .split(/[\s:;,.\/\\|]+/)
     .map(t => t.trim().replace(/^\d+/, '')) // strip leading digits ("8EGYPTIAN" → "EGYPTIAN")
     .filter(t => t.length > 0);
   for (const tok of tokens) {
-    if (PASSPORT_CO_LABELS.has(tok.toLowerCase())) continue;
+    const lower = tok.toLowerCase();
+    if (PASSPORT_CO_LABELS.has(lower)) {
+      // Hit a co-label → the value (if any) was before it. Bail out;
+      // returning null leaves the field empty rather than wrong.
+      return null;
+    }
     if (/^\d+$/.test(tok)) continue;
-    if (tok.length < 2) continue;
+    if (tok.length < 3) continue; // require 3+ chars to avoid "M", "SS", "sy"
     if (/^[A-Z]{3}$/.test(tok)) return tok;
     if (/^[A-Za-z\u00C0-\u017F\u0600-\u06FF][A-Za-z\u00C0-\u017F\u0600-\u06FF\-']{2,30}$/.test(tok)) {
       return tok;
