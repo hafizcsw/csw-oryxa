@@ -718,6 +718,17 @@ function DocumentCard({
   const lineStroke = isDone ? "hsl(142 70% 42%)" : "hsl(var(--foreground))";
   const lineStrokeOpacity = isDone ? 0.55 : 0.42;
 
+  const isImagePreview =
+    !!previewUrl &&
+    (mimeType?.startsWith("image/") ||
+      /\.(png|jpe?g|webp|gif|svg)$/i.test(label));
+  const previewClipId = `prev-clip-${shadowId}-${x}-${y}`;
+  // Body region under the title strip
+  const PREVIEW_X = 6;
+  const PREVIEW_Y = 32;
+  const PREVIEW_W = W - 12;
+  const PREVIEW_H = H - 38;
+
   const sheet = (
     <g filter={`url(#${shadowId})`} opacity={bodyOpacity}>
       {/* Page */}
@@ -730,6 +741,31 @@ function DocumentCard({
         strokeOpacity={isDone ? 0.7 : 0.55}
         strokeWidth={1.1}
       />
+      {/* Real preview image (if available) — clipped to card body */}
+      {isImagePreview && (
+        <g>
+          <defs>
+            <clipPath id={previewClipId}>
+              <rect
+                x={PREVIEW_X}
+                y={PREVIEW_Y}
+                width={PREVIEW_W}
+                height={PREVIEW_H}
+                rx={4}
+              />
+            </clipPath>
+          </defs>
+          <image
+            href={previewUrl}
+            x={PREVIEW_X}
+            y={PREVIEW_Y}
+            width={PREVIEW_W}
+            height={PREVIEW_H}
+            preserveAspectRatio="xMidYMid slice"
+            clipPath={`url(#${previewClipId})`}
+          />
+        </g>
+      )}
       {/* Folded corner */}
       <path
         d={mirrored
@@ -795,94 +831,110 @@ function DocumentCard({
               />
             </g>
           ) : null}
-          <text
-            x={mirrored ? W - 32 : 32}
-            y={47}
-            textAnchor={mirrored ? "end" : "start"}
-            fontSize={7}
-            fill={isDone ? "hsl(142 70% 35%)" : "hsl(265 85% 55%)"}
-            fontWeight={600}
-            style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif" }}
-          >
-            {isDone ? scannedLabel : scanningLabel}
-          </text>
+          {!isImagePreview && (
+            <text
+              x={mirrored ? W - 32 : 32}
+              y={47}
+              textAnchor={mirrored ? "end" : "start"}
+              fontSize={7}
+              fill={isDone ? "hsl(142 70% 35%)" : "hsl(265 85% 55%)"}
+              fontWeight={600}
+              style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif" }}
+            >
+              {isDone ? scannedLabel : scanningLabel}
+            </text>
+          )}
         </g>
       )}
 
-      {/* Body lines — shimmer ONLY when active; static otherwise */}
-      <g
-        stroke={lineStroke}
-        strokeOpacity={lineStrokeOpacity}
-        strokeWidth={1}
-        strokeLinecap="round"
-      >
-        {lineRows.map((row) =>
-          Array.from({ length: row.count }).map((_, i) => {
-            const widths = [W - 22, W - 30, W - 18, W - 36, W - 24, W - 40, W - 26, W - 32];
-            const w = widths[(i + accentVariant) % widths.length];
-            return float && isActive ? (
-              <motion.line
-                key={`ln-${i}`}
-                x1={12}
-                y1={row.yStart + i * row.gap}
-                y2={row.yStart + i * row.gap}
-                initial={{ x2: 12 }}
-                animate={{ x2: [12, w, w, 12] }}
-                transition={{
-                  duration: 3.6,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: (i * 0.18 + accentVariant * 0.3) % 2.4,
-                  times: [0, 0.45, 0.85, 1],
-                }}
-              />
-            ) : (
-              <line
-                key={`ln-${i}`}
-                x1={12}
-                y1={row.yStart + i * row.gap}
-                x2={w}
-                y2={row.yStart + i * row.gap}
-              />
-            );
-          }),
-        )}
-      </g>
-      {/* Inline emphasis block mid-page */}
-      <rect
-        x={mirrored ? W - 64 : 38}
-        y={H * 0.62}
-        width={42}
-        height={10}
-        rx={1.5}
-        fill={isDone ? "hsl(142 70% 42%)" : "hsl(var(--foreground))"}
-        fillOpacity={isDone ? 0.7 : 0.82}
-      />
-      {/* Footer blocks */}
-      {showFooterBlocks && (
+      {/* Body lines / footer / emphasis — only when no real preview */}
+      {!isImagePreview && (
         <>
+          <g
+            stroke={lineStroke}
+            strokeOpacity={lineStrokeOpacity}
+            strokeWidth={1}
+            strokeLinecap="round"
+          >
+            {lineRows.map((row) =>
+              Array.from({ length: row.count }).map((_, i) => {
+                const widths = [W - 22, W - 30, W - 18, W - 36, W - 24, W - 40, W - 26, W - 32];
+                const w = widths[(i + accentVariant) % widths.length];
+                return float && isActive ? (
+                  <motion.line
+                    key={`ln-${i}`}
+                    x1={12}
+                    y1={row.yStart + i * row.gap}
+                    y2={row.yStart + i * row.gap}
+                    initial={{ x2: 12 }}
+                    animate={{ x2: [12, w, w, 12] }}
+                    transition={{
+                      duration: 3.6,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: (i * 0.18 + accentVariant * 0.3) % 2.4,
+                      times: [0, 0.45, 0.85, 1],
+                    }}
+                  />
+                ) : (
+                  <line
+                    key={`ln-${i}`}
+                    x1={12}
+                    y1={row.yStart + i * row.gap}
+                    x2={w}
+                    y2={row.yStart + i * row.gap}
+                  />
+                );
+              }),
+            )}
+          </g>
           <rect
-            x={14}
-            y={H - 28}
-            width={28}
-            height={9}
-            rx={1.5}
-            fill="hsl(var(--foreground))"
-            fillOpacity={0.82}
-          />
-          <rect
-            x={48}
-            y={H - 28}
+            x={mirrored ? W - 64 : 38}
+            y={H * 0.62}
             width={42}
-            height={9}
+            height={10}
             rx={1.5}
-            fill="hsl(var(--foreground))"
-            fillOpacity={0.82}
+            fill={isDone ? "hsl(142 70% 42%)" : "hsl(var(--foreground))"}
+            fillOpacity={isDone ? 0.7 : 0.82}
           />
+          {showFooterBlocks && (
+            <>
+              <rect
+                x={14}
+                y={H - 28}
+                width={28}
+                height={9}
+                rx={1.5}
+                fill="hsl(var(--foreground))"
+                fillOpacity={0.82}
+              />
+              <rect
+                x={48}
+                y={H - 28}
+                width={42}
+                height={9}
+                rx={1.5}
+                fill="hsl(var(--foreground))"
+                fillOpacity={0.82}
+              />
+            </>
+          )}
         </>
       )}
-      {/* Live scan beam — ONLY while this card is being actively scanned.
-          Synced to outer scheduler: a single sweep top→bottom across SCAN_DURATION. */}
+      {/* Card border on top of preview */}
+      {isImagePreview && (
+        <rect
+          width={W}
+          height={H}
+          rx={6}
+          fill="none"
+          stroke={isDone ? "hsl(142 70% 42%)" : "hsl(var(--foreground))"}
+          strokeOpacity={isDone ? 0.7 : 0.55}
+          strokeWidth={1.1}
+          pointerEvents="none"
+        />
+      )}
+      {/* Live scan beam — ONLY while this card is being actively scanned. */}
       {float && isActive && (
         <g clipPath={`inset(0 round 6px)`}>
           <motion.rect
@@ -900,6 +952,28 @@ function DocumentCard({
               ease: "easeInOut",
               times: [0, 0.85, 1],
             }}
+          />
+        </g>
+      )}
+      {/* Delete button — sits above the card */}
+      {onDelete && fileId && (
+        <g
+          transform={`translate(${W - 12}, -10)`}
+          style={{ cursor: "pointer" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(fileId);
+          }}
+          role="button"
+          aria-label={deleteLabel}
+        >
+          <title>{deleteLabel}</title>
+          <circle r={11} fill="hsl(var(--destructive))" stroke="hsl(var(--background))" strokeWidth={1.5} />
+          <path
+            d="M -4 -4 L 4 4 M 4 -4 L -4 4"
+            stroke="hsl(var(--destructive-foreground))"
+            strokeWidth={1.8}
+            strokeLinecap="round"
           />
         </g>
       )}
