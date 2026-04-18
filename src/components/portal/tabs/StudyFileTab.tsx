@@ -24,6 +24,7 @@ import { useShortlistRequirementsContext } from "@/hooks/useShortlistRequirement
 import { useUnsavedDocumentsGuard } from "@/hooks/useUnsavedDocumentsGuard";
 import type { FileQualityResult } from "@/features/file-quality/types";
 import type { DocumentTypeFilter } from "./DocumentsTab";
+import { guessSlotFromFileName } from "@/features/documents/document-registry-model";
 
 const ProfileTab = lazy(() => import("@/components/portal/tabs/ProfileTab").then(m => ({ default: m.ProfileTab })));
 const ReadinessTab = lazy(() => import("@/components/readiness/ReadinessTab").then(m => ({ default: m.ReadinessTab })));
@@ -252,16 +253,54 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     await refetchDocs({ silent: true });
   }, [analysisHook, guard, refetchDocs, t, toast]);
 
-  const handleFilesSelected = useCallback((files: File[]) => {
-    for (const file of files) {
+  const handleFilesSelected = useCallback(async (files: File[]) => {
+    // ─── Passport de-duplication gate ───────────────────────────
+    // If a passport is already in the file and the user is uploading
+    // another one, ask whether to REPLACE rather than silently keep two.
+    const incomingPassports = files.filter(
+      f => guessSlotFromFileName(f.name) === 'passport'
+    );
+    const existingPassports = (documents || []).filter(
+      d => (d.document_category || (d as any).file_kind) === 'passport'
+    );
+
+    let filesToUpload = files;
+
+    if (incomingPassports.length > 0 && existingPassports.length > 0) {
+      const confirmReplace = window.confirm(
+        'يوجد جواز سفر مرفوع مسبقًا. هل تريد استبداله بالملف الجديد؟ (سيتم حذف الجواز القديم)'
+      );
+
+      if (!confirmReplace) {
+        const passportNames = new Set(incomingPassports.map(f => f.name));
+        filesToUpload = files.filter(f => !passportNames.has(f.name));
+        if (filesToUpload.length === 0) return;
+      } else {
+        const deletions = await Promise.allSettled(
+          existingPassports.map(d => deleteFile(d.id))
+        );
+        const failed = deletions.filter(
+          r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok)
+        ).length;
+        if (failed > 0) {
+          toast({
+            title: 'تعذر حذف بعض الجوازات السابقة',
+            variant: 'destructive',
+          });
+        }
+        await refetchDocs({ silent: true });
+      }
+    }
+
+    for (const file of filesToUpload) {
       const key = uniqueFileKey(file);
       pendingFilesRef.current.set(key, { file, fileKey: key });
       const existing = fileNameToKeysRef.current.get(file.name) || [];
       existing.push(key);
       fileNameToKeysRef.current.set(file.name, existing);
     }
-    registry.enqueueFiles(files, 'upload_hub');
-  }, [registry]);
+    registry.enqueueFiles(filesToUpload, 'upload_hub');
+  }, [registry, documents, refetchDocs, toast]);
 
   // ═══ Preview URLs collected from upload hub for assembly chips ═══
   const [previewUrls, setPreviewUrls] = useState<Record<string, string | null>>({});
