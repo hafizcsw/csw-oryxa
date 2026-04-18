@@ -727,11 +727,42 @@ function DocumentCard({
   const lineStroke = isDone ? "hsl(142 70% 42%)" : "hsl(var(--foreground))";
   const lineStrokeOpacity = isDone ? 0.55 : 0.42;
 
+  // Treat as image-preview when a real thumbnail exists. Multi-page PDF
+  // previews count as image preview because each page IS a rendered image.
+  const hasMultiPage = !!previewUrls && previewUrls.length > 1;
+  const effectivePreviewUrls: string[] =
+    hasMultiPage
+      ? (previewUrls as string[])
+      : previewUrl
+        ? [previewUrl]
+        : [];
   const isImagePreview =
-    !!previewUrl &&
-    (mimeType?.startsWith("image/") ||
-      /\.(png|jpe?g|webp|gif|svg)$/i.test(label));
+    effectivePreviewUrls.length > 0 &&
+    (hasMultiPage ||
+      mimeType?.startsWith("image/") ||
+      mimeType === "application/pdf" ||
+      /\.(png|jpe?g|webp|gif|svg|pdf)$/i.test(label));
+
+  // ── Live page cycling: while ACTIVE, flip through pages every ~1.4s.
+  //    Stops on the last viewed page when state becomes 'done'.
+  const [pageIdx, setPageIdx] = useState(0);
+  useEffect(() => {
+    if (!isActive || effectivePreviewUrls.length <= 1) return;
+    const id = setInterval(() => {
+      setPageIdx((p) => (p + 1) % effectivePreviewUrls.length);
+    }, 1400);
+    return () => clearInterval(id);
+  }, [isActive, effectivePreviewUrls.length]);
+  // Reset to page 0 when file changes (different number of pages)
+  useEffect(() => {
+    setPageIdx(0);
+  }, [effectivePreviewUrls.length, fileId]);
+  const currentPageUrl =
+    effectivePreviewUrls[Math.min(pageIdx, effectivePreviewUrls.length - 1)] ||
+    previewUrl;
+
   const previewClipId = `prev-clip-${shadowId}-${x}-${y}`;
+  const gridClipId = `ocr-grid-clip-${shadowId}-${x}-${y}`;
   // Body region under the title strip — image gets nearly the full card
   const PREVIEW_X = 4;
   const PREVIEW_Y = 30;
@@ -750,8 +781,10 @@ function DocumentCard({
         strokeOpacity={isDone ? 0.7 : 0.55}
         strokeWidth={1.1}
       />
-      {/* Real preview image — fits the body fully, preserves real aspect ratio */}
-      {isImagePreview && (
+      {/* Real preview image — fits the body fully, preserves real aspect ratio.
+          For multi-page PDFs we swap `href` between rendered pages so the
+          user sees the live page being scanned. */}
+      {isImagePreview && currentPageUrl && (
         <g>
           <defs>
             <clipPath id={previewClipId}>
@@ -765,7 +798,7 @@ function DocumentCard({
             </clipPath>
           </defs>
           <image
-            href={previewUrl}
+            href={currentPageUrl}
             x={PREVIEW_X}
             y={PREVIEW_Y}
             width={PREVIEW_W}
@@ -773,6 +806,102 @@ function DocumentCard({
             preserveAspectRatio="xMidYMid meet"
             clipPath={`url(#${previewClipId})`}
           />
+
+          {/* ─── Live OCR grid overlay (only while actively scanning) ─── */}
+          {isActive && float && (
+            <g clipPath={`url(#${previewClipId})`} pointerEvents="none">
+              {/* Horizontal grid lines sweeping vertically */}
+              {Array.from({ length: 6 }).map((_, i) => (
+                <motion.line
+                  key={`hg-${i}`}
+                  x1={PREVIEW_X}
+                  x2={PREVIEW_X + PREVIEW_W}
+                  stroke="hsl(265 95% 70%)"
+                  strokeOpacity={0.55}
+                  strokeWidth={0.6}
+                  initial={{ y1: PREVIEW_Y, y2: PREVIEW_Y }}
+                  animate={{
+                    y1: [PREVIEW_Y, PREVIEW_Y + PREVIEW_H],
+                    y2: [PREVIEW_Y, PREVIEW_Y + PREVIEW_H],
+                  }}
+                  transition={{
+                    duration: 2.4,
+                    repeat: Infinity,
+                    ease: "linear",
+                    delay: (i * 2.4) / 6,
+                  }}
+                />
+              ))}
+              {/* Vertical grid lines sweeping horizontally */}
+              {Array.from({ length: 5 }).map((_, i) => (
+                <motion.line
+                  key={`vg-${i}`}
+                  y1={PREVIEW_Y}
+                  y2={PREVIEW_Y + PREVIEW_H}
+                  stroke="hsl(200 95% 65%)"
+                  strokeOpacity={0.4}
+                  strokeWidth={0.5}
+                  initial={{ x1: PREVIEW_X, x2: PREVIEW_X }}
+                  animate={{
+                    x1: [PREVIEW_X, PREVIEW_X + PREVIEW_W],
+                    x2: [PREVIEW_X, PREVIEW_X + PREVIEW_W],
+                  }}
+                  transition={{
+                    duration: 3.2,
+                    repeat: Infinity,
+                    ease: "linear",
+                    delay: (i * 3.2) / 5,
+                  }}
+                />
+              ))}
+              {/* Detection dots that pop along a moving scan line */}
+              {Array.from({ length: 8 }).map((_, i) => {
+                const cx = PREVIEW_X + ((i * 37) % (PREVIEW_W - 10)) + 5;
+                const cy = PREVIEW_Y + ((i * 53) % (PREVIEW_H - 10)) + 5;
+                return (
+                  <motion.circle
+                    key={`dot-${i}`}
+                    cx={cx}
+                    cy={cy}
+                    r={1.6}
+                    fill="hsl(265 95% 75%)"
+                    initial={{ opacity: 0, scale: 0.3 }}
+                    animate={{ opacity: [0, 1, 0], scale: [0.3, 1.4, 0.3] }}
+                    transition={{
+                      duration: 1.6,
+                      repeat: Infinity,
+                      delay: (i * 0.18) % 1.6,
+                      ease: "easeOut",
+                    }}
+                  />
+                );
+              })}
+              {/* Page indicator dot strip — shows which page is currently scanned */}
+              {hasMultiPage && (
+                <g transform={`translate(${PREVIEW_X + PREVIEW_W / 2 - (effectivePreviewUrls.length * 5) / 2}, ${PREVIEW_Y + PREVIEW_H - 8})`}>
+                  <rect
+                    x={-4}
+                    y={-3}
+                    width={effectivePreviewUrls.length * 5 + 8}
+                    height={8}
+                    rx={3}
+                    fill="hsl(var(--background))"
+                    fillOpacity={0.7}
+                  />
+                  {effectivePreviewUrls.map((_, i) => (
+                    <circle
+                      key={`pi-${i}`}
+                      cx={i * 5 + 2}
+                      cy={1}
+                      r={1.4}
+                      fill={i === pageIdx ? "hsl(265 95% 60%)" : "hsl(var(--muted-foreground))"}
+                      fillOpacity={i === pageIdx ? 1 : 0.5}
+                    />
+                  ))}
+                </g>
+              )}
+            </g>
+          )}
         </g>
       )}
       {/* Folded corner — hidden when a real preview is rendered */}
