@@ -41,6 +41,8 @@ interface LiveProfileAssemblyProps {
   onDeleteDoc?: (crmFileId: string | null, documentId: string) => Promise<boolean>;
   /** Bulk-delete — list of {crmFileId, documentId} */
   onDeleteAll?: (items: Array<{ crmFileId: string | null; documentId: string }>) => Promise<void>;
+  /** Inline-edit a field value — always lands as pending_review for staff. */
+  onEditField?: (params: { documentId: string; fieldKey: string; newValue: string }) => void;
 }
 
 interface QueueEntry {
