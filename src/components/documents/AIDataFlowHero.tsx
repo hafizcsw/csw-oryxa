@@ -29,6 +29,12 @@ export interface AIDataFlowHeroFile {
   name: string;
   /** Real backend processing status. Defaults to 'active' if omitted. */
   status?: AIDataFlowHeroFileStatus;
+  /** Stable id used by onDelete */
+  id?: string;
+  /** Object URL or remote URL to a real preview thumbnail (image or PDF first-page) */
+  previewUrl?: string;
+  /** MIME type (used to decide if previewUrl is renderable as image) */
+  mimeType?: string;
 }
 
 export interface AIDataFlowHeroProps {
@@ -49,6 +55,10 @@ export interface AIDataFlowHeroProps {
   isDragOver?: boolean;
   /** STATE: upload/extraction in progress → animate chips faster */
   isProcessing?: boolean;
+  /** Called when user clicks the delete button on a card */
+  onDeleteFile?: (id: string) => void;
+  /** Localized delete label */
+  deleteLabel?: string;
 }
 
 /** Time per file scan, ms */
