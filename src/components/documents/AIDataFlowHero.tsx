@@ -378,6 +378,20 @@ function AIDataFlowHeroComponent({
           >
             <path d="M 0 0 L 10 5 L 0 10 Z" fill="hsl(var(--foreground))" fillOpacity="0.78" />
           </marker>
+
+          {/* Arrowhead marker — red variant for failed/weak files */}
+          <marker
+            id={`${ids.arrowHead}-err`}
+            viewBox="0 0 10 10"
+            refX="8.5"
+            refY="5"
+            markerWidth="7"
+            markerHeight="7"
+            orient="auto-start-reverse"
+            markerUnits="userSpaceOnUse"
+          >
+            <path d="M 0 0 L 10 5 L 0 10 Z" fill="hsl(var(--destructive))" fillOpacity="0.9" />
+          </marker>
         </defs>
 
         {/* ═══ Background document silhouettes (only when documents exist) ═══ */}
