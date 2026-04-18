@@ -24,6 +24,8 @@ import { useShortlistRequirementsContext } from "@/hooks/useShortlistRequirement
 import { useUnsavedDocumentsGuard } from "@/hooks/useUnsavedDocumentsGuard";
 import type { FileQualityResult } from "@/features/file-quality/types";
 import type { DocumentTypeFilter } from "./DocumentsTab";
+import { guessSlotFromFileName } from "@/features/documents/document-registry-model";
+import { useToast as _useToastUnused } from "@/hooks/use-toast";
 
 const ProfileTab = lazy(() => import("@/components/portal/tabs/ProfileTab").then(m => ({ default: m.ProfileTab })));
 const ReadinessTab = lazy(() => import("@/components/readiness/ReadinessTab").then(m => ({ default: m.ReadinessTab })));
