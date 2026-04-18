@@ -112,6 +112,8 @@ function AIDataFlowHeroComponent({
   hasFiles = false,
   isDragOver = false,
   isProcessing = false,
+  onDeleteFile,
+  deleteLabel,
 }: AIDataFlowHeroProps) {
   const reduceMotion = useReducedMotion();
   const uid = useId().replace(/:/g, "");
