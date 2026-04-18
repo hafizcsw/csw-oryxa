@@ -473,16 +473,17 @@ function AIDataFlowHeroComponent({
           </g>
         )}
 
-        {/* ═══ Connector paths — ONLY for the currently active file ═══ */}
+        {/* ═══ Connector tubes — glowing 3-cable pipeline for the active file ═══ */}
         {showConnectors && (
           <g fill="none" strokeLinecap="round">
             {activeConnectors.map((p) => (
-              <ConnectorPath
+              <ConnectorTube
                 key={`act-${p.key}`}
                 d={p.d}
                 animate={!reduceMotion}
                 delay={0.15 + p.lineIdx * 0.08}
                 markerId={ids.arrowHead}
+                tone="active"
               />
             ))}
           </g>
