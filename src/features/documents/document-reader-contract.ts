@@ -33,10 +33,15 @@ export interface DocumentReader {
   readDocumentArtifact(file: File): Promise<ReadingArtifact>;
 }
 
-/** Optional context: lets the router pick Paddle when a storage_path exists. */
+/** Optional context: lets the router pick Paddle when a storage_path
+ *  OR a CRM file_id is present. Either is sufficient — file_id is preferred
+ *  because the proxy can resolve ownership directly from the DB row. */
 export interface ReadContext {
   storage_path?: string | null;
   document_id?: string | null;
+  /** CRM customer_files.id — preferred ownership signal. */
+  file_id?: string | null;
+  storage_bucket?: string | null;
 }
 
 async function getPaddleReader() {
@@ -46,13 +51,14 @@ async function getPaddleReader() {
 
 /** Decide if the Paddle path should be attempted for this file. */
 function shouldTryPaddle(file: File, ctx?: ReadContext): boolean {
-  if (!ctx?.storage_path || !ctx.document_id) return false;
+  if (!ctx?.document_id) return false;
+  if (!ctx.storage_path && !ctx.file_id) return false;
   const mime = file.type || '';
   return mime === 'application/pdf' || mime.startsWith('image/');
 }
 
 /** Convenience: read a file via the active reader strategy.
- *  Pass `ctx.storage_path` + `ctx.document_id` to enable Paddle.
+ *  Pass `ctx.storage_path` (or `ctx.file_id`) + `ctx.document_id` to enable Paddle.
  *  Without them, this FAILS CLOSED — no legacy browser route remains. */
 export async function readDocumentArtifact(
   file: File,
@@ -63,8 +69,10 @@ export async function readDocumentArtifact(
   if (shouldTryPaddle(file, ctx)) {
     const paddleArtifact = await paddle.readWithStorage({
       file,
-      storage_path: ctx!.storage_path!,
+      storage_path: ctx!.storage_path ?? '',
       document_id: ctx!.document_id!,
+      file_id: ctx!.file_id ?? undefined,
+      storage_bucket: ctx!.storage_bucket ?? undefined,
     });
 
     console.log('[DocumentReader] resolved', {
@@ -73,13 +81,17 @@ export async function readDocumentArtifact(
       parser_used: paddleArtifact.parser_used,
       readability: paddleArtifact.readability,
       failure_reason: paddleArtifact.failure_reason,
+      via: ctx!.file_id ? 'file_id' : 'storage_path',
     });
     return paddleArtifact;
   }
 
   const artifact = await paddle.readDocumentArtifact(file);
-  console.warn('[DocumentReader] blocked: missing storage_path/document_id', {
+  console.warn('[DocumentReader] blocked: missing storage_path/file_id/document_id', {
     file: file.name,
+    has_doc_id: !!ctx?.document_id,
+    has_storage_path: !!ctx?.storage_path,
+    has_file_id: !!ctx?.file_id,
     readability: artifact.readability,
     failure_reason: artifact.failure_reason,
     failure_detail: artifact.failure_detail,

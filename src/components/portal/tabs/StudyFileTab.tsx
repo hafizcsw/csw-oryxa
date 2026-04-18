@@ -187,10 +187,17 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         const fileKey = keys.shift()!;
         const entry = pendingFilesRef.current.get(fileKey);
         if (entry && !analysisHook.getAnalysis(id)) {
-          // CRITICAL: pass storage_path so the engine can attempt the
-          // self-hosted paddle provider via the edge proxy. Without it,
-          // resolver.shouldAttemptPaddle() short-circuits to browser_heuristic.
-          analysisHook.analyzeFile(entry.file, id, record.slot_hint, record.storage_path);
+          // CRITICAL: pass storage_path AND crm_file_id so the engine can
+          // attempt the self-hosted paddle provider via the edge proxy.
+          // file_id is preferred for ownership; storage_path is the fallback
+          // ownership signal. Without BOTH, the reader fails closed.
+          analysisHook.analyzeFile(
+            entry.file,
+            id,
+            record.slot_hint,
+            record.storage_path,
+            record.crm_file_id,
+          );
           pendingFilesRef.current.delete(fileKey);
         }
         if (keys.length === 0) {

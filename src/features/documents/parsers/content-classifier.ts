@@ -51,10 +51,16 @@ export interface ClassificationOutput {
   transcript_disambiguation_reason: string | null;
 }
 
-// MIME types that the analysis pipeline can process
+// MIME types that the analysis pipeline can process.
+// MUST stay in lock-step with `resolveReadingRoute` in reading-artifact-model.ts.
+// gif/bmp/tiff are NOT supported by the Paddle reader and are intentionally
+// excluded here to avoid the "supported here / unsupported there" drift.
 const SUPPORTED_MIMES = new Set([
   'application/pdf',
-  'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/tiff',
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
 ]);
 
 // ── Patterns with weights ────────────────────────────────────

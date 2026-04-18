@@ -21,17 +21,16 @@ export type ReaderParser =
   | 'none';                   // no parser could run
 
 // ── Reader implementation tag ────────────────────────────────
-// Identifies WHICH reader produced this artifact. This is the
-// truth surface — every artifact must say which engine produced it.
+// Identifies WHICH reader produced this artifact. Truth surface.
 //
-// Cutover state (Soft cutover):
+// ACTIVE STATE (hard cutover):
 //   primary  = paddle_self_hosted (PP-StructureV3 via edge proxy)
-//   fallback = legacy_browser_fallback (pdf.js + Tesseract.js, only on Paddle failure)
-//   legacy_browser remains as a tag for historical/audit rows produced
-//   before the cutover.
+//   NO browser fallback in the live router.
+//   `legacy_browser*` tags are kept ONLY to read historical artifacts
+//   produced before the cutover; they MUST NOT appear on new runs.
 export type ReaderImplementation =
-  | 'paddle_self_hosted'        // PRIMARY: server-side PP-StructureV3
-  | 'legacy_browser_fallback'   // FALLBACK: in-browser pdf.js + Tesseract.js (Paddle failed)
+  | 'paddle_self_hosted'        // PRIMARY (only live reader)
+  | 'legacy_browser_fallback'   // HISTORICAL: pre-cutover fallback artifacts
   | 'legacy_browser'            // HISTORICAL: pre-cutover artifacts
   | 'none';
 

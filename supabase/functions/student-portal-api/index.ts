@@ -5014,39 +5014,58 @@ Deno.serve(async (req) => {
             
             console.log('[crm_storage] confirm_upload →', { bucket, path });
             
-            // Verify the file exists in CRM storage (with retries)
+            // ── Verify the file exists in CRM storage ─────────────
+            // Real cause of the OBJECT_NOT_FOUND we saw on slow networks:
+            //   1. PUT to signed URL succeeded
+            //   2. Storage list() result was cached/eventually-consistent
+            //      and didn't yet expose the new object name.
+            // Fix: probe with `createSignedUrl` (which calls the auth
+            // service directly and returns 404 if the object truly does
+            // not exist) and only fall back to `list()` once. Total budget
+            // ~9.5s with 6 retries (was ~3.5s with 3 retries).
             let objectExists = false;
-            const maxRetries = 3;
-            const retryDelays = [500, 1000, 2000];
-            
-            for (let attempt = 0; attempt < maxRetries; attempt++) {
+            const probeRetryDelays = [200, 400, 800, 1500, 2500, 4000];
+            const dirPath = path.substring(0, path.lastIndexOf('/'));
+            const fileName = path.substring(path.lastIndexOf('/') + 1);
+
+            for (let attempt = 0; attempt < probeRetryDelays.length; attempt++) {
               if (attempt > 0) {
-                await new Promise(r => setTimeout(r, retryDelays[attempt - 1]));
+                await new Promise(r => setTimeout(r, probeRetryDelays[attempt - 1]));
               }
-              
-              // List the directory to check if object exists
-              const dirPath = path.substring(0, path.lastIndexOf('/'));
-              const fileName = path.substring(path.lastIndexOf('/') + 1);
-              
+
+              // Primary probe: try to sign a short-lived URL. Storage
+              // returns an error iff the object does not exist.
+              const { data: probeSigned, error: probeErr } = await crmStorageClient.storage
+                .from(bucket)
+                .createSignedUrl(path, 30);
+
+              if (probeSigned?.signedUrl && !probeErr) {
+                objectExists = true;
+                console.log(`[crm_storage] ✅ Object verified via signed-url probe on attempt ${attempt + 1}`);
+                break;
+              }
+
+              // Secondary probe: list the directory (cheap, occasionally
+              // succeeds when the storage cache hasn't refreshed yet).
               const { data: files } = await crmStorageClient.storage
                 .from(bucket)
                 .list(dirPath, { limit: 100 });
-              
+
               if (files?.some(f => f.name === fileName)) {
                 objectExists = true;
-                console.log(`[crm_storage] ✅ Object verified on attempt ${attempt + 1}`);
+                console.log(`[crm_storage] ✅ Object verified via list on attempt ${attempt + 1}`);
                 break;
               }
-              
-              console.log(`[crm_storage] ⏳ Object not found, attempt ${attempt + 1}/${maxRetries}`);
+
+              console.log(`[crm_storage] ⏳ Object not visible yet, attempt ${attempt + 1}/${probeRetryDelays.length} (sign_err=${probeErr?.message ?? 'none'})`);
             }
-            
+
             if (!objectExists) {
               console.error('[crm_storage] ❌ Object not found after retries:', path);
-              return Response.json({ 
-                ok: false, 
+              return Response.json({
+                ok: false,
                 error: 'OBJECT_NOT_FOUND',
-                details: 'File not found in storage after upload. Please try again.',
+                details: 'File not found in storage after upload (after ~9.5s probe budget). PUT may have silently failed.',
                 http_status: 400
               }, { status: 200, headers: corsHeaders });
             }
@@ -5184,8 +5203,15 @@ Deno.serve(async (req) => {
           case 'paddle_structure_proxy': {
             const PADDLE_ENDPOINT = Deno.env.get('PADDLE_STRUCTURE_ENDPOINT');
             const PADDLE_API_KEY = Deno.env.get('PADDLE_API_KEY');
-            const PADDLE_TIMEOUT_MS = 25_000;
-            const PADDLE_TTL = 60;
+            // Timeout chosen for student documents:
+            //   - typical passport/ID image ≈ 2–6s
+            //   - multi-page born-digital PDF ≈ 8–25s
+            //   - scanned multi-page transcript PDF can hit 40–60s
+            // After the hard cutover there is no browser fallback to catch
+            // long PDFs, so 25s was killing real student transcripts.
+            // 75s gives heavy PDFs room without parking the request forever.
+            const PADDLE_TIMEOUT_MS = 75_000;
+            const PADDLE_TTL = 120;
 
             const { document_id, storage_path, storage_bucket, file_id, mime_type, file_name } = payload as {
               document_id?: string;
