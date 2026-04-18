@@ -4,7 +4,7 @@
 // Realistic top-down brain with progressive illumination
 // ═══════════════════════════════════════════════════════════════
 
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DocumentRecord, ProcessingStatus } from '@/features/documents/document-registry-model';
