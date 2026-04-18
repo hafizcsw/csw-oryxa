@@ -5143,16 +5143,26 @@ Deno.serve(async (req) => {
               return Response.json({ ok: false, error: 'UNAUTHORIZED', http_status: 403 }, { status: 200, headers: corsHeaders });
             }
             
-            // Generate signed URL
-            const { data: signedData, error: signErr } = await crmStorageClient.storage
+            // Generate signed URL with hard 8s timeout to prevent IDLE_TIMEOUT (150s) hangs
+            // when storage object is missing or storage API stalls
+            const signPromise = crmStorageClient.storage
               .from(fileRec.storage_bucket)
               .createSignedUrl(fileRec.storage_path, 3600);
-            
+
+            const timeoutPromise = new Promise<{ data: null; error: { message: string } }>((resolve) =>
+              setTimeout(() => resolve({ data: null, error: { message: 'SIGN_TIMEOUT_8S' } }), 8000)
+            );
+
+            const { data: signedData, error: signErr } = await Promise.race([signPromise, timeoutPromise]) as any;
+
             if (signErr || !signedData?.signedUrl) {
               console.error('[crm_storage] ❌ Sign error:', signErr);
-              return Response.json({ ok: false, error: 'SIGN_FAILED', http_status: 500 }, { status: 200, headers: corsHeaders });
+              return Response.json(
+                { ok: false, error: 'SIGN_FAILED', detail: signErr?.message || 'unknown', http_status: 500 },
+                { status: 200, headers: corsHeaders }
+              );
             }
-            
+
             console.log('[crm_storage] ✅ sign_file success');
             return Response.json({ ok: true, signed_url: signedData.signedUrl }, { headers: corsHeaders });
           }
