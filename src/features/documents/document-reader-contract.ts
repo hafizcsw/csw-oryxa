@@ -5,18 +5,16 @@
 // reading. Every concrete implementation must satisfy this
 // contract and return a normalized ReadingArtifact.
 //
-// CUTOVER STATE (Soft cutover, primary = Paddle):
-//   1. PRIMARY:  paddleReader (PP-StructureV3 via edge proxy)
-//   2. FALLBACK: legacyBrowserReader (pdf.js + Tesseract.js)
+// ACTIVE STATE (hard cutover):
+//   1. PRIMARY + ONLY: paddleReader (PP-StructureV3 via edge proxy)
+//   2. NO browser fallback in the router
 //
 // Behavior:
-//   - readDocumentArtifact(file, ctx) tries Paddle when storage_path
-//     is provided AND mime is supported. On Paddle failure (any
-//     failure_reason ≠ unsupported_file_type), legacy is invoked
-//     and the artifact is tagged reader_implementation =
-//     'legacy_browser_fallback' so audit can prove what happened.
-//   - When no storage_path is provided, legacy runs directly and
-//     is tagged 'legacy_browser' (e.g. local previews/tests).
+//   - readDocumentArtifact(file, ctx) calls Paddle only when
+//     storage_path + document_id are present.
+//   - When they are missing, the router FAILS CLOSED and returns an
+//     unreadable Paddle-tagged artifact instead of invoking any local
+//     browser OCR/parser path.
 //   - Engine MUST NOT import extractPdfText / ocrImageFile /
 //     ocrPdfPages directly anymore.
 // ═══════════════════════════════════════════════════════════════
@@ -35,17 +33,10 @@ export interface DocumentReader {
   readDocumentArtifact(file: File): Promise<ReadingArtifact>;
 }
 
-/** Optional context: lets the router pick Paddle (primary) when a
- *  storage_path exists. Without it, legacy runs directly. */
+/** Optional context: lets the router pick Paddle when a storage_path exists. */
 export interface ReadContext {
   storage_path?: string | null;
   document_id?: string | null;
-}
-
-// ── Lazy imports (heavy parsers should not load until needed) ──
-async function getLegacyReader(): Promise<DocumentReader> {
-  const mod = await import('./parsers/legacy-browser-reader');
-  return mod.legacyBrowserReader;
 }
 
 async function getPaddleReader() {
@@ -57,68 +48,41 @@ async function getPaddleReader() {
 function shouldTryPaddle(file: File, ctx?: ReadContext): boolean {
   if (!ctx?.storage_path || !ctx.document_id) return false;
   const mime = file.type || '';
-  // Paddle only handles PDF + image. Office docs short-circuit to legacy
-  // (which itself reports unsupported_file_type for them — same outcome,
-  // but at least we do not waste a Paddle round-trip).
   return mime === 'application/pdf' || mime.startsWith('image/');
 }
 
 /** Convenience: read a file via the active reader strategy.
- *  Pass `ctx.storage_path` + `ctx.document_id` to enable the Paddle
- *  primary path; omit them to force legacy direct. */
+ *  Pass `ctx.storage_path` + `ctx.document_id` to enable Paddle.
+ *  Without them, this FAILS CLOSED — no legacy browser route remains. */
 export async function readDocumentArtifact(
   file: File,
   ctx?: ReadContext,
 ): Promise<ReadingArtifact> {
-  // ── PRIMARY: Paddle ───────────────────────────────────────
+  const paddle = await getPaddleReader();
+
   if (shouldTryPaddle(file, ctx)) {
-    const paddle = await getPaddleReader();
     const paddleArtifact = await paddle.readWithStorage({
       file,
       storage_path: ctx!.storage_path!,
       document_id: ctx!.document_id!,
     });
 
-    if (paddleArtifact.readability !== 'unreadable') {
-      console.log('[DocumentReader] ✓ paddle_self_hosted', {
-        file: file.name,
-        pages: paddleArtifact.pages_processed,
-        chars: paddleArtifact.full_text.length,
-        readability: paddleArtifact.readability,
-      });
-      return paddleArtifact;
-    }
-
-    // ── FALLBACK: legacy_browser ───────────────────────────
-    console.warn('[DocumentReader] ✗ paddle failed → legacy_browser_fallback', {
+    console.log('[DocumentReader] resolved', {
       file: file.name,
+      reader_implementation: paddleArtifact.reader_implementation,
+      parser_used: paddleArtifact.parser_used,
+      readability: paddleArtifact.readability,
       failure_reason: paddleArtifact.failure_reason,
-      failure_detail: paddleArtifact.failure_detail,
     });
-    const legacy = await getLegacyReader();
-    const legacyArtifact = await legacy.readDocumentArtifact(file);
-    return {
-      ...legacyArtifact,
-      // Tag explicitly so analytics can prove the cutover state.
-      reader_implementation: 'legacy_browser_fallback',
-      failure_detail: legacyArtifact.failure_detail
-        ? `${legacyArtifact.failure_detail} | paddle_fallback_reason=${paddleArtifact.failure_reason ?? 'unknown'}`
-        : `paddle_fallback_reason=${paddleArtifact.failure_reason ?? 'unknown'}`,
-    };
+    return paddleArtifact;
   }
 
-  // ── No storage_path: direct legacy (pre-upload preview/tests) ──
-  const legacy = await getLegacyReader();
-  const artifact = await legacy.readDocumentArtifact(file);
-  console.log('[DocumentReader] ⚠ legacy_browser direct (no storage_path)', {
+  const artifact = await paddle.readDocumentArtifact(file);
+  console.warn('[DocumentReader] blocked: missing storage_path/document_id', {
     file: file.name,
     readability: artifact.readability,
+    failure_reason: artifact.failure_reason,
+    failure_detail: artifact.failure_detail,
   });
   return artifact;
 }
-
-// NOTE: A `getActiveReader()` legacy getter previously lived here. It
-// was removed during the Paddle soft-cutover because the truth surface
-// is now the router (`readDocumentArtifact`) — there is no single
-// "active reader" anymore. Callers needing the legacy reader directly
-// must import `legacyBrowserReader` from `./parsers/legacy-browser-reader`.

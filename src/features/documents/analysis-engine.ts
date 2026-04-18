@@ -33,8 +33,10 @@ import {
 import { parseTranscript } from './parsers/transcript-parser';
 import type { TranscriptIntermediate } from './parsers/transcript-structure';
 import type { CanonicalStudentFile } from '../student-file/canonical-model';
-import type { StructuredDocumentArtifact } from './structured-browser-artifact-model';
-import { buildStructuredBrowserArtifact } from './parsers/structured-artifact-builder';
+import {
+  emptyStructuredArtifact,
+  type StructuredDocumentArtifact,
+} from './structured-browser-artifact-model';
 import { resolveStructuredArtifact } from './document-ai/resolver';
 import type { DocumentAIMode } from './document-ai/document-ai-provider';
 import { buildPassportOutput, type PassportOutput } from './passport-output-schema';
@@ -194,13 +196,13 @@ export async function analyzeDocument(params: {
     analysis.updated_at = new Date().toISOString();
     emit('failed', artifact.failure_reason ?? 'unreadable');
     logArtifact(artifact, analysis);
-    const fallbackArtifact = buildStructuredBrowserArtifact(artifact);
+    const structuredArtifact = emptyStructuredArtifact();
     return {
       analysis,
       proposals,
       artifact,
-      structured_artifact: fallbackArtifact,
-      document_ai_mode: fallbackArtifact.builder === 'none' ? 'none' : 'browser_heuristic',
+      structured_artifact: structuredArtifact,
+      document_ai_mode: 'none',
       document_ai_diag,
       passport_output,
     };
