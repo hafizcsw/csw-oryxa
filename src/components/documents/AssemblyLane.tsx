@@ -311,6 +311,7 @@ function DocBlock({
                 reasonKey={r.reasonKey}
                 animate={doc.animate}
                 delay={doc.animate ? 70 * idx : 0}
+                onSave={onEditField ? (newValue) => onEditField({ documentId: doc.documentId, fieldKey: key, newValue }) : undefined}
               />
             );
           })}
