@@ -2,6 +2,3 @@ project_id = "pkivavsxbvwtnkgxaufa"
 
 [functions.paddle-structure]
 verify_jwt = true
-
-[functions.analyze-document]
-verify_jwt = false

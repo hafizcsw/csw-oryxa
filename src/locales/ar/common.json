@@ -1471,13 +1471,6 @@
       "status_upload_failed": "فشل",
       "status_cancelled": "ملغى"
     },
-    "discovery": {
-      "analyzing": "جارٍ تحليل {name}…",
-      "detected": "تم اكتشاف: {label}",
-      "lowQuality": "جودة المسح ضعيفة: {label}",
-      "irrelevant": "{name} لا يبدو ملفًا مطلوبًا",
-      "failed": "تعذّر تحليل {name}"
-    },
     "analysis": {
       "title": "تحليل المستندات",
       "documents_analyzed": "المستندات المحللة",

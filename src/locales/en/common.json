@@ -1469,13 +1469,6 @@
       "status_upload_failed": "Failed",
       "status_cancelled": "Cancelled"
     },
-    "discovery": {
-      "analyzing": "Analyzing {name}…",
-      "detected": "Detected: {label}",
-      "lowQuality": "Low quality scan: {label}",
-      "irrelevant": "{name} doesn't look like a required document",
-      "failed": "Could not analyze {name}"
-    },
     "analysis": {
       "title": "Document Analysis",
       "documents_analyzed": "Documents analyzed",
