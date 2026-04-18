@@ -117,6 +117,14 @@ export function extractPassportTextFallback(text: string): Fields {
     f['identity.passport_expiry_date'] = field(expMatch[1].trim(), expMatch[0], lowConf, p, expMatch[0]);
   }
 
+  // Issue date (must be near explicit label)
+  const issueMatch = text.match(
+    /(?:date\s*of\s*issue|issue\s*date|issued\s*on|تاريخ\s*(?:ال)?(?:إصدار|الإصدار|الاصدار))\s*:?\s*([0-9]{1,2}[\s\/\-\.][0-9A-Za-z]{1,9}[\s\/\-\.][0-9]{2,4}|\d{4}[\-\/]\d{2}[\-\/]\d{2})/i,
+  );
+  if (issueMatch) {
+    f['identity.passport_issue_date'] = field(issueMatch[1].trim(), issueMatch[0], lowConf, p, issueMatch[0]);
+  }
+
   // Gender (must be near explicit label)
   const genderMatch = text.match(/(?:sex|gender|الجنس)\s*:?\s*([MFmf])\b/);
   if (genderMatch) {
