@@ -133,17 +133,26 @@ Deno.serve(async (req) => {
     });
     clearTimeout(timer);
 
+    const rawText = await paddleResp.text().catch(() => "");
+    console.log("[paddle-structure] upstream", {
+      endpoint,
+      status: paddleResp.status,
+      file_name,
+      mime_type,
+      body_preview: rawText.slice(0, 500),
+    });
+
     if (!paddleResp.ok) {
-      const text = await paddleResp.text().catch(() => "");
       return failClosed(
         paddleResp.status >= 500 ? "service_5xx" : "service_error",
-        `status=${paddleResp.status} ${text.slice(0, 200)}`,
+        `status=${paddleResp.status} ${rawText.slice(0, 200)}`,
       );
     }
 
-    const result = await paddleResp.json().catch(() => null);
+    let result: unknown = null;
+    try { result = JSON.parse(rawText); } catch { /* noop */ }
     if (!result || typeof result !== "object" || !Array.isArray((result as { pages?: unknown }).pages)) {
-      return failClosed("invalid_paddle_response");
+      return failClosed("invalid_paddle_response", `body=${rawText.slice(0, 300)}`);
     }
 
     return jsonResp({ ok: true, result });
