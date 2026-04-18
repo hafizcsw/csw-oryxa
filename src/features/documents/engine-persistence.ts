@@ -165,6 +165,64 @@ export async function persistProposals(params: {
   }
 }
 
+/** Update a proposal's value AND reset to pending_review (manual student edit). */
+export async function persistProposalValue(params: {
+  userId: string;
+  proposalId: string;
+  newValue: string | null;
+}): Promise<void> {
+  const { userId, proposalId, newValue } = params;
+  const { error } = await supabase
+    .from('extraction_proposals')
+    .update({
+      proposed_value: newValue as any,
+      status: 'pending_review',
+      requires_review: true,
+      auto_apply_candidate: false,
+      decided_by: 'user',
+      decided_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', userId)
+    .eq('proposal_id', proposalId);
+  if (error) {
+    console.warn('[EnginePersistence:proposalValue] update failed', error.message);
+  }
+}
+
+/** Insert a brand-new manual-edit proposal for a previously-empty field. */
+export async function persistManualProposal(params: {
+  userId: string;
+  documentId: string;
+  proposal: ExtractionProposal;
+  sourceLane: 'passport' | 'transcript' | 'graduation' | 'language' | 'unknown';
+}): Promise<void> {
+  const { userId, documentId, proposal, sourceLane } = params;
+  const row = {
+    user_id: userId,
+    document_id: documentId,
+    proposal_id: proposal.proposal_id,
+    field_path: proposal.field_key,
+    proposed_value: proposal.proposed_value as any,
+    raw_text: null as string | null,
+    confidence: proposal.confidence,
+    parser_source: 'manual_student_edit',
+    evidence_snippet: null as string | null,
+    source_lane: sourceLane,
+    status: proposal.proposal_status,
+    requires_review: proposal.requires_review,
+    auto_apply_candidate: proposal.auto_apply_candidate,
+    rejection_reason: null as string | null,
+    conflict_with_existing: null as any,
+    decided_by: 'user',
+    decided_at: new Date().toISOString(),
+  };
+  const { error } = await supabase.from('extraction_proposals').insert(row);
+  if (error) {
+    console.warn('[EnginePersistence:manualProposal] insert failed', error.message);
+  }
+}
+
 /** Update a single proposal's status (manual accept/reject/reset). */
 export async function persistProposalStatus(params: {
   userId: string;

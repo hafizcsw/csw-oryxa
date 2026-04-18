@@ -52,6 +52,8 @@ interface AssemblyLaneProps {
   onDeleteDoc?: (crmFileId: string | null, documentId: string) => Promise<boolean>;
   /** Bulk-delete all docs in this lane */
   onDeleteAll?: (items: Array<{ crmFileId: string | null; documentId: string }>) => Promise<void>;
+  /** Inline-edit a field value (always lands as pending_review) */
+  onEditField?: (params: { documentId: string; fieldKey: string; newValue: string }) => void;
 }
 
 const LANE_CONFIG: Record<DestinationLane, { titleKey: string; descKey: string; tone: string }> = {
@@ -61,7 +63,7 @@ const LANE_CONFIG: Record<DestinationLane, { titleKey: string; descKey: string; 
   needs_review: { titleKey: 'portal.assembly.lane.needs_review', descKey: 'portal.assembly.lane.needs_review_desc', tone: 'border-amber-500/30' },
 };
 
-export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDeleteAll }: AssemblyLaneProps) {
+export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDeleteAll, onEditField }: AssemblyLaneProps) {
   const { t } = useLanguage();
   const cfg = LANE_CONFIG[lane];
   const isEmpty = docs.length === 0;
@@ -130,6 +132,7 @@ export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDelete
               doc={doc}
               promotedFields={promotedFields}
               onDeleteDoc={onDeleteDoc}
+              onEditField={onEditField}
             />
           ))}
         </div>
@@ -143,11 +146,13 @@ function DocBlock({
   doc,
   promotedFields,
   onDeleteDoc,
+  onEditField,
 }: {
   lane: DestinationLane;
   doc: LaneDoc;
   promotedFields: PromotedField[];
   onDeleteDoc?: (crmFileId: string | null, documentId: string) => Promise<boolean>;
+  onEditField?: (params: { documentId: string; fieldKey: string; newValue: string }) => void;
 }) {
   const { t } = useLanguage();
   const [deleting, setDeleting] = useState(false);
@@ -306,6 +311,7 @@ function DocBlock({
                 reasonKey={r.reasonKey}
                 animate={doc.animate}
                 delay={doc.animate ? 70 * idx : 0}
+                onSave={onEditField ? (newValue) => onEditField({ documentId: doc.documentId, fieldKey: key, newValue }) : undefined}
               />
             );
           })}

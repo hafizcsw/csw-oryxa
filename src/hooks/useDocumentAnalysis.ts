@@ -13,6 +13,7 @@ import type {
   ExtractionProposal,
   ProposalStatus,
 } from '@/features/documents/extraction-proposal-model';
+import { createProposal } from '@/features/documents/extraction-proposal-model';
 import { analyzeDocument, type AnalysisResult } from '@/features/documents/analysis-engine';
 import type { ReadingArtifact } from '@/features/documents/reading-artifact-model';
 import type { CanonicalStudentFile } from '@/features/student-file/canonical-model';
@@ -22,6 +23,8 @@ import {
   persistAnalysis,
   persistProposals,
   persistProposalStatus,
+  persistProposalValue,
+  persistManualProposal,
   deletePersistedDocument,
   deleteAllPersistedForUser,
   type PersistedArtifactSummary,
@@ -66,6 +69,8 @@ interface UseDocumentAnalysisResult {
   getAnalysis: (documentId: string) => DocumentAnalysis | undefined;
   dismissAnalysis: (documentId: string) => void;
   clearAllAnalyses: () => void;
+  /** Inline-edit a field value for a document (creates proposal if missing). Always sets pending_review. */
+  editFieldValue: (params: { documentId: string; fieldKey: string; newValue: string }) => void;
 }
 
 function laneFromClassification(c: string | null | undefined): 'passport' | 'transcript' | 'graduation' | 'language' | 'unknown' {
@@ -344,6 +349,80 @@ export function useDocumentAnalysis({
     }
   }, [studentId]);
 
+  /**
+   * Inline edit by the student. Always reverts the field to `pending_review`
+   * (per UX decision: edited values need staff review before becoming truth).
+   * If a proposal exists → updates its value. Otherwise creates a manual proposal.
+   * Also removes any prior promoted state for this proposal so the field shows
+   * as pending in the assembly view.
+   */
+  const editFieldValue = useCallback((params: {
+    documentId: string;
+    fieldKey: string;
+    newValue: string;
+  }) => {
+    if (!studentId) return;
+    const { documentId, fieldKey, newValue } = params;
+    const trimmed = newValue.trim();
+    if (!trimmed) return;
+    const now = new Date().toISOString();
+
+    const existing = proposals.find(
+      p => p.document_id === documentId && p.field_key === fieldKey,
+    );
+
+    if (existing) {
+      // Update existing proposal in state
+      setProposals(prev => prev.map(p => {
+        if (p.proposal_id !== existing.proposal_id) return p;
+        return {
+          ...p,
+          proposed_value: trimmed,
+          normalized_value: trimmed,
+          proposal_status: 'pending_review' as ProposalStatus,
+          requires_review: true,
+          auto_apply_candidate: false,
+          updated_at: now,
+        };
+      }));
+      // Drop any promoted entry for this proposal — it becomes pending again
+      setPromotedFields(prev => prev.filter(pf => pf.proposalId !== existing.proposal_id));
+      manualAcceptedRef.current.delete(existing.proposal_id);
+      void persistProposalValue({
+        userId: studentId,
+        proposalId: existing.proposal_id,
+        newValue: trimmed,
+      });
+    } else {
+      // Brand-new manual proposal for previously empty field
+      const created = createProposal({
+        studentId,
+        documentId,
+        fieldKey,
+        proposedValue: trimmed,
+        normalizedValue: trimmed,
+        confidence: 1.0,
+        conflictWithCurrent: false,
+      });
+      created.proposal_status = 'pending_review';
+      created.requires_review = true;
+      created.auto_apply_candidate = false;
+      setProposals(prev => [...prev, created]);
+      const lane = (() => {
+        if (fieldKey.startsWith('identity.')) return 'passport' as const;
+        if (fieldKey.startsWith('language.')) return 'language' as const;
+        if (fieldKey.startsWith('academic.')) return 'transcript' as const;
+        return 'unknown' as const;
+      })();
+      void persistManualProposal({
+        userId: studentId,
+        documentId,
+        proposal: created,
+        sourceLane: lane,
+      });
+    }
+  }, [studentId, proposals]);
+
   return {
     analyses,
     proposals,
@@ -361,5 +440,6 @@ export function useDocumentAnalysis({
     getAnalysis,
     dismissAnalysis,
     clearAllAnalyses,
+    editFieldValue,
   };
 }
