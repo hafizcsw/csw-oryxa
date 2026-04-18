@@ -202,21 +202,6 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         />
       </div>
 
-      {/* 1b. Canonical File Summary */}
-      {canonicalFile && (
-        <section>
-          <h2 className="text-sm font-semibold text-foreground mb-2">{t('portal.studyFile.summary')}</h2>
-          <CanonicalFileSummary
-            canonicalFile={canonicalFile}
-            hasIdentity={hasIdentity}
-            hasAcademic={hasAcademic}
-            hasLanguage={hasLanguage}
-            hasTargeting={hasTargeting}
-          />
-        </section>
-      )}
-
-      <Separator />
 
       {/* ═══ Door 2: Central Upload Hub ═══ */}
       <section>
