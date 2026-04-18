@@ -293,6 +293,13 @@ export function classifyDocument(params: {
   // shared patterns (date of birth, nationality, expiry) that also
   // appear on graduation certificates and transcripts. We then flip
   // to the strongest meaningful academic / language alternative.
+  // Filename-based academic hint — strongly indicates non-passport intent
+  const FILENAME_ACADEMIC_HINT = /(شهادة|تخرج|كشف|درجات|سجل|بكالوريوس|ماجستير|دكتوراه|certificate|transcript|degree|diploma|bachelor|master|phd|graduation|marksheet)/i;
+  const FILENAME_LANGUAGE_HINT = /(ielts|toefl|duolingo|pte)/i;
+  const FILENAME_PASSPORT_HINT = /(passport|جواز|سفر|mrz)/i;
+  const filenameAcademic = FILENAME_ACADEMIC_HINT.test(fileName) && !FILENAME_PASSPORT_HINT.test(fileName);
+  const filenameLanguage = FILENAME_LANGUAGE_HINT.test(fileName) && !FILENAME_PASSPORT_HINT.test(fileName);
+
   if (top.slot === 'passport') {
     const passportTrustworthy =
       passportEval.mrz_pattern_in_text || passportEval.text_evidence.length >= 2;
@@ -303,13 +310,31 @@ export function classifyDocument(params: {
         'transcript',
         'language_certificate',
       ];
-      const bestAlt = scores
+      let bestAlt = scores
         .filter(s => altSlots.includes(s.slot as DocumentSlotType))
         .sort((a, b) => b.score - a.score)[0];
 
-      // Flip whenever an alternative shows non-trivial evidence (>=0.18).
-      // Passport here is by definition untrustworthy → prefer real
-      // academic signal even if its raw score is lower.
+      // Filename hint override: if filename screams academic/language and
+      // passport has no MRZ + no high-signal text, force the alternative
+      // even with zero extracted-text evidence (degraded scans).
+      const filenameForce = filenameAcademic || filenameLanguage;
+
+      if (filenameForce && (!bestAlt || bestAlt.score < 0.18)) {
+        const preferredSlot: DocumentSlotType = filenameLanguage
+          ? 'language_certificate'
+          : /كشف|درجات|سجل|transcript|marksheet/i.test(fileName)
+            ? 'transcript'
+            : 'graduation_certificate';
+        bestAlt = scores.find(s => s.slot === preferredSlot) || bestAlt;
+        // Synthesize a minimum score so it wins over passport
+        if (bestAlt) {
+          bestAlt.score = Math.max(bestAlt.score, 0.2);
+          bestAlt.evidence.push(`[filename_hint:${preferredSlot}]`);
+        }
+      }
+
+      // Flip whenever an alternative shows non-trivial evidence (>=0.18)
+      // OR filename-hint forced one above.
       if (bestAlt && bestAlt.score >= 0.18) {
         scores.sort((a, b) => {
           if (a.slot === bestAlt.slot) return -1;
