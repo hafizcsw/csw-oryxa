@@ -108,12 +108,24 @@ export async function analyzeDocument(params: {
   /** Storage path inside `documents` bucket. Required to attempt the
    *  paddle_self_hosted provider; null/undefined disables it cleanly. */
   storagePath?: string | null;
+  /** Live activity callback. Optional — silent if omitted. Use it to drive
+   *  a "what is the engine doing right now" strip in the UI. */
+  onStage?: (event: EngineStageEvent) => void;
 }): Promise<AnalysisResult> {
-  const { file, documentId, studentId, slotHint, canonicalFile, storagePath } = params;
+  const { file, documentId, studentId, slotHint, canonicalFile, storagePath, onStage } = params;
   const analysis = createPendingAnalysis(documentId, slotHint);
   const proposals: ExtractionProposal[] = [];
   const startTime = performance.now();
   let passport_output: PassportOutput | null = null;
+
+  const emit = (stage: EngineStage, detail: string | null = null) => {
+    if (!onStage) return;
+    try {
+      onStage({ stage, detail, elapsed_ms: Math.round(performance.now() - startTime) });
+    } catch {
+      // never let UI callbacks break the pipeline
+    }
+  };
 
   // Default diagnostic envelope (mutated when paddle is attempted)
   let document_ai_mode: DocumentAIMode = 'browser_heuristic';
