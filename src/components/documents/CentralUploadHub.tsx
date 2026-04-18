@@ -21,6 +21,10 @@ interface CentralUploadHubProps {
   onClearCompleted: () => void;
   /** Called when a preview is ready for a registered document (page-1 thumbnail). */
   onPreviewsReady?: (documentId: string, previewUrl: string) => void;
+  /** Per-document issue summaries (failed/weak/unknown). When provided,
+   *  the visualizer paints that file's wire red and shows the reason
+   *  as a small banner above the file. Key = document_id. */
+  issuesByDocId?: Record<string, { reason: string }>;
 }
 
 const ACCEPTED_TYPES = '.pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx';
@@ -537,6 +541,7 @@ export function CentralUploadHub({
   onDismiss,
   onClearCompleted,
   onPreviewsReady,
+  issuesByDocId,
 }: CentralUploadHubProps) {
   const { t } = useLanguage();
   const [isDragOver, setIsDragOver] = useState(false);
@@ -712,6 +717,7 @@ export function CentralUploadHub({
                 );
                 const previewUrl = previewUrls[key] || r.signed_url || r.file_url || undefined;
                 const pages = previewPages[key];
+                const issue = issuesByDocId?.[r.document_id] ?? null;
                 return {
                   id: r.document_id,
                   name: r.original_file_name || 'Document',
@@ -719,6 +725,7 @@ export function CentralUploadHub({
                   previewUrl: previewUrl || undefined,
                   previewUrls: pages && pages.length > 0 ? pages : undefined,
                   mimeType: r.mime_type,
+                  issue,
                 };
               })}
             fileCount={records.length}

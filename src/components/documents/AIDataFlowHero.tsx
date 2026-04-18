@@ -38,6 +38,9 @@ export interface AIDataFlowHeroFile {
   previewUrls?: string[];
   /** MIME type (used to decide if previewUrl is renderable as image) */
   mimeType?: string;
+  /** When set: this file failed reading or has weak/unknown quality.
+   *  The connector wire turns red and a small summary banner floats above the card. */
+  issue?: { reason: string } | null;
 }
 
 export interface AIDataFlowHeroProps {
@@ -278,6 +281,14 @@ function AIDataFlowHeroComponent({
     [connectors, fileStatuses],
   );
 
+  // Connectors for files flagged with an `issue` (failed/weak/unknown). These
+  // are rendered in red — separate from the live "active" stream — so the user
+  // immediately sees which file the engine could not understand.
+  const issuedConnectors = useMemo(
+    () => connectors.filter((p) => !!fileList[p.gIdx]?.issue),
+    [connectors, fileList],
+  );
+
   const showConnectors = showDocuments && activeConnectors.length > 0;
   const showChips = showConnectors;
 
@@ -366,6 +377,20 @@ function AIDataFlowHeroComponent({
             markerUnits="userSpaceOnUse"
           >
             <path d="M 0 0 L 10 5 L 0 10 Z" fill="hsl(var(--foreground))" fillOpacity="0.78" />
+          </marker>
+
+          {/* Arrowhead marker — red variant for failed/weak files */}
+          <marker
+            id={`${ids.arrowHead}-err`}
+            viewBox="0 0 10 10"
+            refX="8.5"
+            refY="5"
+            markerWidth="7"
+            markerHeight="7"
+            orient="auto-start-reverse"
+            markerUnits="userSpaceOnUse"
+          >
+            <path d="M 0 0 L 10 5 L 0 10 Z" fill="hsl(var(--destructive))" fillOpacity="0.9" />
           </marker>
         </defs>
 
@@ -477,7 +502,28 @@ function AIDataFlowHeroComponent({
           </g>
         )}
 
-        {/* ═══ Document clusters (only when files exist) ═══ */}
+
+        {/* ═══ Issue connector paths — RED, for files that failed reading or
+                are weak/unknown quality. Always shown (no animation gating)
+                so the user immediately spots which file the engine cannot
+                process. Only the wire is colored — the brain itself is not
+                "feeding" from these files. ═══ */}
+        {showDocuments && issuedConnectors.length > 0 && (
+          <g fill="none" strokeLinecap="round">
+            {issuedConnectors.map((p) => (
+              <path
+                key={`err-${p.key}`}
+                d={p.d}
+                stroke="hsl(var(--destructive))"
+                strokeOpacity={0.85}
+                strokeWidth={1.6}
+                strokeDasharray="4 3"
+                markerEnd={`url(#${ids.arrowHead}-err)`}
+              />
+            ))}
+          </g>
+        )}
+
         {showDocuments && (
           <g>
             {leftCards.map((c, i) => {
@@ -509,6 +555,7 @@ function AIDataFlowHeroComponent({
                   scanDurationSec={SCAN_DURATION_MS / 1000}
                   scanningLabel={scanningLabel}
                   scannedLabel={scannedLabel}
+                  issue={fileList[c.gIdx]?.issue ?? null}
                 />
               );
             })}
@@ -541,6 +588,7 @@ function AIDataFlowHeroComponent({
                   scanDurationSec={SCAN_DURATION_MS / 1000}
                   scanningLabel={scanningLabel}
                   scannedLabel={scannedLabel}
+                  issue={fileList[c.gIdx]?.issue ?? null}
                 />
               );
             })}
@@ -675,6 +723,8 @@ interface DocumentCardProps {
   onDelete?: (id: string) => void;
   /** Localized delete aria-label */
   deleteLabel?: string;
+  /** When set, render a small red banner above the card with the issue reason */
+  issue?: { reason: string } | null;
 }
 
 /** Truncate a filename for display (keep extension if short) */
@@ -704,6 +754,7 @@ function DocumentCard({
   fileId,
   onDelete,
   deleteLabel = "Delete",
+  issue = null,
 }: DocumentCardProps) {
   const W = CARD_W;
   const H = CARD_H;
@@ -1117,6 +1168,42 @@ function DocumentCard({
           />
         </g>
       )}
+
+      {/* Issue banner — small floating summary above the card explaining
+          why the engine could not understand this file. Rendered as
+          foreignObject so it can use real (RTL-safe) text + wrap. */}
+      {issue && (
+        <g pointerEvents="none">
+          {/* connector dot from banner to card top */}
+          <circle cx={W / 2} cy={-4} r={2.5} fill="hsl(var(--destructive))" />
+          <foreignObject
+            x={-12}
+            y={-46}
+            width={W + 24}
+            height={42}
+            style={{ overflow: "visible" }}
+          >
+            <div
+              style={{
+                fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                fontSize: "10px",
+                lineHeight: 1.25,
+                fontWeight: 600,
+                color: "hsl(var(--destructive-foreground))",
+                background: "hsl(var(--destructive))",
+                padding: "4px 6px",
+                borderRadius: "6px",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.18)",
+                textAlign: "center",
+                wordBreak: "break-word",
+              }}
+            >
+              {issue.reason}
+            </div>
+          </foreignObject>
+        </g>
+      )}
+
     </g>
   );
 
