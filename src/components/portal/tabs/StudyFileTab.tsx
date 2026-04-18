@@ -312,11 +312,6 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         onDeleteAll={handleDeleteAll}
       />
 
-      {/* ═══ Save bar: shows only when there are unsaved uploads ═══ */}
-      <SaveDocumentsBar
-        pendingCount={guard.pendingCount}
-        onSave={handleSaveDocuments}
-      />
     </div>
   );
 }
