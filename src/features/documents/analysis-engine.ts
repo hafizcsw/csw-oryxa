@@ -207,11 +207,10 @@ export async function analyzeDocument(params: {
     };
   }
 
-  // ── Document AI Resolver: paddle (if available) → browser fallback ──
-  // Fail-closed: missing PADDLE_STRUCTURE_ENDPOINT secret returns
-  // status='unavailable' reason='no_endpoint_configured'; engine then
-  // uses the browser_heuristic artifact and tags document_ai_mode
-  // accordingly. No crash. No fake success. No hidden fallback.
+  // ── Document AI Resolver: paddle ONLY (hard cutover) ──
+  // Reuses the cached Paddle response from the reading stage. If Paddle
+  // did not produce a usable artifact, this returns mode_used='none' and
+  // we surface that honestly — there is no in-browser structured fallback.
   const resolved = await resolveStructuredArtifact({
     reading_artifact: artifact,
     ai_request: {
