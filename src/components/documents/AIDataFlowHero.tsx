@@ -281,6 +281,14 @@ function AIDataFlowHeroComponent({
     [connectors, fileStatuses],
   );
 
+  // Connectors for files flagged with an `issue` (failed/weak/unknown). These
+  // are rendered in red — separate from the live "active" stream — so the user
+  // immediately sees which file the engine could not understand.
+  const issuedConnectors = useMemo(
+    () => connectors.filter((p) => !!fileList[p.gIdx]?.issue),
+    [connectors, fileList],
+  );
+
   const showConnectors = showDocuments && activeConnectors.length > 0;
   const showChips = showConnectors;
 
