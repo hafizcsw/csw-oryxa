@@ -19,6 +19,8 @@ interface CentralUploadHubProps {
   onCancel: (documentId: string) => void;
   onDismiss: (documentId: string) => void;
   onClearCompleted: () => void;
+  /** Called when a preview is ready for a registered document (page-1 thumbnail). */
+  onPreviewsReady?: (documentId: string, previewUrl: string) => void;
 }
 
 const ACCEPTED_TYPES = '.pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx';
