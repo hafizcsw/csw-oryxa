@@ -276,6 +276,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       </div>
 
 
+      {/* ═══ Save bar: shows only when there are unsaved uploads (top placement) ═══ */}
+      <SaveDocumentsBar
+        pendingCount={guard.pendingCount}
+        onSave={handleSaveDocuments}
+      />
+
       {/* ═══ Door 2: Central Upload Hub ═══ */}
       <section>
         <h2 className="text-base font-semibold text-foreground mb-3">{t('portal.uploadHub.title')}</h2>
