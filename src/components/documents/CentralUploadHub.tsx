@@ -621,17 +621,6 @@ export function CentralUploadHub({
           />
         </div>
 
-        <div className="text-center mt-1">
-          <p className={cn(
-            'text-sm font-medium transition-colors',
-            isProcessing ? 'text-primary' : isDragOver ? 'text-primary' : 'text-foreground',
-          )}>
-            {isProcessing ? t('portal.uploadHub.in_progress') : t('portal.uploadHub.dropzone_title')}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {t('portal.uploadHub.dropzone_subtitle')}
-          </p>
-        </div>
 
         <input
           ref={fileInputRef}
