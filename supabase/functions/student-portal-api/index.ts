@@ -5196,30 +5196,31 @@ Deno.serve(async (req) => {
               file_name?: string;
             };
 
+            // Helper: wrap the Paddle envelope inside `data` so the portal
+            // wrapper (`portalInvoke`) does NOT collapse `ok:false` envelopes
+            // into a generic transport error and so the success envelope's
+            // `result` field survives the unwrap step on the client.
+            const paddleEnvelope = (env: Record<string, unknown>) =>
+              Response.json({ ok: true, data: env }, { headers: corsHeaders });
+
+            console.log('[paddle_proxy] ▶ entered case', {
+              has_doc_id: !!document_id,
+              has_storage_path: !!storage_path,
+              has_file_id: !!file_id,
+              mime_type,
+              customer: customerId,
+            });
+
             if (!document_id || !mime_type || !file_name) {
-              return Response.json(
-                { ok: false, stage: 'request', reason: 'missing_fields', error_message: 'document_id, mime_type, file_name required' },
-                { headers: corsHeaders },
-              );
+              return paddleEnvelope({ ok: false, stage: 'request', reason: 'missing_fields', error_message: 'document_id, mime_type, file_name required' });
             }
             if (!file_id && !storage_path) {
-              return Response.json(
-                { ok: false, stage: 'request', reason: 'missing_fields', error_message: 'file_id or storage_path required' },
-                { headers: corsHeaders },
-              );
+              return paddleEnvelope({ ok: false, stage: 'request', reason: 'missing_fields', error_message: 'file_id or storage_path required' });
             }
             if (!PADDLE_ENDPOINT) {
-              return Response.json(
-                { ok: false, stage: 'config', reason: 'no_endpoint_configured', error_message: 'PADDLE_STRUCTURE_ENDPOINT not set' },
-                { headers: corsHeaders },
-              );
+              return paddleEnvelope({ ok: false, stage: 'config', reason: 'no_endpoint_configured', error_message: 'PADDLE_STRUCTURE_ENDPOINT not set' });
             }
-
             // ── Ownership resolution ──────────────────────────────
-            // Path A (preferred): file_id → look up customer_files row,
-            //                     verify customer_id matches, take storage_bucket+path from DB.
-            // Path B (fallback):  storage_path provided → verify it begins
-            //                     with `<customerId>/`.
             let resolvedBucket = storage_bucket || 'student-docs';
             let resolvedPath = storage_path || '';
 
@@ -5231,17 +5232,11 @@ Deno.serve(async (req) => {
                 .maybeSingle();
 
               if (fileErr || !fileRec) {
-                return Response.json(
-                  { ok: false, stage: 'ownership', reason: 'file_not_found', error_message: fileErr?.message ?? null },
-                  { headers: corsHeaders },
-                );
+                return paddleEnvelope({ ok: false, stage: 'ownership', reason: 'file_not_found', error_message: fileErr?.message ?? null });
               }
               if (fileRec.customer_id !== customerId) {
                 console.log('[paddle_proxy] ✗ ownership mismatch', { fileCustomer: fileRec.customer_id, caller: customerId });
-                return Response.json(
-                  { ok: false, stage: 'ownership', reason: 'storage_path_forbidden', error_message: 'customer_id mismatch' },
-                  { headers: corsHeaders },
-                );
+                return paddleEnvelope({ ok: false, stage: 'ownership', reason: 'storage_path_forbidden', error_message: 'customer_id mismatch' });
               }
               resolvedBucket = fileRec.storage_bucket || resolvedBucket;
               resolvedPath = fileRec.storage_path || resolvedPath;
@@ -5254,10 +5249,7 @@ Deno.serve(async (req) => {
               const owned = ownedPrefixes.some((p) => normalized.startsWith(p));
               if (!owned) {
                 console.log('[paddle_proxy] ✗ path not owned', { normalized, customerId });
-                return Response.json(
-                  { ok: false, stage: 'ownership', reason: 'storage_path_forbidden', error_message: 'path prefix mismatch' },
-                  { headers: corsHeaders },
-                );
+                return paddleEnvelope({ ok: false, stage: 'ownership', reason: 'storage_path_forbidden', error_message: 'path prefix mismatch' });
               }
               resolvedPath = normalized;
             }
@@ -5269,12 +5261,9 @@ Deno.serve(async (req) => {
 
             if (signErr || !signed?.signedUrl) {
               console.log('[paddle_proxy] ✗ sign failed', { resolvedBucket, resolvedPath, err: signErr?.message });
-              return Response.json(
-                { ok: false, stage: 'sign', reason: 'signed_url_failed', error_message: signErr?.message ?? null },
-                { headers: corsHeaders },
-              );
+              return paddleEnvelope({ ok: false, stage: 'sign', reason: 'signed_url_failed', error_message: signErr?.message ?? null });
             }
-
+            // ── Call Paddle service ──────────────────────────────
             console.log('[paddle_proxy] ▶ calling Paddle', {
               endpoint: PADDLE_ENDPOINT,
               bucket: resolvedBucket,
@@ -5282,8 +5271,6 @@ Deno.serve(async (req) => {
               file_name,
               mime_type,
             });
-
-            // ── Call Paddle service ──────────────────────────────
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), PADDLE_TIMEOUT_MS);
             const startedAt = Date.now();
@@ -5313,48 +5300,39 @@ Deno.serve(async (req) => {
               });
 
               if (!paddleResp.ok) {
-                return Response.json(
-                  {
-                    ok: false,
-                    stage: 'provider',
-                    reason: paddleResp.status >= 500 ? 'service_5xx' : 'service_error',
-                    error_message: `status=${paddleResp.status} ${rawText.slice(0, 200)}`,
-                    latency_ms,
-                  },
-                  { headers: corsHeaders },
-                );
+                return paddleEnvelope({
+                  ok: false,
+                  stage: 'provider',
+                  reason: paddleResp.status >= 500 ? 'service_5xx' : 'service_error',
+                  error_message: `status=${paddleResp.status} ${rawText.slice(0, 200)}`,
+                  latency_ms,
+                });
               }
 
               let result: unknown = null;
               try { result = JSON.parse(rawText); } catch { /* noop */ }
               if (!result || typeof result !== 'object' || !Array.isArray((result as { pages?: unknown }).pages)) {
-                return Response.json(
-                  {
-                    ok: false,
-                    stage: 'provider',
-                    reason: 'invalid_paddle_response',
-                    error_message: `body=${rawText.slice(0, 200)}`,
-                    latency_ms,
-                  },
-                  { headers: corsHeaders },
-                );
+                return paddleEnvelope({
+                  ok: false,
+                  stage: 'provider',
+                  reason: 'invalid_paddle_response',
+                  error_message: `body=${rawText.slice(0, 200)}`,
+                  latency_ms,
+                });
               }
 
-              return Response.json({ ok: true, result, latency_ms }, { headers: corsHeaders });
+              return paddleEnvelope({ ok: true, result, latency_ms });
             } catch (err) {
               clearTimeout(timer);
               const msg = err instanceof Error ? err.message : 'unknown_error';
               const isAbort = msg.toLowerCase().includes('abort');
-              return Response.json(
-                {
-                  ok: false,
-                  stage: 'network',
-                  reason: isAbort ? 'timeout' : 'network_error',
-                  error_message: msg,
-                  latency_ms: Date.now() - startedAt,
-                },
-                { headers: corsHeaders },
-              );
+              return paddleEnvelope({
+                ok: false,
+                stage: 'network',
+                reason: isAbort ? 'timeout' : 'network_error',
+                error_message: msg,
+                latency_ms: Date.now() - startedAt,
+              });
             }
           }
 
