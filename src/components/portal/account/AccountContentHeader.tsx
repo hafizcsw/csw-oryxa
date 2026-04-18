@@ -179,8 +179,15 @@ export function AccountContentHeader({
     <div className="flex items-center gap-6">
       {/* Large Avatar with Upload - Binance style */}
       <div className="relative group">
-        <Avatar className="h-28 w-28 border-4 border-primary/20">
-          <AvatarImage src={avatarUrl} alt={fullName} className="object-cover" />
+        <Avatar className="h-28 w-28">
+          <AvatarImage
+            src={avatarUrl}
+            alt={fullName}
+            className="object-cover [image-rendering:auto]"
+            loading="eager"
+            decoding="async"
+            draggable={false}
+          />
           <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary text-3xl font-bold">
             {fullName.charAt(0)}
           </AvatarFallback>
