@@ -359,6 +359,7 @@ export async function analyzeDocument(params: {
     }
 
     // ── Step 5: Build proposals ──────────────────────────────
+    emit('building_proposals', `${Object.keys(extractedFields).length} fields`);
     const sourceLane:
       | 'passport' | 'transcript' | 'graduation' | 'language' | 'unknown' =
         classification.best === 'passport' ? 'passport'
