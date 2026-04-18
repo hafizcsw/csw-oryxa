@@ -136,6 +136,7 @@ export function useDocumentAnalysis({
     file: File;
     slotHint: DocumentSlotType | null;
     storagePath: string | null;
+    crmFileId: string | null;
   }>());
   /** Track manual_accepted proposals so derivation distinguishes user vs engine. */
   const manualAcceptedRef = useRef<Set<string>>(new Set());
@@ -175,10 +176,11 @@ export function useDocumentAnalysis({
     documentId: string,
     slotHint: DocumentSlotType | null,
     storagePath: string | null = null,
+    crmFileId: string | null = null,
   ): Promise<AnalysisResult | null> => {
     if (!studentId) return null;
 
-      fileCache.current.set(documentId, { file, slotHint, storagePath });
+      fileCache.current.set(documentId, { file, slotHint, storagePath, crmFileId });
 
     analyzingCount.current++;
     setIsAnalyzing(true);
@@ -191,6 +193,7 @@ export function useDocumentAnalysis({
         slotHint,
         canonicalFile,
         storagePath,
+        crmFileId,
         onStage: (event) => {
           setLiveStages(prev => ({
             ...prev,
@@ -272,9 +275,12 @@ export function useDocumentAnalysis({
       console.warn('[Door1:Reanalyze] No cached file for', documentId);
       return null;
     }
+    if (!cached.storagePath && !cached.crmFileId) {
+      console.warn('[Door1:Reanalyze] Missing storagePath AND crmFileId — Paddle will fail closed', documentId);
+    }
     setPromotedFields(prev => prev.filter(pf => pf.documentId !== documentId));
     setProposals(prev => prev.filter(p => p.document_id !== documentId));
-    return analyzeFile(cached.file, documentId, cached.slotHint, cached.storagePath);
+    return analyzeFile(cached.file, documentId, cached.slotHint, cached.storagePath, cached.crmFileId);
   }, [analyzeFile]);
 
   const acceptProposal = useCallback((proposalId: string) => {
