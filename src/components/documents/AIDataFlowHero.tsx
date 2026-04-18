@@ -657,6 +657,16 @@ interface DocumentCardProps {
   /** Localized labels */
   scanningLabel?: string;
   scannedLabel?: string;
+  /** Real preview thumbnail URL (image/* or generated PDF preview) */
+  previewUrl?: string;
+  /** MIME type for the file behind previewUrl */
+  mimeType?: string;
+  /** Stable id passed back via onDelete */
+  fileId?: string;
+  /** Click-to-delete handler */
+  onDelete?: (id: string) => void;
+  /** Localized delete aria-label */
+  deleteLabel?: string;
 }
 
 /** Truncate a filename for display (keep extension if short) */
@@ -680,6 +690,11 @@ function DocumentCard({
   scanDurationSec = 2.6,
   scanningLabel = "Scanning…",
   scannedLabel = "Scanned",
+  previewUrl,
+  mimeType,
+  fileId,
+  onDelete,
+  deleteLabel = "Delete",
 }: DocumentCardProps) {
   const W = CARD_W;
   const H = CARD_H;
