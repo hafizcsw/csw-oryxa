@@ -14,7 +14,7 @@
 import { portalInvoke } from "./portalInvoke";
 
 // ✅ CRM Storage sub-actions
-export type CrmStorageAction = 
+export type CrmStorageAction =
   | 'prepare_upload'
   | 'confirm_upload'
   | 'list_files'
@@ -22,7 +22,8 @@ export type CrmStorageAction =
   | 'set_avatar'
   | 'delete_file'
   | 'clear_all_files'
-  | 'purge_all_files';  // ✅ Added for clean cutover
+  | 'purge_all_files'         // ✅ Added for clean cutover
+  | 'paddle_structure_proxy'; // ✅ CRM-aware Paddle OCR/Structure proxy
 
 export interface PrepareUploadResult {
   bucket: string;
