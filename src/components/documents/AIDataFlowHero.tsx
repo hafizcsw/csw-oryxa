@@ -496,6 +496,11 @@ function AIDataFlowHeroComponent({
                   emergeFromY={VIEWBOX_H - 40}
                   emergeDelay={i * 0.12}
                   label={fileList[c.gIdx]?.name ?? ""}
+                  previewUrl={fileList[c.gIdx]?.previewUrl}
+                  mimeType={fileList[c.gIdx]?.mimeType}
+                  fileId={fileList[c.gIdx]?.id}
+                  onDelete={onDeleteFile}
+                  deleteLabel={resolvedDeleteLabel}
                   state={st}
                   scanDurationSec={SCAN_DURATION_MS / 1000}
                   scanningLabel={scanningLabel}
