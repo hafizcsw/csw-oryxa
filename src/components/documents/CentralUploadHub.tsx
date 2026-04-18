@@ -536,6 +536,7 @@ export function CentralUploadHub({
   onCancel,
   onDismiss,
   onClearCompleted,
+  onPreviewsReady,
 }: CentralUploadHubProps) {
   const { t } = useLanguage();
   const [isDragOver, setIsDragOver] = useState(false);
