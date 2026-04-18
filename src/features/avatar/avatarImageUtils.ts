@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
-const MAX_AVATAR_DIMENSION = 1600;
+const MAX_AVATAR_DIMENSION = 2048;
 
 const isHttpUrl = (value: string) => value.startsWith("http://") || value.startsWith("https://");
 
