@@ -125,6 +125,7 @@ export function useDocumentAnalysis({
   const [artifacts, setArtifacts] = useState<Record<string, ReadingArtifact>>({});
   const [hydratedArtifactSurfaces, setHydratedArtifactSurfaces] = useState<Record<string, HydratedArtifactSurface>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [liveStages, setLiveStages] = useState<Record<string, LiveStageState>>({});
   const analyzingCount = useRef(0);
   const fileCache = useRef(new Map<string, { file: File; slotHint: DocumentSlotType | null }>());
   /** Track manual_accepted proposals so derivation distinguishes user vs engine. */
