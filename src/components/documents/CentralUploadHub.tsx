@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DocumentRecord, ProcessingStatus } from '@/features/documents/document-registry-model';
 import { AIDataFlowHero } from './AIDataFlowHero';
+import { renderPdfPagesToThumbnails } from '@/features/documents/pdf-thumbnails';
 
 interface CentralUploadHubProps {
   records: DocumentRecord[];
@@ -537,6 +538,8 @@ export function CentralUploadHub({
   const { t } = useLanguage();
   const [isDragOver, setIsDragOver] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
+  // Multi-page previews (PDF) — keyed by name+size, value is array of page URLs
+  const [previewPages, setPreviewPages] = useState<Record<string, string[]>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Build previewUrl key — match record by file_name + size, since we can't
@@ -547,18 +550,40 @@ export function CentralUploadHub({
   );
 
   // Generate object URLs for any newly-selected image files, then forward
-  // the originals to the upstream handler.
+  // the originals to the upstream handler. PDFs are rendered page-by-page
+  // in the background so the visualizer can flip through pages live.
   const handleFilesSelected = useCallback(
     (files: File[]) => {
       const next: Record<string, string> = {};
+      const pdfsToRender: Array<{ key: string; file: File }> = [];
       files.forEach((f) => {
+        const key = recordPreviewKey(f.name, f.size);
         if (f.type.startsWith('image/')) {
-          next[recordPreviewKey(f.name, f.size)] = URL.createObjectURL(f);
+          next[key] = URL.createObjectURL(f);
+        } else if (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)) {
+          pdfsToRender.push({ key, file: f });
         }
       });
       if (Object.keys(next).length > 0) {
         setPreviewUrls((prev) => ({ ...prev, ...next }));
       }
+      // Render PDF pages asynchronously — first page becomes previewUrl
+      // immediately; the full pages array is set once all pages are rendered.
+      pdfsToRender.forEach(async ({ key, file }) => {
+        try {
+          const { pageUrls } = await renderPdfPagesToThumbnails(file, {
+            scale: 1.3,
+            maxPages: 25,
+          });
+          if (pageUrls.length > 0) {
+            setPreviewUrls((prev) => ({ ...prev, [key]: pageUrls[0] }));
+            setPreviewPages((prev) => ({ ...prev, [key]: pageUrls }));
+          }
+        } catch (err) {
+          // Silent fallback — visualizer just shows generic doc art
+          console.warn('[CentralUploadHub] PDF preview render failed:', err);
+        }
+      });
       onFilesSelected(files);
     },
     [onFilesSelected, recordPreviewKey],
@@ -569,6 +594,11 @@ export function CentralUploadHub({
     return () => {
       Object.values(previewUrls).forEach((url) => {
         try { URL.revokeObjectURL(url); } catch { /* noop */ }
+      });
+      Object.values(previewPages).forEach((urls) => {
+        urls.forEach((u) => {
+          try { URL.revokeObjectURL(u); } catch { /* noop */ }
+        });
       });
     };
     // intentionally empty: only on unmount
@@ -661,11 +691,13 @@ export function CentralUploadHub({
                   r.file_size_bytes || 0,
                 );
                 const previewUrl = previewUrls[key] || r.signed_url || r.file_url || undefined;
+                const pages = previewPages[key];
                 return {
                   id: r.document_id,
                   name: r.original_file_name || 'Document',
                   status,
                   previewUrl: previewUrl || undefined,
+                  previewUrls: pages && pages.length > 0 ? pages : undefined,
                   mimeType: r.mime_type,
                 };
               })}
