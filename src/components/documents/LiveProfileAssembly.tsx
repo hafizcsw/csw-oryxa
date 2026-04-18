@@ -292,12 +292,13 @@ export function LiveProfileAssembly({
         promotedFields={promotedFields}
         onDeleteDoc={onDeleteDoc}
         onDeleteAll={onDeleteAll}
+        onEditField={onEditField}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <AssemblyLane lane="identity" docs={byLane.identity} promotedFields={promotedFields} onDeleteDoc={onDeleteDoc} />
-        <AssemblyLane lane="academic" docs={byLane.academic} promotedFields={promotedFields} onDeleteDoc={onDeleteDoc} />
-        <AssemblyLane lane="language" docs={byLane.language} promotedFields={promotedFields} onDeleteDoc={onDeleteDoc} />
+        <AssemblyLane lane="identity" docs={byLane.identity} promotedFields={promotedFields} onDeleteDoc={onDeleteDoc} onEditField={onEditField} />
+        <AssemblyLane lane="academic" docs={byLane.academic} promotedFields={promotedFields} onDeleteDoc={onDeleteDoc} onEditField={onEditField} />
+        <AssemblyLane lane="language" docs={byLane.language} promotedFields={promotedFields} onDeleteDoc={onDeleteDoc} onEditField={onEditField} />
       </div>
     </section>
   );
