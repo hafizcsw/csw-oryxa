@@ -37,6 +37,7 @@ import type { StructuredDocumentArtifact } from './structured-browser-artifact-m
 import { buildStructuredBrowserArtifact } from './parsers/structured-artifact-builder';
 import { resolveStructuredArtifact } from './document-ai/resolver';
 import type { DocumentAIMode } from './document-ai/document-ai-provider';
+import { buildPassportOutput, type PassportOutput } from './passport-output-schema';
 
 export interface AnalysisResult {
   analysis: DocumentAnalysis;
