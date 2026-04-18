@@ -5,20 +5,21 @@
 // document understanding service. The engine consumes this
 // boundary, NOT vendor-specific clients.
 //
-// HARD CONTRACT:
+// HARD CONTRACT (post-cutover):
 //   - Provider NEVER writes canonical truth.
 //   - Provider output is mapped into the existing
 //     StructuredDocumentArtifact (no parallel model).
-//   - Fail-closed: if unavailable, returns provider='none' with
-//     a reason. NEVER throws. NEVER fakes success.
-//   - The engine retains the browser_heuristic fallback as the
-//     primary path when no provider is available.
+//   - Fail-closed: if unavailable, returns mode='none' with a reason.
+//     NEVER throws. NEVER fakes success.
+//   - There is NO browser_heuristic fallback in the live engine.
+//     The 'browser_heuristic' enum value is preserved ONLY to read
+//     historical artifacts produced before the cutover.
 // ═══════════════════════════════════════════════════════════════
 
 import type { StructuredDocumentArtifact } from '../structured-browser-artifact-model';
 
 export type DocumentAIMode =
-  | 'browser_heuristic'    // local in-browser heuristic builder (existing)
+  | 'browser_heuristic'    // HISTORICAL ONLY — pre-cutover artifacts
   | 'paddle_self_hosted'   // self-hosted PaddleOCR PP-StructureV3
   | 'none';                // no provider available / disabled
 
