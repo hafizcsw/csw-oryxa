@@ -1,6 +1,13 @@
-# PaddleOCR PP-StructureV3 — Self-Hosted Service
+# PaddleOCR 3.x · PP-StructureV3 — Self-Hosted Service
 
-This directory contains the deployment scaffolding for the **self-hosted Document AI service** that powers our `paddle_self_hosted` provider. The application code does **not** depend on this being running — when the endpoint is missing the engine fails closed and falls back to `browser_heuristic`.
+This directory contains the deployment scaffolding for the **self-hosted Document AI service** that powers our `paddle_self_hosted` provider, now running on **PaddleOCR 3.x (PP-StructureV3)** built on PP-OCRv5.
+
+The application code does **not** depend on this being running — when the endpoint is missing the engine fails closed and falls back to `browser_heuristic`.
+
+**Versions**
+- `paddleocr==3.0.3`
+- `paddlepaddle==3.0.0` (CPU; install from `https://www.paddlepaddle.org.cn/packages/stable/cpu/`)
+- Pipeline entrypoint: `from paddleocr import PPStructureV3`
 
 ---
 
