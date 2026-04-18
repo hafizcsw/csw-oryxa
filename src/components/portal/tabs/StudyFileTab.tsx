@@ -4,6 +4,7 @@ import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
 import { CanonicalFileSummary } from "@/components/student-file/CanonicalFileSummary";
 import { CentralUploadHub } from "@/components/documents/CentralUploadHub";
 import { LiveProfileAssembly } from "@/components/documents/LiveProfileAssembly";
+import { SaveDocumentsBar } from "@/components/documents/SaveDocumentsBar";
 import { DocumentAnalysisPanel } from "@/components/documents/DocumentAnalysisPanel";
 import { AcademicTruthPanel } from "@/components/decision/AcademicTruthPanel";
 import { DecisionPanel } from "@/components/decision/DecisionPanel";
@@ -18,6 +19,7 @@ import { useAcademicTruth } from "@/hooks/useAcademicTruth";
 import { useDecisionEngine } from "@/hooks/useDecisionEngine";
 import { useProgramRequirements } from "@/hooks/useProgramRequirements";
 import { useShortlistRequirementsContext } from "@/hooks/useShortlistRequirementsContext";
+import { useUnsavedDocumentsGuard } from "@/hooks/useUnsavedDocumentsGuard";
 import type { FileQualityResult } from "@/features/file-quality/types";
 import type { DocumentTypeFilter } from "./DocumentsTab";
 
@@ -150,7 +152,13 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     onBatchComplete: handleBatchComplete,
   });
 
-  // Trigger analysis when records become registered
+  // ═══ Unsaved-documents guard: warn on unload + auto-cleanup orphans ═══
+  const guard = useUnsavedDocumentsGuard({
+    enabled: !!profile?.user_id,
+    onCleanupComplete: () => refetchDocs({ silent: true }),
+  });
+
+  // Trigger analysis when records become registered + track for save guard
   const prevRecordsRef = useRef<string[]>([]);
   useEffect(() => {
     const registeredIds = registry.records
@@ -163,7 +171,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     for (const id of newlyRegistered) {
       const record = registry.records.find(r => r.document_id === id);
       if (!record) continue;
-      
+
+      // Track this newly uploaded file as "unsaved" until user confirms
+      if (record.crm_file_id) {
+        guard.trackDocument(record.crm_file_id);
+      }
+
       // Find the file by name, consuming one key at a time to handle duplicates
       const keys = fileNameToKeysRef.current.get(record.original_file_name);
       if (keys && keys.length > 0) {
@@ -178,7 +191,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         }
       }
     }
-  }, [registry.records, analysisHook]);
+  }, [registry.records, analysisHook, guard]);
+
+  const handleSaveDocuments = useCallback(async () => {
+    guard.confirmAllSaved();
+    await refetchDocs({ silent: true });
+  }, [guard, refetchDocs]);
 
   const handleFilesSelected = useCallback((files: File[]) => {
     for (const file of files) {
@@ -235,6 +253,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         promotedFields={analysisHook.promotedFields}
         subjectRows={academicTruthHook.subjectRows}
         previewUrls={previewUrls}
+      />
+
+      {/* ═══ Save bar: shows only when there are unsaved uploads ═══ */}
+      <SaveDocumentsBar
+        pendingCount={guard.pendingCount}
+        onSave={handleSaveDocuments}
       />
     </div>
   );

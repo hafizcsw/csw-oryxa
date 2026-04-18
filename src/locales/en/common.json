@@ -1469,6 +1469,15 @@
       "status_upload_failed": "Failed",
       "status_cancelled": "Cancelled"
     },
+    "saveDocs": {
+      "region_label": "Unsaved documents",
+      "title_one": "You have 1 unsaved document",
+      "title_other": "You have {{count}} unsaved documents",
+      "title": "You have {{count}} unsaved document(s)",
+      "warning": "If you leave or refresh without saving, these files will be deleted automatically.",
+      "consent": "I agree to save these documents",
+      "save_button": "Save documents"
+    },
     "analysis": {
       "title": "Document Analysis",
       "documents_analyzed": "Documents analyzed",
