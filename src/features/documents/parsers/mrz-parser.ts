@@ -12,6 +12,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { lookupCountry } from './iso-country-codes';
+import { recoverMrzLine, looksLikeMrzLine } from './mrz-recovery';
 
 export interface MrzChecksumBreakdown {
   passport_number: boolean | null;
@@ -119,9 +120,12 @@ function resolveCountry(alpha3: string): { name: string | null; alpha3: string |
 }
 
 // ── TD3 — passport (2×44) ────────────────────────────────────
-function parseTD3(line1: string, line2: string): MrzResult | null {
+function parseTD3(line1Raw: string, line2Raw: string): MrzResult | null {
+  // Pad short lines (OCR may chop trailing fillers) up to 44.
+  const line1 = line1Raw.length >= 38 ? line1Raw.padEnd(44, '<').slice(0, 44) : line1Raw;
+  const line2 = line2Raw.length >= 38 ? line2Raw.padEnd(44, '<').slice(0, 44) : line2Raw;
   if (line1.length < 44 || line2.length < 44) return null;
-  if (!/^P[A-Z<]/.test(line1)) return null;
+  if (!/^[PI][A-Z<]/.test(line1)) return null;
 
   const documentType = line1.slice(0, 2).replace(/</g, '');
   const issuing = resolveCountry(line1.slice(2, 5));
@@ -346,61 +350,75 @@ function scoreConfidence(r: MrzResult): number {
 export function parseMrz(text: string): MrzResult {
   if (!text || text.length < 30) return emptyResult();
 
-  const rawLines = text.split(/\n|\r/).map(l => l.trim()).filter(l => l.length >= 20);
+  const rawLines = text.split(/\n|\r/).map(l => l.trim()).filter(l => l.length >= 16);
   // Cleaned lines, preserving order. Each line stripped to [A-Z0-9<].
-  const cleaned = rawLines.map(cleanMrz).filter(l => l.length >= 28);
+  // NOTE: cleanMrz uppercases-only filter; recoveryline runs per-attempt.
+  const cleaned = rawLines.map(cleanMrz).filter(l => l.length >= 24);
 
   const isViable = (r: MrzResult | null): r is MrzResult =>
     !!r && !!r.passport_number && !!r.date_of_birth && !!r.expiry_date;
 
   /**
    * Locate a TD3-style document line within a cleaned string.
-   * Returns the 44-char window starting at the doc-type marker, or null.
-   * MRZ may have leading OCR noise — we scan for the canonical pattern.
+   * Accepts lines as short as 38 chars (OCR may chop trailing fillers);
+   * shorter windows get padded by parseTD3 itself.
    */
   const findTD3Line1 = (s: string): string | null => {
-    if (s.length < 44) return null;
+    if (s.length < 38) return null;
     const m = s.match(/[PI][A-Z<][A-Z<]{3}/);
     if (!m || m.index === undefined) return null;
-    if (m.index + 44 > s.length) {
-      // Tail too short — pad with '<' (filler) so check digits over surname zone still work
-      const window = s.slice(m.index).padEnd(44, '<');
-      return window.length >= 44 ? window.slice(0, 44) : null;
-    }
-    return s.slice(m.index, m.index + 44);
+    const window = s.slice(m.index);
+    return window.length >= 38 ? window.padEnd(44, '<').slice(0, 44) : null;
   };
 
   const findTD3Line2 = (s: string): string | null => {
-    if (s.length < 44) return null;
-    // line 2 is mostly alnum + '<'; pick the longest such window
-    return s.slice(0, 44);
+    if (s.length < 38) return null;
+    return s.padEnd(44, '<').slice(0, 44);
   };
 
   // ── TD3 attempt (2 × 44) ───────────────────────────────────
+  // We try both raw-cleaned and recovered variants; recovery fixes
+  // K↔< and O↔0 confusions that block the strict ICAO parser.
   for (let i = 0; i < cleaned.length; i++) {
-    const l1 = findTD3Line1(cleaned[i]);
-    if (!l1) continue;
+    const l1Raw = findTD3Line1(cleaned[i]);
+    if (!l1Raw) continue;
+    const l1Variants = [l1Raw, recoverMrzLine(l1Raw, 44, false)];
     for (let j = i + 1; j < cleaned.length; j++) {
-      const l2 = findTD3Line2(cleaned[j]);
-      if (!l2) continue;
-      const r = parseTD3(l1, l2);
-      if (isViable(r)) return r;
+      const l2Raw = findTD3Line2(cleaned[j]);
+      if (!l2Raw) continue;
+      const l2Variants = [l2Raw, recoverMrzLine(l2Raw, 44, true)];
+      let bestResult: MrzResult | null = null;
+      for (const l1 of l1Variants) {
+        for (const l2 of l2Variants) {
+          const r = parseTD3(l1, l2);
+          if (isViable(r)) {
+            if (!bestResult || r.confidence > bestResult.confidence) bestResult = r;
+            if (r.checksum_verified) return r; // perfect — short-circuit
+          }
+        }
+      }
+      if (bestResult) return bestResult;
       break;
     }
   }
 
   // ── TD2 attempt (2 × 36) ───────────────────────────────────
   for (let i = 0; i < cleaned.length - 1; i++) {
-    if (cleaned[i].length >= 36 && cleaned[i].length < 44) {
+    if (cleaned[i].length >= 32 && cleaned[i].length < 44) {
       const m = cleaned[i].match(/[PI][A-Z<][A-Z<]{3}/);
       if (!m || m.index === undefined) continue;
-      const l1 = cleaned[i].slice(m.index, m.index + 36);
-      if (l1.length < 36) continue;
+      const l1Raw = cleaned[i].slice(m.index).padEnd(36, '<').slice(0, 36);
+      const l1Variants = [l1Raw, recoverMrzLine(l1Raw, 36, false)];
       for (let j = i + 1; j < cleaned.length; j++) {
-        if (cleaned[j].length >= 36 && cleaned[j].length < 44) {
-          const l2 = cleaned[j].slice(0, 36);
-          const r = parseTD2(l1, l2);
-          if (isViable(r)) return r;
+        if (cleaned[j].length >= 32 && cleaned[j].length < 44) {
+          const l2Raw = cleaned[j].padEnd(36, '<').slice(0, 36);
+          const l2Variants = [l2Raw, recoverMrzLine(l2Raw, 36, true)];
+          for (const l1 of l1Variants) {
+            for (const l2 of l2Variants) {
+              const r = parseTD2(l1, l2);
+              if (isViable(r)) return r;
+            }
+          }
           break;
         }
       }
@@ -409,12 +427,14 @@ export function parseMrz(text: string): MrzResult {
 
   // ── TD1 attempt (3 × 30) ───────────────────────────────────
   for (let i = 0; i < cleaned.length - 2; i++) {
-    if (cleaned[i].length >= 30 && cleaned[i].length < 36) {
+    if (cleaned[i].length >= 26 && cleaned[i].length < 36) {
       const m = cleaned[i].match(/[IAC][A-Z<][A-Z<]{3}/);
       if (!m || m.index === undefined) continue;
-      const l1 = cleaned[i].slice(m.index, m.index + 30);
-      const l2 = cleaned[i + 1]?.length >= 30 ? cleaned[i + 1].slice(0, 30) : null;
-      const l3 = cleaned[i + 2]?.length >= 30 ? cleaned[i + 2].slice(0, 30) : null;
+      const l1 = cleaned[i].slice(m.index).padEnd(30, '<').slice(0, 30);
+      const l2 = cleaned[i + 1]?.length >= 26
+        ? cleaned[i + 1].padEnd(30, '<').slice(0, 30) : null;
+      const l3 = cleaned[i + 2]?.length >= 26
+        ? cleaned[i + 2].padEnd(30, '<').slice(0, 30) : null;
       if (l1.length === 30 && l2 && l3) {
         const r = parseTD1(l1, l2, l3);
         if (isViable(r)) return r;
@@ -422,5 +442,7 @@ export function parseMrz(text: string): MrzResult {
     }
   }
 
+  // Suppress unused-import warning while keeping helper exported for ocr-reader.
+  void looksLikeMrzLine;
   return emptyResult();
 }

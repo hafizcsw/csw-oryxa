@@ -250,7 +250,11 @@ const PASSPORT_HIGH_SIGNAL_TEXT_PATTERNS: Array<{ pattern: RegExp; label: string
  * stray "P<X" fragments inside non-passport scans. The double-`<<` filler
  * is the cheapest reliable discriminator vs accidental OCR garbage.
  */
-const MRZ_PATTERN_RE = /^(?:P[<A-Z][A-Z<]{3}[A-Z<]*<<[A-Z<]{2,}|[IAC][<A-Z][A-Z<]{3}[A-Z0-9<]{15,})/m;
+// Filler-tolerant: accepts canonical '<<' OR OCR-mangled fillers (K{4,},
+// «{2,}, repeated [({) that Tesseract emits when reading OCR-B in camera shots.
+// Also accepts the document-type marker followed by 28+ MRZ-zone chars even
+// without the double-filler, to survive aggressive OCR mangling.
+const MRZ_PATTERN_RE = /(?:P[<A-Z][A-Z<]{3}[A-Z<]*(?:<<|K{4,}|[«\[\({]{2,})[A-Z<K«\[\({]{2,}|[PI][<A-Z][A-Z<]{3}[A-Z0-9<K«\[\({]{24,}|[IAC][<A-Z][A-Z<]{3}[A-Z0-9<]{15,})/m;
 
 /**
  * Compute passport lane strength.
