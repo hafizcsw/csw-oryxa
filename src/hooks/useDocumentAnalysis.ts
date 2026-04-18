@@ -14,7 +14,7 @@ import type {
   ProposalStatus,
 } from '@/features/documents/extraction-proposal-model';
 import { createProposal } from '@/features/documents/extraction-proposal-model';
-import { analyzeDocument, type AnalysisResult } from '@/features/documents/analysis-engine';
+import { analyzeDocument, type AnalysisResult, type EngineStageEvent } from '@/features/documents/analysis-engine';
 import type { ReadingArtifact } from '@/features/documents/reading-artifact-model';
 import type { CanonicalStudentFile } from '@/features/student-file/canonical-model';
 import type { DocumentSlotType } from '@/features/documents/document-registry-model';
@@ -52,6 +52,18 @@ export interface HydratedArtifactSurface {
   structuredArtifactSummary: PersistedStructuredArtifactSummary | null;
 }
 
+/** Live activity surface — one stage event per document, replaced as the
+ *  engine progresses. UI reads it to show "what is the engine doing right
+ *  now". Cleared automatically when the document completes/fails. */
+export interface LiveStageState {
+  documentId: string;
+  filename: string;
+  stage: EngineStageEvent['stage'];
+  detail: string | null;
+  elapsed_ms: number;
+  updated_at: number;
+}
+
 interface UseDocumentAnalysisResult {
   analyses: DocumentAnalysis[];
   proposals: ExtractionProposal[];
@@ -59,6 +71,8 @@ interface UseDocumentAnalysisResult {
   artifacts: Record<string, ReadingArtifact>;
   hydratedArtifactSurfaces: Record<string, HydratedArtifactSurface>;
   isAnalyzing: boolean;
+  /** Per-document live engine activity (stage + friendly detail). */
+  liveStages: Record<string, LiveStageState>;
   analyzeFile: (file: File, documentId: string, slotHint: DocumentSlotType | null) => Promise<AnalysisResult | null>;
   acceptProposal: (proposalId: string) => void;
   rejectProposal: (proposalId: string) => void;
@@ -111,6 +125,7 @@ export function useDocumentAnalysis({
   const [artifacts, setArtifacts] = useState<Record<string, ReadingArtifact>>({});
   const [hydratedArtifactSurfaces, setHydratedArtifactSurfaces] = useState<Record<string, HydratedArtifactSurface>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [liveStages, setLiveStages] = useState<Record<string, LiveStageState>>({});
   const analyzingCount = useRef(0);
   const fileCache = useRef(new Map<string, { file: File; slotHint: DocumentSlotType | null }>());
   /** Track manual_accepted proposals so derivation distinguishes user vs engine. */
@@ -165,6 +180,19 @@ export function useDocumentAnalysis({
         studentId,
         slotHint,
         canonicalFile,
+        onStage: (event) => {
+          setLiveStages(prev => ({
+            ...prev,
+            [documentId]: {
+              documentId,
+              filename: file.name,
+              stage: event.stage,
+              detail: event.detail ?? null,
+              elapsed_ms: event.elapsed_ms,
+              updated_at: Date.now(),
+            },
+          }));
+        },
       });
 
       setAnalyses(prev => {
@@ -215,6 +243,15 @@ export function useDocumentAnalysis({
     } finally {
       analyzingCount.current--;
       if (analyzingCount.current === 0) setIsAnalyzing(false);
+      // Auto-clear the live stage after a short grace so the "completed"
+      // line stays visible briefly, then disappears.
+      window.setTimeout(() => {
+        setLiveStages(prev => {
+          const next = { ...prev };
+          delete next[documentId];
+          return next;
+        });
+      }, 4500);
     }
   }, [studentId, canonicalFile]);
 
@@ -430,6 +467,7 @@ export function useDocumentAnalysis({
     artifacts,
     hydratedArtifactSurfaces,
     isAnalyzing,
+    liveStages,
     analyzeFile,
     reanalyzeFile,
     acceptProposal,

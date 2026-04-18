@@ -39,6 +39,28 @@ import { resolveStructuredArtifact } from './document-ai/resolver';
 import type { DocumentAIMode } from './document-ai/document-ai-provider';
 import { buildPassportOutput, type PassportOutput } from './passport-output-schema';
 
+/** Live engine activity stage. Emitted via `onStage` callback so the UI
+ *  can show students what the engine is actually doing right now. */
+export type EngineStage =
+  | 'reading'           // opening + extracting text from the file
+  | 'ocr'               // running OCR (image/scan)
+  | 'classifying'       // detecting document type
+  | 'mrz'               // parsing the passport MRZ zone
+  | 'extracting'        // pulling fields (name, dates, GPA, …)
+  | 'transcript_rows'   // parsing transcript subject rows
+  | 'building_proposals'// creating field proposals + promotion rules
+  | 'completed'         // ✅ done
+  | 'failed';           // ✗ failed
+
+export interface EngineStageEvent {
+  stage: EngineStage;
+  /** Optional human detail (e.g. "page 2/4", "MRZ TD3 line 1"). Always
+   *  parser-side English; the UI maps the stage to a translated label. */
+  detail?: string | null;
+  /** Monotonic ms since analyzeDocument() started. */
+  elapsed_ms: number;
+}
+
 export interface AnalysisResult {
   analysis: DocumentAnalysis;
   proposals: ExtractionProposal[];
@@ -86,12 +108,24 @@ export async function analyzeDocument(params: {
   /** Storage path inside `documents` bucket. Required to attempt the
    *  paddle_self_hosted provider; null/undefined disables it cleanly. */
   storagePath?: string | null;
+  /** Live activity callback. Optional — silent if omitted. Use it to drive
+   *  a "what is the engine doing right now" strip in the UI. */
+  onStage?: (event: EngineStageEvent) => void;
 }): Promise<AnalysisResult> {
-  const { file, documentId, studentId, slotHint, canonicalFile, storagePath } = params;
+  const { file, documentId, studentId, slotHint, canonicalFile, storagePath, onStage } = params;
   const analysis = createPendingAnalysis(documentId, slotHint);
   const proposals: ExtractionProposal[] = [];
   const startTime = performance.now();
   let passport_output: PassportOutput | null = null;
+
+  const emit = (stage: EngineStage, detail: string | null = null) => {
+    if (!onStage) return;
+    try {
+      onStage({ stage, detail, elapsed_ms: Math.round(performance.now() - startTime) });
+    } catch {
+      // never let UI callbacks break the pipeline
+    }
+  };
 
   // Default diagnostic envelope (mutated when paddle is attempted)
   let document_ai_mode: DocumentAIMode = 'browser_heuristic';
@@ -105,7 +139,11 @@ export async function analyzeDocument(params: {
 
   // ── Step 1: Read the document via the reading contract ───
   analysis.analysis_status = 'analyzing';
+  emit('reading', `${file.name} · ${(file.size / 1024).toFixed(0)} KB`);
   const artifact = await readDocumentArtifact(file);
+  if (artifact.parser_used === 'tesseract_ocr' || artifact.parser_used === 'pdfjs_render_ocr') {
+    emit('ocr', `${artifact.pages_processed}/${artifact.total_page_count} pages`);
+  }
 
   // Mirror reading verdict onto analysis surface
   if (artifact.parser_used === 'pdfjs_text') {
@@ -131,6 +169,7 @@ export async function analyzeDocument(params: {
       artifact.failure_detail ? `Detail: ${artifact.failure_detail}` : null,
     ].filter(Boolean).join(' | ');
     analysis.updated_at = new Date().toISOString();
+    emit('failed', artifact.failure_reason ?? 'unreadable');
     logArtifact(artifact, analysis);
     const fallbackArtifact = buildStructuredBrowserArtifact(artifact);
     return {
@@ -193,6 +232,7 @@ export async function analyzeDocument(params: {
 
   try {
     // ── Step 2: Classify ─────────────────────────────────────
+    emit('classifying', `${artifact.full_text.length} chars`);
     const textContent = artifact.full_text;
     const classification = classifyDocument({
       fileName: file.name,
@@ -202,6 +242,7 @@ export async function analyzeDocument(params: {
 
     analysis.classification_result = classification.best;
     analysis.classification_confidence = classification.confidence;
+    emit('classifying', `${classification.best} · ${(classification.confidence * 100).toFixed(0)}%`);
 
     // ── Step 3: Extract fields based on classification ─────
     let extractedFields: Record<string, ExtractedField> = {};
@@ -213,6 +254,7 @@ export async function analyzeDocument(params: {
     if (classification.best === 'passport') {
       // [DIAG-MRZ] log the raw text the parser is about to chew on
       console.log('[DIAG-MRZ] textContent length:', textContent?.length, 'first 800 chars:\n' + (textContent || '').slice(0, 800));
+      emit('mrz', 'scanning MRZ zone');
       const mrzResult = parseMrz(textContent);
       mrzFound = mrzResult.found;
       console.log('[DIAG-MRZ] parseMrz result:', {
@@ -227,6 +269,8 @@ export async function analyzeDocument(params: {
       });
       if (mrzResult.found) {
         // Strong evidence path: MRZ is the primary truth source.
+        emit('mrz', `${mrzResult.format} · checksum ${mrzResult.checksum_verified ? '✓' : '✗'}`);
+        emit('extracting', 'passport identity');
         extractedFields = extractPassportFields(mrzResult);
         analysis.parser_type = 'mrz';
 
@@ -266,11 +310,13 @@ export async function analyzeDocument(params: {
         extractedFields = {};
       }
     } else if (classification.best === 'graduation_certificate') {
+      emit('extracting', 'graduation fields');
       extractedFields = extractGraduationFields(textContent);
     } else if (classification.best === 'transcript') {
       // Order 2: structured parser + truthful partial intermediate.
       // BrowserDocAI: pass structured artifact so transcript lane can recover
       // tabular row_candidates the line-by-line regex pass missed.
+      emit('transcript_rows', 'parsing subjects');
       const result = parseTranscript(textContent, structured_artifact);
       transcriptIntermediate = result.intermediate;
       extractedFields = result.header_fields;
@@ -282,6 +328,7 @@ export async function analyzeDocument(params: {
         final_rows: transcriptIntermediate.rows.length,
       }, null, 2));
     } else if (classification.best === 'language_certificate') {
+      emit('extracting', 'language test fields');
       extractedFields = extractLanguageCertFields(textContent);
     }
 
@@ -312,6 +359,7 @@ export async function analyzeDocument(params: {
     }
 
     // ── Step 5: Build proposals ──────────────────────────────
+    emit('building_proposals', `${Object.keys(extractedFields).length} fields`);
     const sourceLane:
       | 'passport' | 'transcript' | 'graduation' | 'language' | 'unknown' =
         classification.best === 'passport' ? 'passport'
@@ -445,10 +493,12 @@ export async function analyzeDocument(params: {
 
     analysis.analysis_status = 'completed';
     analysis.updated_at = new Date().toISOString();
+    emit('completed', `${analysis.classification_result ?? 'unknown'} · ${Object.keys(analysis.extracted_fields).length} fields`);
   } catch (err) {
     analysis.analysis_status = 'failed';
     analysis.rejection_reason = err instanceof Error ? err.message : 'Analysis failed';
     analysis.updated_at = new Date().toISOString();
+    emit('failed', analysis.rejection_reason);
   }
 
   logArtifact(artifact, analysis);

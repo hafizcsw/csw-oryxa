@@ -1523,6 +1523,20 @@
         "pending_review": "بانتظار المراجعة",
         "rejected": "مرفوض",
         "superseded": "مُستبدل"
+      },
+      "engine": {
+        "title": "نشاط المحرك — ما الذي يحدث الآن",
+        "stage": {
+          "reading": "قراءة الملف",
+          "ocr": "تشغيل التعرّف الضوئي",
+          "classifying": "تصنيف المستند",
+          "mrz": "قراءة منطقة MRZ في الجواز",
+          "extracting": "استخراج الحقول",
+          "transcript_rows": "تحليل صفوف كشف الدرجات",
+          "building_proposals": "بناء المقترحات",
+          "completed": "اكتمل",
+          "failed": "فشل"
+        }
       }
     },
     "nav": {

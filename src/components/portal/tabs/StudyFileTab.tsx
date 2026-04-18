@@ -8,6 +8,7 @@ import { CentralUploadHub } from "@/components/documents/CentralUploadHub";
 import { LiveProfileAssembly } from "@/components/documents/LiveProfileAssembly";
 import { SaveDocumentsBar } from "@/components/documents/SaveDocumentsBar";
 import { DocumentAnalysisPanel } from "@/components/documents/DocumentAnalysisPanel";
+import { EngineActivityStrip } from "@/components/documents/EngineActivityStrip";
 import { AcademicTruthPanel } from "@/components/decision/AcademicTruthPanel";
 import { DecisionPanel } from "@/components/decision/DecisionPanel";
 import { Separator } from "@/components/ui/separator";
@@ -423,6 +424,9 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           issuesByDocId={issuesByDocId}
         />
       </section>
+
+      {/* ═══ Live engine activity — what is the engine doing right now ═══ */}
+      <EngineActivityStrip liveStages={analysisHook.liveStages} />
 
       {/* ═══ Live Profile Assembly (lower experience) ═══ */}
       <LiveProfileAssembly
