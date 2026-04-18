@@ -243,6 +243,15 @@ export function useDocumentAnalysis({
     } finally {
       analyzingCount.current--;
       if (analyzingCount.current === 0) setIsAnalyzing(false);
+      // Auto-clear the live stage after a short grace so the "completed"
+      // line stays visible briefly, then disappears.
+      window.setTimeout(() => {
+        setLiveStages(prev => {
+          const next = { ...prev };
+          delete next[documentId];
+          return next;
+        });
+      }, 4500);
     }
   }, [studentId, canonicalFile]);
 
