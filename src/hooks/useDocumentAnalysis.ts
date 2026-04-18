@@ -132,7 +132,11 @@ export function useDocumentAnalysis({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [liveStages, setLiveStages] = useState<Record<string, LiveStageState>>({});
   const analyzingCount = useRef(0);
-  const fileCache = useRef(new Map<string, { file: File; slotHint: DocumentSlotType | null }>());
+  const fileCache = useRef(new Map<string, {
+    file: File;
+    slotHint: DocumentSlotType | null;
+    storagePath: string | null;
+  }>());
   /** Track manual_accepted proposals so derivation distinguishes user vs engine. */
   const manualAcceptedRef = useRef<Set<string>>(new Set());
   const hydratedFor = useRef<string | null>(null);
@@ -174,7 +178,7 @@ export function useDocumentAnalysis({
   ): Promise<AnalysisResult | null> => {
     if (!studentId) return null;
 
-    fileCache.current.set(documentId, { file, slotHint });
+      fileCache.current.set(documentId, { file, slotHint, storagePath });
 
     analyzingCount.current++;
     setIsAnalyzing(true);
@@ -270,7 +274,7 @@ export function useDocumentAnalysis({
     }
     setPromotedFields(prev => prev.filter(pf => pf.documentId !== documentId));
     setProposals(prev => prev.filter(p => p.document_id !== documentId));
-    return analyzeFile(cached.file, documentId, cached.slotHint);
+    return analyzeFile(cached.file, documentId, cached.slotHint, cached.storagePath);
   }, [analyzeFile]);
 
   const acceptProposal = useCallback((proposalId: string) => {
