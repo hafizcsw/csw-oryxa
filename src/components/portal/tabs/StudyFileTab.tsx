@@ -425,6 +425,9 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         />
       </section>
 
+      {/* ═══ Live engine activity — what is the engine doing right now ═══ */}
+      <EngineActivityStrip liveStages={analysisHook.liveStages} />
+
       {/* ═══ Live Profile Assembly (lower experience) ═══ */}
       <LiveProfileAssembly
         records={registry.records}
