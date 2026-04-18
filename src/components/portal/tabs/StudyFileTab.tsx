@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useRef, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
 import { CanonicalFileSummary } from "@/components/student-file/CanonicalFileSummary";
-import { StudentFileAssembly } from "@/components/documents/StudentFileAssembly";
+import { CentralUploadHub } from "@/components/documents/CentralUploadHub";
 import { DocumentAnalysisPanel } from "@/components/documents/DocumentAnalysisPanel";
 import { AcademicTruthPanel } from "@/components/decision/AcademicTruthPanel";
 import { DecisionPanel } from "@/components/decision/DecisionPanel";
@@ -218,12 +218,17 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
 
       <Separator />
 
-      {/* ═══ Door 2: Student File Assembly (pipeline-honest experience) ═══ */}
+      {/* ═══ Door 2: Central Upload Hub ═══ */}
       <section>
-        <h2 className="text-base font-semibold text-foreground mb-3">{t('portal.assembly.title')}</h2>
-        <StudentFileAssembly
-          studentId={profile?.user_id ?? null}
+        <h2 className="text-base font-semibold text-foreground mb-3">{t('portal.uploadHub.title')}</h2>
+        <CentralUploadHub
+          records={registry.records}
+          isUploading={registry.isUploading}
           disabled={crmProfile?.docs_locked}
+          onFilesSelected={handleFilesSelected}
+          onCancel={registry.cancelRecord}
+          onDismiss={registry.dismissRecord}
+          onClearCompleted={registry.clearCompleted}
         />
       </section>
 

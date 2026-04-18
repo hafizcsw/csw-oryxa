@@ -1,12 +1,12 @@
 // ═══════════════════════════════════════════════════════════════
-// analyze-document — Lovable AI document classifier + field extractor
+// analyze-document — Lovable AI document classifier + quality check
 // ═══════════════════════════════════════════════════════════════
-// Returns:
-//   - document_type, document_type_label
-//   - quality, quality_score, confidence, is_relevant
-//   - warnings[], summary, detected_fields[]
-//   - extracted_fields[] : per-field { path, label, value, confidence, status }
-//     status ∈ accepted | pending_review | unresolved
+// Input:  { file_name: string, mime_type: string, base64: string }
+// Output: { document_type, document_type_label, quality, quality_score,
+//           confidence, detected_fields[], warnings[], is_relevant,
+//           summary }
+// Uses Lovable AI Gateway (google/gemini-2.5-flash) with tool calling
+// for structured extraction. Vision is enabled — accepts images + PDF.
 // ═══════════════════════════════════════════════════════════════
 
 const corsHeaders = {
@@ -16,62 +16,49 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const SYSTEM_PROMPT = `You are a strict student-file document classifier and field extractor for a university applications portal.
-
-SCOPE LOCK — only these document types matter for v1:
-  passport, transcript, high_school_certificate, university_degree (graduation),
-  ielts, toefl, duolingo, other_language_certificate.
-Anything else → mark is_relevant=false OR set document_type=unsupported_in_v1.
+const SYSTEM_PROMPT = `You are a strict student-file document classifier for an international university applications portal.
 
 Look at the uploaded file (image or PDF page) and decide:
 
 1) document_type — one of:
-   passport, transcript, high_school_certificate, university_degree,
+   passport, national_id, birth_certificate, personal_photo,
+   high_school_certificate, university_degree, transcript,
    ielts, toefl, duolingo, other_language_certificate,
-   unknown, not_a_document, unsupported_in_v1
+   recommendation_letter, motivation_letter, cv_resume,
+   financial_proof, medical_document, work_experience,
+   unknown, not_a_document
 
-2) quality — excellent | good | acceptable | poor | unreadable
+2) quality — one of: excellent, good, acceptable, poor, unreadable
+   - excellent: sharp, full document, all fields readable, no glare
+   - good: clearly readable, minor issues
+   - acceptable: usable but cropped/tilted/low light
+   - poor: hard to read, missing parts, blurry — should be re-uploaded
+   - unreadable: cannot extract any meaningful info
 
-3) is_relevant — false for selfies, memes, screenshots, blank pages, unrelated docs.
+3) is_relevant — true if it belongs in a student application file, false otherwise (selfie, meme, screenshot of unrelated app, blank page).
 
-4) extracted_fields — an array. ONLY include a field if you can actually see it in the document.
-   For each, return: { path, label, value (string), confidence (0..1), status }.
-   status MUST follow these rules HONESTLY:
-     - "accepted"        : confidence >= 0.9 AND value clearly readable AND no ambiguity
-     - "pending_review"  : confidence 0.5..0.9 OR partially readable / cropped / handwritten
-     - "unresolved"      : you tried but cannot extract reliably (still emit the field with empty value and unresolved status)
+4) detected_fields — short list of meaningful fields you actually saw, e.g.
+   ["full name", "passport number", "expiry date", "issuing country"].
 
-   Field paths per document_type:
-     passport →
-       passport_name, passport_number, citizenship,
-       date_of_birth, gender, passport_expiry_date, passport_issuing_country
-     transcript →
-       student_name, institution_name, gpa_or_average, grading_scale,
-       graduation_or_completion_date, subject_count
-     high_school_certificate / university_degree →
-       student_name, institution_name, degree_or_certificate_name,
-       graduation_date, final_grade
-     ielts / toefl / duolingo / other_language_certificate →
-       candidate_name, english_test_type, english_total_score,
-       test_date, expiry_date, sub_scores (string summary if present)
+5) warnings — short human-readable warnings in the SAME LANGUAGE as the user prompt locale (default English) for any of:
+   - low quality / blurry
+   - irrelevant document
+   - expired document if visible
+   - missing fields
+   - duplicate / partial scan
+   - wrong document for student file
 
-5) detected_fields — short labels of what you actually saw (used for chips).
+6) summary — one short sentence in the same locale, e.g.
+   "Passport detected, all key fields readable."
 
-6) warnings — short human-readable in the requested locale, for any of:
-   low_ocr_quality, expired_document, missing_fields,
-   classification_uncertain, conflict_with_existing_truth, partial_scan,
-   unsupported_in_v1, irrelevant_document
-
-7) summary — one short sentence in the requested locale.
-
-NEVER invent values. If a field is not visible, either omit it OR include with empty value + status=unresolved.`;
+Be honest. Do NOT invent fields you cannot see. If unsure, say unknown and add a warning.`;
 
 const TOOL = {
   type: "function",
   function: {
     name: "report_document_analysis",
     description:
-      "Return the structured classification + extraction of the uploaded student-file document.",
+      "Return the structured classification of the uploaded student-file document.",
     parameters: {
       type: "object",
       properties: {
@@ -79,47 +66,53 @@ const TOOL = {
           type: "string",
           enum: [
             "passport",
-            "transcript",
+            "national_id",
+            "birth_certificate",
+            "personal_photo",
             "high_school_certificate",
             "university_degree",
+            "transcript",
             "ielts",
             "toefl",
             "duolingo",
             "other_language_certificate",
+            "recommendation_letter",
+            "motivation_letter",
+            "cv_resume",
+            "financial_proof",
+            "medical_document",
+            "work_experience",
             "unknown",
             "not_a_document",
-            "unsupported_in_v1",
           ],
         },
-        document_type_label: { type: "string" },
+        document_type_label: {
+          type: "string",
+          description:
+            "Human-readable label of the document type, in the requested locale.",
+        },
         quality: {
           type: "string",
           enum: ["excellent", "good", "acceptable", "poor", "unreadable"],
         },
-        quality_score: { type: "number" },
-        confidence: { type: "number" },
-        is_relevant: { type: "boolean" },
-        detected_fields: { type: "array", items: { type: "string" } },
-        warnings: { type: "array", items: { type: "string" } },
-        summary: { type: "string" },
-        extracted_fields: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              path: { type: "string" },
-              label: { type: "string" },
-              value: { type: "string" },
-              confidence: { type: "number" },
-              status: {
-                type: "string",
-                enum: ["accepted", "pending_review", "unresolved"],
-              },
-            },
-            required: ["path", "label", "value", "confidence", "status"],
-            additionalProperties: false,
-          },
+        quality_score: {
+          type: "number",
+          description: "0..100 quality score.",
         },
+        confidence: {
+          type: "number",
+          description: "0..1 confidence in document_type.",
+        },
+        is_relevant: { type: "boolean" },
+        detected_fields: {
+          type: "array",
+          items: { type: "string" },
+        },
+        warnings: {
+          type: "array",
+          items: { type: "string" },
+        },
+        summary: { type: "string" },
       },
       required: [
         "document_type",
@@ -131,7 +124,6 @@ const TOOL = {
         "detected_fields",
         "warnings",
         "summary",
-        "extracted_fields",
       ],
       additionalProperties: false,
     },
@@ -174,11 +166,16 @@ Deno.serve(async (req) => {
 
     if (!base64 || !mime_type || !file_name) {
       return new Response(
-        JSON.stringify({ error: "file_name, mime_type and base64 are required" }),
+        JSON.stringify({
+          error: "file_name, mime_type and base64 are required",
+        }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
+    // Vision input — Lovable AI accepts data URLs for images.
+    // For non-image MIME types (PDF/Word), we still pass the file name + a hint;
+    // Gemini multimodal can read PDF as image_url with the right MIME.
     const isVisual =
       mime_type.startsWith("image/") || mime_type === "application/pdf";
 
@@ -188,9 +185,8 @@ Deno.serve(async (req) => {
         text:
           `File name: ${file_name}\n` +
           `MIME: ${mime_type}\n` +
-          `Locale: ${locale}\n\n` +
-          `Classify this file AND extract the per-field truth via the tool. ` +
-          `Honest statuses only.`,
+          `Locale for warnings/labels: ${locale}\n\n` +
+          `Classify this file as a student-application document and return the structured result via the tool.`,
       },
     ];
 
@@ -226,14 +222,16 @@ Deno.serve(async (req) => {
 
     if (!aiResp.ok) {
       if (aiResp.status === 429) {
-        return new Response(JSON.stringify({ error: "rate_limited" }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({ error: "rate_limited" }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
       }
       if (aiResp.status === 402) {
-        return new Response(JSON.stringify({ error: "payment_required" }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({ error: "payment_required" }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
       }
       const txt = await aiResp.text();
       console.error("AI gateway error:", aiResp.status, txt);
@@ -249,7 +247,11 @@ Deno.serve(async (req) => {
 
     let parsed: Record<string, unknown> | null = null;
     if (typeof args === "string") {
-      try { parsed = JSON.parse(args); } catch { parsed = null; }
+      try {
+        parsed = JSON.parse(args);
+      } catch (_e) {
+        parsed = null;
+      }
     } else if (args && typeof args === "object") {
       parsed = args as Record<string, unknown>;
     }
