@@ -14,7 +14,7 @@ import type {
   ProposalStatus,
 } from '@/features/documents/extraction-proposal-model';
 import { createProposal } from '@/features/documents/extraction-proposal-model';
-import { analyzeDocument, type AnalysisResult } from '@/features/documents/analysis-engine';
+import { analyzeDocument, type AnalysisResult, type EngineStageEvent } from '@/features/documents/analysis-engine';
 import type { ReadingArtifact } from '@/features/documents/reading-artifact-model';
 import type { CanonicalStudentFile } from '@/features/student-file/canonical-model';
 import type { DocumentSlotType } from '@/features/documents/document-registry-model';
