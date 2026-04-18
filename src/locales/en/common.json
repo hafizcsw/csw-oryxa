@@ -2203,7 +2203,13 @@
         "needs_review": "Needs Review",
         "needs_review_desc": "Documents whose lane could not be resolved automatically.",
         "doc_count": "{{count}} documents",
-        "waiting": "Waiting for a matching document…"
+        "waiting": "Waiting for a matching document…",
+        "delete_one": "Delete this file",
+        "delete_all": "Delete all",
+        "confirm_delete_one": "Permanently delete this file?",
+        "confirm_delete_all": "{{count}} file(s) will be permanently deleted. Continue?",
+        "delete_failed": "Failed to delete file",
+        "delete_done": "Deleted: {{ok}} ok / {{fail}} failed"
       },
       "header": {
         "lane": "Lane",

@@ -35,6 +35,10 @@ interface LiveProfileAssemblyProps {
   promotedFields: PromotedField[];
   subjectRows: SubjectRow[];
   previewUrls: Record<string, string | null>;
+  /** Delete a single CRM file (by file_id) and refresh */
+  onDeleteDoc?: (crmFileId: string) => Promise<boolean>;
+  /** Bulk-delete multiple CRM files */
+  onDeleteAll?: (crmFileIds: string[]) => Promise<void>;
 }
 
 interface QueueEntry {
@@ -53,6 +57,8 @@ export function LiveProfileAssembly({
   promotedFields,
   subjectRows,
   previewUrls,
+  onDeleteDoc,
+  onDeleteAll,
 }: LiveProfileAssemblyProps) {
   const { t } = useLanguage();
 
@@ -149,6 +155,7 @@ export function LiveProfileAssembly({
       );
       buckets[lane].push({
         documentId: a.document_id,
+        crmFileId: rec?.crm_file_id ?? a.document_id,
         filename,
         previewUrl: previewUrls[a.document_id] ?? null,
         analysis: a,
@@ -167,6 +174,7 @@ export function LiveProfileAssembly({
       // Treat as needs_review minimally — no analysis data
       buckets.needs_review.push({
         documentId: docId,
+        crmFileId: docId,
         filename: surface.documentFilename ?? docId,
         previewUrl: previewUrls[docId] ?? null,
         analysis: null,
@@ -217,12 +225,18 @@ export function LiveProfileAssembly({
       </header>
 
       {/* Needs Review zone is visually first per plan */}
-      <AssemblyLane lane="needs_review" docs={byLane.needs_review} promotedFields={promotedFields} />
+      <AssemblyLane
+        lane="needs_review"
+        docs={byLane.needs_review}
+        promotedFields={promotedFields}
+        onDeleteDoc={onDeleteDoc}
+        onDeleteAll={onDeleteAll}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <AssemblyLane lane="identity" docs={byLane.identity} promotedFields={promotedFields} />
-        <AssemblyLane lane="academic" docs={byLane.academic} promotedFields={promotedFields} />
-        <AssemblyLane lane="language" docs={byLane.language} promotedFields={promotedFields} />
+        <AssemblyLane lane="identity" docs={byLane.identity} promotedFields={promotedFields} onDeleteDoc={onDeleteDoc} />
+        <AssemblyLane lane="academic" docs={byLane.academic} promotedFields={promotedFields} onDeleteDoc={onDeleteDoc} />
+        <AssemblyLane lane="language" docs={byLane.language} promotedFields={promotedFields} onDeleteDoc={onDeleteDoc} />
       </div>
     </section>
   );

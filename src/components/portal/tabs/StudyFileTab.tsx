@@ -1,5 +1,7 @@
 import { lazy, Suspense, useCallback, useRef, useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useToast } from "@/hooks/use-toast";
+import { deleteFile } from "@/api/crmStorage";
 import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
 import { CanonicalFileSummary } from "@/components/student-file/CanonicalFileSummary";
 import { CentralUploadHub } from "@/components/documents/CentralUploadHub";
@@ -198,6 +200,41 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     await refetchDocs({ silent: true });
   }, [guard, refetchDocs]);
 
+  const { toast } = useToast();
+
+  const handleDeleteDoc = useCallback(async (crmFileId: string): Promise<boolean> => {
+    const res = await deleteFile(crmFileId);
+    if (!res.ok) {
+      console.error('[StudyFileTab] delete failed', res.error);
+      toast({
+        title: t('portal.assembly.lane.delete_failed'),
+        description: res.error ?? '',
+        variant: 'destructive',
+      });
+      return false;
+    }
+    guard.untrackDocument(crmFileId);
+    await refetchDocs({ silent: true });
+    return true;
+  }, [guard, refetchDocs, t, toast]);
+
+  const handleDeleteAll = useCallback(async (crmFileIds: string[]) => {
+    const results = await Promise.allSettled(crmFileIds.map(id => deleteFile(id)));
+    let ok = 0; let fail = 0;
+    results.forEach((r, i) => {
+      if (r.status === 'fulfilled' && r.value.ok) {
+        ok++;
+        guard.untrackDocument(crmFileIds[i]);
+      } else {
+        fail++;
+      }
+    });
+    toast({
+      title: t('portal.assembly.lane.delete_done', { ok, fail }),
+    });
+    await refetchDocs({ silent: true });
+  }, [guard, refetchDocs, t, toast]);
+
   const handleFilesSelected = useCallback((files: File[]) => {
     for (const file of files) {
       const key = uniqueFileKey(file);
@@ -253,6 +290,8 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         promotedFields={analysisHook.promotedFields}
         subjectRows={academicTruthHook.subjectRows}
         previewUrls={previewUrls}
+        onDeleteDoc={handleDeleteDoc}
+        onDeleteAll={handleDeleteAll}
       />
 
       {/* ═══ Save bar: shows only when there are unsaved uploads ═══ */}

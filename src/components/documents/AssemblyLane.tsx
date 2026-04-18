@@ -6,9 +6,11 @@
 // empty-state on failure / needs-review reason).
 // ═══════════════════════════════════════════════════════════════
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Trash2, Loader2 } from 'lucide-react';
 import type { ReadingArtifact } from '@/features/documents/reading-artifact-model';
 import type { DocumentAnalysis } from '@/features/documents/document-analysis-model';
 import type { ExtractionProposal } from '@/features/documents/extraction-proposal-model';
@@ -29,6 +31,8 @@ import { AssemblyFieldRow, type FieldStatus } from './AssemblyFieldRow';
 
 export interface LaneDoc {
   documentId: string;
+  /** CRM file_id used to actually delete the file from storage */
+  crmFileId?: string | null;
   filename: string;
   previewUrl?: string | null;
   analysis: DocumentAnalysis | null;
@@ -44,6 +48,10 @@ interface AssemblyLaneProps {
   lane: DestinationLane;
   docs: LaneDoc[];
   promotedFields: PromotedField[];
+  /** Delete a single document by its CRM file_id */
+  onDeleteDoc?: (crmFileId: string) => Promise<boolean>;
+  /** Bulk-delete all docs in this lane */
+  onDeleteAll?: (crmFileIds: string[]) => Promise<void>;
 }
 
 const LANE_CONFIG: Record<DestinationLane, { titleKey: string; descKey: string; tone: string }> = {
@@ -53,10 +61,28 @@ const LANE_CONFIG: Record<DestinationLane, { titleKey: string; descKey: string; 
   needs_review: { titleKey: 'portal.assembly.lane.needs_review', descKey: 'portal.assembly.lane.needs_review_desc', tone: 'border-amber-500/30' },
 };
 
-export function AssemblyLane({ lane, docs, promotedFields }: AssemblyLaneProps) {
+export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDeleteAll }: AssemblyLaneProps) {
   const { t } = useLanguage();
   const cfg = LANE_CONFIG[lane];
   const isEmpty = docs.length === 0;
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const deletableIds = useMemo(
+    () => docs.map(d => d.crmFileId).filter((x): x is string => !!x),
+    [docs],
+  );
+
+  const handleBulkDelete = async () => {
+    if (!onDeleteAll || deletableIds.length === 0 || bulkDeleting) return;
+    const confirmMsg = t('portal.assembly.lane.confirm_delete_all', { count: deletableIds.length });
+    if (!window.confirm(confirmMsg)) return;
+    setBulkDeleting(true);
+    try {
+      await onDeleteAll(deletableIds);
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
 
   return (
     <section
@@ -67,13 +93,27 @@ export function AssemblyLane({ lane, docs, promotedFields }: AssemblyLaneProps) 
       )}
       data-assembly-lane={lane}
     >
-      <header className="flex items-baseline justify-between mb-3">
-        <div>
+      <header className="flex items-baseline justify-between mb-3 gap-2">
+        <div className="min-w-0">
           <h3 className="text-sm font-semibold text-foreground">{t(cfg.titleKey)}</h3>
           <p className="text-xs text-muted-foreground">{t(cfg.descKey)}</p>
         </div>
-        <div className="text-[11px] text-muted-foreground">
-          {t('portal.assembly.lane.doc_count', { count: docs.length })}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[11px] text-muted-foreground">
+            {t('portal.assembly.lane.doc_count', { count: docs.length })}
+          </span>
+          {lane === 'needs_review' && deletableIds.length > 0 && onDeleteAll && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 px-2 text-[11px] text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+            >
+              {bulkDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+              <span className="ms-1">{t('portal.assembly.lane.delete_all')}</span>
+            </Button>
+          )}
         </div>
       </header>
 
@@ -84,7 +124,13 @@ export function AssemblyLane({ lane, docs, promotedFields }: AssemblyLaneProps) 
       ) : (
         <div className="space-y-4">
           {docs.map((doc) => (
-            <DocBlock key={doc.documentId} lane={lane} doc={doc} promotedFields={promotedFields} />
+            <DocBlock
+              key={doc.documentId}
+              lane={lane}
+              doc={doc}
+              promotedFields={promotedFields}
+              onDeleteDoc={onDeleteDoc}
+            />
           ))}
         </div>
       )}
@@ -96,12 +142,40 @@ function DocBlock({
   lane,
   doc,
   promotedFields,
+  onDeleteDoc,
 }: {
   lane: DestinationLane;
   doc: LaneDoc;
   promotedFields: PromotedField[];
+  onDeleteDoc?: (crmFileId: string) => Promise<boolean>;
 }) {
   const { t } = useLanguage();
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!onDeleteDoc || !doc.crmFileId || deleting) return;
+    if (!window.confirm(t('portal.assembly.lane.confirm_delete_one'))) return;
+    setDeleting(true);
+    try {
+      await onDeleteDoc(doc.crmFileId);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const DeleteBtn = onDeleteDoc && doc.crmFileId ? (
+    <Button
+      size="icon"
+      variant="ghost"
+      className="h-7 w-7 ms-auto text-destructive hover:text-destructive hover:bg-destructive/10"
+      onClick={handleDelete}
+      disabled={deleting}
+      aria-label={t('portal.assembly.lane.delete_one')}
+      title={t('portal.assembly.lane.delete_one')}
+    >
+      {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+    </Button>
+  ) : null;
 
   const proposalByKey = useMemo(() => {
     const m = new Map<string, ExtractionProposal>();
@@ -182,12 +256,13 @@ function DocBlock({
   // Lane assignment for needs_review
   if (lane === 'needs_review') {
     return (
-      <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-2">
+      <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3 space-y-2">
         <div className="flex items-center gap-2">
           <AssemblyDocChip filename={doc.filename} previewUrl={doc.previewUrl} />
-          <span className="text-[10px] uppercase tracking-wide text-amber-700 font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">
+          <span className="text-[10px] uppercase tracking-wide text-destructive font-semibold px-1.5 py-0.5 rounded bg-destructive/10 border border-destructive/30">
             {t(`portal.assembly.route_reason.${doc.routeReason ?? 'classification_uncertain'}`)}
           </span>
+          {DeleteBtn}
         </div>
         <DocAssemblyHeader
           destinationLane={lane}
@@ -203,6 +278,7 @@ function DocBlock({
     <div className="rounded-lg border border-border/60 bg-background/60 p-3 space-y-3">
       <div className="flex items-center gap-2">
         <AssemblyDocChip filename={doc.filename} previewUrl={doc.previewUrl} />
+        {DeleteBtn}
       </div>
 
       <DocAssemblyHeader
@@ -281,7 +357,7 @@ function MetricPill({ labelKey, count, tone = 'neutral' }: { labelKey: string; c
       className={cn(
         'inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border',
         tone === 'warn' && count > 0
-          ? 'border-amber-500/30 bg-amber-500/10 text-amber-700'
+          ? 'border-destructive/30 bg-destructive/10 text-destructive'
           : 'border-border bg-card text-foreground/80',
       )}
     >
@@ -315,7 +391,7 @@ function SubjectRowLine({ row, animate, delay }: { row: SubjectRow; animate: boo
 }
 
 // Tiny hook to avoid useState/useEffect repetition
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 function useReveal(animate: boolean, delay: number): [boolean, (b: boolean) => void] {
   const [shown, setShown] = useState(!animate);
   useEffect(() => {
