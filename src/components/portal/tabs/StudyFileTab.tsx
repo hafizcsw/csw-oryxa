@@ -317,9 +317,17 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     registry.enqueueFiles(filesToUpload, 'upload_hub');
   }, [registry, documents, analysisHook.analyses, analysisHook.hydratedArtifactSurfaces, handleDeleteDoc, refetchDocs]);
 
-  // If a newly analyzed upload resolves to passport after the fact
-  // (e.g. filename did not contain "passport"), keep only the newest one.
+  // ⛔ TEMPORARILY DISABLED — auto-passport-cleanup is paused while we
+  // collect runtime proof of the Paddle cutover. It was deleting real
+  // passports / certificates whenever classification mis-fired or the
+  // multi-document ownership bug duplicated rows. Re-enable only after:
+  //   1) Single-file Paddle proof is captured (passport alone, then
+  //      certificate alone).
+  //   2) Multi-document ownership bug is closed separately.
+  // Do NOT remove this guard without an explicit go-ahead.
   useEffect(() => {
+    return; // hard disable — keep the rest as reference for re-enabling
+    // eslint-disable-next-line no-unreachable
     const passportDocs = analysisHook.analyses
       .filter(a => a.analysis_status === 'completed' && a.classification_result === 'passport')
       .map(a => {
