@@ -169,6 +169,7 @@ export async function analyzeDocument(params: {
       artifact.failure_detail ? `Detail: ${artifact.failure_detail}` : null,
     ].filter(Boolean).join(' | ');
     analysis.updated_at = new Date().toISOString();
+    emit('failed', artifact.failure_reason ?? 'unreadable');
     logArtifact(artifact, analysis);
     const fallbackArtifact = buildStructuredBrowserArtifact(artifact);
     return {
