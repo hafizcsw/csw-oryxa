@@ -51,7 +51,7 @@ export async function runFoundation(input: FoundationInput): Promise<FoundationO
       document_id,
       route_family: 'unknown_document' as const,
       route_confidence: 0,
-      route_reasons: ['privacy_violation_blocked', guarded.reason],
+      route_reasons: ['privacy_violation_blocked', guarded.ok === false ? guarded.reason : ''],
       selected_lane: 'review_lane' as const,
       is_async: false,
       requires_review: true,
