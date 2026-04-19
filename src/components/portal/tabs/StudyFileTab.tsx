@@ -500,7 +500,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           disabled={crmProfile?.docs_locked}
           onFilesSelected={handleFilesSelected}
           onCancel={registry.cancelRecord}
-          onDismiss={handleDeleteDoc}
+          onDismiss={handleDismissUploadHub}
           onClearCompleted={registry.clearCompleted}
           onPreviewsReady={handlePreviewsReady}
           issuesByDocId={issuesByDocId}
