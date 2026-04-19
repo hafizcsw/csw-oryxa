@@ -66,12 +66,17 @@ function mimeAllowed(mime: string): boolean {
 async function tryPdfTextMrzPeek(file: File): Promise<{ found: boolean; raw: string }> {
   if (file.type !== 'application/pdf') return { found: false, raw: '' };
   try {
-    const { extractPdfText } = await import('../parsers/browser-preprocessing').catch(() => ({ extractPdfText: null as any }));
-    if (typeof extractPdfText !== 'function') {
-      // fallback: dynamic pdfjs is owned by other modules — don't reinvent
-      return { found: false, raw: '' };
+    const pdfjsLib: any = await import('pdfjs-dist');
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf, disableWorker: true }).promise;
+    const pagesToScan = Math.min(pdf.numPages, 2);
+    let text = '';
+    for (let p = 1; p <= pagesToScan; p++) {
+      const page = await pdf.getPage(p);
+      const content = await page.getTextContent();
+      text += '\n' + content.items.map((it: any) => it.str).join(' ');
+      if (text.length > 8000) break;
     }
-    const text: string = await extractPdfText(file);
     if (!text || text.length < 30) return { found: false, raw: '' };
     const mrz = parseMrz(text);
     return { found: mrz.found, raw: text.slice(0, 4000) };
