@@ -141,14 +141,19 @@ export function recoverPassport(ev: OcrEvidence): PassportRecoveryResult {
   const status: 'extracted' | 'needs_review' = allOk ? 'extracted' : 'needs_review';
 
   const src = 'mrz_td3';
-  facts.passport_number = { value: passport_number_raw.replace(/</g, ''), confidence: c1 ? 0.95 : 0.5, source: src, status: c1 ? 'extracted' : 'needs_review', raw: passport_number_raw };
-  facts.surname        = { value: surname || null, confidence: surname ? baseConf : 0.3, source: src, status: surname ? status : 'needs_review', raw: surnameRaw };
-  facts.given_names    = { value: given_names || null, confidence: given_names ? baseConf : 0.3, source: src, status: given_names ? status : 'needs_review', raw: givenRaw };
-  facts.nationality    = { value: nationality_raw.replace(/</g, '') || null, confidence: 0.9, source: src, status: 'extracted', raw: nationality_raw };
-  facts.date_of_birth  = { value: fmtYYMMDD(dob_raw), confidence: c2 ? 0.95 : 0.5, source: src, status: c2 ? 'extracted' : 'needs_review', raw: dob_raw };
-  facts.gender         = { value: gender_raw === '<' ? null : gender_raw, confidence: 0.9, source: src, status: gender_raw === '<' ? 'needs_review' : 'extracted', raw: gender_raw };
-  facts.expiry_date    = { value: fmtYYMMDD(expiry_raw), confidence: c3 ? 0.95 : 0.5, source: src, status: c3 ? 'extracted' : 'needs_review', raw: expiry_raw };
-  facts.issuing_country= { value: issuing_country_raw.replace(/</g, '') || null, confidence: 0.9, source: src, status: 'extracted', raw: issuing_country_raw };
+  const fullName = (given_names || surname)
+    ? `${given_names} ${surname}`.replace(/\s+/g, ' ').trim()
+    : null;
+  const baseStatus: 'extracted' | 'needs_review' = allOk && fullName ? 'extracted' : 'needs_review';
+
+  facts.full_name        = { value: fullName, confidence: fullName ? baseConf : 0.3, source: src, status: baseStatus, raw: `${surnameRaw}<<${givenRaw}` };
+  facts.passport_number  = { value: passport_number_raw.replace(/</g, ''), confidence: c1 ? 0.95 : 0.5, source: src, status: c1 ? 'extracted' : 'needs_review', raw: passport_number_raw };
+  facts.nationality      = { value: nationality_raw.replace(/</g, '') || null, confidence: 0.9, source: src, status: 'extracted', raw: nationality_raw };
+  facts.date_of_birth    = { value: fmtYYMMDD(dob_raw), confidence: c2 ? 0.95 : 0.5, source: src, status: c2 ? 'extracted' : 'needs_review', raw: dob_raw };
+  facts.expiry_date      = { value: fmtYYMMDD(expiry_raw), confidence: c3 ? 0.95 : 0.5, source: src, status: c3 ? 'extracted' : 'needs_review', raw: expiry_raw };
+  facts.issuing_country  = { value: issuing_country_raw.replace(/</g, '') || null, confidence: 0.9, source: src, status: 'extracted', raw: issuing_country_raw };
+  facts.sex              = { value: gender_raw === '<' ? null : gender_raw, confidence: 0.9, source: src, status: gender_raw === '<' ? 'needs_review' : 'extracted', raw: gender_raw };
+  facts.mrz_present      = { value: 'true', confidence: 1, source: src, status: 'extracted' };
 
   return {
     lane: 'passport_lane',
