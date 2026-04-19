@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
@@ -85,6 +85,7 @@ export function useStudentDocuments(options?: { enabled?: boolean }) {
   const [featureAvailable, setFeatureAvailable] = useState(true);
   const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgress>>({});
   const { toast } = useToast();
+  const latestLoadIdRef = useRef(0);
 
   // ✅ Helper to update progress
   const setProg = useCallback((key: string, patch: Partial<UploadProgress>) => {
@@ -153,11 +154,13 @@ export function useStudentDocuments(options?: { enabled?: boolean }) {
 
   // ✅ Load documents from CRM via Portal proxy
   async function loadDocuments(options?: { silent?: boolean }) {
+    const loadId = ++latestLoadIdRef.current;
     setError(null);
     if (!options?.silent) setLoading(true);
     
     try {
       const res = await listFiles();
+      if (loadId !== latestLoadIdRef.current) return;
       
       if (!res.ok) {
         console.error('[useStudentDocuments] list_files error:', res.error);
@@ -200,10 +203,11 @@ export function useStudentDocuments(options?: { enabled?: boolean }) {
       }
 
     } catch (err) {
+      if (loadId !== latestLoadIdRef.current) return;
       console.error('[useStudentDocuments] Error:', err);
       setError('CONNECTION_FAILED');
     } finally {
-      if (!options?.silent) setLoading(false);
+      if (!options?.silent && loadId === latestLoadIdRef.current) setLoading(false);
     }
   }
 
