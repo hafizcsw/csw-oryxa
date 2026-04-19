@@ -26,6 +26,8 @@ import { useUnsavedDocumentsGuard } from "@/hooks/useUnsavedDocumentsGuard";
 import type { FileQualityResult } from "@/features/file-quality/types";
 import type { DocumentTypeFilter } from "./DocumentsTab";
 import { guessSlotFromFileName } from "@/features/documents/document-registry-model";
+import { useDocumentLaneFacts } from "@/hooks/useDocumentLaneFacts";
+import { LaneFactsCard } from "@/components/student-file/LaneFactsCard";
 
 const ProfileTab = lazy(() => import("@/components/portal/tabs/ProfileTab").then(m => ({ default: m.ProfileTab })));
 const ReadinessTab = lazy(() => import("@/components/readiness/ReadinessTab").then(m => ({ default: m.ReadinessTab })));
@@ -58,6 +60,8 @@ function uniqueFileKey(file: File): string {
 export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabChange, onAvatarUpdate, fileQuality }: StudyFileTabProps) {
   const { t } = useLanguage();
   const { documents, refetch: refetchDocs } = useStudentDocuments();
+  // ═══ Door 2: Lane Facts truth surface ═══
+  const { byDocId: laneFactsByDocId, refetch: refetchLaneFacts } = useDocumentLaneFacts();
 
   // ═══ Door 1: Base canonical file (CRM truth, no promotions) ═══
   const { canonicalFile: baseCanonicalFile } = useCanonicalStudentFile({
@@ -149,7 +153,9 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   // ═══ Door 2: Document Registry + Upload Hub ═══
   const handleBatchComplete = useCallback(() => {
     refetchDocs({ silent: true });
-  }, [refetchDocs]);
+    // Door 2: refresh lane facts after upload batch — facts persisted by uploadAndRegister.
+    void refetchLaneFacts();
+  }, [refetchDocs, refetchLaneFacts]);
 
   const registry = useDocumentRegistry({
     studentId: profile?.user_id ?? null,
@@ -442,6 +448,31 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           issuesByDocId={issuesByDocId}
         />
       </section>
+
+      {/* ═══ Door 2: Lane Facts truth surface (read-only) ═══ */}
+      {Object.keys(laneFactsByDocId).length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-foreground">
+              Document facts (extracted)
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              {Object.keys(laneFactsByDocId).length} document{Object.keys(laneFactsByDocId).length === 1 ? '' : 's'}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {documents
+              .filter((d) => laneFactsByDocId[d.id])
+              .map((d) => (
+                <LaneFactsCard
+                  key={d.id}
+                  facts={laneFactsByDocId[d.id]}
+                  fileName={d.file_name}
+                />
+              ))}
+          </div>
+        </section>
+      )}
 
       {/* ═══ Live engine activity — what is the engine doing right now ═══ */}
       <EngineActivityStrip liveStages={analysisHook.liveStages} />
