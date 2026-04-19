@@ -42,12 +42,23 @@ const TOKENS: Record<Exclude<DocumentFamily, 'unknown_document' | 'composite_doc
   ],
 };
 
+/** Normalize filename: lowercase, replace separators with spaces, strip extension. */
+function normalizeName(name: string): string {
+  return name
+    .replace(/\.[^.]+$/, '')          // strip extension
+    .replace(/[_\-.]+/g, ' ')         // separators → space
+    .replace(/([a-z])([A-Z])/g, '$1 $2') // CamelCase → spaced
+    .toLowerCase()
+    .trim();
+}
+
 function scoreFilename(name: string): FilenameSignal[] {
+  const normalized = normalizeName(name);
   const out: FilenameSignal[] = [];
   for (const [family, patterns] of Object.entries(TOKENS) as [DocumentFamily, RegExp[]][]) {
     const matched: string[] = [];
     for (const re of patterns) {
-      if (re.test(name)) matched.push(re.source);
+      if (re.test(normalized)) matched.push(re.source);
     }
     if (matched.length) {
       // 1 hit → 0.55, 2 hits → 0.70, 3+ hits → 0.85 (capped)
