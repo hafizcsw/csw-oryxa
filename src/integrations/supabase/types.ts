@@ -3240,6 +3240,66 @@ export type Database = {
         }
         Relationships: []
       }
+      document_foundation_outputs: {
+        Row: {
+          created_at: string
+          document_id: string
+          id: string
+          normalized_document: Json
+          privacy_blocked: boolean
+          processing_state: string
+          requires_review: boolean
+          review_reason: Json
+          review_status: string
+          route_confidence: number
+          route_decision: Json
+          route_family: string
+          route_reasons: Json
+          router_version: string
+          selected_lane: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          id?: string
+          normalized_document?: Json
+          privacy_blocked?: boolean
+          processing_state: string
+          requires_review?: boolean
+          review_reason?: Json
+          review_status: string
+          route_confidence?: number
+          route_decision?: Json
+          route_family: string
+          route_reasons?: Json
+          router_version: string
+          selected_lane: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          id?: string
+          normalized_document?: Json
+          privacy_blocked?: boolean
+          processing_state?: string
+          requires_review?: boolean
+          review_reason?: Json
+          review_status?: string
+          route_confidence?: number
+          route_decision?: Json
+          route_family?: string
+          route_reasons?: Json
+          router_version?: string
+          selected_lane?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       education_events: {
         Row: {
           city: string | null
