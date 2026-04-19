@@ -70,6 +70,7 @@ export function validatePassport(raw: unknown): PassportValidatorResult {
     expiry_date: f(exp, exp ? 0.9 : 0),
     issuing_country: f(p.issuing_country, 0.8),
     sex: f(p.sex, p.sex ? 0.9 : 0),
+    mrz_present: f<boolean>(p.mrz_present, p.mrz_present == null ? 0 : 0.9),
   };
   return {
     facts,
@@ -105,7 +106,7 @@ export function validateCertificate(raw: unknown): CertificateValidatorResult {
   };
   return {
     facts,
-    required: ['student_name', 'institution_name', 'certificate_title'],
+    required: ['student_name', 'institution_name', 'certificate_title', 'issue_date'],
     notes,
   };
 }
