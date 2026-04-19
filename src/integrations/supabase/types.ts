@@ -3300,6 +3300,48 @@ export type Database = {
         }
         Relationships: []
       }
+      document_lane_facts: {
+        Row: {
+          created_at: string
+          document_id: string
+          engine_metadata: Json
+          facts: Json
+          lane: string
+          lane_confidence: number
+          notes: string[]
+          requires_review: boolean
+          truth_state: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          engine_metadata?: Json
+          facts?: Json
+          lane: string
+          lane_confidence?: number
+          notes?: string[]
+          requires_review?: boolean
+          truth_state?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          engine_metadata?: Json
+          facts?: Json
+          lane?: string
+          lane_confidence?: number
+          notes?: string[]
+          requires_review?: boolean
+          truth_state?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       education_events: {
         Row: {
           city: string | null

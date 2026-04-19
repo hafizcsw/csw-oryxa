@@ -7,6 +7,7 @@
 import { prepareUpload, confirmUpload } from "@/api/crmStorage";
 import { uploadToCrmStorage } from "@/lib/crmStorageClient";
 import { runFoundation, type FoundationOutput } from "./foundation";
+import { dispatchLane, persistLaneFacts, type LaneFactsOutput } from "./lanes";
 
 export interface UploadResult {
   success: boolean;
@@ -24,6 +25,10 @@ export interface UploadResult {
   foundation?: FoundationOutput;
   foundation_failed?: boolean;
   foundation_persisted?: boolean;
+  /** Door 2 — lane facts (passport / graduation / language) when applicable. */
+  lane_facts?: LaneFactsOutput;
+  lane_facts_persisted?: boolean;
+  lane_skipped_reason?: string;
 }
 
 export async function uploadAndRegisterFile(params: {
@@ -153,6 +158,37 @@ export async function uploadAndRegisterFile(params: {
     console.warn('[FoundationGate] persistence threw', e);
   }
 
+  // ========== STAGE 6: LANE DISPATCH (Door 2 — Fast Value Gate) ==========
+  // Best-effort: lane failure does NOT fail the upload, but is reported.
+  // Lanes are only run for passport_id, graduation_certificate, language_certificate.
+  let lane_facts: LaneFactsOutput | undefined;
+  let lane_facts_persisted = false;
+  let lane_skipped_reason: string | undefined;
+  try {
+    const dispatch = await dispatchLane({ foundation, file });
+    if (dispatch.ran) {
+      lane_facts = dispatch.output;
+      // eslint-disable-next-line no-console
+      console.log('[LaneDispatch] ✅ ran', {
+        document_id: documentId,
+        lane: dispatch.output.lane,
+        truth_state: dispatch.output.truth_state,
+        confidence: dispatch.output.lane_confidence,
+        requires_review: dispatch.output.requires_review,
+        ms: dispatch.output.engine_metadata.processing_ms,
+      });
+      lane_facts_persisted = await persistLaneFacts(dispatch.output);
+    } else if (dispatch.ran === false) {
+      lane_skipped_reason = dispatch.reason;
+      // eslint-disable-next-line no-console
+      console.log('[LaneDispatch] skipped', { document_id: documentId, reason: dispatch.reason });
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('[LaneDispatch] threw — non-fatal', e);
+    lane_skipped_reason = e instanceof Error ? `lane_threw:${e.message}` : 'lane_threw';
+  }
+
   // ========== DONE ==========
   onProgress?.('done', 100);
 
@@ -164,5 +200,8 @@ export async function uploadAndRegisterFile(params: {
     bucket,
     foundation,
     foundation_persisted,
+    lane_facts,
+    lane_facts_persisted,
+    lane_skipped_reason,
   };
 }
