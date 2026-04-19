@@ -2027,6 +2027,11 @@
           "transcript_language": "Transcript language"
         }
       }
+    },
+    "studyFile": {
+      "lane_review_reason": {
+        "image_ocr_deferred_to_door_3": "현재 이미지와 스캔 파일은 자동 추출이 불가능합니다. 가능하다면 원본 PDF를 업로드하거나 계속 진행하면 파일이 검토를 위해 전송됩니다."
+      }
     }
   },
   "studio": {

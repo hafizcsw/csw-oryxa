@@ -2027,6 +2027,11 @@
           "transcript_language": "Transcript language"
         }
       }
+    },
+    "studyFile": {
+      "lane_review_reason": {
+        "image_ocr_deferred_to_door_3": "এই পর্যায়ে ছবি ও স্ক্যান করা ফাইল স্বয়ংক্রিয়ভাবে পড়া যায় না। সম্ভব হলে মূল PDF আপলোড করুন, অথবা চালিয়ে যান এবং ফাইলটি পর্যালোচনার জন্য পাঠানো হবে।"
+      }
     }
   },
   "studio": {

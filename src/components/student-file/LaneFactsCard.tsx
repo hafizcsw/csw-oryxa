@@ -7,9 +7,10 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Loader2, ShieldCheck, AlertCircle, HelpCircle, FileSearch } from 'lucide-react';
+import { Loader2, ShieldCheck, AlertCircle, HelpCircle, FileSearch, Info } from 'lucide-react';
 import type { LaneFactsRow } from '@/hooks/useDocumentLaneFacts';
 import type { CanonicalField, FieldStatus } from '@/features/documents/lanes';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Props {
   facts: LaneFactsRow | null;
@@ -82,6 +83,8 @@ function FieldRow({ name, field }: { name: string; field: CanonicalField }) {
 }
 
 export function LaneFactsCard({ facts, fileName, loading }: Props) {
+  const { t } = useLanguage();
+
   if (loading) {
     return (
       <Card className="p-4 flex items-center gap-2 text-sm text-muted-foreground">
@@ -109,6 +112,8 @@ export function LaneFactsCard({ facts, fileName, loading }: Props) {
     needs_review: 'bg-rose-500/15 text-rose-700 border-rose-500/30 dark:text-rose-300',
   } as const;
 
+  const reviewReason = facts.engine_metadata?.review_reason ?? null;
+
   return (
     <Card className="p-4 space-y-3">
       <div className="flex items-start justify-between gap-3">
@@ -133,6 +138,13 @@ export function LaneFactsCard({ facts, fileName, loading }: Props) {
           <div className="text-lg font-bold tabular-nums">{(facts.lane_confidence * 100).toFixed(0)}%</div>
         </div>
       </div>
+
+      {reviewReason === 'image_ocr_deferred_to_door_3' && (
+        <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
+          <Info className="h-4 w-4 shrink-0 mt-0.5" />
+          <span>{t('portal.studyFile.lane_review_reason.image_ocr_deferred_to_door_3')}</span>
+        </div>
+      )}
 
       <div className="rounded-md border border-border/60 bg-muted/20 p-3">
         {order.map((key) => {

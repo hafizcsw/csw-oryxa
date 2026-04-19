@@ -21,7 +21,8 @@ import {
   aggregateLaneTruth,
 } from './lane-fact-model';
 
-const CERT_LANE_VERSION = 'simple-certificate-lane-v2-no-ocr';
+const CERT_LANE_VERSION = 'simple-certificate-lane-v3-no-ocr';
+const REASON_IMAGE_DEFERRED = 'image_ocr_deferred_to_door_3';
 
 const REQUIRED_GRADUATION = ['student_name', 'institution_name', 'certificate_title'];
 const REQUIRED_LANGUAGE = ['student_name', 'language_test_name', 'score'];
@@ -44,25 +45,32 @@ async function readPdfText(file: File): Promise<string> {
   }
 }
 
-async function readForCertificate(
-  file: File,
-): Promise<{ text: string; pdf_text_used: boolean; ocr_used: boolean; notes: string[] }> {
+interface CertReadResult {
+  text: string;
+  pdf_text_used: boolean;
+  ocr_used: boolean;
+  /** True iff input is image or scanned PDF — Door 2 defers OCR to Door 3. */
+  deferred_image: boolean;
+  notes: string[];
+}
+
+async function readForCertificate(file: File): Promise<CertReadResult> {
   const notes: string[] = [];
   const mime = file.type || '';
   if (mime === 'application/pdf') {
     const text = await readPdfText(file);
     if (text && text.length > 80) {
       notes.push('pdf_text_layer_used');
-      return { text, pdf_text_used: true, ocr_used: false, notes };
+      return { text, pdf_text_used: true, ocr_used: false, deferred_image: false, notes };
     }
-    notes.push('pdf_no_text_layer → no_ocr_in_door_2 → needs_review');
-    return { text: '', pdf_text_used: false, ocr_used: false, notes };
+    notes.push('pdf_no_text_layer → image_ocr_deferred_to_door_3');
+    return { text: '', pdf_text_used: false, ocr_used: false, deferred_image: true, notes };
   }
   if (mime.startsWith('image/')) {
-    notes.push('image → no_ocr_in_door_2 → needs_review');
-    return { text: '', pdf_text_used: false, ocr_used: false, notes };
+    notes.push('image → image_ocr_deferred_to_door_3');
+    return { text: '', pdf_text_used: false, ocr_used: false, deferred_image: true, notes };
   }
-  return { text: '', pdf_text_used: false, ocr_used: false, notes: [`unsupported_mime=${mime}`] };
+  return { text: '', pdf_text_used: false, ocr_used: false, deferred_image: false, notes: [`unsupported_mime=${mime}`] };
 }
 
 // ── Field extractors ─────────────────────────────────────────
@@ -176,16 +184,13 @@ export async function runSimpleCertificateLane(
 
   if (text.length < 40) {
     notes.push('insufficient_text_extracted');
-    const agg = aggregateLaneTruth(
-      facts,
-      family === 'graduation_certificate' ? REQUIRED_GRADUATION : REQUIRED_LANGUAGE,
-    );
     return {
       document_id,
       lane: family === 'graduation_certificate' ? 'graduation_lane' : 'language_lane',
       truth_state: 'needs_review',
       lane_confidence: 0,
       requires_review: true,
+      review_reason: read.deferred_image ? REASON_IMAGE_DEFERRED : null,
       facts,
       engine_metadata: {
         producer: CERT_LANE_VERSION,

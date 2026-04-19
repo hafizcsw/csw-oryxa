@@ -1,14 +1,16 @@
 // ═══════════════════════════════════════════════════════════════
-// Door 2 — Passport Lane (Hybrid as decided)
+// Door 2 — Passport Lane (Architecture-Compliant, no external OCR)
 // ═══════════════════════════════════════════════════════════════
-// Reading strategy:
+// Reading strategy (Door 2, post-correction):
 //   • PDF born-digital  → pdf.js text layer (client, free)
-//   • Image / scanned PDF → rasterize on client → POST base64 to
-//     `passport-ocr` edge function (Lovable AI Vision). NO Tesseract.
+//   • Image / scanned PDF → NOT extracted in Door 2.
+//     Returns truth_state='needs_review' with
+//     review_reason='image_ocr_deferred_to_door_3'.
+//
+// No external raw-file path. No edge function. No Tesseract.
 // MRZ parsing remains client-side (parseMrz).
 // ═══════════════════════════════════════════════════════════════
 
-import { supabase } from '@/integrations/supabase/client';
 import { parseMrz } from '../parsers/mrz-parser';
 import { lookupCountry } from '../parsers/iso-country-codes';
 import {
@@ -27,13 +29,15 @@ const REQUIRED_PASSPORT_FIELDS = [
   'issuing_country',
 ];
 
-const PASSPORT_LANE_VERSION = 'passport-lane-v2-edge';
+const PASSPORT_LANE_VERSION = 'passport-lane-v3-local-only';
+const REASON_IMAGE_DEFERRED = 'image_ocr_deferred_to_door_3';
 
 interface ReadResult {
   text: string;
   pdf_text_used: boolean;
-  ocr_used: boolean;
-  ocr_engine: string | null;
+  /** True when the file was an image or scanned PDF without text layer.
+   *  Door 2 does NOT attempt to read these — they are deferred. */
+  deferred_image: boolean;
   notes: string[];
 }
 
@@ -55,62 +59,7 @@ async function readPdfText(file: File): Promise<string> {
   }
 }
 
-async function rasterizePdfFirstPage(file: File): Promise<{ blob: Blob; mime: string } | null> {
-  try {
-    const pdfjsLib: any = await import('pdfjs-dist');
-    const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: buf, disableWorker: true }).promise;
-    const page = await pdf.getPage(1);
-    const viewport = page.getViewport({ scale: 2.0 });
-    const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-    await page.render({ canvasContext: ctx, viewport }).promise;
-    const blob: Blob | null = await new Promise((resolve) =>
-      canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.9),
-    );
-    if (!blob) return null;
-    return { blob, mime: 'image/jpeg' };
-  } catch {
-    return null;
-  }
-}
-
-async function blobToBase64(blob: Blob): Promise<string> {
-  const buf = await blob.arrayBuffer();
-  // base64 encode without exceeding stack
-  const bytes = new Uint8Array(buf);
-  let binary = '';
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  }
-  return btoa(binary);
-}
-
-async function callPassportOcrEdge(
-  blob: Blob,
-  mime: string,
-  document_id: string,
-): Promise<{ text: string; engine: string | null; error: string | null }> {
-  const image_base64 = await blobToBase64(blob);
-  const { data, error } = await supabase.functions.invoke('passport-ocr', {
-    body: { image_base64, mime_type: mime, document_id },
-  });
-  if (error) {
-    // eslint-disable-next-line no-console
-    console.warn('[PassportLane] edge invoke error', error);
-    return { text: '', engine: null, error: error.message ?? 'invoke_failed' };
-  }
-  if (!data?.ok) {
-    return { text: '', engine: null, error: data?.error ?? 'edge_failed' };
-  }
-  return { text: data.mrz_text ?? '', engine: data.engine ?? 'lovable-ai', error: null };
-}
-
-async function readForPassport(file: File, document_id: string): Promise<ReadResult> {
+async function readForPassport(file: File): Promise<ReadResult> {
   const notes: string[] = [];
   const mime = file.type || '';
 
@@ -118,30 +67,19 @@ async function readForPassport(file: File, document_id: string): Promise<ReadRes
     const text = await readPdfText(file);
     if (text && text.length > 80) {
       notes.push('pdf_text_layer_used');
-      return { text, pdf_text_used: true, ocr_used: false, ocr_engine: null, notes };
+      return { text, pdf_text_used: true, deferred_image: false, notes };
     }
-    notes.push('pdf_no_text_layer → raster+edge_ocr');
-    const raster = await rasterizePdfFirstPage(file);
-    if (!raster) {
-      notes.push('rasterize_failed');
-      return { text: '', pdf_text_used: false, ocr_used: false, ocr_engine: null, notes };
-    }
-    const { text: ocrText, engine, error } = await callPassportOcrEdge(raster.blob, raster.mime, document_id);
-    if (error) notes.push(`edge_error=${error}`);
-    notes.push(`edge_chars=${ocrText.length}`);
-    return { text: ocrText, pdf_text_used: false, ocr_used: true, ocr_engine: engine, notes };
+    notes.push('pdf_no_text_layer → image_ocr_deferred_to_door_3');
+    return { text: '', pdf_text_used: false, deferred_image: true, notes };
   }
 
   if (mime.startsWith('image/')) {
-    notes.push('image → edge_ocr');
-    const { text: ocrText, engine, error } = await callPassportOcrEdge(file, mime, document_id);
-    if (error) notes.push(`edge_error=${error}`);
-    notes.push(`edge_chars=${ocrText.length}`);
-    return { text: ocrText, pdf_text_used: false, ocr_used: true, ocr_engine: engine, notes };
+    notes.push('image → image_ocr_deferred_to_door_3');
+    return { text: '', pdf_text_used: false, deferred_image: true, notes };
   }
 
   notes.push(`unsupported_mime=${mime || 'unknown'}`);
-  return { text: '', pdf_text_used: false, ocr_used: false, ocr_engine: null, notes };
+  return { text: '', pdf_text_used: false, deferred_image: false, notes };
 }
 
 function field(value: string | null, confidence: number, source: string, raw?: string): CanonicalField {
@@ -161,7 +99,7 @@ export async function runPassportLane(input: PassportLaneInput): Promise<LaneFac
   const { document_id, file } = input;
   const notes: string[] = [`file=${file.name}`, `mime=${file.type || 'unknown'}`];
 
-  const read = await readForPassport(file, document_id);
+  const read = await readForPassport(file);
   notes.push(...read.notes);
 
   const facts: Record<string, CanonicalField> = {
@@ -174,6 +112,27 @@ export async function runPassportLane(input: PassportLaneInput): Promise<LaneFac
     sex: missingField('mrz'),
     mrz_present: { value: 'false', confidence: 1, source: 'mrz', status: 'extracted' },
   };
+
+  // ── Early exit: deferred (image / scanned PDF) ──
+  if (read.deferred_image) {
+    return {
+      document_id,
+      lane: 'passport_lane',
+      truth_state: 'needs_review',
+      lane_confidence: 0,
+      requires_review: true,
+      review_reason: REASON_IMAGE_DEFERRED,
+      facts,
+      engine_metadata: {
+        producer: PASSPORT_LANE_VERSION,
+        processing_ms: Math.round(performance.now() - start),
+        ocr_used: false,
+        pdf_text_used: false,
+        schema_version: 'lane-facts-v1',
+      },
+      notes,
+    };
+  }
 
   if (read.text && read.text.length > 30) {
     const mrz = parseMrz(read.text);
@@ -234,15 +193,15 @@ export async function runPassportLane(input: PassportLaneInput): Promise<LaneFac
     truth_state: agg.truth_state,
     lane_confidence: agg.lane_confidence,
     requires_review: agg.requires_review,
+    review_reason: agg.requires_review ? null : null,
     facts,
     engine_metadata: {
       producer: PASSPORT_LANE_VERSION,
       processing_ms: Math.round(elapsed),
-      ocr_used: read.ocr_used,
+      ocr_used: false,
       pdf_text_used: read.pdf_text_used,
       schema_version: 'lane-facts-v1',
-      ocr_engine: read.ocr_engine,
-    } as any,
+    },
     notes,
   };
 }

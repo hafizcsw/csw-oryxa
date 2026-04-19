@@ -16,7 +16,7 @@ export interface LaneFactsRow {
   lane_confidence: number;
   requires_review: boolean;
   facts: Record<string, CanonicalField>;
-  engine_metadata: LaneFactsOutput['engine_metadata'];
+  engine_metadata: LaneFactsOutput['engine_metadata'] & { review_reason?: string | null };
   notes: string[];
   updated_at: string;
 }
