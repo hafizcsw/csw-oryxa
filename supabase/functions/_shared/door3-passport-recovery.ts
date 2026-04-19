@@ -85,6 +85,9 @@ export function recoverPassport(ev: OcrEvidence): PassportRecoveryResult {
     required.map((k) => [k, missingField('door3-passport-recovery-v1')]),
   );
 
+  // Default mrz_present = false (truthful until proven otherwise)
+  facts.mrz_present = { value: 'false', confidence: 1, source: 'door3-passport-recovery-v1', status: 'extracted' };
+
   if (!looksPassport(allText)) {
     return {
       lane: 'passport_lane', facts, required,
