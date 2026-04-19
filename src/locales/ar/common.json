@@ -1709,7 +1709,47 @@
       "lockReason": "Lock Reason",
       "lockedByAdmin": "Locked By Admin",
       "requiredDesc": "Required Desc",
-      "requiredTitle": "Required Title"
+      "requiredTitle": "Required Title",
+      "door3": {
+        "title": "كشف الدرجات الأكاديمي",
+        "reviewQueueTitle": "قائمة المراجعة",
+        "loading": "جارٍ التحميل…",
+        "rows": "الصفوف",
+        "summaryMetrics": "مقاييس الملخص",
+        "jobAttempts": "محاولات المعالجة",
+        "summary": "الملخص",
+        "subject": "المادة",
+        "credits": "الساعات",
+        "markGrade": "الدرجة / التقدير",
+        "confidence": "الثقة",
+        "noFacts": "لم يتم استخراج بيانات بعد.",
+        "workerNotConfigured": "لم يتم تهيئة معالج OCR.",
+        "noReviewItems": "لا توجد عناصر للمراجعة.",
+        "approve": "موافقة",
+        "reject": "رفض",
+        "keepNeedsReview": "إبقاء بحاجة للمراجعة",
+        "document": "المستند",
+        "status": {
+          "completed": "مكتمل",
+          "needs_review": "بحاجة للمراجعة",
+          "failed": "فشل",
+          "pending": "قيد الانتظار",
+          "running": "قيد التشغيل",
+          "worker_not_configured": "المعالج غير مهيأ"
+        },
+        "lane": {
+          "passport": "جواز السفر",
+          "certificate": "الشهادة",
+          "photo": "الصورة",
+          "additional": "إضافي"
+        },
+        "reason": {
+          "low_confidence": "ثقة منخفضة",
+          "missing_fields": "حقول مفقودة",
+          "validation_failed": "فشل التحقق",
+          "manual_flag": "إشارة يدوية"
+        }
+      }
     },
     "shortlist": {
       "title": "البرامج المفضلة",

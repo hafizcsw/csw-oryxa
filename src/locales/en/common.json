@@ -1708,7 +1708,47 @@
       "lockReason": "Lock Reason",
       "lockedByAdmin": "Locked By Admin",
       "requiredDesc": "Required Desc",
-      "requiredTitle": "Required Title"
+      "requiredTitle": "Required Title",
+      "door3": {
+        "title": "Academic transcript",
+        "reviewQueueTitle": "Review queue",
+        "loading": "Loading…",
+        "rows": "Rows",
+        "summaryMetrics": "Summary metrics",
+        "jobAttempts": "Job attempts",
+        "summary": "Summary",
+        "subject": "Subject",
+        "credits": "Credits",
+        "markGrade": "Mark / Grade",
+        "confidence": "Confidence",
+        "noFacts": "No transcript facts extracted yet.",
+        "workerNotConfigured": "OCR worker not configured.",
+        "noReviewItems": "No items pending review.",
+        "approve": "Approve",
+        "reject": "Reject",
+        "keepNeedsReview": "Keep needs review",
+        "document": "Document",
+        "status": {
+          "completed": "Completed",
+          "needs_review": "Needs review",
+          "failed": "Failed",
+          "pending": "Pending",
+          "running": "Running",
+          "worker_not_configured": "Worker not configured"
+        },
+        "lane": {
+          "passport": "Passport",
+          "certificate": "Certificate",
+          "photo": "Photo",
+          "additional": "Additional"
+        },
+        "reason": {
+          "low_confidence": "Low confidence",
+          "missing_fields": "Missing fields",
+          "validation_failed": "Validation failed",
+          "manual_flag": "Manual flag"
+        }
+      }
     },
     "shortlist": {
       "title": "Favorite Programs",
