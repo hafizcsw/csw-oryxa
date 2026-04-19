@@ -42,9 +42,11 @@ export function recoverCertificate(ev: OcrEvidence): CertificateRecoveryResult {
   const text = ev.pages.map((p) => p.raw_text ?? '').join('\n');
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
-  const required = ['student_name', 'institution_name', 'degree_title', 'issue_date', 'certificate_type'];
+  const required = ['student_name', 'institution_name', 'certificate_title', 'issue_date'];
+  const optional = ['certificate_type'];
+  const allFields = [...required, ...optional];
   const facts: Record<string, CanonicalField> = Object.fromEntries(
-    required.map((k) => [k, missingField('door3-certificate-recovery-v1')]),
+    allFields.map((k) => [k, missingField('door3-certificate-recovery-v1')]),
   );
 
   // student_name
@@ -64,10 +66,10 @@ export function recoverCertificate(ev: OcrEvidence): CertificateRecoveryResult {
     };
   }
 
-  // degree_title
+  // certificate_title (degree-like phrase)
   const degLine = lines.find((l) => DEGREE_RX.test(l));
   if (degLine) {
-    facts.degree_title = {
+    facts.certificate_title = {
       value: degLine.slice(0, 200), confidence: 0.65, source: 'keyword_line', status: 'proposed', raw: degLine,
     };
   }
