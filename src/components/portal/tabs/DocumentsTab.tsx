@@ -55,6 +55,7 @@ interface DocumentsTabProps {
 
 export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTypesFilter, compact }: DocumentsTabProps) {
   const { t } = useLanguage();
+  const { isStaff } = useStaffAuthority();
   const { 
     documents: studentDocs, 
     loading,
