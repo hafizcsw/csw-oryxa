@@ -1993,7 +1993,9 @@
         "unreadable_scan": "Unreadable scan",
         "low_ocr_quality": "Low OCR quality",
         "reader_crashed": "Reader crashed",
-        "empty_document": "Empty document"
+        "empty_document": "Empty document",
+        "awaiting_ocr": "OCR-এর অপেক্ষায়",
+        "needs_review": "পর্যালোচনা প্রয়োজন"
       },
       "route_reason": {
         "classification_uncertain": "Classification uncertain",

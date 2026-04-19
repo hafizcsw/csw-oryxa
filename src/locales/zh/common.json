@@ -2036,7 +2036,9 @@
         "unreadable_scan": "Unreadable scan",
         "low_ocr_quality": "Low OCR quality",
         "reader_crashed": "Reader crashed",
-        "empty_document": "Empty document"
+        "empty_document": "Empty document",
+        "awaiting_ocr": "等待 OCR",
+        "needs_review": "需要审核"
       },
       "route_reason": {
         "classification_uncertain": "Classification uncertain",
