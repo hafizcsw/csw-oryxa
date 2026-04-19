@@ -8,8 +8,8 @@ import { describe, it, expect } from 'vitest';
 import { runFoundation } from './index';
 import { assertNoExternalRawPath, PrivacyViolationError } from './privacy-guard';
 
-function makeFile(name: string, type: string, body: ArrayBuffer | string): File {
-  const blob = new Blob([body as BlobPart], { type });
+function makeFile(name: string, type: string, body: BlobPart): File {
+  const blob = new Blob([body], { type });
   return new File([blob], name, { type });
 }
 
