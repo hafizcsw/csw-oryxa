@@ -264,11 +264,13 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       console.warn('[StudyFileTab] cascade clean threw (non-fatal)', e);
     }
 
-    // 3. Always remove the local analysis/proposal record so the card disappears.
+    // 3. Always remove the local analysis/registry rows so the UI disappears immediately.
     analysisHook.dismissAnalysis(documentId);
+    registry.dismissRecord(documentId);
     await refetchDocs({ silent: true });
+    await refetchLaneFacts();
     return true;
-  }, [analysisHook, guard, refetchDocs, t, toast]);
+  }, [analysisHook, guard, refetchDocs, refetchLaneFacts, registry, t, toast]);
 
   const handleDeleteAll = useCallback(async (items: Array<{ crmFileId: string | null; documentId: string }>) => {
     const results = await Promise.allSettled(
@@ -286,6 +288,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         }
         idsToCascade.push(items[i].documentId);
         analysisHook.dismissAnalysis(items[i].documentId);
+        registry.dismissRecord(items[i].documentId);
       } else {
         fail++;
       }
@@ -313,7 +316,17 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       title: t('portal.assembly.lane.delete_done', { ok, fail }),
     });
     await refetchDocs({ silent: true });
-  }, [analysisHook, guard, refetchDocs, t, toast]);
+    await refetchLaneFacts();
+  }, [analysisHook, guard, refetchDocs, refetchLaneFacts, registry, t, toast]);
+
+  const handleDismissUploadHub = useCallback((documentId: string) => {
+    const record = registry.records.find((r) => r.document_id === documentId);
+    if (!record) {
+      registry.dismissRecord(documentId);
+      return;
+    }
+    void handleDeleteDoc(record.crm_file_id, documentId);
+  }, [handleDeleteDoc, registry]);
 
   const autoPassportCleanupRef = useRef(new Set<string>());
 
@@ -487,7 +500,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           disabled={crmProfile?.docs_locked}
           onFilesSelected={handleFilesSelected}
           onCancel={registry.cancelRecord}
-          onDismiss={registry.dismissRecord}
+          onDismiss={handleDismissUploadHub}
           onClearCompleted={registry.clearCompleted}
           onPreviewsReady={handlePreviewsReady}
           issuesByDocId={issuesByDocId}
