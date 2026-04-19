@@ -43,6 +43,9 @@ export interface LaneFactsOutput {
   lane_confidence: number;
   /** True iff any required field is missing or low-confidence. */
   requires_review: boolean;
+  /** Stable machine-readable reason for review (e.g. 'image_ocr_deferred_to_door_3').
+   *  UI maps this to a localized message. Null when no specific reason. */
+  review_reason?: string | null;
   /** Free-form facts dictionary keyed by canonical field name. */
   facts: Record<string, CanonicalField>;
   engine_metadata: LaneEngineMetadata;
