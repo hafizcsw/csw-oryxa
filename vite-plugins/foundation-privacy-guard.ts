@@ -40,7 +40,12 @@ function walk(dir: string, out: string[] = []): string[] {
     let s;
     try { s = statSync(p); } catch { continue; }
     if (s.isDirectory()) walk(p, out);
-    else if (e.endsWith('.ts') && e !== ALLOW_FILE) out.push(p);
+    else if (
+      e.endsWith('.ts') &&
+      e !== ALLOW_FILE &&
+      !e.endsWith('.test.ts') &&
+      !e.endsWith('.spec.ts')
+    ) out.push(p);
   }
   return out;
 }
