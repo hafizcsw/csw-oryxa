@@ -139,6 +139,13 @@ export function LaneFactsCard({ facts, fileName, loading }: Props) {
         </div>
       </div>
 
+      {reviewReason === 'image_ocr_deferred_to_door_3' && (
+        <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
+          <Info className="h-4 w-4 shrink-0 mt-0.5" />
+          <span>{t('portal.studyFile.lane_review_reason.image_ocr_deferred_to_door_3')}</span>
+        </div>
+      )}
+
       <div className="rounded-md border border-border/60 bg-muted/20 p-3">
         {order.map((key) => {
           const f = facts.facts[key];
