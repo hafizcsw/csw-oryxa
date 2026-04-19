@@ -7,9 +7,10 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Loader2, ShieldCheck, AlertCircle, HelpCircle, FileSearch } from 'lucide-react';
+import { Loader2, ShieldCheck, AlertCircle, HelpCircle, FileSearch, Info } from 'lucide-react';
 import type { LaneFactsRow } from '@/hooks/useDocumentLaneFacts';
 import type { CanonicalField, FieldStatus } from '@/features/documents/lanes';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Props {
   facts: LaneFactsRow | null;
@@ -82,6 +83,8 @@ function FieldRow({ name, field }: { name: string; field: CanonicalField }) {
 }
 
 export function LaneFactsCard({ facts, fileName, loading }: Props) {
+  const { t } = useLanguage();
+
   if (loading) {
     return (
       <Card className="p-4 flex items-center gap-2 text-sm text-muted-foreground">
@@ -108,6 +111,8 @@ export function LaneFactsCard({ facts, fileName, loading }: Props) {
     proposed: 'bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-300',
     needs_review: 'bg-rose-500/15 text-rose-700 border-rose-500/30 dark:text-rose-300',
   } as const;
+
+  const reviewReason = facts.engine_metadata?.review_reason ?? null;
 
   return (
     <Card className="p-4 space-y-3">
