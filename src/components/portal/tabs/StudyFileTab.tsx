@@ -319,6 +319,15 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     await refetchLaneFacts();
   }, [analysisHook, guard, refetchDocs, refetchLaneFacts, registry, t, toast]);
 
+  const handleDismissUploadHub = useCallback((documentId: string) => {
+    const record = registry.records.find((r) => r.document_id === documentId);
+    if (!record) {
+      registry.dismissRecord(documentId);
+      return;
+    }
+    void handleDeleteDoc(record.crm_file_id, documentId);
+  }, [handleDeleteDoc, registry]);
+
   const autoPassportCleanupRef = useRef(new Set<string>());
 
   const handleFilesSelected = useCallback(async (files: File[]) => {
