@@ -76,8 +76,7 @@ export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDelete
 
   const handleBulkDelete = async () => {
     if (!onDeleteAll || deletableItems.length === 0 || bulkDeleting) return;
-    const confirmMsg = t('portal.assembly.lane.confirm_delete_all', { count: deletableItems.length });
-    if (!window.confirm(confirmMsg)) return;
+    // NOTE: window.confirm is blocked inside the Lovable preview iframe.
     setBulkDeleting(true);
     try {
       await onDeleteAll(deletableItems);
@@ -159,7 +158,10 @@ function DocBlock({
 
   const handleDelete = async () => {
     if (!onDeleteDoc || deleting) return;
-    if (!window.confirm(t('portal.assembly.lane.confirm_delete_one'))) return;
+    // NOTE: window.confirm is blocked inside the Lovable preview iframe (sandbox),
+    // which made the delete button appear "dead". Delete immediately instead.
+    // eslint-disable-next-line no-console
+    console.log('[AssemblyLane] delete clicked', { documentId: doc.documentId, crmFileId: doc.crmFileId });
     setDeleting(true);
     try {
       await onDeleteDoc(doc.crmFileId ?? null, doc.documentId);
