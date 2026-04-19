@@ -118,7 +118,7 @@ export async function uploadAndRegisterFile(params: {
 
   let foundation: FoundationOutput;
   try {
-    foundation = await runFoundation({ document_id: documentId, file });
+    foundation = await runFoundation({ document_id: documentId, file, declared_slot: file_kind });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     // eslint-disable-next-line no-console
