@@ -1,16 +1,14 @@
 // ═══════════════════════════════════════════════════════════════
-// Door 2 — Passport Lane
+// Door 2 — Passport Lane (Hybrid as decided)
 // ═══════════════════════════════════════════════════════════════
-// Narrow, local-only passport extraction.
-// Inputs:  File + foundation hints (already routed to passport_id)
-// Reading strategy (hybrid):
-//   • PDF: try pdf.js text layer first (born-digital fast path)
-//   • Image: client-side Tesseract.js (no external upload)
-//   • PDF without text: rasterize first page, then Tesseract
-// Then run MRZ parser ONLY. No general doc parser. No transcript logic.
-// Honest: if MRZ not found → all fields missing/needs_review.
+// Reading strategy:
+//   • PDF born-digital  → pdf.js text layer (client, free)
+//   • Image / scanned PDF → rasterize on client → POST base64 to
+//     `passport-ocr` edge function (Lovable AI Vision). NO Tesseract.
+// MRZ parsing remains client-side (parseMrz).
 // ═══════════════════════════════════════════════════════════════
 
+import { supabase } from '@/integrations/supabase/client';
 import { parseMrz } from '../parsers/mrz-parser';
 import { lookupCountry } from '../parsers/iso-country-codes';
 import {
@@ -29,12 +27,13 @@ const REQUIRED_PASSPORT_FIELDS = [
   'issuing_country',
 ];
 
-const PASSPORT_LANE_VERSION = 'passport-lane-v1';
+const PASSPORT_LANE_VERSION = 'passport-lane-v2-edge';
 
 interface ReadResult {
   text: string;
   pdf_text_used: boolean;
   ocr_used: boolean;
+  ocr_engine: string | null;
   notes: string[];
 }
 
@@ -56,7 +55,7 @@ async function readPdfText(file: File): Promise<string> {
   }
 }
 
-async function rasterizePdfFirstPage(file: File): Promise<HTMLCanvasElement | null> {
+async function rasterizePdfFirstPage(file: File): Promise<{ blob: Blob; mime: string } | null> {
   try {
     const pdfjsLib: any = await import('pdfjs-dist');
     const buf = await file.arrayBuffer();
@@ -69,27 +68,49 @@ async function rasterizePdfFirstPage(file: File): Promise<HTMLCanvasElement | nu
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
     await page.render({ canvasContext: ctx, viewport }).promise;
-    return canvas;
+    const blob: Blob | null = await new Promise((resolve) =>
+      canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.9),
+    );
+    if (!blob) return null;
+    return { blob, mime: 'image/jpeg' };
   } catch {
     return null;
   }
 }
 
-async function ocrSource(source: HTMLCanvasElement | File): Promise<string> {
-  try {
-    const Tesseract: any = await import('tesseract.js');
-    const result = await Tesseract.recognize(source as any, 'eng', {
-      // tessedit_pageseg_mode 6 = uniform block of text → good for MRZ band
-    });
-    return (result?.data?.text as string) || '';
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.warn('[PassportLane] tesseract failed', e);
-    return '';
+async function blobToBase64(blob: Blob): Promise<string> {
+  const buf = await blob.arrayBuffer();
+  // base64 encode without exceeding stack
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
   }
+  return btoa(binary);
 }
 
-async function readForPassport(file: File): Promise<ReadResult> {
+async function callPassportOcrEdge(
+  blob: Blob,
+  mime: string,
+  document_id: string,
+): Promise<{ text: string; engine: string | null; error: string | null }> {
+  const image_base64 = await blobToBase64(blob);
+  const { data, error } = await supabase.functions.invoke('passport-ocr', {
+    body: { image_base64, mime_type: mime, document_id },
+  });
+  if (error) {
+    // eslint-disable-next-line no-console
+    console.warn('[PassportLane] edge invoke error', error);
+    return { text: '', engine: null, error: error.message ?? 'invoke_failed' };
+  }
+  if (!data?.ok) {
+    return { text: '', engine: null, error: data?.error ?? 'edge_failed' };
+  }
+  return { text: data.mrz_text ?? '', engine: data.engine ?? 'lovable-ai', error: null };
+}
+
+async function readForPassport(file: File, document_id: string): Promise<ReadResult> {
   const notes: string[] = [];
   const mime = file.type || '';
 
@@ -97,36 +118,30 @@ async function readForPassport(file: File): Promise<ReadResult> {
     const text = await readPdfText(file);
     if (text && text.length > 80) {
       notes.push('pdf_text_layer_used');
-      return { text, pdf_text_used: true, ocr_used: false, notes };
+      return { text, pdf_text_used: true, ocr_used: false, ocr_engine: null, notes };
     }
-    notes.push('pdf_no_text_layer → raster+ocr');
-    const canvas = await rasterizePdfFirstPage(file);
-    if (canvas) {
-      const ocrText = await ocrSource(canvas);
-      return {
-        text: ocrText,
-        pdf_text_used: false,
-        ocr_used: true,
-        notes: [...notes, `tesseract_chars=${ocrText.length}`],
-      };
+    notes.push('pdf_no_text_layer → raster+edge_ocr');
+    const raster = await rasterizePdfFirstPage(file);
+    if (!raster) {
+      notes.push('rasterize_failed');
+      return { text: '', pdf_text_used: false, ocr_used: false, ocr_engine: null, notes };
     }
-    notes.push('rasterize_failed');
-    return { text: '', pdf_text_used: false, ocr_used: false, notes };
+    const { text: ocrText, engine, error } = await callPassportOcrEdge(raster.blob, raster.mime, document_id);
+    if (error) notes.push(`edge_error=${error}`);
+    notes.push(`edge_chars=${ocrText.length}`);
+    return { text: ocrText, pdf_text_used: false, ocr_used: true, ocr_engine: engine, notes };
   }
 
   if (mime.startsWith('image/')) {
-    notes.push('image_ocr_local_tesseract');
-    const ocrText = await ocrSource(file);
-    return {
-      text: ocrText,
-      pdf_text_used: false,
-      ocr_used: true,
-      notes: [...notes, `tesseract_chars=${ocrText.length}`],
-    };
+    notes.push('image → edge_ocr');
+    const { text: ocrText, engine, error } = await callPassportOcrEdge(file, mime, document_id);
+    if (error) notes.push(`edge_error=${error}`);
+    notes.push(`edge_chars=${ocrText.length}`);
+    return { text: ocrText, pdf_text_used: false, ocr_used: true, ocr_engine: engine, notes };
   }
 
   notes.push(`unsupported_mime=${mime || 'unknown'}`);
-  return { text: '', pdf_text_used: false, ocr_used: false, notes };
+  return { text: '', pdf_text_used: false, ocr_used: false, ocr_engine: null, notes };
 }
 
 function field(value: string | null, confidence: number, source: string, raw?: string): CanonicalField {
@@ -146,7 +161,7 @@ export async function runPassportLane(input: PassportLaneInput): Promise<LaneFac
   const { document_id, file } = input;
   const notes: string[] = [`file=${file.name}`, `mime=${file.type || 'unknown'}`];
 
-  const read = await readForPassport(file);
+  const read = await readForPassport(file, document_id);
   notes.push(...read.notes);
 
   const facts: Record<string, CanonicalField> = {
@@ -168,8 +183,6 @@ export async function runPassportLane(input: PassportLaneInput): Promise<LaneFac
 
     if (mrz.found) {
       facts.mrz_present = { value: 'true', confidence: 1, source: 'mrz', status: 'extracted' };
-
-      // Confidence per field follows MRZ overall confidence + checksum results.
       const baseConf = Math.max(0.55, Math.min(0.99, mrz.confidence));
       const cb = mrz.checksum_breakdown;
 
@@ -196,7 +209,6 @@ export async function runPassportLane(input: PassportLaneInput): Promise<LaneFac
         'mrz',
       );
 
-      // Country codes
       const nat = lookupCountry(mrz.nationality_alpha3);
       facts.nationality = field(nat?.name_en ?? mrz.nationality, baseConf, 'mrz');
 
@@ -229,7 +241,8 @@ export async function runPassportLane(input: PassportLaneInput): Promise<LaneFac
       ocr_used: read.ocr_used,
       pdf_text_used: read.pdf_text_used,
       schema_version: 'lane-facts-v1',
-    },
+      ocr_engine: read.ocr_engine,
+    } as any,
     notes,
   };
 }
