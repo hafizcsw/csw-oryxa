@@ -3588,6 +3588,57 @@ export type Database = {
         }
         Relationships: []
       }
+      document_semantic_runs: {
+        Row: {
+          created_at: string
+          document_id: string
+          evidence_version: string
+          id: string
+          lane: string
+          model: string
+          notes: string[] | null
+          outcome: string
+          parser_version: string
+          processing_ms: number | null
+          raw_ai_output: Json | null
+          reason: string | null
+          user_id: string
+          validated_facts: Json | null
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          evidence_version: string
+          id?: string
+          lane: string
+          model: string
+          notes?: string[] | null
+          outcome: string
+          parser_version: string
+          processing_ms?: number | null
+          raw_ai_output?: Json | null
+          reason?: string | null
+          user_id: string
+          validated_facts?: Json | null
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          evidence_version?: string
+          id?: string
+          lane?: string
+          model?: string
+          notes?: string[] | null
+          outcome?: string
+          parser_version?: string
+          processing_ms?: number | null
+          raw_ai_output?: Json | null
+          reason?: string | null
+          user_id?: string
+          validated_facts?: Json | null
+        }
+        Relationships: []
+      }
       education_events: {
         Row: {
           city: string | null
@@ -27663,6 +27714,7 @@ export type Database = {
         | "transcript_parse"
         | "passport_recovery"
         | "certificate_recovery"
+        | "ai_semantic_parse"
       door3_review_state:
         | "pending"
         | "approved"
@@ -27918,6 +27970,7 @@ export const Constants = {
         "transcript_parse",
         "passport_recovery",
         "certificate_recovery",
+        "ai_semantic_parse",
       ],
       door3_review_state: [
         "pending",
