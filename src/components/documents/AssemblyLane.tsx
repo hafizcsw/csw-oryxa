@@ -126,26 +126,45 @@ export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDelete
   return (
     <section
       className={cn(
-        'rounded-xl border-2 bg-card/50 p-4 transition-colors',
-        cfg.tone,
-        isEmpty && 'opacity-60',
+        // Card surface — flat, neutral, with a 3px left accent rail (Stripe/Vercel feel).
+        'relative rounded-lg p-4 transition-colors',
+        "before:content-[''] before:absolute before:inset-y-3 before:start-0 before:w-[3px] before:rounded-full",
+        cfg.rail,
+        cfg.surface,
+        cfg.ring,
+        isEmpty && 'opacity-70',
       )}
       data-assembly-lane={lane}
     >
-      <header className="flex items-baseline justify-between mb-3 gap-2">
-        <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-foreground">{t(cfg.titleKey)}</h3>
-          <p className="text-xs text-muted-foreground">{t(cfg.descKey)}</p>
+      <header className="flex items-start justify-between gap-3 mb-3 ps-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                'inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.14em] uppercase text-muted-foreground',
+              )}
+            >
+              <span className={cn('inline-block w-1.5 h-1.5 rounded-full', cfg.dot)} aria-hidden />
+              {cfg.code}
+            </span>
+            <span className="text-[10px] text-border" aria-hidden>·</span>
+            <h3 className="text-[13px] font-semibold text-foreground tracking-tight truncate">
+              {t(cfg.titleKey)}
+            </h3>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+            {t(cfg.descKey)}
+          </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[11px] text-muted-foreground">
-            {t('portal.assembly.lane.doc_count', { count: docs.length })}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="font-mono text-[10px] tabular-nums text-muted-foreground bg-muted/40 border border-border/60 rounded px-1.5 py-0.5">
+            {String(docs.length).padStart(2, '0')}
           </span>
           {lane === 'needs_review' && deletableItems.length > 0 && onDeleteAll && (
             <Button
               size="sm"
               variant="ghost"
-              className="h-7 px-2 text-[11px] text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="h-6 px-1.5 text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={handleBulkDelete}
               disabled={bulkDeleting}
             >
@@ -157,11 +176,13 @@ export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDelete
       </header>
 
       {isEmpty ? (
-        <p className="text-xs text-muted-foreground italic py-3">
-          {t('portal.assembly.lane.waiting')}
-        </p>
+        <div className="ps-2 py-2">
+          <p className="text-[11px] text-muted-foreground/80 italic">
+            {t('portal.assembly.lane.waiting')}
+          </p>
+        </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 ps-2">
           {docs.map((doc) => (
             <DocBlock
               key={doc.documentId}
