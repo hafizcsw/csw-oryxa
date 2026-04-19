@@ -559,6 +559,14 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
       </div>
       )}
 
+      {/* Door 3 — truth surface (read-only). Transcript panel for most recent doc; review queue for staff. */}
+      {!compact && studentDocs && studentDocs.length > 0 && (
+        <div className="space-y-3">
+          <Door3TranscriptPanel documentId={[...studentDocs].sort((a, b) => docTime(b) - docTime(a))[0].id} />
+          {isStaff && <ReviewQueuePanel />}
+        </div>
+      )}
+
       {/* Preview Modal */}
       <Dialog open={!!previewDoc} onOpenChange={(open) => !open && setPreviewDoc(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
