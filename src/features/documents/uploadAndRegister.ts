@@ -178,7 +178,7 @@ export async function uploadAndRegisterFile(params: {
         ms: dispatch.output.engine_metadata.processing_ms,
       });
       lane_facts_persisted = await persistLaneFacts(dispatch.output);
-    } else {
+    } else if (dispatch.ran === false) {
       lane_skipped_reason = dispatch.reason;
       // eslint-disable-next-line no-console
       console.log('[LaneDispatch] skipped', { document_id: documentId, reason: dispatch.reason });
