@@ -6,6 +6,7 @@
  */
 import { prepareUpload, confirmUpload } from "@/api/crmStorage";
 import { uploadToCrmStorage } from "@/lib/crmStorageClient";
+import { runFoundation, type FoundationOutput } from "./foundation";
 
 export interface UploadResult {
   success: boolean;
@@ -18,6 +19,8 @@ export interface UploadResult {
   details?: string;
   http_status?: number;
   request_id?: string;
+  /** Foundation Gate output — present whenever upload succeeded. */
+  foundation?: FoundationOutput;
 }
 
 export async function uploadAndRegisterFile(params: {
@@ -92,12 +95,38 @@ export async function uploadAndRegisterFile(params: {
 
   // ========== DONE ==========
   onProgress?.('done', 100);
-  
+
+  // ── Foundation Gate ─────────────────────────────────────────
+  // Every successfully registered file MUST receive a route_decision,
+  // a normalized_document, and a review_state — even if it is unknown.
+  let foundation: FoundationOutput | undefined;
+  const documentId = confirmRes.data?.file_id;
+  if (documentId) {
+    try {
+      foundation = await runFoundation({ document_id: documentId, file });
+      // eslint-disable-next-line no-console
+      console.log('[FoundationGate] decision', {
+        document_id: foundation.document_id,
+        route_family: foundation.route.route_family,
+        route_confidence: foundation.route.route_confidence,
+        selected_lane: foundation.route.selected_lane,
+        requires_review: foundation.route.requires_review,
+        processing_state: foundation.processing_state,
+        privacy_blocked: foundation.privacy_blocked,
+        route_reasons: foundation.route.route_reasons,
+      });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('[FoundationGate] failed', e);
+    }
+  }
+
   return {
     success: true,
     file_id: confirmRes.data?.file_id,
     file_url: confirmRes.data?.file_url,
     path,
     bucket,
+    foundation,
   };
 }
