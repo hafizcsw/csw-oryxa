@@ -99,17 +99,38 @@ async function tryPdfTextMrzPeek(file: File): Promise<{ found: boolean; raw: str
 export interface ClassifyInput {
   document_id: string;
   file: File;
+  /** Declared slot/kind from the upload UI. Low-confidence hint only. */
+  declared_slot?: string | null;
+}
+
+/** Map a declared slot string (from upload UI) to a known DocumentFamily.
+ *  Conservative — only maps unambiguous slot values. */
+function declaredSlotToFamily(slot: string | null | undefined): DocumentFamily | null {
+  if (!slot) return null;
+  const s = slot.toLowerCase().trim();
+  if (s === 'passport' || s === 'passport_id' || s === 'id_card') return 'passport_id';
+  if (
+    s === 'certificate' || s === 'graduation_certificate' || s === 'diploma' ||
+    s === 'degree' || s === 'graduation'
+  ) return 'graduation_certificate';
+  if (
+    s === 'language' || s === 'language_certificate' || s === 'ielts' ||
+    s === 'toefl' || s === 'duolingo'
+  ) return 'language_certificate';
+  if (s === 'transcript' || s === 'academic_transcript') return 'academic_transcript';
+  return null;
 }
 
 /** Foundation router — produces a RouteDecision for any file. */
 export async function classifyAndRoute(input: ClassifyInput): Promise<RouteDecision> {
-  const { document_id, file } = input;
+  const { document_id, file, declared_slot } = input;
   const reasons: string[] = [];
   const name = file.name || '';
   const mime = file.type || '';
 
   reasons.push(`filename="${name}"`);
   reasons.push(`mime="${mime || 'unknown'}"`);
+  if (declared_slot) reasons.push(`declared_slot="${declared_slot}"`);
 
   if (!mimeAllowed(mime)) {
     reasons.push('mime_not_pdf_or_image → unknown');
@@ -118,6 +139,18 @@ export async function classifyAndRoute(input: ClassifyInput): Promise<RouteDecis
 
   const filenameSignals = scoreFilename(name);
   let topSignal = filenameSignals[0];
+
+  // ── Declared-slot hint: low-confidence declared signal ───────
+  // Only kicks in when filename produced no match. Caps at 0.55 → review_required.
+  const declaredFamily = declaredSlotToFamily(declared_slot);
+  if (!topSignal && declaredFamily) {
+    topSignal = {
+      family: declaredFamily,
+      score: 0.55,
+      matched: [`declared_slot:${declared_slot}`],
+    };
+    reasons.push(`declared_slot_signal=${declaredFamily}@0.55`);
+  }
 
   // ── Passport-only MRZ peek (cheap, PDF text layer only) ──────
   let mrzBoost = 0;

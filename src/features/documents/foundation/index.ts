@@ -27,6 +27,9 @@ import { withPrivacyGuard } from './privacy-guard';
 export interface FoundationInput {
   document_id: string;
   file: File;
+  /** Declared slot/kind from the upload UI (e.g. 'passport', 'certificate', 'language').
+   *  Treated as a low-confidence hint only — never as truth. */
+  declared_slot?: string | null;
 }
 
 export interface FoundationOutput {
@@ -40,10 +43,10 @@ export interface FoundationOutput {
 }
 
 export async function runFoundation(input: FoundationInput): Promise<FoundationOutput> {
-  const { document_id, file } = input;
+  const { document_id, file, declared_slot } = input;
 
   const guarded = await withPrivacyGuard('foundation.classifyAndRoute', () =>
-    classifyAndRoute({ document_id, file }),
+    classifyAndRoute({ document_id, file, declared_slot: declared_slot ?? null }),
   );
 
   if (!guarded.ok) {
