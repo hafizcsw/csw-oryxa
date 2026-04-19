@@ -66,10 +66,10 @@ export function recoverCertificate(ev: OcrEvidence): CertificateRecoveryResult {
     };
   }
 
-  // degree_title
+  // certificate_title (degree-like phrase)
   const degLine = lines.find((l) => DEGREE_RX.test(l));
   if (degLine) {
-    facts.degree_title = {
+    facts.certificate_title = {
       value: degLine.slice(0, 200), confidence: 0.65, source: 'keyword_line', status: 'proposed', raw: degLine,
     };
   }
