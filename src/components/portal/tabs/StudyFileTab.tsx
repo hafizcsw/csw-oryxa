@@ -243,7 +243,28 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       }
       guard.untrackDocument(crmFileId);
     }
-    // 2. Always remove the local analysis/proposal record so the card disappears.
+
+    // 2. Cascade-clean ALL document-scoped rows so re-uploads behave clean.
+    //    Foundation/lane/analysis rows are keyed by document_id, which equals
+    //    crm_file_id for CRM-backed docs. We attempt both keys defensively.
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const ids = Array.from(new Set([crmFileId, documentId].filter(Boolean) as string[]));
+      if (ids.length > 0) {
+        await Promise.allSettled([
+          (supabase as any).from('document_foundation_outputs').delete().in('document_id', ids),
+          (supabase as any).from('document_lane_facts').delete().in('document_id', ids),
+          (supabase as any).from('document_analyses').delete().in('document_id', ids),
+        ]);
+        // eslint-disable-next-line no-console
+        console.log('[StudyFileTab] cascade-cleaned doc rows', { ids });
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('[StudyFileTab] cascade clean threw (non-fatal)', e);
+    }
+
+    // 3. Always remove the local analysis/proposal record so the card disappears.
     analysisHook.dismissAnalysis(documentId);
     await refetchDocs({ silent: true });
     return true;
