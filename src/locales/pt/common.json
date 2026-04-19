@@ -1367,7 +1367,47 @@
       "lockReason": "Lock Reason",
       "lockedByAdmin": "Locked By Admin",
       "requiredDesc": "Required Desc",
-      "requiredTitle": "Required Title"
+      "requiredTitle": "Required Title",
+      "door3": {
+        "title": "Histórico acadêmico",
+        "reviewQueueTitle": "Fila de revisão",
+        "loading": "Carregando…",
+        "rows": "Linhas",
+        "summaryMetrics": "Métricas",
+        "jobAttempts": "Tentativas",
+        "summary": "Resumo",
+        "subject": "Disciplina",
+        "credits": "Créditos",
+        "markGrade": "Nota",
+        "confidence": "Confiança",
+        "noFacts": "Nenhum dado extraído ainda.",
+        "workerNotConfigured": "Serviço OCR não configurado.",
+        "noReviewItems": "Nenhum item para revisão.",
+        "approve": "Aprovar",
+        "reject": "Rejeitar",
+        "keepNeedsReview": "Manter em revisão",
+        "document": "Documento",
+        "status": {
+          "completed": "Concluído",
+          "needs_review": "Em revisão",
+          "failed": "Falhou",
+          "pending": "Pendente",
+          "running": "Em execução",
+          "worker_not_configured": "Serviço não configurado"
+        },
+        "lane": {
+          "passport": "Passaporte",
+          "certificate": "Certificado",
+          "photo": "Foto",
+          "additional": "Adicional"
+        },
+        "reason": {
+          "low_confidence": "Baixa confiança",
+          "missing_fields": "Campos ausentes",
+          "validation_failed": "Validação falhou",
+          "manual_flag": "Sinalização manual"
+        }
+      }
     },
     "shortlist": {
       "title": "Programas salvos",

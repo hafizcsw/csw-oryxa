@@ -1367,7 +1367,47 @@
       "lockReason": "Lock Reason",
       "lockedByAdmin": "Locked By Admin",
       "requiredDesc": "Required Desc",
-      "requiredTitle": "Required Title"
+      "requiredTitle": "Required Title",
+      "door3": {
+        "title": "शैक्षणिक प्रतिलेख",
+        "reviewQueueTitle": "समीक्षा कतार",
+        "loading": "लोड हो रहा है…",
+        "rows": "पंक्तियाँ",
+        "summaryMetrics": "सारांश",
+        "jobAttempts": "प्रयास",
+        "summary": "सारांश",
+        "subject": "विषय",
+        "credits": "क्रेडिट",
+        "markGrade": "अंक / ग्रेड",
+        "confidence": "विश्वास",
+        "noFacts": "अभी तक कोई डेटा नहीं।",
+        "workerNotConfigured": "OCR सेवा कॉन्फ़िगर नहीं है।",
+        "noReviewItems": "कोई समीक्षा आइटम नहीं।",
+        "approve": "स्वीकृत",
+        "reject": "अस्वीकृत",
+        "keepNeedsReview": "समीक्षा में रखें",
+        "document": "दस्तावेज़",
+        "status": {
+          "completed": "पूर्ण",
+          "needs_review": "समीक्षा आवश्यक",
+          "failed": "विफल",
+          "pending": "लंबित",
+          "running": "चालू",
+          "worker_not_configured": "सेवा कॉन्फ़िगर नहीं"
+        },
+        "lane": {
+          "passport": "पासपोर्ट",
+          "certificate": "प्रमाणपत्र",
+          "photo": "फ़ोटो",
+          "additional": "अतिरिक्त"
+        },
+        "reason": {
+          "low_confidence": "कम विश्वास",
+          "missing_fields": "फ़ील्ड गायब",
+          "validation_failed": "सत्यापन विफल",
+          "manual_flag": "मैन्युअल फ़्लैग"
+        }
+      }
     },
     "shortlist": {
       "title": "सहेजे गए कार्यक्रम",

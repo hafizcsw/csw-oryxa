@@ -1367,7 +1367,47 @@
       "lockReason": "Lock Reason",
       "lockedByAdmin": "Locked By Admin",
       "requiredDesc": "Required Desc",
-      "requiredTitle": "Required Title"
+      "requiredTitle": "Required Title",
+      "door3": {
+        "title": "একাডেমিক ট্রান্সক্রিপ্ট",
+        "reviewQueueTitle": "পর্যালোচনা সারি",
+        "loading": "লোড হচ্ছে…",
+        "rows": "সারি",
+        "summaryMetrics": "সারাংশ",
+        "jobAttempts": "প্রচেষ্টা",
+        "summary": "সারাংশ",
+        "subject": "বিষয়",
+        "credits": "ক্রেডিট",
+        "markGrade": "নম্বর / গ্রেড",
+        "confidence": "আস্থা",
+        "noFacts": "এখনো কোনো তথ্য নেই।",
+        "workerNotConfigured": "OCR সেবা কনফিগার করা নেই।",
+        "noReviewItems": "পর্যালোচনার জন্য কিছু নেই।",
+        "approve": "অনুমোদন",
+        "reject": "প্রত্যাখ্যান",
+        "keepNeedsReview": "পর্যালোচনায় রাখুন",
+        "document": "ডকুমেন্ট",
+        "status": {
+          "completed": "সম্পন্ন",
+          "needs_review": "পর্যালোচনা প্রয়োজন",
+          "failed": "ব্যর্থ",
+          "pending": "অপেক্ষমান",
+          "running": "চলমান",
+          "worker_not_configured": "সেবা কনফিগার নেই"
+        },
+        "lane": {
+          "passport": "পাসপোর্ট",
+          "certificate": "সার্টিফিকেট",
+          "photo": "ছবি",
+          "additional": "অতিরিক্ত"
+        },
+        "reason": {
+          "low_confidence": "কম আস্থা",
+          "missing_fields": "ফিল্ড অনুপস্থিত",
+          "validation_failed": "যাচাইকরণ ব্যর্থ",
+          "manual_flag": "ম্যানুয়াল ফ্ল্যাগ"
+        }
+      }
     },
     "shortlist": {
       "title": "সংরক্ষিত প্রোগ্রাম",

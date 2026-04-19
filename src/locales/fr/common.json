@@ -1359,7 +1359,47 @@
       "lockReason": "Lock Reason",
       "lockedByAdmin": "Locked By Admin",
       "requiredDesc": "Required Desc",
-      "requiredTitle": "Required Title"
+      "requiredTitle": "Required Title",
+      "door3": {
+        "title": "Relevé de notes",
+        "reviewQueueTitle": "File de révision",
+        "loading": "Chargement…",
+        "rows": "Lignes",
+        "summaryMetrics": "Indicateurs",
+        "jobAttempts": "Tentatives",
+        "summary": "Résumé",
+        "subject": "Matière",
+        "credits": "Crédits",
+        "markGrade": "Note / Mention",
+        "confidence": "Confiance",
+        "noFacts": "Aucune donnée extraite pour l'instant.",
+        "workerNotConfigured": "Service OCR non configuré.",
+        "noReviewItems": "Aucun élément en attente.",
+        "approve": "Approuver",
+        "reject": "Rejeter",
+        "keepNeedsReview": "Conserver à réviser",
+        "document": "Document",
+        "status": {
+          "completed": "Terminé",
+          "needs_review": "À réviser",
+          "failed": "Échec",
+          "pending": "En attente",
+          "running": "En cours",
+          "worker_not_configured": "Service non configuré"
+        },
+        "lane": {
+          "passport": "Passeport",
+          "certificate": "Diplôme",
+          "photo": "Photo",
+          "additional": "Additionnel"
+        },
+        "reason": {
+          "low_confidence": "Faible confiance",
+          "missing_fields": "Champs manquants",
+          "validation_failed": "Validation échouée",
+          "manual_flag": "Signalement manuel"
+        }
+      }
     },
     "shortlist": {
       "title": "Favorite Programs",

@@ -1368,7 +1368,47 @@
       "lockReason": "Lock Reason",
       "lockedByAdmin": "Locked By Admin",
       "requiredDesc": "Required Desc",
-      "requiredTitle": "Required Title"
+      "requiredTitle": "Required Title",
+      "door3": {
+        "title": "学术成绩单",
+        "reviewQueueTitle": "审核队列",
+        "loading": "加载中…",
+        "rows": "行",
+        "summaryMetrics": "汇总指标",
+        "jobAttempts": "尝试次数",
+        "summary": "摘要",
+        "subject": "科目",
+        "credits": "学分",
+        "markGrade": "分数 / 等级",
+        "confidence": "置信度",
+        "noFacts": "尚未提取数据。",
+        "workerNotConfigured": "OCR 服务未配置。",
+        "noReviewItems": "无待审核项。",
+        "approve": "批准",
+        "reject": "拒绝",
+        "keepNeedsReview": "保留待审核",
+        "document": "文档",
+        "status": {
+          "completed": "已完成",
+          "needs_review": "需审核",
+          "failed": "失败",
+          "pending": "待处理",
+          "running": "运行中",
+          "worker_not_configured": "服务未配置"
+        },
+        "lane": {
+          "passport": "护照",
+          "certificate": "证书",
+          "photo": "照片",
+          "additional": "附加"
+        },
+        "reason": {
+          "low_confidence": "置信度低",
+          "missing_fields": "字段缺失",
+          "validation_failed": "验证失败",
+          "manual_flag": "人工标记"
+        }
+      }
     },
     "shortlist": {
       "title": "已保存的项目",

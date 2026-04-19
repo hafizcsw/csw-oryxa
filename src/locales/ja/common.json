@@ -1367,7 +1367,47 @@
       "lockReason": "Lock Reason",
       "lockedByAdmin": "Locked By Admin",
       "requiredDesc": "Required Desc",
-      "requiredTitle": "Required Title"
+      "requiredTitle": "Required Title",
+      "door3": {
+        "title": "学業成績証明書",
+        "reviewQueueTitle": "レビュー待ち",
+        "loading": "読み込み中…",
+        "rows": "行",
+        "summaryMetrics": "サマリー",
+        "jobAttempts": "試行回数",
+        "summary": "サマリー",
+        "subject": "科目",
+        "credits": "単位",
+        "markGrade": "評価",
+        "confidence": "信頼度",
+        "noFacts": "まだデータが抽出されていません。",
+        "workerNotConfigured": "OCR サービス未設定。",
+        "noReviewItems": "レビュー対象なし。",
+        "approve": "承認",
+        "reject": "却下",
+        "keepNeedsReview": "要レビューのまま",
+        "document": "ドキュメント",
+        "status": {
+          "completed": "完了",
+          "needs_review": "要レビュー",
+          "failed": "失敗",
+          "pending": "保留中",
+          "running": "実行中",
+          "worker_not_configured": "サービス未設定"
+        },
+        "lane": {
+          "passport": "パスポート",
+          "certificate": "証明書",
+          "photo": "写真",
+          "additional": "追加"
+        },
+        "reason": {
+          "low_confidence": "信頼度低",
+          "missing_fields": "項目欠落",
+          "validation_failed": "検証失敗",
+          "manual_flag": "手動フラグ"
+        }
+      }
     },
     "shortlist": {
       "title": "保存したプログラム",

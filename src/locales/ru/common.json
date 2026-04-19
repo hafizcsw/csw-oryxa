@@ -1364,7 +1364,47 @@
       "lockReason": "Lock Reason",
       "lockedByAdmin": "Locked By Admin",
       "requiredDesc": "Required Desc",
-      "requiredTitle": "Required Title"
+      "requiredTitle": "Required Title",
+      "door3": {
+        "title": "Академическая выписка",
+        "reviewQueueTitle": "Очередь проверки",
+        "loading": "Загрузка…",
+        "rows": "Строки",
+        "summaryMetrics": "Сводка",
+        "jobAttempts": "Попытки",
+        "summary": "Сводка",
+        "subject": "Предмет",
+        "credits": "Кредиты",
+        "markGrade": "Оценка",
+        "confidence": "Достоверность",
+        "noFacts": "Данные пока не извлечены.",
+        "workerNotConfigured": "OCR-сервис не настроен.",
+        "noReviewItems": "Нет элементов на проверке.",
+        "approve": "Одобрить",
+        "reject": "Отклонить",
+        "keepNeedsReview": "Оставить на проверке",
+        "document": "Документ",
+        "status": {
+          "completed": "Завершено",
+          "needs_review": "Требует проверки",
+          "failed": "Ошибка",
+          "pending": "Ожидание",
+          "running": "Выполняется",
+          "worker_not_configured": "Сервис не настроен"
+        },
+        "lane": {
+          "passport": "Паспорт",
+          "certificate": "Сертификат",
+          "photo": "Фото",
+          "additional": "Дополнительно"
+        },
+        "reason": {
+          "low_confidence": "Низкая достоверность",
+          "missing_fields": "Отсутствуют поля",
+          "validation_failed": "Ошибка валидации",
+          "manual_flag": "Ручная пометка"
+        }
+      }
     },
     "shortlist": {
       "title": "Избранные программы",

@@ -1367,7 +1367,47 @@
       "lockReason": "Lock Reason",
       "lockedByAdmin": "Locked By Admin",
       "requiredDesc": "Required Desc",
-      "requiredTitle": "Required Title"
+      "requiredTitle": "Required Title",
+      "door3": {
+        "title": "Expediente académico",
+        "reviewQueueTitle": "Cola de revisión",
+        "loading": "Cargando…",
+        "rows": "Filas",
+        "summaryMetrics": "Métricas",
+        "jobAttempts": "Intentos",
+        "summary": "Resumen",
+        "subject": "Asignatura",
+        "credits": "Créditos",
+        "markGrade": "Nota",
+        "confidence": "Confianza",
+        "noFacts": "Aún no se han extraído datos.",
+        "workerNotConfigured": "Servicio OCR no configurado.",
+        "noReviewItems": "No hay elementos pendientes.",
+        "approve": "Aprobar",
+        "reject": "Rechazar",
+        "keepNeedsReview": "Mantener en revisión",
+        "document": "Documento",
+        "status": {
+          "completed": "Completado",
+          "needs_review": "En revisión",
+          "failed": "Fallido",
+          "pending": "Pendiente",
+          "running": "En curso",
+          "worker_not_configured": "Servicio no configurado"
+        },
+        "lane": {
+          "passport": "Pasaporte",
+          "certificate": "Certificado",
+          "photo": "Foto",
+          "additional": "Adicional"
+        },
+        "reason": {
+          "low_confidence": "Baja confianza",
+          "missing_fields": "Campos faltantes",
+          "validation_failed": "Validación fallida",
+          "manual_flag": "Marca manual"
+        }
+      }
     },
     "shortlist": {
       "title": "Programas guardados",

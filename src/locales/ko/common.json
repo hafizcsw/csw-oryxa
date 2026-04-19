@@ -1367,7 +1367,47 @@
       "lockReason": "Lock Reason",
       "lockedByAdmin": "Locked By Admin",
       "requiredDesc": "Required Desc",
-      "requiredTitle": "Required Title"
+      "requiredTitle": "Required Title",
+      "door3": {
+        "title": "학업 성적증명서",
+        "reviewQueueTitle": "검토 대기열",
+        "loading": "불러오는 중…",
+        "rows": "행",
+        "summaryMetrics": "요약 지표",
+        "jobAttempts": "시도 횟수",
+        "summary": "요약",
+        "subject": "과목",
+        "credits": "학점",
+        "markGrade": "성적",
+        "confidence": "신뢰도",
+        "noFacts": "추출된 데이터가 없습니다.",
+        "workerNotConfigured": "OCR 서비스가 구성되지 않았습니다.",
+        "noReviewItems": "검토할 항목이 없습니다.",
+        "approve": "승인",
+        "reject": "거부",
+        "keepNeedsReview": "검토 유지",
+        "document": "문서",
+        "status": {
+          "completed": "완료",
+          "needs_review": "검토 필요",
+          "failed": "실패",
+          "pending": "대기 중",
+          "running": "실행 중",
+          "worker_not_configured": "서비스 미구성"
+        },
+        "lane": {
+          "passport": "여권",
+          "certificate": "증명서",
+          "photo": "사진",
+          "additional": "추가"
+        },
+        "reason": {
+          "low_confidence": "낮은 신뢰도",
+          "missing_fields": "누락된 필드",
+          "validation_failed": "검증 실패",
+          "manual_flag": "수동 플래그"
+        }
+      }
     },
     "shortlist": {
       "title": "저장된 프로그램",

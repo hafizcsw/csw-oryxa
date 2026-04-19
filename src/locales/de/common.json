@@ -1367,7 +1367,47 @@
       "lockReason": "Lock Reason",
       "lockedByAdmin": "Locked By Admin",
       "requiredDesc": "Required Desc",
-      "requiredTitle": "Required Title"
+      "requiredTitle": "Required Title",
+      "door3": {
+        "title": "Akademisches Zeugnis",
+        "reviewQueueTitle": "Prüfwarteschlange",
+        "loading": "Wird geladen…",
+        "rows": "Zeilen",
+        "summaryMetrics": "Kennzahlen",
+        "jobAttempts": "Versuche",
+        "summary": "Zusammenfassung",
+        "subject": "Fach",
+        "credits": "Credits",
+        "markGrade": "Note",
+        "confidence": "Zuverlässigkeit",
+        "noFacts": "Noch keine Daten extrahiert.",
+        "workerNotConfigured": "OCR-Dienst nicht konfiguriert.",
+        "noReviewItems": "Keine offenen Prüfungen.",
+        "approve": "Genehmigen",
+        "reject": "Ablehnen",
+        "keepNeedsReview": "Zur Prüfung behalten",
+        "document": "Dokument",
+        "status": {
+          "completed": "Abgeschlossen",
+          "needs_review": "Prüfung nötig",
+          "failed": "Fehlgeschlagen",
+          "pending": "Ausstehend",
+          "running": "Läuft",
+          "worker_not_configured": "Dienst nicht konfiguriert"
+        },
+        "lane": {
+          "passport": "Reisepass",
+          "certificate": "Zeugnis",
+          "photo": "Foto",
+          "additional": "Zusätzlich"
+        },
+        "reason": {
+          "low_confidence": "Geringe Zuverlässigkeit",
+          "missing_fields": "Fehlende Felder",
+          "validation_failed": "Validierung fehlgeschlagen",
+          "manual_flag": "Manuelle Markierung"
+        }
+      }
     },
     "shortlist": {
       "title": "Gespeicherte Programme",
