@@ -8,9 +8,13 @@ import { describe, it, expect } from 'vitest';
 import { runFoundation } from './index';
 import { assertNoExternalRawPath, PrivacyViolationError } from './privacy-guard';
 
-function makeFile(name: string, type: string, body: Uint8Array | string): File {
-  const blob = new Blob([body], { type });
+function makeFile(name: string, type: string, body: ArrayBuffer | string): File {
+  const blob = new Blob([body as BlobPart], { type });
   return new File([blob], name, { type });
+}
+
+function buf(...bytes: number[]): ArrayBuffer {
+  return new Uint8Array(bytes).buffer;
 }
 
 describe('Foundation Gate — runtime proof', () => {
