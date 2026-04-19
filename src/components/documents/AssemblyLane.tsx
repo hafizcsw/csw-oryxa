@@ -61,43 +61,43 @@ interface AssemblyLaneProps {
 // ambient surface tone. All colors via semantic tokens — no raw hex.
 const LANE_CONFIG: Record<
   DestinationLane,
-  { titleKey: string; descKey: string; code: string; rail: string; surface: string; ring: string; dot: string }
+  { titleKey: string; descKey: string; code: string; rail: string; headerTint: string; dot: string; codeText: string }
 > = {
   identity: {
     titleKey: 'portal.assembly.lane.identity',
     descKey: 'portal.assembly.lane.identity_desc',
     code: 'IDN',
     rail: 'before:bg-primary',
-    surface: 'bg-card/40',
-    ring: 'ring-1 ring-border/60',
+    headerTint: 'bg-primary/[0.06] border-b border-primary/20',
     dot: 'bg-primary',
+    codeText: 'text-primary',
   },
   academic: {
     titleKey: 'portal.assembly.lane.academic',
     descKey: 'portal.assembly.lane.academic_desc',
     code: 'ACA',
-    rail: 'before:bg-foreground/70',
-    surface: 'bg-card/40',
-    ring: 'ring-1 ring-border/60',
-    dot: 'bg-foreground/70',
+    rail: 'before:bg-foreground',
+    headerTint: 'bg-foreground/[0.04] border-b border-foreground/15',
+    dot: 'bg-foreground',
+    codeText: 'text-foreground',
   },
   language: {
     titleKey: 'portal.assembly.lane.language',
     descKey: 'portal.assembly.lane.language_desc',
     code: 'LNG',
-    rail: 'before:bg-muted-foreground/60',
-    surface: 'bg-card/40',
-    ring: 'ring-1 ring-border/60',
-    dot: 'bg-muted-foreground/70',
+    rail: 'before:bg-muted-foreground',
+    headerTint: 'bg-muted/50 border-b border-border',
+    dot: 'bg-muted-foreground',
+    codeText: 'text-muted-foreground',
   },
   needs_review: {
     titleKey: 'portal.assembly.lane.needs_review',
     descKey: 'portal.assembly.lane.needs_review_desc',
     code: 'REV',
     rail: 'before:bg-amber-500',
-    surface: 'bg-amber-500/[0.03]',
-    ring: 'ring-1 ring-amber-500/30',
+    headerTint: 'bg-amber-500/[0.07] border-b border-amber-500/30',
     dot: 'bg-amber-500',
+    codeText: 'text-amber-600 dark:text-amber-500',
   },
 };
 
