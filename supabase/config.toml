@@ -2,6 +2,3 @@ project_id = "pkivavsxbvwtnkgxaufa"
 
 [functions.paddle-structure]
 verify_jwt = false
-
-[functions.passport-ocr]
-verify_jwt = false
