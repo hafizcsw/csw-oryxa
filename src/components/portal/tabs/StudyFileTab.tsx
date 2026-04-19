@@ -275,16 +275,40 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       items.map(it => it.crmFileId ? deleteFile(it.crmFileId) : Promise.resolve({ ok: true } as any)),
     );
     let ok = 0; let fail = 0;
+    const idsToCascade: string[] = [];
     results.forEach((r, i) => {
       const okish = r.status === 'fulfilled' && (r.value.ok || r.value.error === 'FILE_NOT_FOUND');
       if (okish) {
         ok++;
-        if (items[i].crmFileId) guard.untrackDocument(items[i].crmFileId!);
+        if (items[i].crmFileId) {
+          guard.untrackDocument(items[i].crmFileId!);
+          idsToCascade.push(items[i].crmFileId!);
+        }
+        idsToCascade.push(items[i].documentId);
         analysisHook.dismissAnalysis(items[i].documentId);
       } else {
         fail++;
       }
     });
+
+    // Cascade-clean foundation/lane/analysis rows for everything we successfully removed.
+    if (idsToCascade.length > 0) {
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const uniq = Array.from(new Set(idsToCascade));
+        await Promise.allSettled([
+          (supabase as any).from('document_foundation_outputs').delete().in('document_id', uniq),
+          (supabase as any).from('document_lane_facts').delete().in('document_id', uniq),
+          (supabase as any).from('document_analyses').delete().in('document_id', uniq),
+        ]);
+        // eslint-disable-next-line no-console
+        console.log('[StudyFileTab] bulk cascade-cleaned doc rows', { count: uniq.length });
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('[StudyFileTab] bulk cascade clean threw (non-fatal)', e);
+      }
+    }
+
     toast({
       title: t('portal.assembly.lane.delete_done', { ok, fail }),
     });
