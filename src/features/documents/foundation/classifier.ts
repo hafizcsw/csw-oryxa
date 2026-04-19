@@ -1,26 +1,33 @@
 // ═══════════════════════════════════════════════════════════════
-// Foundation — Family Classifier (filename + mime + MRZ peek)
+// Foundation — Family Classifier (CONTENT-FIRST, v2)
 // ═══════════════════════════════════════════════════════════════
-// Honest, fast, content-blind classifier for the Foundation Gate.
-// Uses ONLY:
-//   - filename tokens
-//   - mime type
-//   - (passport candidates only) cheap MRZ peek over PDF text layer
+// Order of authority (highest first):
+//   1. MRZ presence in PDF text          → passport_id @ 0.95
+//   2. Content keyword match in PDF text → up to 0.90
+//   3. Filename token match              → CAPPED @ 0.55 (hint only)
+//   4. Declared slot                     → 0.50 (hint only)
 //
-// Anything that does not score above thresholds becomes
-// 'unknown_document' with low confidence and is routed to review.
+// Hard rules:
+//   • filename/declared_slot ALONE never produce a confident decision
+//     → result is always requires_review=true if no content evidence
+//   • Image files (no OCR in Door 1) → content deferred → max 0.55, review
+//   • Content vs filename mismatch → content wins, mismatch logged
 // ═══════════════════════════════════════════════════════════════
 
 import type { DocumentFamily } from './families';
 import { defaultLaneFor } from './families';
 import { unknownDecision, type RouteDecision, ROUTER_VERSION } from './route-decision';
-import { parseMrz } from '../parsers/mrz-parser';
+import { extractFoundationEvidence, type FoundationEvidence } from './evidence-extractor';
 
-interface FilenameSignal {
+interface Signal {
   family: DocumentFamily;
-  score: number;       // 0..1 baseline contribution
-  matched: string[];   // matched tokens for audit
+  score: number;
+  source: 'mrz' | 'content_keywords' | 'filename' | 'declared_slot';
+  matched: string[];
 }
+
+const FILENAME_HINT_CAP = 0.55;
+const DECLARED_SLOT_SCORE = 0.50;
 
 const TOKENS: Record<Exclude<DocumentFamily, 'unknown_document' | 'composite_document'>, RegExp[]> = {
   passport_id: [
@@ -29,7 +36,8 @@ const TOKENS: Record<Exclude<DocumentFamily, 'unknown_document' | 'composite_doc
   ],
   graduation_certificate: [
     /\bgraduation\b/i, /\bdiploma\b/i, /\bcertificate\b/i, /\bdegree\b/i,
-    /شهادة/, /تخرج/, /دبلوم/, /بكالوريوس/, /ثانوية/,
+    /\bbachelor\b/i, /\bmaster\b/i, /\bdoctorate\b/i, /\bphd\b/i,
+    /شهادة/, /تخرج/, /دبلوم/, /بكالوريوس/, /ماجستير/, /ثانوية/,
   ],
   language_certificate: [
     /\bielts\b/i, /\btoefl\b/i, /\bduolingo\b/i, /\bpte\b/i, /\bdelf\b/i,
@@ -37,74 +45,51 @@ const TOKENS: Record<Exclude<DocumentFamily, 'unknown_document' | 'composite_doc
     /\blanguage\b.*\b(certificate|test|score)\b/i,
   ],
   academic_transcript: [
-    /\btranscript\b/i, /\bmarks\b/i, /\bgrades\b/i, /\bgpa\b/i, /\brecord\b/i,
+    /\btranscript\b/i, /\bmarks\b/i, /\bgrades\b/i, /\bgpa\b/i,
     /كشف/, /درجات/, /سجل[_ ]?أكاديمي/,
   ],
 };
 
-/** Normalize filename: lowercase, replace separators with spaces, strip extension. */
 function normalizeName(name: string): string {
   return name
-    .replace(/\.[^.]+$/, '')          // strip extension
-    .replace(/[_\-.]+/g, ' ')         // separators → space
-    .replace(/([a-z])([A-Z])/g, '$1 $2') // CamelCase → spaced
+    .replace(/\.[^.]+$/, '')
+    .replace(/[_\-.]+/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
     .toLowerCase()
     .trim();
 }
 
-function scoreFilename(name: string): FilenameSignal[] {
-  const normalized = normalizeName(name);
-  const out: FilenameSignal[] = [];
+function scoreText(text: string, capRaw: number): Signal[] {
+  const out: Signal[] = [];
   for (const [family, patterns] of Object.entries(TOKENS) as [DocumentFamily, RegExp[]][]) {
     const matched: string[] = [];
     for (const re of patterns) {
-      if (re.test(normalized)) matched.push(re.source);
+      if (re.test(text)) matched.push(re.source);
     }
     if (matched.length) {
-      // 1 hit → 0.55, 2 hits → 0.70, 3+ hits → 0.85 (capped)
-      const score = Math.min(0.85, 0.4 + matched.length * 0.15);
-      out.push({ family, score, matched });
+      // 1 hit → 0.55, 2 hits → 0.70, 3+ hits → 0.85, 4+ → 0.90 (capped at capRaw)
+      const raw = Math.min(0.90, 0.40 + matched.length * 0.15);
+      const score = Math.min(capRaw, raw);
+      out.push({ family, score, source: 'content_keywords', matched });
     }
   }
-  return out.sort((a, b) => b.score - a.score);
+  return out;
+}
+
+function scoreFilename(name: string): Signal[] {
+  const normalized = normalizeName(name);
+  const signals = scoreText(normalized, FILENAME_HINT_CAP);
+  return signals.map(s => ({ ...s, source: 'filename' as const }));
+}
+
+function scoreContent(text: string): Signal[] {
+  return scoreText(text, 0.90);
 }
 
 function mimeAllowed(mime: string): boolean {
   return mime === 'application/pdf' || mime.startsWith('image/');
 }
 
-/** Cheap MRZ peek — PDF text layer only. No OCR. No raster. No external. */
-async function tryPdfTextMrzPeek(file: File): Promise<{ found: boolean; raw: string }> {
-  if (file.type !== 'application/pdf') return { found: false, raw: '' };
-  try {
-    const pdfjsLib: any = await import('pdfjs-dist');
-    const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: buf, disableWorker: true }).promise;
-    const pagesToScan = Math.min(pdf.numPages, 2);
-    let text = '';
-    for (let p = 1; p <= pagesToScan; p++) {
-      const page = await pdf.getPage(p);
-      const content = await page.getTextContent();
-      text += '\n' + content.items.map((it: any) => it.str).join(' ');
-      if (text.length > 8000) break;
-    }
-    if (!text || text.length < 30) return { found: false, raw: '' };
-    const mrz = parseMrz(text);
-    return { found: mrz.found, raw: text.slice(0, 4000) };
-  } catch {
-    return { found: false, raw: '' };
-  }
-}
-
-export interface ClassifyInput {
-  document_id: string;
-  file: File;
-  /** Declared slot/kind from the upload UI. Low-confidence hint only. */
-  declared_slot?: string | null;
-}
-
-/** Map a declared slot string (from upload UI) to a known DocumentFamily.
- *  Conservative — only maps unambiguous slot values. */
 function declaredSlotToFamily(slot: string | null | undefined): DocumentFamily | null {
   if (!slot) return null;
   const s = slot.toLowerCase().trim();
@@ -121,7 +106,12 @@ function declaredSlotToFamily(slot: string | null | undefined): DocumentFamily |
   return null;
 }
 
-/** Foundation router — produces a RouteDecision for any file. */
+export interface ClassifyInput {
+  document_id: string;
+  file: File;
+  declared_slot?: string | null;
+}
+
 export async function classifyAndRoute(input: ClassifyInput): Promise<RouteDecision> {
   const { document_id, file, declared_slot } = input;
   const reasons: string[] = [];
@@ -137,56 +127,103 @@ export async function classifyAndRoute(input: ClassifyInput): Promise<RouteDecis
     return unknownDecision(document_id, reasons);
   }
 
-  const filenameSignals = scoreFilename(name);
-  let topSignal = filenameSignals[0];
+  // ── 1. Content evidence (the only authoritative source) ─────
+  const evidence: FoundationEvidence = await extractFoundationEvidence(file);
+  reasons.push(`content_kind=${evidence.content_kind}`);
+  for (const n of evidence.notes) reasons.push(`evidence:${n}`);
 
-  // ── Declared-slot hint: low-confidence declared signal ───────
-  // Only kicks in when filename produced no match. Caps at 0.55 → review_required.
-  const declaredFamily = declaredSlotToFamily(declared_slot);
-  if (!topSignal && declaredFamily) {
-    topSignal = {
-      family: declaredFamily,
-      score: 0.55,
-      matched: [`declared_slot:${declared_slot}`],
-    };
-    reasons.push(`declared_slot_signal=${declaredFamily}@0.55`);
+  const allSignals: Signal[] = [];
+
+  // 1a. MRZ — strongest content signal
+  if (evidence.mrz?.found) {
+    allSignals.push({
+      family: 'passport_id',
+      score: 0.95,
+      source: 'mrz',
+      matched: [`mrz:${evidence.mrz.format ?? 'unknown'}`],
+    });
+    reasons.push('content_signal:mrz_present');
   }
 
-  // ── Passport-only MRZ peek (cheap, PDF text layer only) ──────
-  let mrzBoost = 0;
-  if (mime === 'application/pdf') {
-    const peek = await tryPdfTextMrzPeek(file);
-    if (peek.found) {
-      mrzBoost = 0.5;
-      reasons.push('mrz_peek=found');
-      // MRZ presence is a near-definitive passport signal; promote it.
-      const passportSignal: FilenameSignal = {
-        family: 'passport_id',
-        score: Math.max(topSignal?.family === 'passport_id' ? topSignal.score : 0, 0.6) + mrzBoost,
-        matched: ['mrz_present', ...(topSignal?.family === 'passport_id' ? topSignal.matched : [])],
-      };
-      // re-evaluate top
-      const merged = [...filenameSignals.filter(s => s.family !== 'passport_id'), passportSignal]
-        .sort((a, b) => b.score - a.score);
-      topSignal = merged[0];
-    } else {
-      reasons.push('mrz_peek=not_found');
+  // 1b. Content keywords on extracted PDF text
+  if (evidence.pdf_text) {
+    const contentSignals = scoreContent(evidence.pdf_text.toLowerCase());
+    if (contentSignals.length) {
+      reasons.push(`content_signal:keywords=[${contentSignals.map(s => `${s.family}@${s.score.toFixed(2)}`).join(',')}]`);
     }
+    allSignals.push(...contentSignals);
   }
 
-  if (!topSignal || topSignal.score < 0.5) {
-    reasons.push(`top_signal_too_weak(score=${topSignal?.score ?? 0})`);
+  // ── 2. Filename + declared_slot — HINTS ONLY (capped 0.55 / 0.50) ──
+  const filenameSignals = scoreFilename(name);
+  allSignals.push(...filenameSignals);
+  if (filenameSignals.length) {
+    reasons.push(`filename_hint=[${filenameSignals.map(s => `${s.family}@${s.score.toFixed(2)}`).join(',')}]`);
+  }
+
+  const declaredFamily = declaredSlotToFamily(declared_slot);
+  if (declaredFamily) {
+    allSignals.push({
+      family: declaredFamily,
+      score: DECLARED_SLOT_SCORE,
+      source: 'declared_slot',
+      matched: [`declared_slot:${declared_slot}`],
+    });
+    reasons.push(`declared_slot_hint=${declaredFamily}@${DECLARED_SLOT_SCORE}`);
+  }
+
+  // ── 3. Aggregate per-family (max score wins) ───────────────
+  const perFamily = new Map<DocumentFamily, Signal>();
+  for (const s of allSignals) {
+    const cur = perFamily.get(s.family);
+    if (!cur || s.score > cur.score) perFamily.set(s.family, s);
+  }
+  const ranked = [...perFamily.values()].sort((a, b) => b.score - a.score);
+  const top = ranked[0];
+
+  if (!top || top.score < 0.50) {
+    reasons.push(`top_signal_too_weak(score=${top?.score ?? 0})`);
     return unknownDecision(document_id, reasons);
   }
 
-  const family = topSignal.family;
-  const confidence = Math.min(0.99, topSignal.score);
-  reasons.push(`top_family=${family}`);
-  reasons.push(`top_matches=[${topSignal.matched.join('|')}]`);
+  // ── 4. Content vs filename mismatch detection ───────────────
+  const contentTop = ranked.find(s => s.source === 'mrz' || s.source === 'content_keywords');
+  const hintTop = ranked.find(s => s.source === 'filename' || s.source === 'declared_slot');
+  if (contentTop && hintTop && contentTop.family !== hintTop.family) {
+    reasons.push(`filename_content_mismatch:filename=${hintTop.family},content=${contentTop.family} → content wins`);
+  }
 
-  // Truth-honesty: anything below 0.7 still goes to review even if a family is named.
-  const requiresReview = confidence < 0.7 || family === 'graduation_certificate' || family === 'academic_transcript';
-  if (requiresReview) reasons.push(`requires_review (confidence=${confidence})`);
+  const family = top.family;
+  let confidence = Math.min(0.99, top.score);
+
+  reasons.push(`top_family=${family}`);
+  reasons.push(`top_source=${top.source}`);
+  reasons.push(`top_matches=[${top.matched.join('|')}]`);
+
+  // ── 5. HONESTY GATES ──
+  // Gate A: any decision NOT backed by content evidence → requires_review,
+  //         and confidence is clamped to FILENAME_HINT_CAP.
+  const hasContentEvidence = top.source === 'mrz' || top.source === 'content_keywords';
+  if (!hasContentEvidence) {
+    confidence = Math.min(confidence, FILENAME_HINT_CAP);
+    reasons.push('no_content_evidence → confidence_capped_at_filename_hint');
+  }
+
+  // Gate B: image files (no OCR in Door 1) → content deferred, always review.
+  if (evidence.content_kind === 'image') {
+    reasons.push('image_content_pending_door3 → requires_review');
+  }
+
+  // Gate C: graduation/transcript always review (existing rule preserved).
+  const familyForcesReview = family === 'graduation_certificate' || family === 'academic_transcript';
+
+  const requiresReview =
+    !hasContentEvidence ||
+    evidence.content_kind === 'image' ||
+    confidence < 0.70 ||
+    familyForcesReview;
+
+  if (requiresReview) reasons.push(`requires_review (confidence=${confidence.toFixed(2)})`);
 
   const lane = defaultLaneFor(family);
   const isAsync = lane === 'transcript_lane' || lane === 'composite_lane';
@@ -200,6 +237,6 @@ export async function classifyAndRoute(input: ClassifyInput): Promise<RouteDecis
     is_async: isAsync,
     requires_review: requiresReview,
     decided_at: new Date().toISOString(),
-    router_version: ROUTER_VERSION,
+    router_version: 'foundation-v2-content-first',
   };
 }
