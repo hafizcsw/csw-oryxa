@@ -14,6 +14,9 @@ import type { StudentProfile, StudentPortalProfile } from "@/hooks/useStudentPro
 import { TabNavigation } from "./TabNavigation";
 import { useStudentSnapshot, DocumentSnapshot } from "@/hooks/useStudentSnapshot";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Door3TranscriptPanel } from "@/components/documents/Door3TranscriptPanel";
+import { ReviewQueuePanel } from "@/components/documents/ReviewQueuePanel";
+import { useStaffAuthority } from "@/hooks/useStaffAuthority";
 
 // Helper: Normalize category
 const normalizeCategory = (cat?: string | null) =>
@@ -52,6 +55,7 @@ interface DocumentsTabProps {
 
 export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTypesFilter, compact }: DocumentsTabProps) {
   const { t } = useLanguage();
+  const { isStaff } = useStaffAuthority();
   const { 
     documents: studentDocs, 
     loading,
@@ -553,6 +557,14 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
           </p>
         </div>
       </div>
+      )}
+
+      {/* Door 3 — truth surface (read-only). Transcript panel for most recent doc; review queue for staff. */}
+      {!compact && studentDocs && studentDocs.length > 0 && (
+        <div className="space-y-3">
+          <Door3TranscriptPanel documentId={[...studentDocs].sort((a, b) => docTime(b) - docTime(a))[0].id} />
+          {isStaff && <ReviewQueuePanel />}
+        </div>
       )}
 
       {/* Preview Modal */}
