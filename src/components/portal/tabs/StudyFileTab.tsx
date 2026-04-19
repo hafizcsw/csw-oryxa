@@ -262,7 +262,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     // 1. Try to delete the CRM file if we have an ID. Treat missing/not-found as success.
     let crmOk = true;
     if (crmFileId) {
-      const res = await deleteFile(crmFileId);
+      const res = await deleteFile(crmFileId, documentId);
       crmOk = res.ok || res.error === 'FILE_NOT_FOUND';
       if (!crmOk) {
         console.error('[StudyFileTab] delete failed', res.error);
@@ -306,7 +306,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
 
   const handleDeleteAll = useCallback(async (items: Array<{ crmFileId: string | null; documentId: string }>) => {
     const results = await Promise.allSettled(
-      items.map(it => it.crmFileId ? deleteFile(it.crmFileId) : Promise.resolve({ ok: true } as any)),
+      items.map(it => it.crmFileId ? deleteFile(it.crmFileId, it.documentId) : Promise.resolve({ ok: true } as any)),
     );
     let ok = 0; let fail = 0;
     const idsToCascade: string[] = [];
