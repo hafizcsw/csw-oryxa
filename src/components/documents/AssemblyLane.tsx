@@ -56,11 +56,49 @@ interface AssemblyLaneProps {
   onEditField?: (params: { documentId: string; fieldKey: string; newValue: string }) => void;
 }
 
-const LANE_CONFIG: Record<DestinationLane, { titleKey: string; descKey: string; tone: string }> = {
-  identity: { titleKey: 'portal.assembly.lane.identity', descKey: 'portal.assembly.lane.identity_desc', tone: 'border-primary/30' },
-  academic: { titleKey: 'portal.assembly.lane.academic', descKey: 'portal.assembly.lane.academic_desc', tone: 'border-primary/30' },
-  language: { titleKey: 'portal.assembly.lane.language', descKey: 'portal.assembly.lane.language_desc', tone: 'border-primary/30' },
-  needs_review: { titleKey: 'portal.assembly.lane.needs_review', descKey: 'portal.assembly.lane.needs_review_desc', tone: 'border-amber-500/30' },
+// Stripe/Vercel-style data-dense lane theming.
+// Each lane gets: a monospaced code, a left accent rail color, and an
+// ambient surface tone. All colors via semantic tokens — no raw hex.
+const LANE_CONFIG: Record<
+  DestinationLane,
+  { titleKey: string; descKey: string; code: string; rail: string; surface: string; ring: string; dot: string }
+> = {
+  identity: {
+    titleKey: 'portal.assembly.lane.identity',
+    descKey: 'portal.assembly.lane.identity_desc',
+    code: 'IDN',
+    rail: 'before:bg-primary',
+    surface: 'bg-card/40',
+    ring: 'ring-1 ring-border/60',
+    dot: 'bg-primary',
+  },
+  academic: {
+    titleKey: 'portal.assembly.lane.academic',
+    descKey: 'portal.assembly.lane.academic_desc',
+    code: 'ACA',
+    rail: 'before:bg-foreground/70',
+    surface: 'bg-card/40',
+    ring: 'ring-1 ring-border/60',
+    dot: 'bg-foreground/70',
+  },
+  language: {
+    titleKey: 'portal.assembly.lane.language',
+    descKey: 'portal.assembly.lane.language_desc',
+    code: 'LNG',
+    rail: 'before:bg-muted-foreground/60',
+    surface: 'bg-card/40',
+    ring: 'ring-1 ring-border/60',
+    dot: 'bg-muted-foreground/70',
+  },
+  needs_review: {
+    titleKey: 'portal.assembly.lane.needs_review',
+    descKey: 'portal.assembly.lane.needs_review_desc',
+    code: 'REV',
+    rail: 'before:bg-amber-500',
+    surface: 'bg-amber-500/[0.03]',
+    ring: 'ring-1 ring-amber-500/30',
+    dot: 'bg-amber-500',
+  },
 };
 
 export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDeleteAll, onEditField }: AssemblyLaneProps) {
