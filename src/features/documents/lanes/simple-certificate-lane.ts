@@ -184,16 +184,13 @@ export async function runSimpleCertificateLane(
 
   if (text.length < 40) {
     notes.push('insufficient_text_extracted');
-    const agg = aggregateLaneTruth(
-      facts,
-      family === 'graduation_certificate' ? REQUIRED_GRADUATION : REQUIRED_LANGUAGE,
-    );
     return {
       document_id,
       lane: family === 'graduation_certificate' ? 'graduation_lane' : 'language_lane',
       truth_state: 'needs_review',
       lane_confidence: 0,
       requires_review: true,
+      review_reason: read.deferred_image ? REASON_IMAGE_DEFERRED : null,
       facts,
       engine_metadata: {
         producer: CERT_LANE_VERSION,
