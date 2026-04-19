@@ -162,6 +162,38 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     onBatchComplete: handleBatchComplete,
   });
 
+  // ═══ Auto-purge orphaned lane facts ═══
+  // Lane facts whose source CRM document has been deleted are stale.
+  // We sweep them once after documents + facts have loaded.
+  const orphanSweepRef = useRef(false);
+  useEffect(() => {
+    if (orphanSweepRef.current) return;
+    const factIds = Object.keys(laneFactsByDocId);
+    if (factIds.length === 0) return;
+    // Wait until documents have actually loaded at least once
+    const validIds = new Set(documents.map(d => d.id));
+    const orphans = factIds.filter(id => !validIds.has(id));
+    if (orphans.length === 0) {
+      orphanSweepRef.current = true;
+      return;
+    }
+    orphanSweepRef.current = true;
+    void (async () => {
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        await Promise.allSettled([
+          (supabase as any).from('document_foundation_outputs').delete().in('document_id', orphans),
+          (supabase as any).from('document_lane_facts').delete().in('document_id', orphans),
+          (supabase as any).from('document_analyses').delete().in('document_id', orphans),
+        ]);
+        console.log('[StudyFileTab] purged orphaned lane facts', { count: orphans.length });
+        await refetchLaneFacts();
+      } catch (e) {
+        console.warn('[StudyFileTab] orphan sweep failed (non-fatal)', e);
+      }
+    })();
+  }, [laneFactsByDocId, documents, refetchLaneFacts]);
+
   // ═══ Unsaved-documents guard: warn on unload + auto-cleanup orphans ═══
   const guard = useUnsavedDocumentsGuard({
     enabled: !!profile?.user_id,
