@@ -19,6 +19,9 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { parseTranscript } from '../_shared/door3-transcript-parser.ts';
 import type { OcrEvidence } from '../_shared/door3-types.ts';
+import { recoverPassport } from '../_shared/door3-passport-recovery.ts';
+import { recoverCertificate } from '../_shared/door3-certificate-recovery.ts';
+import { upsertLaneFacts } from '../_shared/door3-lane-facts-writer.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -205,29 +208,73 @@ async function handleTranscriptParse(admin: SupabaseClient, job: any): Promise<s
 }
 
 async function handlePassportRecovery(admin: SupabaseClient, job: any): Promise<string> {
+  const t0 = Date.now();
   const ev = await loadEvidence(admin, job.document_id);
   if (!ev) { await fail(admin, job.id, 'no_ocr_evidence'); return 'no_ocr_evidence'; }
-  // V1: stub — store result hint, mark needs_review (real MRZ recovery from
-  // OCR text reuses src/features/documents/parsers/mrz-parser.ts; mirror later).
-  await admin.from('document_jobs').update({
-    status: 'needs_review',
-    result: { stub: true, evidence_engine: ev.engine, page_count: ev.page_count },
-    completed_at: new Date().toISOString(),
-  }).eq('id', job.id);
-  await enqueueReview(admin, job, 'passport_id', 'recovery_stub_v1', { notes: ['passport_recovery_v1_stub'] });
-  return 'needs_review';
+
+  const r = recoverPassport(ev);
+  const agg = await upsertLaneFacts({
+    admin,
+    document_id: job.document_id,
+    user_id: job.user_id,
+    lane: r.lane,
+    facts: r.facts,
+    required: r.required,
+    producer: 'door3-passport-recovery-v1',
+    processing_ms: Date.now() - t0,
+    notes: r.notes,
+    review_reason: r.review_reason,
+  });
+
+  if (agg.requires_review) {
+    await admin.from('document_jobs').update({
+      status: 'needs_review',
+      result: { lane: r.lane, truth_state: agg.truth_state, lane_confidence: agg.lane_confidence, review_reason: r.review_reason },
+      completed_at: new Date().toISOString(),
+    }).eq('id', job.id);
+    await enqueueReview(admin, job, r.lane, r.review_reason ?? 'passport_low_confidence', {
+      notes: r.notes, review_reason: r.review_reason, lane_confidence: agg.lane_confidence,
+    });
+    return 'needs_review';
+  }
+
+  await complete(admin, job.id, { lane: r.lane, truth_state: agg.truth_state, lane_confidence: agg.lane_confidence });
+  return 'completed';
 }
 
 async function handleCertificateRecovery(admin: SupabaseClient, job: any): Promise<string> {
+  const t0 = Date.now();
   const ev = await loadEvidence(admin, job.document_id);
   if (!ev) { await fail(admin, job.id, 'no_ocr_evidence'); return 'no_ocr_evidence'; }
-  await admin.from('document_jobs').update({
-    status: 'needs_review',
-    result: { stub: true, evidence_engine: ev.engine, page_count: ev.page_count },
-    completed_at: new Date().toISOString(),
-  }).eq('id', job.id);
-  await enqueueReview(admin, job, 'graduation_certificate', 'recovery_stub_v1', { notes: ['certificate_recovery_v1_stub'] });
-  return 'needs_review';
+
+  const r = recoverCertificate(ev);
+  const agg = await upsertLaneFacts({
+    admin,
+    document_id: job.document_id,
+    user_id: job.user_id,
+    lane: r.lane,
+    facts: r.facts,
+    required: r.required,
+    producer: 'door3-certificate-recovery-v1',
+    processing_ms: Date.now() - t0,
+    notes: r.notes,
+    review_reason: r.review_reason,
+  });
+
+  if (agg.requires_review) {
+    await admin.from('document_jobs').update({
+      status: 'needs_review',
+      result: { lane: r.lane, truth_state: agg.truth_state, lane_confidence: agg.lane_confidence, review_reason: r.review_reason },
+      completed_at: new Date().toISOString(),
+    }).eq('id', job.id);
+    await enqueueReview(admin, job, r.lane, r.review_reason ?? 'certificate_low_confidence', {
+      notes: r.notes, review_reason: r.review_reason, lane_confidence: agg.lane_confidence,
+    });
+    return 'needs_review';
+  }
+
+  await complete(admin, job.id, { lane: r.lane, truth_state: agg.truth_state, lane_confidence: agg.lane_confidence });
+  return 'completed';
 }
 
 // ─── helpers ───────────────────────────────────────────────────
