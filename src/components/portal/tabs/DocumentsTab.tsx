@@ -14,6 +14,9 @@ import type { StudentProfile, StudentPortalProfile } from "@/hooks/useStudentPro
 import { TabNavigation } from "./TabNavigation";
 import { useStudentSnapshot, DocumentSnapshot } from "@/hooks/useStudentSnapshot";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Door3TranscriptPanel } from "@/components/documents/Door3TranscriptPanel";
+import { ReviewQueuePanel } from "@/components/documents/ReviewQueuePanel";
+import { useStaffAuthority } from "@/hooks/useStaffAuthority";
 
 // Helper: Normalize category
 const normalizeCategory = (cat?: string | null) =>
