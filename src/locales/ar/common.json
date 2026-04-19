@@ -1455,7 +1455,10 @@
       "status_incomplete": "غير مكتمل",
       "status_partial": "جزئي",
       "status_complete": "مكتمل",
-      "status_verified": "موثّق"
+      "status_verified": "موثّق",
+      "lane_review_reason": {
+        "image_ocr_deferred_to_door_3": "الصور والملفات الممسوحة ضوئيًا لا يمكن استخراجها تلقائيًا في هذه المرحلة. يُرجى رفع ملف PDF أصلي إن أمكن، أو المتابعة وسيتم إرسال الملف للمراجعة."
+      }
     },
     "uploadHub": {
       "title": "رفع المستندات",

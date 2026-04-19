@@ -1453,7 +1453,10 @@
       "status_incomplete": "Incomplete",
       "status_partial": "Partial",
       "status_complete": "Complete",
-      "status_verified": "Verified"
+      "status_verified": "Verified",
+      "lane_review_reason": {
+        "image_ocr_deferred_to_door_3": "Images and scanned files cannot be auto-extracted at this stage. Please upload an original PDF if possible, or continue and the file will be sent for review."
+      }
     },
     "uploadHub": {
       "title": "Upload Documents",
