@@ -126,28 +126,27 @@ export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDelete
   return (
     <section
       className={cn(
-        // Card surface — flat, neutral, with a 3px left accent rail (Stripe/Vercel feel).
-        'relative rounded-lg p-4 transition-colors',
-        "before:content-[''] before:absolute before:inset-y-3 before:start-0 before:w-[3px] before:rounded-full",
+        // Card surface — bordered card with a 4px left accent rail and a tinted header strip.
+        'relative rounded-lg overflow-hidden bg-card border border-border shadow-sm transition-colors',
+        "before:content-[''] before:absolute before:top-0 before:bottom-0 before:start-0 before:w-1",
         cfg.rail,
-        cfg.surface,
-        cfg.ring,
         isEmpty && 'opacity-70',
       )}
       data-assembly-lane={lane}
     >
-      <header className="flex items-start justify-between gap-3 mb-3 ps-2">
+      <header
+        className={cn(
+          'flex items-start justify-between gap-3 px-4 py-2.5 ps-5',
+          cfg.headerTint,
+        )}
+      >
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                'inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.14em] uppercase text-muted-foreground',
-              )}
-            >
+            <span className={cn('inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.18em] uppercase font-semibold', cfg.codeText)}>
               <span className={cn('inline-block w-1.5 h-1.5 rounded-full', cfg.dot)} aria-hidden />
               {cfg.code}
             </span>
-            <span className="text-[10px] text-border" aria-hidden>·</span>
+            <span className="text-border" aria-hidden>·</span>
             <h3 className="text-[13px] font-semibold text-foreground tracking-tight truncate">
               {t(cfg.titleKey)}
             </h3>
@@ -157,7 +156,7 @@ export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDelete
           </p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <span className="font-mono text-[10px] tabular-nums text-muted-foreground bg-muted/40 border border-border/60 rounded px-1.5 py-0.5">
+          <span className="font-mono text-[10px] tabular-nums text-foreground/80 bg-background border border-border rounded px-1.5 py-0.5 shadow-sm">
             {String(docs.length).padStart(2, '0')}
           </span>
           {lane === 'needs_review' && deletableItems.length > 0 && onDeleteAll && (
@@ -176,13 +175,13 @@ export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDelete
       </header>
 
       {isEmpty ? (
-        <div className="ps-2 py-2">
+        <div className="px-4 ps-5 py-3">
           <p className="text-[11px] text-muted-foreground/80 italic">
             {t('portal.assembly.lane.waiting')}
           </p>
         </div>
       ) : (
-        <div className="space-y-3 ps-2">
+        <div className="space-y-3 px-4 ps-5 py-3">
           {docs.map((doc) => (
             <DocBlock
               key={doc.documentId}
