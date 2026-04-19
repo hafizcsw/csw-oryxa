@@ -1,9 +1,10 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { foundationPrivacyGuardPlugin } from "./vite-plugins/foundation-privacy-guard";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [foundationPrivacyGuardPlugin(), react()],
   test: {
     environment: "jsdom",
     globals: true,
