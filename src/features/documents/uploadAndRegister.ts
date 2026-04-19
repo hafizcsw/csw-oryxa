@@ -10,7 +10,7 @@ import { runFoundation, type FoundationOutput } from "./foundation";
 
 export interface UploadResult {
   success: boolean;
-  stage?: 'prepare' | 'put' | 'confirm';
+  stage?: 'prepare' | 'put' | 'confirm' | 'foundation';
   file_id?: string;
   file_url?: string;
   path?: string;
@@ -19,8 +19,11 @@ export interface UploadResult {
   details?: string;
   http_status?: number;
   request_id?: string;
-  /** Foundation Gate output — present whenever upload succeeded. */
+  /** Foundation Gate output — present whenever upload succeeded.
+   *  If foundation_failed=true, success is FALSE and stage='foundation'. */
   foundation?: FoundationOutput;
+  foundation_failed?: boolean;
+  foundation_persisted?: boolean;
 }
 
 export async function uploadAndRegisterFile(params: {
