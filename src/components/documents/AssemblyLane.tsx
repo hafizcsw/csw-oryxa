@@ -61,43 +61,43 @@ interface AssemblyLaneProps {
 // ambient surface tone. All colors via semantic tokens — no raw hex.
 const LANE_CONFIG: Record<
   DestinationLane,
-  { titleKey: string; descKey: string; code: string; rail: string; surface: string; ring: string; dot: string }
+  { titleKey: string; descKey: string; code: string; rail: string; headerTint: string; dot: string; codeText: string }
 > = {
   identity: {
     titleKey: 'portal.assembly.lane.identity',
     descKey: 'portal.assembly.lane.identity_desc',
     code: 'IDN',
     rail: 'before:bg-primary',
-    surface: 'bg-card/40',
-    ring: 'ring-1 ring-border/60',
+    headerTint: 'bg-primary/[0.06] border-b border-primary/20',
     dot: 'bg-primary',
+    codeText: 'text-primary',
   },
   academic: {
     titleKey: 'portal.assembly.lane.academic',
     descKey: 'portal.assembly.lane.academic_desc',
     code: 'ACA',
-    rail: 'before:bg-foreground/70',
-    surface: 'bg-card/40',
-    ring: 'ring-1 ring-border/60',
-    dot: 'bg-foreground/70',
+    rail: 'before:bg-foreground',
+    headerTint: 'bg-foreground/[0.04] border-b border-foreground/15',
+    dot: 'bg-foreground',
+    codeText: 'text-foreground',
   },
   language: {
     titleKey: 'portal.assembly.lane.language',
     descKey: 'portal.assembly.lane.language_desc',
     code: 'LNG',
-    rail: 'before:bg-muted-foreground/60',
-    surface: 'bg-card/40',
-    ring: 'ring-1 ring-border/60',
-    dot: 'bg-muted-foreground/70',
+    rail: 'before:bg-muted-foreground',
+    headerTint: 'bg-muted/50 border-b border-border',
+    dot: 'bg-muted-foreground',
+    codeText: 'text-muted-foreground',
   },
   needs_review: {
     titleKey: 'portal.assembly.lane.needs_review',
     descKey: 'portal.assembly.lane.needs_review_desc',
     code: 'REV',
     rail: 'before:bg-amber-500',
-    surface: 'bg-amber-500/[0.03]',
-    ring: 'ring-1 ring-amber-500/30',
+    headerTint: 'bg-amber-500/[0.07] border-b border-amber-500/30',
     dot: 'bg-amber-500',
+    codeText: 'text-amber-600 dark:text-amber-500',
   },
 };
 
@@ -126,28 +126,27 @@ export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDelete
   return (
     <section
       className={cn(
-        // Card surface — flat, neutral, with a 3px left accent rail (Stripe/Vercel feel).
-        'relative rounded-lg p-4 transition-colors',
-        "before:content-[''] before:absolute before:inset-y-3 before:start-0 before:w-[3px] before:rounded-full",
+        // Card surface — bordered card with a 4px left accent rail and a tinted header strip.
+        'relative rounded-lg overflow-hidden bg-card border border-border shadow-sm transition-colors',
+        "before:content-[''] before:absolute before:top-0 before:bottom-0 before:start-0 before:w-1",
         cfg.rail,
-        cfg.surface,
-        cfg.ring,
         isEmpty && 'opacity-70',
       )}
       data-assembly-lane={lane}
     >
-      <header className="flex items-start justify-between gap-3 mb-3 ps-2">
+      <header
+        className={cn(
+          'flex items-start justify-between gap-3 px-4 py-2.5 ps-5',
+          cfg.headerTint,
+        )}
+      >
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                'inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.14em] uppercase text-muted-foreground',
-              )}
-            >
+            <span className={cn('inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.18em] uppercase font-semibold', cfg.codeText)}>
               <span className={cn('inline-block w-1.5 h-1.5 rounded-full', cfg.dot)} aria-hidden />
               {cfg.code}
             </span>
-            <span className="text-[10px] text-border" aria-hidden>·</span>
+            <span className="text-border" aria-hidden>·</span>
             <h3 className="text-[13px] font-semibold text-foreground tracking-tight truncate">
               {t(cfg.titleKey)}
             </h3>
@@ -157,7 +156,7 @@ export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDelete
           </p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <span className="font-mono text-[10px] tabular-nums text-muted-foreground bg-muted/40 border border-border/60 rounded px-1.5 py-0.5">
+          <span className="font-mono text-[10px] tabular-nums text-foreground/80 bg-background border border-border rounded px-1.5 py-0.5 shadow-sm">
             {String(docs.length).padStart(2, '0')}
           </span>
           {lane === 'needs_review' && deletableItems.length > 0 && onDeleteAll && (
@@ -176,13 +175,13 @@ export function AssemblyLane({ lane, docs, promotedFields, onDeleteDoc, onDelete
       </header>
 
       {isEmpty ? (
-        <div className="ps-2 py-2">
+        <div className="px-4 ps-5 py-3">
           <p className="text-[11px] text-muted-foreground/80 italic">
             {t('portal.assembly.lane.waiting')}
           </p>
         </div>
       ) : (
-        <div className="space-y-3 ps-2">
+        <div className="space-y-3 px-4 ps-5 py-3">
           {docs.map((doc) => (
             <DocBlock
               key={doc.documentId}
