@@ -243,7 +243,28 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       }
       guard.untrackDocument(crmFileId);
     }
-    // 2. Always remove the local analysis/proposal record so the card disappears.
+
+    // 2. Cascade-clean ALL document-scoped rows so re-uploads behave clean.
+    //    Foundation/lane/analysis rows are keyed by document_id, which equals
+    //    crm_file_id for CRM-backed docs. We attempt both keys defensively.
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const ids = Array.from(new Set([crmFileId, documentId].filter(Boolean) as string[]));
+      if (ids.length > 0) {
+        await Promise.allSettled([
+          (supabase as any).from('document_foundation_outputs').delete().in('document_id', ids),
+          (supabase as any).from('document_lane_facts').delete().in('document_id', ids),
+          (supabase as any).from('document_analyses').delete().in('document_id', ids),
+        ]);
+        // eslint-disable-next-line no-console
+        console.log('[StudyFileTab] cascade-cleaned doc rows', { ids });
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('[StudyFileTab] cascade clean threw (non-fatal)', e);
+    }
+
+    // 3. Always remove the local analysis/proposal record so the card disappears.
     analysisHook.dismissAnalysis(documentId);
     await refetchDocs({ silent: true });
     return true;
@@ -254,16 +275,40 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       items.map(it => it.crmFileId ? deleteFile(it.crmFileId) : Promise.resolve({ ok: true } as any)),
     );
     let ok = 0; let fail = 0;
+    const idsToCascade: string[] = [];
     results.forEach((r, i) => {
       const okish = r.status === 'fulfilled' && (r.value.ok || r.value.error === 'FILE_NOT_FOUND');
       if (okish) {
         ok++;
-        if (items[i].crmFileId) guard.untrackDocument(items[i].crmFileId!);
+        if (items[i].crmFileId) {
+          guard.untrackDocument(items[i].crmFileId!);
+          idsToCascade.push(items[i].crmFileId!);
+        }
+        idsToCascade.push(items[i].documentId);
         analysisHook.dismissAnalysis(items[i].documentId);
       } else {
         fail++;
       }
     });
+
+    // Cascade-clean foundation/lane/analysis rows for everything we successfully removed.
+    if (idsToCascade.length > 0) {
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const uniq = Array.from(new Set(idsToCascade));
+        await Promise.allSettled([
+          (supabase as any).from('document_foundation_outputs').delete().in('document_id', uniq),
+          (supabase as any).from('document_lane_facts').delete().in('document_id', uniq),
+          (supabase as any).from('document_analyses').delete().in('document_id', uniq),
+        ]);
+        // eslint-disable-next-line no-console
+        console.log('[StudyFileTab] bulk cascade-cleaned doc rows', { count: uniq.length });
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('[StudyFileTab] bulk cascade clean threw (non-fatal)', e);
+      }
+    }
+
     toast({
       title: t('portal.assembly.lane.delete_done', { ok, fail }),
     });
