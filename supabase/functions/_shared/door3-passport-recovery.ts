@@ -78,8 +78,8 @@ export function recoverPassport(ev: OcrEvidence): PassportRecoveryResult {
   const allLines = allText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
   const required = [
-    'passport_number', 'surname', 'given_names', 'nationality',
-    'date_of_birth', 'gender', 'expiry_date', 'issuing_country',
+    'full_name', 'passport_number', 'nationality',
+    'date_of_birth', 'expiry_date', 'issuing_country', 'sex', 'mrz_present',
   ];
   const facts: Record<string, CanonicalField> = Object.fromEntries(
     required.map((k) => [k, missingField('door3-passport-recovery-v1')]),
