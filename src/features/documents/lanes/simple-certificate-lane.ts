@@ -1,14 +1,16 @@
 // ═══════════════════════════════════════════════════════════════
-// Door 2 — Simple Certificate Lane
+// Door 2 — Simple Certificate Lane (Architecture-Compliant)
 // ═══════════════════════════════════════════════════════════════
 // Narrow extraction for ONLY:
 //   • graduation_certificate
 //   • language_certificate (IELTS / TOEFL / Duolingo / PTE / etc.)
 //
 // Strategy: heading-aware + key-value regex over text.
-// Reading: PDF text first; fallback to Tesseract for images/scans.
-// NO complex tables. NO transcript logic. NO LLM.
-// Honest fields: extracted / proposed / missing / needs_review.
+// Reading: PDF text layer ONLY (born-digital). NO OCR in this lane.
+// If the file is an image OR a scanned PDF without a text layer →
+// honestly return needs_review. (Tesseract was removed per the
+// "Tesseract passport-only" architecture decision; certificate OCR
+// is deferred to Door 3.)
 // ═══════════════════════════════════════════════════════════════
 
 import {
@@ -19,12 +21,11 @@ import {
   aggregateLaneTruth,
 } from './lane-fact-model';
 
-const CERT_LANE_VERSION = 'simple-certificate-lane-v1';
+const CERT_LANE_VERSION = 'simple-certificate-lane-v2-no-ocr';
 
 const REQUIRED_GRADUATION = ['student_name', 'institution_name', 'certificate_title'];
 const REQUIRED_LANGUAGE = ['student_name', 'language_test_name', 'score'];
 
-// ── Reading helpers (mirror passport-lane behavior) ──────────
 async function readPdfText(file: File): Promise<string> {
   try {
     const pdfjsLib: any = await import('pdfjs-dist');
@@ -43,35 +44,6 @@ async function readPdfText(file: File): Promise<string> {
   }
 }
 
-async function rasterizePdfFirstPage(file: File): Promise<HTMLCanvasElement | null> {
-  try {
-    const pdfjsLib: any = await import('pdfjs-dist');
-    const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: buf, disableWorker: true }).promise;
-    const page = await pdf.getPage(1);
-    const viewport = page.getViewport({ scale: 2.0 });
-    const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-    await page.render({ canvasContext: ctx, viewport }).promise;
-    return canvas;
-  } catch {
-    return null;
-  }
-}
-
-async function ocrSource(source: HTMLCanvasElement | File): Promise<string> {
-  try {
-    const Tesseract: any = await import('tesseract.js');
-    const result = await Tesseract.recognize(source as any, 'eng');
-    return (result?.data?.text as string) || '';
-  } catch {
-    return '';
-  }
-}
-
 async function readForCertificate(
   file: File,
 ): Promise<{ text: string; pdf_text_used: boolean; ocr_used: boolean; notes: string[] }> {
@@ -83,18 +55,12 @@ async function readForCertificate(
       notes.push('pdf_text_layer_used');
       return { text, pdf_text_used: true, ocr_used: false, notes };
     }
-    notes.push('pdf_no_text → raster+ocr');
-    const canvas = await rasterizePdfFirstPage(file);
-    if (canvas) {
-      const ocrText = await ocrSource(canvas);
-      return { text: ocrText, pdf_text_used: false, ocr_used: true, notes };
-    }
+    notes.push('pdf_no_text_layer → no_ocr_in_door_2 → needs_review');
     return { text: '', pdf_text_used: false, ocr_used: false, notes };
   }
   if (mime.startsWith('image/')) {
-    notes.push('image_ocr_local_tesseract');
-    const ocrText = await ocrSource(file);
-    return { text: ocrText, pdf_text_used: false, ocr_used: true, notes };
+    notes.push('image → no_ocr_in_door_2 → needs_review');
+    return { text: '', pdf_text_used: false, ocr_used: false, notes };
   }
   return { text: '', pdf_text_used: false, ocr_used: false, notes: [`unsupported_mime=${mime}`] };
 }
