@@ -138,7 +138,6 @@ export function recoverPassport(ev: OcrEvidence): PassportRecoveryResult {
 
   const allOk = c1 && c2 && c3;
   const baseConf = allOk ? 0.92 : 0.55;
-  const status: 'extracted' | 'needs_review' = allOk ? 'extracted' : 'needs_review';
 
   const src = 'mrz_td3';
   const fullName = (given_names || surname)
@@ -164,6 +163,8 @@ export function recoverPassport(ev: OcrEvidence): PassportRecoveryResult {
       `checksum_passport_number:${c1}`,
       `checksum_dob:${c2}`,
       `checksum_expiry:${c3}`,
+      `provenance_surname:${surname}`,
+      `provenance_given_names:${given_names}`,
     ],
     review_reason: allOk ? null : 'mrz_td3_checksum_failed',
   };
