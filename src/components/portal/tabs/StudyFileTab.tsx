@@ -577,31 +577,6 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         />
       </section>
 
-      {/* ═══ Door 2: Lane Facts truth surface (read-only) ═══ */}
-      {Object.keys(laneFactsByDocId).length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold text-foreground">
-              Document facts (extracted)
-            </h2>
-            <span className="text-xs text-muted-foreground">
-              {Object.keys(laneFactsByDocId).length} document{Object.keys(laneFactsByDocId).length === 1 ? '' : 's'}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {documents
-              .filter((d) => laneFactsByDocId[d.id])
-              .map((d) => (
-                <LaneFactsCard
-                  key={d.id}
-                  facts={laneFactsByDocId[d.id]}
-                  fileName={d.file_name}
-                />
-              ))}
-          </div>
-        </section>
-      )}
-
       {/* ═══ Live engine activity — what is the engine doing right now ═══ */}
       <EngineActivityStrip liveStages={analysisHook.liveStages} />
 
