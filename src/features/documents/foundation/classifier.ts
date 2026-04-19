@@ -50,7 +50,7 @@ function scoreFilename(name: string): FilenameSignal[] {
       if (re.test(name)) matched.push(re.source);
     }
     if (matched.length) {
-      // 1 hit → 0.55, 2 hits → 0.75, 3+ hits → 0.85 (capped)
+      // 1 hit → 0.55, 2 hits → 0.70, 3+ hits → 0.85 (capped)
       const score = Math.min(0.85, 0.4 + matched.length * 0.15);
       out.push({ family, score, matched });
     }
@@ -130,7 +130,7 @@ export async function classifyAndRoute(input: ClassifyInput): Promise<RouteDecis
     }
   }
 
-  if (!topSignal || topSignal.score < 0.55) {
+  if (!topSignal || topSignal.score < 0.5) {
     reasons.push(`top_signal_too_weak(score=${topSignal?.score ?? 0})`);
     return unknownDecision(document_id, reasons);
   }
