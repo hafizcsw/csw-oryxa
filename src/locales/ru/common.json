@@ -1985,7 +1985,9 @@
         "unreadable_scan": "Unreadable scan",
         "low_ocr_quality": "Low OCR quality",
         "reader_crashed": "Reader crashed",
-        "empty_document": "Empty document"
+        "empty_document": "Empty document",
+        "awaiting_ocr": "Ожидает OCR",
+        "needs_review": "Требует проверки"
       },
       "route_reason": {
         "classification_uncertain": "Classification uncertain",

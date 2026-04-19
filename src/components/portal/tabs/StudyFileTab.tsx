@@ -469,29 +469,67 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   // ═══ Per-document issue summaries — drives RED wire + floating banner
   // above the file in the upload visualizer. Only failed/weak/unknown docs
   // get an entry. Successful docs render normally and continue down to the
-  // assembly lanes. ═══
+  // assembly lanes.
+  //
+  // TRUTH-SURFACE RULE (do NOT lie to the user):
+  //   "reader_crashed" must ONLY surface for a real parser exception.
+  //   For images / scanned content where Door 2 is local-only and Door 3
+  //   OCR is the actual reader (and may be unavailable / pending), the
+  //   honest label is "awaiting_ocr" — not "Reader crashed".
+  // ═══
+  const docMimeById = useMemo<Record<string, string>>(() => {
+    const map: Record<string, string> = {};
+    for (const d of documents || []) {
+      if (d?.id) map[d.id] = (d as any).mime_type ?? '';
+    }
+    return map;
+  }, [documents]);
+
+  const isImageLikeMime = (mime: string | undefined): boolean => {
+    if (!mime) return false;
+    return mime.startsWith('image/');
+  };
+
   const issuesByDocId = useMemo<Record<string, { reason: string }>>(() => {
     const map: Record<string, { reason: string }> = {};
     for (const a of analysisHook.analyses) {
+      const mime = docMimeById[a.document_id] ?? '';
+      const isImage = isImageLikeMime(mime);
+
       // Reason key resolution priority:
       //   1) explicit rejection_reason from engine
+      //      • reader_crashed on an image → awaiting_ocr (Door 3 not ready)
+      //      • reader_crashed on non-image → real reader_crashed
       //   2) unsupported classification → unsupported_file_type
-      //   3) unreadable readability → unreadable_scan
-      //   4) classification 'unknown' → classification_uncertain
+      //   3) unreadable readability:
+      //      • image → awaiting_ocr (cannot judge until Door 3 reads it)
+      //      • non-image → unreadable_scan
+      //   4) classification 'unknown' → needs_review (neutral, honest)
       //   5) usefulness 'not_useful' → low_confidence
+      //   6) analysis_status 'failed':
+      //      • image → awaiting_ocr
+      //      • non-image → reader_crashed
       let reasonKey: string | null = null;
-      if (a.rejection_reason) {
+      if (a.rejection_reason === 'reader_crashed') {
+        reasonKey = isImage
+          ? 'portal.assembly.failure_reason.awaiting_ocr'
+          : 'portal.assembly.failure_reason.reader_crashed';
+      } else if (a.rejection_reason) {
         reasonKey = `portal.assembly.failure_reason.${a.rejection_reason}`;
       } else if (a.classification_result === 'unsupported') {
         reasonKey = 'portal.assembly.failure_reason.unsupported_file_type';
       } else if (a.readability_status === 'unreadable') {
-        reasonKey = 'portal.assembly.failure_reason.unreadable_scan';
+        reasonKey = isImage
+          ? 'portal.assembly.failure_reason.awaiting_ocr'
+          : 'portal.assembly.failure_reason.unreadable_scan';
       } else if (a.classification_result === 'unknown' && a.analysis_status === 'completed') {
-        reasonKey = 'portal.assembly.route_reason.classification_uncertain';
+        reasonKey = 'portal.assembly.failure_reason.needs_review';
       } else if (a.usefulness_status === 'not_useful') {
         reasonKey = 'portal.assembly.route_reason.low_confidence';
       } else if (a.analysis_status === 'failed') {
-        reasonKey = 'portal.assembly.failure_reason.reader_crashed';
+        reasonKey = isImage
+          ? 'portal.assembly.failure_reason.awaiting_ocr'
+          : 'portal.assembly.failure_reason.reader_crashed';
       }
       if (!reasonKey) continue;
       const translated = t(reasonKey);
@@ -502,7 +540,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       map[a.document_id] = { reason };
     }
     return map;
-  }, [analysisHook.analyses, t]);
+  }, [analysisHook.analyses, docMimeById, t]);
 
   return (
     <div className="space-y-8" data-canonical-status={canonicalFile?.file_status.profile_completion_status ?? 'none'}>
