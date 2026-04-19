@@ -559,13 +559,23 @@ export function DocumentsTab({ profile, crmProfile, onUpdate, onTabChange, docTy
       </div>
       )}
 
-      {/* Door 3 — truth surface (read-only). Transcript panel for most recent doc; review queue for staff. */}
-      {!compact && studentDocs && studentDocs.length > 0 && (
-        <div className="space-y-3">
-          <Door3TranscriptPanel documentId={[...studentDocs].sort((a, b) => docTime(b) - docTime(a))[0].id} />
-          {isStaff && <ReviewQueuePanel />}
-        </div>
-      )}
+      {/* Door 3 — truth surface (read-only). Transcript panel only for transcript-like (certificate) docs; review queue for staff. */}
+      {!compact && (() => {
+        // Transcript panel must only bind to academic/transcript-like documents.
+        // In this repo, "certificate" is the canonical transcript-bearing category.
+        const transcriptLikeDoc = (studentDocs || [])
+          .filter((d) => normalizeCategory(d.document_category) === 'certificate')
+          .sort((a, b) => docTime(b) - docTime(a))[0];
+
+        if (!transcriptLikeDoc && !isStaff) return null;
+
+        return (
+          <div className="space-y-3">
+            {transcriptLikeDoc && <Door3TranscriptPanel documentId={transcriptLikeDoc.id} />}
+            {isStaff && <ReviewQueuePanel />}
+          </div>
+        );
+      })()}
 
       {/* Preview Modal */}
       <Dialog open={!!previewDoc} onOpenChange={(open) => !open && setPreviewDoc(null)}>
