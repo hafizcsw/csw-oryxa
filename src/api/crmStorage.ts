@@ -141,8 +141,11 @@ export async function setAvatar(params: {
 /**
  * Delete file from CRM storage and database
  */
-export async function deleteFile(file_id: string): Promise<{ ok: boolean; error?: string }> {
-  const result = await callCrmStorage<{ deleted: string }>('delete_file', { file_id });
+export async function deleteFile(file_id: string, document_id?: string | null): Promise<{ ok: boolean; error?: string }> {
+  const result = await callCrmStorage<{ deleted: string }>('delete_file', {
+    file_id,
+    ...(document_id ? { document_id } : {}),
+  });
   return { ok: result.ok, error: result.error };
 }
 
