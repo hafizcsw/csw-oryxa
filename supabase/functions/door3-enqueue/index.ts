@@ -18,6 +18,7 @@ const ALLOWED_JOB_TYPES = new Set([
   'transcript_parse',
   'passport_recovery',
   'certificate_recovery',
+  'ai_semantic_parse',
 ]);
 
 Deno.serve(async (req) => {
