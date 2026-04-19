@@ -3171,6 +3171,105 @@ export type Database = {
         }
         Relationships: []
       }
+      document_academic_rows: {
+        Row: {
+          academic_period: string | null
+          created_at: string
+          credit_hours_numeric: number | null
+          credit_hours_raw: string | null
+          document_id: string
+          grade_raw: string | null
+          id: string
+          mark_numeric: number | null
+          mark_raw: string | null
+          provenance: Json
+          row_confidence: number
+          subject_name_normalized: string | null
+          subject_name_raw: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          academic_period?: string | null
+          created_at?: string
+          credit_hours_numeric?: number | null
+          credit_hours_raw?: string | null
+          document_id: string
+          grade_raw?: string | null
+          id?: string
+          mark_numeric?: number | null
+          mark_raw?: string | null
+          provenance?: Json
+          row_confidence?: number
+          subject_name_normalized?: string | null
+          subject_name_raw?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          academic_period?: string | null
+          created_at?: string
+          credit_hours_numeric?: number | null
+          credit_hours_raw?: string | null
+          document_id?: string
+          grade_raw?: string | null
+          id?: string
+          mark_numeric?: number | null
+          mark_raw?: string | null
+          provenance?: Json
+          row_confidence?: number
+          subject_name_normalized?: string | null
+          subject_name_raw?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      document_academic_summary: {
+        Row: {
+          confidence: number
+          created_at: string
+          document_id: string
+          id: string
+          metric_type: string
+          normalized_label: string | null
+          normalized_numeric_value: number | null
+          provenance: Json
+          raw_label: string | null
+          raw_value: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          document_id: string
+          id?: string
+          metric_type: string
+          normalized_label?: string | null
+          normalized_numeric_value?: number | null
+          provenance?: Json
+          raw_label?: string | null
+          raw_value?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          document_id?: string
+          id?: string
+          metric_type?: string
+          normalized_label?: string | null
+          normalized_numeric_value?: number | null
+          provenance?: Json
+          raw_label?: string | null
+          raw_value?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       document_analyses: {
         Row: {
           analysis_status: string
@@ -3300,6 +3399,66 @@ export type Database = {
         }
         Relationships: []
       }
+      document_jobs: {
+        Row: {
+          attempts: number
+          claim_token: string | null
+          claimed_at: string | null
+          completed_at: string | null
+          created_at: string
+          document_id: string
+          id: string
+          job_type: Database["public"]["Enums"]["door3_job_type"]
+          last_error: string | null
+          max_attempts: number
+          payload: Json
+          result: Json | null
+          scheduled_at: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["door3_job_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          claim_token?: string | null
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          document_id: string
+          id?: string
+          job_type: Database["public"]["Enums"]["door3_job_type"]
+          last_error?: string | null
+          max_attempts?: number
+          payload?: Json
+          result?: Json | null
+          scheduled_at?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["door3_job_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          claim_token?: string | null
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          document_id?: string
+          id?: string
+          job_type?: Database["public"]["Enums"]["door3_job_type"]
+          last_error?: string | null
+          max_attempts?: number
+          payload?: Json
+          result?: Json | null
+          scheduled_at?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["door3_job_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       document_lane_facts: {
         Row: {
           created_at: string
@@ -3337,6 +3496,93 @@ export type Database = {
           notes?: string[]
           requires_review?: boolean
           truth_state?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      document_ocr_evidence: {
+        Row: {
+          content_kind: string
+          created_at: string
+          document_id: string
+          engine: string
+          engine_version: string | null
+          id: string
+          page_count: number
+          pages: Json
+          processed_at: string
+          processing_notes: Json
+          user_id: string
+        }
+        Insert: {
+          content_kind: string
+          created_at?: string
+          document_id: string
+          engine: string
+          engine_version?: string | null
+          id?: string
+          page_count?: number
+          pages?: Json
+          processed_at?: string
+          processing_notes?: Json
+          user_id: string
+        }
+        Update: {
+          content_kind?: string
+          created_at?: string
+          document_id?: string
+          engine?: string
+          engine_version?: string | null
+          id?: string
+          page_count?: number
+          pages?: Json
+          processed_at?: string
+          processing_notes?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      document_review_queue: {
+        Row: {
+          confidence_summary: Json
+          created_at: string
+          document_id: string
+          evidence_summary: Json
+          id: string
+          lane: string
+          reason: string
+          resolved_at: string | null
+          resolved_by: string | null
+          state: Database["public"]["Enums"]["door3_review_state"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence_summary?: Json
+          created_at?: string
+          document_id: string
+          evidence_summary?: Json
+          id?: string
+          lane: string
+          reason: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          state?: Database["public"]["Enums"]["door3_review_state"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence_summary?: Json
+          created_at?: string
+          document_id?: string
+          evidence_summary?: Json
+          id?: string
+          lane?: string
+          reason?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          state?: Database["public"]["Enums"]["door3_review_state"]
           updated_at?: string
           user_id?: string
         }
@@ -26034,6 +26280,34 @@ export type Database = {
         }
         Returns: boolean
       }
+      claim_door3_jobs: {
+        Args: { _batch_size?: number }
+        Returns: {
+          attempts: number
+          claim_token: string | null
+          claimed_at: string | null
+          completed_at: string | null
+          created_at: string
+          document_id: string
+          id: string
+          job_type: Database["public"]["Enums"]["door3_job_type"]
+          last_error: string | null
+          max_attempts: number
+          payload: Json
+          result: Json | null
+          scheduled_at: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["door3_job_status"]
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "document_jobs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       clean_old_events: { Args: never; Returns: undefined }
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       compute_recommendations: {
@@ -26081,6 +26355,15 @@ export type Database = {
             }
             Returns: Json
           }
+      enqueue_door3_followup: {
+        Args: {
+          _document_id: string
+          _job_type: Database["public"]["Enums"]["door3_job_type"]
+          _payload?: Json
+          _user_id: string
+        }
+        Returns: string
+      }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
@@ -27368,6 +27651,23 @@ export type Database = {
         | "ban_user"
         | "mute_user"
         | "restrict_user"
+      door3_job_status:
+        | "queued"
+        | "worker_not_configured"
+        | "processing"
+        | "completed"
+        | "failed"
+        | "needs_review"
+      door3_job_type:
+        | "internal_ocr"
+        | "transcript_parse"
+        | "passport_recovery"
+        | "certificate_recovery"
+      door3_review_state:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "keep_needs_review"
       enrichment_fact_status:
         | "candidate"
         | "approved"
@@ -27604,6 +27904,26 @@ export const Constants = {
         "ban_user",
         "mute_user",
         "restrict_user",
+      ],
+      door3_job_status: [
+        "queued",
+        "worker_not_configured",
+        "processing",
+        "completed",
+        "failed",
+        "needs_review",
+      ],
+      door3_job_type: [
+        "internal_ocr",
+        "transcript_parse",
+        "passport_recovery",
+        "certificate_recovery",
+      ],
+      door3_review_state: [
+        "pending",
+        "approved",
+        "rejected",
+        "keep_needs_review",
       ],
       enrichment_fact_status: [
         "candidate",
