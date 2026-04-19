@@ -65,6 +65,9 @@ Deno.serve(async (req) => {
         case 'certificate_recovery':
           outcome = await handleCertificateRecovery(admin, job);
           break;
+        case 'ai_semantic_parse':
+          outcome = await handleAiSemanticParse(admin, job);
+          break;
         default:
           outcome = 'unknown_job_type';
           await fail(admin, job.id, 'unknown_job_type');
@@ -126,17 +129,45 @@ async function handleInternalOcr(admin: SupabaseClient, job: any): Promise<strin
   }
 
   await complete(admin, job.id, { evidence_id: out.evidence_id });
-  // Schedule follow-up parse based on lane hint in payload
-  const followUp = job.payload?.followup_job_type;
-  if (followUp) {
-    await admin.rpc('enqueue_door3_followup', {
-      _document_id: job.document_id,
-      _user_id: job.user_id,
-      _job_type: followUp,
-      _payload: { ocr_evidence_id: out.evidence_id },
-    });
-  }
+  // ─── OCR success → enqueue semantic parse (lane-aware, idempotent) ───
+  // Explicit followup_job_type wins; otherwise default to ai_semantic_parse.
+  const followUp: string = job.payload?.followup_job_type ?? 'ai_semantic_parse';
+  const followUpPayload: Record<string, unknown> = {
+    ocr_evidence_id: out.evidence_id,
+    ...(job.payload?.lane ? { lane: job.payload.lane } : {}),
+    ...(typeof job.payload?.is_transcript === 'boolean' ? { is_transcript: job.payload.is_transcript } : {}),
+  };
+  await admin.rpc('enqueue_door3_followup', {
+    _document_id: job.document_id,
+    _user_id: job.user_id,
+    _job_type: followUp,
+    _payload: followUpPayload,
+  });
   return 'completed';
+}
+
+async function handleAiSemanticParse(admin: SupabaseClient, job: any): Promise<string> {
+  const url = Deno.env.get('SUPABASE_URL')!;
+  const service = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const resp = await fetch(`${url.replace(/\/$/, '')}/functions/v1/door3-semantic-parse`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${service}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      document_id: job.document_id,
+      lane: job.payload?.lane,
+      is_transcript: job.payload?.is_transcript === true,
+    }),
+  });
+  if (!resp.ok) {
+    const txt = await resp.text().catch(() => '');
+    throw new Error(`semantic_parse_http_${resp.status}: ${txt.slice(0, 200)}`);
+  }
+  const out = await resp.json().catch(() => ({}));
+  await complete(admin, job.id, { semantic_outcome: out?.outcome ?? null, lane: out?.lane ?? null });
+  return String(out?.outcome ?? 'completed');
 }
 
 async function loadEvidence(admin: SupabaseClient, document_id: string): Promise<OcrEvidence | null> {
