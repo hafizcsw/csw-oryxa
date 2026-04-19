@@ -96,40 +96,73 @@ export async function uploadAndRegisterFile(params: {
     };
   }
 
+  // ========== STAGE 4: FOUNDATION GATE (mandatory) ==========
+  // Every successfully registered file MUST receive a route_decision,
+  // a normalized_document, and a review_state. If foundation fails,
+  // we DO NOT report success — caller must surface the failure.
+  const documentId = confirmRes.data?.file_id;
+  if (!documentId) {
+    onProgress?.('error', 0);
+    return {
+      success: false,
+      stage: 'foundation',
+      error: 'foundation_no_document_id',
+      details: 'confirmUpload returned no file_id; cannot run foundation gate',
+    };
+  }
+
+  let foundation: FoundationOutput;
+  try {
+    foundation = await runFoundation({ document_id: documentId, file });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    // eslint-disable-next-line no-console
+    console.error('[FoundationGate] FAILED — upload reported as failed', { documentId, error: msg });
+    onProgress?.('error', 0);
+    return {
+      success: false,
+      stage: 'foundation',
+      error: 'foundation_failed',
+      details: msg,
+      file_id: documentId,
+      path,
+      bucket,
+      foundation_failed: true,
+    };
+  }
+
+  // eslint-disable-next-line no-console
+  console.log('[FoundationGate] decision', {
+    document_id: foundation.document_id,
+    route_family: foundation.route.route_family,
+    route_confidence: foundation.route.route_confidence,
+    selected_lane: foundation.route.selected_lane,
+    requires_review: foundation.route.requires_review,
+    processing_state: foundation.processing_state,
+    privacy_blocked: foundation.privacy_blocked,
+    route_reasons: foundation.route.route_reasons,
+  });
+
+  // ── STAGE 5: PERSIST foundation output (best-effort, but reported) ──
+  let foundation_persisted = false;
+  try {
+    const { persistFoundationOutput } = await import('./foundation/persistence');
+    foundation_persisted = await persistFoundationOutput(foundation);
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('[FoundationGate] persistence threw', e);
+  }
+
   // ========== DONE ==========
   onProgress?.('done', 100);
 
-  // ── Foundation Gate ─────────────────────────────────────────
-  // Every successfully registered file MUST receive a route_decision,
-  // a normalized_document, and a review_state — even if it is unknown.
-  let foundation: FoundationOutput | undefined;
-  const documentId = confirmRes.data?.file_id;
-  if (documentId) {
-    try {
-      foundation = await runFoundation({ document_id: documentId, file });
-      // eslint-disable-next-line no-console
-      console.log('[FoundationGate] decision', {
-        document_id: foundation.document_id,
-        route_family: foundation.route.route_family,
-        route_confidence: foundation.route.route_confidence,
-        selected_lane: foundation.route.selected_lane,
-        requires_review: foundation.route.requires_review,
-        processing_state: foundation.processing_state,
-        privacy_blocked: foundation.privacy_blocked,
-        route_reasons: foundation.route.route_reasons,
-      });
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error('[FoundationGate] failed', e);
-    }
-  }
-
   return {
     success: true,
-    file_id: confirmRes.data?.file_id,
+    file_id: documentId,
     file_url: confirmRes.data?.file_url,
     path,
     bucket,
     foundation,
+    foundation_persisted,
   };
 }
