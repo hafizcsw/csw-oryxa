@@ -14,7 +14,9 @@ function makeFile(name: string, type: string, body: ArrayBuffer | string): File 
 }
 
 function buf(...bytes: number[]): ArrayBuffer {
-  return new Uint8Array(bytes).buffer;
+  const ab = new ArrayBuffer(bytes.length);
+  new Uint8Array(ab).set(bytes);
+  return ab;
 }
 
 describe('Foundation Gate — runtime proof', () => {
