@@ -922,13 +922,4 @@ export default function AccountPage() {
     </>
   );
 }
-            
-            {/* Footer */}
-            <Footer />
-            
-          </div>
-        )}
-      </div>
-    </>
-  );
-}
+
