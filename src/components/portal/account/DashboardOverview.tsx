@@ -6,6 +6,7 @@ import { IdentityActivationDialog } from "../identity/IdentityActivationDialog";
 import { SupportSection } from "../support/SupportSection";
 import { SupportSubmitDialog } from "../support/SupportSubmitDialog";
 import { useIdentityStatus } from "@/hooks/useIdentityStatus";
+import { useExtractedIdentity } from "@/hooks/useExtractedIdentity";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DashboardOverviewProps {
