@@ -8,6 +8,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import {
   uploadIdentityFile,
+  runIdentityReader,
   submitIdentityActivation,
   type IdentityDocKind,
   type ReaderVerdict,
@@ -50,6 +51,8 @@ export function IdentityActivationDialog({
   const [docKind, setDocKind] = useState<IdentityDocKind>("passport");
   const [docFile, setDocFile] = useState<File | null>(null);
   const [docPath, setDocPath] = useState<string>("");
+  const [readerVerdict, setReaderVerdict] = useState<ReaderVerdict | null>(null);
+  const [readerPayload, setReaderPayload] = useState<Record<string, unknown>>({});
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [selfiePath, setSelfiePath] = useState<string>("");
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -69,6 +72,8 @@ export function IdentityActivationDialog({
     setStep("doc_select");
     setDocFile(null);
     setDocPath("");
+    setReaderVerdict(null);
+    setReaderPayload({});
     setSelfieFile(null);
     setSelfiePath("");
     setVideoFile(null);
@@ -76,27 +81,40 @@ export function IdentityActivationDialog({
     setErrorMsg("");
   }, []);
 
+  // ✅ CANONICAL ORDER: upload doc → run reader → decide verdict → only then open camera.
   const handleDocChosen = useCallback(
     async (file: File) => {
       setDocFile(file);
       setStep("reader_running");
       setErrorMsg("");
       const up = await uploadIdentityFile("doc", file);
-      if (!up.ok || !("path" in up)) {
+      if (!up.ok) {
         setErrorMsg(up.error || "upload_failed");
-        setStep("blocked_weak");
+        setStep("submit_error");
         return;
       }
       setDocPath(up.path);
+      // Run the existing mistral-document-pipeline NOW, before camera.
+      const r = await runIdentityReader({ doc_kind: docKind, doc_storage_path: up.path });
+      if (!r.ok || !r.data) {
+        setErrorMsg(r.error || "reader_failed");
+        setStep("submit_error");
+        return;
+      }
+      setReaderVerdict(r.data.reader_verdict);
+      setReaderPayload(r.data.reader_payload || {});
+      if (r.data.reader_verdict === "weak") return setStep("blocked_weak");
+      if (r.data.reader_verdict === "unsupported") return setStep("blocked_unsupported");
+      // accepted_preliminarily → open camera
       setStep("selfie_capture");
     },
-    [],
+    [docKind],
   );
 
   const handleSelfieCaptured = useCallback(async (file: File) => {
     setSelfieFile(file);
     const up = await uploadIdentityFile("selfie", file);
-    if (!up.ok || !("path" in up)) {
+    if (!up.ok) {
       toast({ title: t("portal.identity.errors.uploadFailed"), variant: "destructive" });
       return;
     }
@@ -111,18 +129,25 @@ export function IdentityActivationDialog({
     }
     setVideoFile(file);
     const up = await uploadIdentityFile("video", file);
-    if (!up.ok || !("path" in up)) {
+    if (!up.ok) {
       toast({ title: t("portal.identity.errors.uploadFailed"), variant: "destructive" });
       return;
     }
     setVideoPath(up.path);
     setStep("submitting");
+    if (!readerVerdict || readerVerdict !== "accepted_preliminarily") {
+      // Defensive — should never happen because camera only opens after verdict.
+      setErrorMsg("reader_not_passed");
+      setStep("submit_error");
+      return;
+    }
     const res = await submitIdentityActivation({
       doc_kind: docKind,
       doc_storage_path: docPath,
       selfie_storage_path: selfiePath,
       video_storage_path: up.path,
-      doc_mime: docFile?.type,
+      reader_verdict: readerVerdict,
+      reader_payload: readerPayload,
       client_trace_id: crypto.randomUUID(),
     });
     if (!res.ok || !res.data) {
@@ -130,12 +155,9 @@ export function IdentityActivationDialog({
       setStep("submit_error");
       return;
     }
-    const verdict = res.data.reader_verdict as ReaderVerdict;
-    if (verdict === "weak") return setStep("blocked_weak");
-    if (verdict === "unsupported") return setStep("blocked_unsupported");
     setStep("awaiting_decision");
     refetch();
-  }, [docKind, docPath, docFile, selfiePath, toast, t, refetch]);
+  }, [docKind, docPath, selfiePath, readerVerdict, readerPayload, toast, t, refetch]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
