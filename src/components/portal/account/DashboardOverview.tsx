@@ -92,6 +92,7 @@ export function DashboardOverview({
       {/* Verification Steps - directly under avatar */}
       <AccountVerificationSteps
         currentStep={identityStatus.identity_status === 'approved' ? 2 : getCurrentStep()}
+        identityStatus={identityStatus.identity_status}
         onVerifyClick={() => setIdentityOpen(true)}
       />
 

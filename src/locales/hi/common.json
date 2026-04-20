@@ -1239,7 +1239,9 @@
       "fundNow": "अभी जोड़ें",
       "transferNow": "अभी ट्रांसफर करें",
       "completed": "पूर्ण",
-      "pending": "लंबित"
+      "pending": "लंबित",
+      "underReview": "समीक्षाधीन",
+      "reupload": "पुनः अपलोड"
     },
     "markets": {
       "title": "मुद्रा दरें",

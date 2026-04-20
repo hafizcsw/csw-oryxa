@@ -1,16 +1,19 @@
-import { Clock, CreditCard, ShieldCheck, IdCard, ArrowLeftRight } from "lucide-react";
+import { Clock, CreditCard, ShieldCheck, IdCard, ArrowLeftRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import type { IdentityStatus } from "@/api/identitySupportInvoke";
 
 interface AccountVerificationStepsProps {
   currentStep?: number;
   onVerifyClick?: () => void;
+  identityStatus?: IdentityStatus;
 }
 
 export function AccountVerificationSteps({ 
   currentStep = 1, 
-  onVerifyClick 
+  onVerifyClick,
+  identityStatus = 'none',
 }: AccountVerificationStepsProps) {
   const { language, t } = useLanguage();
   const isRtl = language === 'ar';
@@ -58,7 +61,24 @@ export function AccountVerificationSteps({
             </div>
           </div>
           
-          {currentStep === 1 && (
+          {currentStep === 1 && identityStatus === 'pending' && (
+            <Button
+              disabled
+              className="w-full bg-muted text-muted-foreground font-bold text-base py-3 cursor-not-allowed"
+            >
+              <Loader2 className="w-4 h-4 me-2 animate-spin" />
+              {t('portal.steps.underReview')}
+            </Button>
+          )}
+          {currentStep === 1 && identityStatus === 'reupload_required' && (
+            <Button
+              onClick={onVerifyClick}
+              className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground font-bold text-base py-3"
+            >
+              {t('portal.steps.reupload')}
+            </Button>
+          )}
+          {currentStep === 1 && (identityStatus === 'none' || identityStatus === 'rejected') && (
             <Button 
               onClick={onVerifyClick}
               className="w-full bg-warning hover:bg-warning/90 text-warning-foreground font-bold text-base py-3"

@@ -1239,7 +1239,9 @@
       "fundNow": "지금 충전",
       "transferNow": "지금 송금",
       "completed": "완료",
-      "pending": "대기 중"
+      "pending": "대기 중",
+      "underReview": "검토 중",
+      "reupload": "다시 업로드"
     },
     "markets": {
       "title": "환율",
