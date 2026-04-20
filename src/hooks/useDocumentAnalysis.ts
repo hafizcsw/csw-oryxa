@@ -508,7 +508,10 @@ export function useDocumentAnalysis(
     [analyses],
   );
 
-  const getProposalsForDocument = useCallback(() => [], []);
+  const getProposalsForDocument = useCallback(
+    (documentId: string) => proposals.filter(p => p.document_id === documentId),
+    [proposals],
+  );
   const noop = useCallback(() => {
     // eslint-disable-next-line no-console
     console.warn('[useDocumentAnalysis] Proposal editing is not wired to the Mistral truth tables yet.');
