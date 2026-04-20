@@ -96,6 +96,7 @@ export function DashboardOverview({
         currentStep={identityStatus.identity_status === 'approved' ? 2 : getCurrentStep()}
         identityStatus={identityStatus.identity_status}
         onVerifyClick={() => setIdentityOpen(true)}
+        onSupportClick={() => setSupportOpen(true)}
       />
 
       {/* Identity Activation Dialog */}
@@ -104,6 +105,9 @@ export function DashboardOverview({
         onOpenChange={setIdentityOpen}
         onApproved={() => onNavigate('study-file')}
       />
+
+      {/* Support Submit Dialog (opened from under-review state) */}
+      <SupportSubmitDialog open={supportOpen} onOpenChange={setSupportOpen} />
 
       {/* Verified (read-only) account info */}
       <section
