@@ -152,16 +152,10 @@ export default function AccountPage() {
   const urlTab = searchParams.get('tab') || 'overview';
   const activeTab = VALID_TABS.has(urlTab) ? urlTab : 'overview';
   
-  // ✅ Helper to change tab via URL
+  // ✅ Identity status (read-only here; the LOCK lives inside StudyFileTab)
   const { status: identityStatus, refetch: refetchIdentity } = useIdentityStatus();
-  const [identityDialogOpen, setIdentityDialogOpen] = useState(false);
 
   const setActiveTab = useCallback((tab: string) => {
-    // ✅ Identity gate: study-file is locked until identity is approved
-    if (tab === 'study-file' && identityStatus.blocks_academic_file) {
-      setIdentityDialogOpen(true);
-      return;
-    }
     // ✅ Decision tracking: service step opened
     if (tab === 'services') trackServiceStepOpen('services_tab');
     setSearchParams(prev => {
@@ -173,7 +167,7 @@ export default function AccountPage() {
       if (tab !== 'services') p.delete('draft_id');
       return p;
     }, { replace: true });
-  }, [setSearchParams, identityStatus.blocks_academic_file]);
+  }, [setSearchParams]);
 
   // Scroll ref for content area
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -184,20 +178,6 @@ export default function AccountPage() {
   useEffect(() => {
     document.title = t('portal.pageTitle');
   }, [language, t]);
-
-  // ✅ Defense-in-depth: if user lands on study-file via URL while identity is not approved,
-  // bounce to overview and open the activation dialog.
-  useEffect(() => {
-    if (isTeacher) return;
-    if (activeTab === 'study-file' && identityStatus.blocks_academic_file) {
-      setIdentityDialogOpen(true);
-      setSearchParams(prev => {
-        const p = new URLSearchParams(prev);
-        p.set('tab', 'overview');
-        return p;
-      }, { replace: true });
-    }
-  }, [activeTab, identityStatus.blocks_academic_file, isTeacher, setSearchParams]);
 
   const handleStartProgram = useCallback((programId: string, countryCode?: string) => {
     console.log('[Account] 🚀 handleStartProgram called:', { programId, countryCode });
@@ -930,21 +910,18 @@ export default function AccountPage() {
             {/* P7: Floating Student CTA */}
             {!isTeacher && <FloatingStudentCTA />}
 
-            {/* Identity Activation Dialog (gate for study-file) */}
-            {!isTeacher && (
-              <IdentityActivationDialog
-                open={identityDialogOpen}
-                onOpenChange={setIdentityDialogOpen}
-                onApproved={() => {
-                  refetchIdentity();
-                  setSearchParams(prev => {
-                    const p = new URLSearchParams(prev);
-                    p.set('tab', 'study-file');
-                    return p;
-                  }, { replace: true });
-                }}
-              />
-            )}
+            {/* Identity Activation Dialog is now owned by StudyFileTab (single canonical lock).
+                Account.tsx no longer mounts it. */}
+
+            {/* Footer */}
+            <Footer />
+            
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
             
             {/* Footer */}
             <Footer />
