@@ -27,12 +27,20 @@ export interface IdentityStatusReadback {
   decided_at: string | null;
 }
 
+export interface ExtractedFieldRead {
+  value: string | null;
+  confidence: number;
+  status: string;
+}
+
 export interface ReaderRunResult {
+  reader_document_id: string;
   reader_verdict: ReaderVerdict;
   truth_state: string | null;
   family: string | null;
   lane_confidence: number | null;
   reader_payload: Record<string, unknown>;
+  extracted_fields: Record<string, ExtractedFieldRead>;
 }
 
 export interface ActivationSubmitResult {
