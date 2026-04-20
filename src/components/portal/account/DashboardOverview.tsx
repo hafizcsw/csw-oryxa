@@ -1,6 +1,6 @@
 import { AccountContentHeader } from "./AccountContentHeader";
 import { AccountVerificationSteps } from "./AccountVerificationSteps";
-import { TransferCountriesSection } from "./TransferCountriesSection";
+
 
 interface DashboardOverviewProps {
   profile: {
