@@ -91,8 +91,15 @@ export function DashboardOverview({
 
       {/* Verification Steps - directly under avatar */}
       <AccountVerificationSteps
-        currentStep={getCurrentStep()}
-        onVerifyClick={() => onNavigate("study-file")}
+        currentStep={identityStatus.identity_status === 'approved' ? 2 : getCurrentStep()}
+        onVerifyClick={() => setIdentityOpen(true)}
+      />
+
+      {/* Identity Activation Dialog */}
+      <IdentityActivationDialog
+        open={identityOpen}
+        onOpenChange={setIdentityOpen}
+        onApproved={() => onNavigate('study-file')}
       />
 
       {/* Verified (read-only) account info */}
@@ -133,6 +140,9 @@ export function DashboardOverview({
           ))}
         </dl>
       </section>
+
+      {/* Website Support */}
+      <SupportSection />
     </div>
   );
 }
