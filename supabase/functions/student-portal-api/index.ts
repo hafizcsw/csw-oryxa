@@ -8394,43 +8394,162 @@ Deno.serve(async (req) => {
       // Reader: mistral-document-pipeline (existing — NOT replaced)
       // ═══════════════════════════════════════════════════════════
       case 'identity_upload_sign_url': {
+        // ✅ CUTOVER: route identity uploads through CRM storage so we can
+        // register them as customer_files rows and get a real CRM file_id.
         const slot = String(body.slot ?? '');
         const ext = String(body.ext ?? 'bin').replace(/[^a-z0-9]/gi, '').slice(0, 8) || 'bin';
         if (!['doc', 'selfie', 'video'].includes(slot)) {
           return Response.json({ ok: false, error: 'bad_slot' }, { status: 400, headers: corsHeaders });
         }
-        const path = `${authUserId}/${Date.now()}_${slot}.${ext}`;
-        const { data, error } = await portalAdmin.storage
-          .from('identity-activation')
-          .createSignedUploadUrl(path);
-        if (error) return Response.json({ ok: false, error: 'sign_failed', details: error.message }, { status: 500, headers: corsHeaders });
-        return Response.json({ ok: true, data: { bucket: 'identity-activation', path, signed_url: data.signedUrl, token: data.token } }, { headers: corsHeaders });
+        if (!CRM_SERVICE_ROLE_KEY || !CRM_SUPABASE_URL) {
+          return Response.json({ ok: false, error: 'CRM_NOT_CONFIGURED' }, { status: 500, headers: corsHeaders });
+        }
+        const { crmCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
+        if (!crmCustomerId) {
+          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
+        }
+        const fileKind =
+          slot === 'doc' ? 'identity_doc' :
+          slot === 'selfie' ? 'identity_selfie' :
+          'identity_video';
+        const bucket = 'student-docs';
+        const ts = Date.now();
+        const storagePath = `${crmCustomerId}/${fileKind}/${ts}_${slot}.${ext}`;
+        const crmStorage = createClient(CRM_SUPABASE_URL, CRM_SERVICE_ROLE_KEY);
+        const { data: signedData, error: signErr } = await crmStorage.storage
+          .from(bucket)
+          .createSignedUploadUrl(storagePath);
+        if (signErr || !signedData?.signedUrl) {
+          return Response.json({ ok: false, error: 'sign_failed', details: signErr?.message }, { status: 500, headers: corsHeaders });
+        }
+        return Response.json({
+          ok: true,
+          data: {
+            bucket,
+            path: storagePath,
+            signed_url: signedData.signedUrl,
+            token: signedData.token,
+            file_kind: fileKind,
+          },
+        }, { headers: corsHeaders });
+      }
+
+      case 'identity_upload_confirm': {
+        // ✅ CUTOVER: after the client PUTs to CRM storage, register the file
+        // in CRM customer_files and return the canonical file_id.
+        const slot = String(body.slot ?? '');
+        const bucket = String(body.bucket ?? '');
+        const path = String(body.path ?? '');
+        const mimeType = String(body.mime_type ?? 'application/octet-stream');
+        const sizeBytes = Number(body.size_bytes ?? 0) || 0;
+        const fileName = String(body.file_name ?? path.split('/').pop() ?? 'identity_file');
+        if (!['doc', 'selfie', 'video'].includes(slot)) {
+          return Response.json({ ok: false, error: 'bad_slot' }, { status: 400, headers: corsHeaders });
+        }
+        if (!bucket || !path) {
+          return Response.json({ ok: false, error: 'missing_fields' }, { status: 400, headers: corsHeaders });
+        }
+        if (!CRM_SERVICE_ROLE_KEY || !CRM_SUPABASE_URL) {
+          return Response.json({ ok: false, error: 'CRM_NOT_CONFIGURED' }, { status: 500, headers: corsHeaders });
+        }
+        const { crmCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
+        if (!crmCustomerId) {
+          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
+        }
+        if (!path.startsWith(`${crmCustomerId}/`)) {
+          return Response.json({ ok: false, error: 'path_ownership_violation' }, { status: 403, headers: corsHeaders });
+        }
+        const fileKind =
+          slot === 'doc' ? 'identity_doc' :
+          slot === 'selfie' ? 'identity_selfie' :
+          'identity_video';
+        const crmStorage = createClient(CRM_SUPABASE_URL, CRM_SERVICE_ROLE_KEY);
+        // Probe: ensure object actually landed in CRM storage before we register it.
+        let verified = false;
+        const probeDelays = [200, 400, 800, 1500, 2500];
+        for (let attempt = 0; attempt < probeDelays.length; attempt++) {
+          if (attempt > 0) await new Promise(r => setTimeout(r, probeDelays[attempt - 1]));
+          const { data: probe, error: probeErr } = await crmStorage.storage.from(bucket).createSignedUrl(path, 30);
+          if (probe?.signedUrl && !probeErr) { verified = true; break; }
+        }
+        if (!verified) {
+          return Response.json({ ok: false, error: 'OBJECT_NOT_FOUND', details: `not visible in ${bucket}/${path}` }, { status: 404, headers: corsHeaders });
+        }
+        const fileUrl = `storage://${bucket}/${path}`;
+        const insertPayload = {
+          customer_id: crmCustomerId,
+          file_kind: fileKind,
+          file_name: fileName,
+          file_url: fileUrl,
+          storage_bucket: bucket,
+          storage_path: path,
+          mime_type: mimeType,
+          size_bytes: sizeBytes,
+          description: null,
+          status: 'pending',
+          uploaded_by_role: 'student',
+          visibility: 'student_visible',
+          review_status: 'pending',
+        };
+        const { data: insertData, error: insertErr } = await crmStorage
+          .from('customer_files')
+          .insert(insertPayload)
+          .select('id')
+          .single();
+        if (insertErr || !insertData?.id) {
+          console.error('[identity_upload_confirm] insert failed', insertErr);
+          return Response.json({ ok: false, error: 'register_failed', details: insertErr?.message }, { status: 500, headers: corsHeaders });
+        }
+        return Response.json({
+          ok: true,
+          data: {
+            file_id: insertData.id,
+            bucket,
+            path,
+            file_kind: fileKind,
+          },
+        }, { headers: corsHeaders });
       }
 
       case 'identity_reader_run': {
-        // Runs the existing mistral-document-pipeline on the uploaded identity doc
-        // ONLY. Returns canonical portal verdict so UI can decide before camera.
-        const docPath = String(body.doc_storage_path ?? '');
+        // ✅ CUTOVER: reads the doc bytes from CRM customer_files, not the
+        // portal-only identity-activation bucket. Accepts id_doc_file_id only.
         const docKindRaw = String(body.doc_kind ?? '');
+        const idDocFileId = String(body.id_doc_file_id ?? '');
         if (!['passport', 'national_id', 'driver_license'].includes(docKindRaw)) {
           return Response.json({ ok: false, error: 'bad_doc_kind' }, { status: 400, headers: corsHeaders });
         }
-        if (!docPath.startsWith(`${authUserId}/`)) {
-          return Response.json({ ok: false, error: 'path_ownership_violation' }, { status: 403, headers: corsHeaders });
+        if (!idDocFileId) {
+          return Response.json({ ok: false, error: 'missing_id_doc_file_id' }, { status: 400, headers: corsHeaders });
         }
-        const { data: signed, error: signErr } = await portalAdmin.storage
-          .from('identity-activation')
+        if (!CRM_SERVICE_ROLE_KEY || !CRM_SUPABASE_URL) {
+          return Response.json({ ok: false, error: 'CRM_NOT_CONFIGURED' }, { status: 500, headers: corsHeaders });
+        }
+        const { crmCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
+        if (!crmCustomerId) {
+          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
+        }
+        const crmStorage = createClient(CRM_SUPABASE_URL, CRM_SERVICE_ROLE_KEY);
+        const { data: fileRow, error: fileErr } = await crmStorage
+          .from('customer_files')
+          .select('id, customer_id, storage_bucket, storage_path, file_kind')
+          .eq('id', idDocFileId)
+          .maybeSingle() as { data: any; error: any };
+        if (fileErr || !fileRow) {
+          return Response.json({ ok: false, error: 'doc_file_not_found' }, { status: 404, headers: corsHeaders });
+        }
+        if (String(fileRow.customer_id) !== String(crmCustomerId)) {
+          return Response.json({ ok: false, error: 'doc_file_ownership_violation' }, { status: 403, headers: corsHeaders });
+        }
+        const docBucket = String(fileRow.storage_bucket);
+        const docPath = String(fileRow.storage_path);
+        const { data: signed, error: signErr } = await crmStorage.storage
+          .from(docBucket)
           .createSignedUrl(docPath, 600);
         if (signErr || !signed?.signedUrl) {
           return Response.json({ ok: false, error: 'sign_failed_for_reader', details: signErr?.message }, { status: 500, headers: corsHeaders });
         }
-        // The current working reader only ships a `passport_id` lane. The
-        // three doc kinds (passport, national_id, driver_license) all expose
-        // the same generic identity fields (name, document number, nationality,
-        // dob, expiry, issuing country), so we route them through the same
-        // lane intentionally. This is NOT silently passport-only: the
-        // returned `extracted_fields` are surfaced under a generic
-        // `document_number` label on the portal, not `passport_number`.
+        // Same intentional generic-passport-lane routing as before.
         const fileKind = 'passport_id';
         const readerDocumentId = crypto.randomUUID();
         let truthState: string | undefined;
@@ -8448,7 +8567,7 @@ Deno.serve(async (req) => {
             },
             body: JSON.stringify({
               document_id: readerDocumentId,
-              bucket: 'identity-activation',
+              bucket: docBucket,
               path: docPath,
               file_kind: fileKind,
               declared_family: 'passport_id',
@@ -8463,7 +8582,6 @@ Deno.serve(async (req) => {
         } catch (e) {
           readerPayload = { error: String(e) };
         }
-        // Map reader → canonical verdict
         let verdict: 'accepted_preliminarily' | 'weak' | 'unsupported' = 'weak';
         if (family && family !== 'passport_id' && family !== 'unknown_document') {
           verdict = 'unsupported';
@@ -8474,11 +8592,6 @@ Deno.serve(async (req) => {
         } else {
           verdict = 'weak';
         }
-
-        // Read back the extracted facts the pipeline persisted, so the portal
-        // can show a SUMMARY step before the camera with ONLY truly-extracted
-        // fields (never invented). This is read-only — we do NOT mutate the
-        // reader output.
         let extractedFields: Record<string, { value: string | null; confidence: number; status: string }> = {};
         if (verdict === 'accepted_preliminarily') {
           try {
@@ -8489,14 +8602,8 @@ Deno.serve(async (req) => {
               .maybeSingle();
             const rawFacts = (laneRow?.facts ?? {}) as Record<string, any>;
             const ALLOWED = [
-              'full_name',
-              'passport_number',
-              'nationality',
-              'date_of_birth',
-              'expiry_date',
-              'issuing_country',
-              'gender',
-              'issue_date',
+              'full_name','passport_number','nationality','date_of_birth',
+              'expiry_date','issuing_country','gender','issue_date',
             ];
             for (const k of ALLOWED) {
               const f = rawFacts[k];
@@ -8505,9 +8612,6 @@ Deno.serve(async (req) => {
               const value = f.value ?? null;
               if (!value) continue;
               if (status !== 'extracted' && status !== 'proposed') continue;
-              // Surface the document number under a generic key so the portal
-              // can label it correctly per doc_kind (passport / national_id /
-              // driver_license) — never as "passport number" for a national ID.
               const outKey = k === 'passport_number' ? 'document_number' : k;
               extractedFields[outKey] = {
                 value: String(value),
@@ -8519,7 +8623,6 @@ Deno.serve(async (req) => {
             console.warn('[identity_reader_run] facts readback failed', e);
           }
         }
-
         return Response.json({
           ok: true,
           data: {
@@ -8535,12 +8638,11 @@ Deno.serve(async (req) => {
       }
 
       case 'identity_activation_submit': {
-        // CUTOVER: writes directly to CRM via web-sync-identity-activation.
-        // No portal-side mirror, no local table touched.
-        const docKind = String(body.doc_kind ?? '');
-        const docPath = String(body.doc_storage_path ?? '');
-        const selfiePath = String(body.selfie_storage_path ?? '');
-        const videoPath = String(body.video_storage_path ?? '');
+        // ✅ CUTOVER: forwards REAL CRM customer_files ids to CRM. No paths.
+        const docKind = String(body.id_doc_type ?? body.doc_kind ?? '');
+        const idDocFileId = String(body.id_doc_file_id ?? '');
+        const selfieFileId = String(body.selfie_file_id ?? '');
+        const videoFileId = String(body.video_file_id ?? '');
         const readerVerdict = String(body.reader_verdict ?? '');
         const readerPayload = body.reader_payload ?? {};
         const clientTrace = body.client_trace_id ? String(body.client_trace_id) : null;
@@ -8550,32 +8652,44 @@ Deno.serve(async (req) => {
         if (readerVerdict !== 'accepted_preliminarily') {
           return Response.json({ ok: false, error: 'reader_not_passed' }, { status: 400, headers: corsHeaders });
         }
-        if (!docPath || !selfiePath || !videoPath) {
-          return Response.json({ ok: false, error: 'missing_paths' }, { status: 400, headers: corsHeaders });
+        if (!idDocFileId || !selfieFileId || !videoFileId) {
+          return Response.json({ ok: false, error: 'missing_file_ids' }, { status: 400, headers: corsHeaders });
         }
-        for (const p of [docPath, selfiePath, videoPath]) {
-          if (!p.startsWith(`${authUserId}/`)) {
-            return Response.json({ ok: false, error: 'path_ownership_violation' }, { status: 403, headers: corsHeaders });
-          }
+        if (!CRM_SERVICE_ROLE_KEY || !CRM_SUPABASE_URL) {
+          return Response.json({ ok: false, error: 'CRM_NOT_CONFIGURED' }, { status: 500, headers: corsHeaders });
         }
-        // resolvedCustomerId == CRM customer_id (resolved from portal_customer_map.crm_customer_id
-        // or auth.users.user_metadata.crm_customer_id). Same UUID as profiles.customer_id.
         const { crmCustomerId: resolvedCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!resolvedCustomerId) {
           return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
+        }
+        // Verify all three CRM files exist and belong to this customer.
+        const crmStorage = createClient(CRM_SUPABASE_URL, CRM_SERVICE_ROLE_KEY);
+        const { data: ownedFiles, error: ownErr } = await crmStorage
+          .from('customer_files')
+          .select('id, customer_id, file_kind')
+          .in('id', [idDocFileId, selfieFileId, videoFileId]) as { data: any[]; error: any };
+        if (ownErr) {
+          return Response.json({ ok: false, error: 'file_lookup_failed', details: ownErr.message }, { status: 500, headers: corsHeaders });
+        }
+        const found = new Map((ownedFiles ?? []).map((r: any) => [String(r.id), r]));
+        for (const fid of [idDocFileId, selfieFileId, videoFileId]) {
+          const row = found.get(fid);
+          if (!row) {
+            return Response.json({ ok: false, error: 'file_not_found', details: fid }, { status: 404, headers: corsHeaders });
+          }
+          if (String(row.customer_id) !== String(resolvedCustomerId)) {
+            return Response.json({ ok: false, error: 'file_ownership_violation', details: fid }, { status: 403, headers: corsHeaders });
+          }
         }
         const r = await fetch(`${CRM_FUNCTIONS_URL}/web-sync-identity-activation`, {
           method: 'POST',
           headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
           body: JSON.stringify({
-            customer_id: resolvedCustomerId,        // canonical CRM contract
-            web_user_id: resolvedCustomerId,        // legacy alias (same value)
-            auth_user_id: authUserId,
-            id_doc_type: docKind,                   // CRM canonical field name
-            doc_kind: docKind,                       // legacy alias
-            doc_storage_path: docPath,
-            selfie_storage_path: selfiePath,
-            video_storage_path: videoPath,
+            customer_id: resolvedCustomerId,
+            id_doc_type: docKind,
+            id_doc_file_id: idDocFileId,
+            selfie_file_id: selfieFileId,
+            video_file_id: videoFileId,
             reader_verdict: readerVerdict,
             reader_payload: readerPayload,
             client_trace_id: clientTrace,
