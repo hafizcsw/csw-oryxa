@@ -1583,7 +1583,9 @@
       "fundNow": "شحن الآن",
       "transferNow": "تحويل الآن",
       "completed": "مكتمل",
-      "pending": "قيد الانتظار"
+      "pending": "قيد الانتظار",
+      "underReview": "قيد المراجعة",
+      "reupload": "إعادة الرفع"
     },
     "markets": {
       "title": "الأسواق",

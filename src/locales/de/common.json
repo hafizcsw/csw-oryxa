@@ -1239,7 +1239,9 @@
       "fundNow": "Jetzt aufladen",
       "transferNow": "Jetzt überweisen",
       "completed": "Abgeschlossen",
-      "pending": "Ausstehend"
+      "pending": "Ausstehend",
+      "underReview": "In Prüfung",
+      "reupload": "Erneut hochladen"
     },
     "markets": {
       "title": "Wechselkurse",

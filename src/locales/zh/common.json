@@ -1240,7 +1240,9 @@
       "fundNow": "立即充值",
       "transferNow": "立即转账",
       "completed": "已完成",
-      "pending": "待处理"
+      "pending": "待处理",
+      "underReview": "审核中",
+      "reupload": "重新上传"
     },
     "markets": {
       "title": "汇率",

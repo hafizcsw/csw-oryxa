@@ -1236,7 +1236,9 @@
       "fundNow": "Fund Now",
       "transferNow": "Transfer Now",
       "completed": "Completed",
-      "pending": "En attente"
+      "pending": "En attente",
+      "underReview": "En cours d'examen",
+      "reupload": "Renvoyer"
     },
     "markets": {
       "title": "Markets",

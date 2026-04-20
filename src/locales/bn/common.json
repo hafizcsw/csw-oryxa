@@ -1239,7 +1239,9 @@
       "fundNow": "এখনই চার্জ করুন",
       "transferNow": "এখনই ট্রান্সফার করুন",
       "completed": "সম্পন্ন",
-      "pending": "অপেক্ষমাণ"
+      "pending": "অপেক্ষমাণ",
+      "underReview": "পর্যালোচনাধীন",
+      "reupload": "পুনরায় আপলোড"
     },
     "markets": {
       "title": "মুদ্রা রেট",

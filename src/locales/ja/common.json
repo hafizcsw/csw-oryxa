@@ -1239,7 +1239,9 @@
       "fundNow": "今すぐチャージ",
       "transferNow": "今すぐ送金",
       "completed": "完了",
-      "pending": "保留中"
+      "pending": "保留中",
+      "underReview": "審査中",
+      "reupload": "再アップロード"
     },
     "markets": {
       "title": "為替レート",

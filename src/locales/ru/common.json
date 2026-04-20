@@ -1238,7 +1238,9 @@
       "fundNow": "Fund Now",
       "transferNow": "Transfer Now",
       "completed": "Completed",
-      "pending": "В ожидании"
+      "pending": "В ожидании",
+      "underReview": "На рассмотрении",
+      "reupload": "Загрузить снова"
     },
     "markets": {
       "title": "Markets",

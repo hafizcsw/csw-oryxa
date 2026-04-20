@@ -1239,7 +1239,9 @@
       "fundNow": "Cargar ahora",
       "transferNow": "Transferir ahora",
       "completed": "Completado",
-      "pending": "Pendiente"
+      "pending": "Pendiente",
+      "underReview": "En revisión",
+      "reupload": "Volver a subir"
     },
     "markets": {
       "title": "Tasas de cambio",
