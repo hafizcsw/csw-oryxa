@@ -8582,7 +8582,7 @@ Deno.serve(async (req) => {
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j?.ok === false) {
           console.error('[identity_activation_submit] CRM bridge failed', r.status, j);
-          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}` }, { status: 502, headers: corsHeaders });
+          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}`, http_status: r.status }, { status: 200, headers: corsHeaders });
         }
         const d = j?.data ?? j ?? {};
         return Response.json({
@@ -8625,7 +8625,7 @@ Deno.serve(async (req) => {
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j?.ok === false) {
           console.error('[identity_status_get] CRM bridge failed', r.status, j);
-          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}` }, { status: 502, headers: corsHeaders });
+          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}`, http_status: r.status }, { status: 200, headers: corsHeaders });
         }
         const d = j?.data ?? j ?? {};
         return Response.json({
@@ -8676,7 +8676,7 @@ Deno.serve(async (req) => {
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j?.ok === false) {
           console.error('[support_ticket_create] CRM bridge failed', r.status, j);
-          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}` }, { status: 502, headers: corsHeaders });
+          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}`, http_status: r.status }, { status: 200, headers: corsHeaders });
         }
         const d = j?.data ?? j ?? {};
         return Response.json({
@@ -8708,7 +8708,7 @@ Deno.serve(async (req) => {
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j?.ok === false) {
           console.error('[support_ticket_list] CRM bridge failed', r.status, j);
-          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}` }, { status: 502, headers: corsHeaders });
+          return Response.json({ ok: true, data: { tickets: [] }, warning: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}` }, { status: 200, headers: corsHeaders });
         }
         const d = j?.data ?? j ?? {};
         const raw = Array.isArray(d.tickets) ? d.tickets : Array.isArray(d) ? d : [];
