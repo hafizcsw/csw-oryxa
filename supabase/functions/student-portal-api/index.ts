@@ -8665,6 +8665,7 @@ Deno.serve(async (req) => {
 
       case 'support_ticket_list': {
         // CUTOVER: reads tickets directly from CRM via web-list-support-requests.
+        const { crmCustomerId: resolvedCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!resolvedCustomerId) {
           return Response.json({ ok: true, data: { tickets: [] } }, { headers: corsHeaders });
         }
