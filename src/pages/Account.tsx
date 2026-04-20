@@ -915,6 +915,22 @@ export default function AccountPage() {
             
             {/* P7: Floating Student CTA */}
             {!isTeacher && <FloatingStudentCTA />}
+
+            {/* Identity Activation Dialog (gate for study-file) */}
+            {!isTeacher && (
+              <IdentityActivationDialog
+                open={identityDialogOpen}
+                onOpenChange={setIdentityDialogOpen}
+                onApproved={() => {
+                  refetchIdentity();
+                  setSearchParams(prev => {
+                    const p = new URLSearchParams(prev);
+                    p.set('tab', 'study-file');
+                    return p;
+                  }, { replace: true });
+                }}
+              />
+            )}
             
             {/* Footer */}
             <Footer />
