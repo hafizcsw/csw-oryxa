@@ -55,6 +55,7 @@ export function IdentityActivationDialog({
   const [docPath, setDocPath] = useState<string>("");
   const [readerVerdict, setReaderVerdict] = useState<ReaderVerdict | null>(null);
   const [readerPayload, setReaderPayload] = useState<Record<string, unknown>>({});
+  const [extractedFields, setExtractedFields] = useState<Record<string, ExtractedFieldRead>>({});
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [selfiePath, setSelfiePath] = useState<string>("");
   const [videoFile, setVideoFile] = useState<File | null>(null);
