@@ -293,26 +293,56 @@ function DocSelectStep({
 }) {
   const { t } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
-  const kinds: IdentityDocKind[] = ["passport", "national_id", "driver_license"];
+  const kinds: { key: IdentityDocKind; Icon: React.ComponentType<{ className?: string }> }[] = [
+    { key: "passport", Icon: FileBadge },
+    { key: "national_id", Icon: ShieldCheck },
+    { key: "driver_license", Icon: Camera },
+  ];
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">{t("portal.identity.doc.instruction")}</p>
-      <div className="grid grid-cols-3 gap-2">
-        {kinds.map((k) => (
-          <Card
-            key={k}
-            onClick={() => onKindChange(k)}
-            className={cn(
-              "p-3 text-center cursor-pointer text-sm font-medium transition-all",
-              docKind === k
-                ? "border-primary bg-primary/5 ring-2 ring-primary/30"
-                : "border-border hover:border-primary/40",
-            )}
-          >
-            {t(`portal.identity.docKind.${k}`)}
-          </Card>
-        ))}
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        {t("portal.identity.doc.instruction")}
+      </p>
+
+      <div className="grid grid-cols-3 gap-2.5">
+        {kinds.map(({ key, Icon }) => {
+          const active = docKind === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onKindChange(key)}
+              className={cn(
+                "group relative flex flex-col items-center justify-center gap-2 rounded-xl border p-3.5 text-center transition-all",
+                "min-h-[92px]",
+                active
+                  ? "border-primary bg-primary/5 ring-2 ring-primary/30 shadow-sm"
+                  : "border-border hover:border-primary/40 hover:bg-muted/40",
+              )}
+            >
+              <div
+                className={cn(
+                  "flex h-9 w-9 items-center justify-center rounded-lg transition-colors",
+                  active
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+                )}
+              >
+                <Icon className="w-4.5 h-4.5" />
+              </div>
+              <span className="text-[13px] font-medium leading-tight text-foreground">
+                {t(`portal.identity.docKind.${key}`)}
+              </span>
+              {active && (
+                <span className="absolute top-1.5 end-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <CheckCircle2 className="w-3 h-3" />
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
+
       <input
         ref={inputRef}
         type="file"
@@ -323,7 +353,7 @@ function DocSelectStep({
           if (f) onFileChosen(f);
         }}
       />
-      <Button className="w-full" onClick={() => inputRef.current?.click()}>
+      <Button size="lg" className="w-full h-11" onClick={() => inputRef.current?.click()}>
         <Upload className="w-4 h-4 me-2" />
         {t("portal.identity.doc.upload")}
       </Button>
