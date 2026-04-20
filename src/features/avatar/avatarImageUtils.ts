@@ -5,9 +5,26 @@ const MAX_AVATAR_DIMENSION = 2048;
 
 const isHttpUrl = (value: string) => value.startsWith("http://") || value.startsWith("https://");
 
+// Legacy Supabase project hosts whose /storage/ URLs must be rewritten to the
+// current project. Old CRM rows still carry full URLs from these projects.
+const LEGACY_STORAGE_HOST_PATTERN = /^https?:\/\/(hlrkyoxwbjsgqbncgzpi|csw-world|csw-oryxa)\.supabase\.co\/storage\/v1\/object\/public\/avatars\//i;
+
+function rewriteLegacyAvatarUrl(value: string): string {
+  // Match legacy host and extract the storage path after /avatars/
+  const match = value.match(/\/storage\/v1\/object\/public\/avatars\/(.+)$/i);
+  if (!match) return value;
+  if (!LEGACY_STORAGE_HOST_PATTERN.test(value)) return value;
+  const storagePath = match[1].split("?")[0];
+  const { data } = supabase.storage.from("avatars").getPublicUrl(storagePath);
+  return data?.publicUrl || value;
+}
+
 export function buildAvatarDisplayUrl(value?: string | null): string | undefined {
   if (!value) return undefined;
-  if (isHttpUrl(value)) return value;
+  if (isHttpUrl(value)) {
+    // Rewrite legacy project URLs to current project's storage
+    return rewriteLegacyAvatarUrl(value);
+  }
 
   const { data } = supabase.storage.from("avatars").getPublicUrl(value);
   return data?.publicUrl || undefined;
