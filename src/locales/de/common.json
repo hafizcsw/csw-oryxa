@@ -2080,6 +2080,99 @@
       "lane_review_reason": {
         "image_ocr_deferred_to_door_3": "Bilder und gescannte Dateien können in dieser Phase nicht automatisch ausgewertet werden. Bitte laden Sie nach Möglichkeit ein originales PDF hoch oder fahren Sie fort, dann wird die Datei zur Überprüfung gesendet."
       }
+    },
+    "identity": {
+      "title": "Konto-Verifizierung",
+      "subtitle": "Bestätige deine Identität, um deine Studienakte freizuschalten.",
+      "doc": {
+        "instruction": "Wähle den Dokumenttyp und lade ein klares Foto oder PDF hoch.",
+        "upload": "Dokument hochladen"
+      },
+      "docKind": {
+        "passport": "Reisepass",
+        "national_id": "Personalausweis",
+        "driver_license": "Führerschein"
+      },
+      "selfie": {
+        "instruction": "Schau in die Kamera und mache ein klares Selfie.",
+        "capture": "Selfie aufnehmen"
+      },
+      "video": {
+        "instruction": "Nimm ein 5-Sekunden-Video auf, während du in die Kamera schaust.",
+        "start": "Aufnahme starten",
+        "recording": "Aufnahme läuft…"
+      },
+      "reader": {
+        "running": "Dokument wird analysiert…"
+      },
+      "submit": {
+        "running": "Aktivierung wird übermittelt…"
+      },
+      "result": {
+        "weak": {
+          "title": "Dokumentqualität unzureichend",
+          "body": "Wir konnten dein Dokument nicht klar lesen. Bitte lade ein schärferes Bild hoch."
+        },
+        "unsupported": {
+          "title": "Dokument nicht unterstützt",
+          "body": "Diese Datei sieht nicht wie ein Ausweis aus. Bitte lade Pass, Personalausweis oder Führerschein hoch."
+        },
+        "submitError": {
+          "title": "Übermittlung fehlgeschlagen",
+          "body": "Bitte prüfe deine Verbindung und versuche es erneut."
+        },
+        "pending": {
+          "title": "In Überprüfung",
+          "body": "Deine Aktivierung wird überprüft. Wir informieren dich, sobald entschieden wurde."
+        },
+        "approved": {
+          "title": "Identität bestätigt",
+          "body": "Deine Identität ist bestätigt. Du kannst nun deine Studienakte öffnen."
+        },
+        "rejected": {
+          "title": "Aktivierung abgelehnt",
+          "body": "Deine Aktivierung wurde nicht genehmigt. Bitte überprüfen und erneut versuchen."
+        },
+        "reupload": {
+          "title": "Erneuter Upload erforderlich",
+          "body": "Bitte lade die angeforderten Dateien erneut hoch, um fortzufahren."
+        }
+      },
+      "cta": {
+        "retry": "Erneut versuchen",
+        "close": "Schließen",
+        "continue": "Weiter"
+      },
+      "errors": {
+        "uploadFailed": "Upload fehlgeschlagen.",
+        "videoTooLarge": "Video darf höchstens 15 MB groß sein.",
+        "cameraDenied": "Kamerazugriff wurde verweigert."
+      }
+    },
+    "support": {
+      "section": {
+        "title": "Support-Anfragen",
+        "new": "Neue Anfrage",
+        "hint": "Reiche eine Anfrage ein und verfolge ihren Status hier.",
+        "empty": "Noch keine Anfragen."
+      },
+      "uiState": {
+        "submitted": "Eingereicht",
+        "under_review": "In Bearbeitung",
+        "resolved": "Gelöst"
+      },
+      "submit": {
+        "title": "Neue Support-Anfrage",
+        "subtitle": "Beschreibe dein Anliegen. Unser Team meldet sich.",
+        "placeholder": "Schreibe deine Nachricht…",
+        "send": "Senden",
+        "cancel": "Abbrechen",
+        "success": "Anfrage gesendet."
+      },
+      "errors": {
+        "bodyTooShort": "Bitte schreibe eine längere Nachricht.",
+        "submitFailed": "Senden fehlgeschlagen. Erneut versuchen."
+      }
     }
   },
   "studio": {

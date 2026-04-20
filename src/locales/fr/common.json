@@ -2061,6 +2061,99 @@
       "lane_review_reason": {
         "image_ocr_deferred_to_door_3": "Les images et les fichiers numérisés ne peuvent pas être extraits automatiquement à ce stade. Veuillez téléverser un PDF original si possible, ou continuez et le fichier sera envoyé pour révision."
       }
+    },
+    "identity": {
+      "title": "Vérification du compte",
+      "subtitle": "Confirmez votre identité pour débloquer votre dossier d’études.",
+      "doc": {
+        "instruction": "Choisissez le type de document et téléchargez une photo claire ou un PDF.",
+        "upload": "Téléverser le document"
+      },
+      "docKind": {
+        "passport": "Passeport",
+        "national_id": "Carte d’identité",
+        "driver_license": "Permis de conduire"
+      },
+      "selfie": {
+        "instruction": "Regardez la caméra et prenez un selfie clair.",
+        "capture": "Prendre la photo"
+      },
+      "video": {
+        "instruction": "Enregistrez une vidéo de 5 secondes en regardant la caméra.",
+        "start": "Démarrer l’enregistrement",
+        "recording": "Enregistrement…"
+      },
+      "reader": {
+        "running": "Analyse du document…"
+      },
+      "submit": {
+        "running": "Envoi de votre activation…"
+      },
+      "result": {
+        "weak": {
+          "title": "Qualité du document insuffisante",
+          "body": "Nous n’avons pas pu lire votre document clairement. Téléchargez une image plus nette."
+        },
+        "unsupported": {
+          "title": "Document non pris en charge",
+          "body": "Ce fichier ne semble pas être un document d’identité. Téléchargez un passeport, une carte d’identité ou un permis de conduire."
+        },
+        "submitError": {
+          "title": "Échec de l’envoi",
+          "body": "Vérifiez votre connexion et réessayez."
+        },
+        "pending": {
+          "title": "En cours de révision",
+          "body": "Votre activation est en cours d’examen. Nous vous avertirons après décision."
+        },
+        "approved": {
+          "title": "Identité approuvée",
+          "body": "Votre identité est vérifiée. Vous pouvez maintenant accéder à votre dossier."
+        },
+        "rejected": {
+          "title": "Activation refusée",
+          "body": "Votre activation n’a pas été approuvée. Veuillez vérifier et réessayer."
+        },
+        "reupload": {
+          "title": "Téléversement requis",
+          "body": "Veuillez retéléverser les fichiers demandés pour continuer."
+        }
+      },
+      "cta": {
+        "retry": "Réessayer",
+        "close": "Fermer",
+        "continue": "Continuer"
+      },
+      "errors": {
+        "uploadFailed": "Échec du téléversement.",
+        "videoTooLarge": "La vidéo doit faire 15 Mo ou moins.",
+        "cameraDenied": "L’accès à la caméra a été refusé."
+      }
+    },
+    "support": {
+      "section": {
+        "title": "Demandes d’assistance",
+        "new": "Nouvelle demande",
+        "hint": "Envoyez une demande et suivez son statut ici.",
+        "empty": "Aucune demande pour l’instant."
+      },
+      "uiState": {
+        "submitted": "Envoyé",
+        "under_review": "En cours d’examen",
+        "resolved": "Résolu"
+      },
+      "submit": {
+        "title": "Nouvelle demande de support",
+        "subtitle": "Décrivez votre problème. Notre équipe répondra.",
+        "placeholder": "Écrivez votre message…",
+        "send": "Envoyer",
+        "cancel": "Annuler",
+        "success": "Demande envoyée."
+      },
+      "errors": {
+        "bodyTooShort": "Veuillez écrire un message plus long.",
+        "submitFailed": "Échec de l’envoi. Réessayez."
+      }
     }
   },
   "compare_action": "+ Comparer",

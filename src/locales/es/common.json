@@ -2078,6 +2078,99 @@
       "lane_review_reason": {
         "image_ocr_deferred_to_door_3": "Las imágenes y los archivos escaneados no pueden extraerse automáticamente en esta etapa. Sube un PDF original si es posible, o continúa y el archivo se enviará para revisión."
       }
+    },
+    "identity": {
+      "title": "Verificación de cuenta",
+      "subtitle": "Confirma tu identidad para desbloquear tu expediente de estudios.",
+      "doc": {
+        "instruction": "Elige el tipo de documento y sube una foto clara o un PDF.",
+        "upload": "Subir documento"
+      },
+      "docKind": {
+        "passport": "Pasaporte",
+        "national_id": "Documento nacional",
+        "driver_license": "Licencia de conducir"
+      },
+      "selfie": {
+        "instruction": "Mira a la cámara y toma una selfie clara.",
+        "capture": "Tomar selfie"
+      },
+      "video": {
+        "instruction": "Graba un video de 5 segundos mirando a la cámara.",
+        "start": "Comenzar grabación",
+        "recording": "Grabando…"
+      },
+      "reader": {
+        "running": "Analizando tu documento…"
+      },
+      "submit": {
+        "running": "Enviando tu activación…"
+      },
+      "result": {
+        "weak": {
+          "title": "Calidad del documento baja",
+          "body": "No pudimos leer tu documento con claridad. Sube una imagen más nítida."
+        },
+        "unsupported": {
+          "title": "Documento no admitido",
+          "body": "Este archivo no parece un documento de identidad. Sube un pasaporte, DNI o licencia de conducir."
+        },
+        "submitError": {
+          "title": "Error al enviar",
+          "body": "Revisa tu conexión e inténtalo de nuevo."
+        },
+        "pending": {
+          "title": "En revisión",
+          "body": "Tu activación está siendo revisada. Te notificaremos cuando se decida."
+        },
+        "approved": {
+          "title": "Identidad aprobada",
+          "body": "Tu identidad fue verificada. Ya puedes abrir tu expediente."
+        },
+        "rejected": {
+          "title": "Activación rechazada",
+          "body": "Tu activación no fue aprobada. Revisa e inténtalo de nuevo."
+        },
+        "reupload": {
+          "title": "Se requiere volver a subir",
+          "body": "Vuelve a subir los archivos solicitados para continuar."
+        }
+      },
+      "cta": {
+        "retry": "Reintentar",
+        "close": "Cerrar",
+        "continue": "Continuar"
+      },
+      "errors": {
+        "uploadFailed": "Error al subir.",
+        "videoTooLarge": "El video debe ser de 15 MB o menos.",
+        "cameraDenied": "Se denegó el acceso a la cámara."
+      }
+    },
+    "support": {
+      "section": {
+        "title": "Solicitudes de soporte",
+        "new": "Nueva solicitud",
+        "hint": "Envía una solicitud y sigue su estado aquí.",
+        "empty": "Aún no hay solicitudes."
+      },
+      "uiState": {
+        "submitted": "Enviado",
+        "under_review": "En revisión",
+        "resolved": "Resuelto"
+      },
+      "submit": {
+        "title": "Nueva solicitud de soporte",
+        "subtitle": "Describe tu problema. Nuestro equipo responderá.",
+        "placeholder": "Escribe tu mensaje…",
+        "send": "Enviar",
+        "cancel": "Cancelar",
+        "success": "Solicitud enviada."
+      },
+      "errors": {
+        "bodyTooShort": "Escribe un mensaje más largo.",
+        "submitFailed": "Error al enviar. Inténtalo de nuevo."
+      }
     }
   },
   "studio": {
