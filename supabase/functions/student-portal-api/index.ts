@@ -8604,6 +8604,8 @@ Deno.serve(async (req) => {
       }
 
       case 'support_ticket_create': {
+        // CUTOVER: writes directly to CRM via web-sync-support-request.
+        // support_tickets local table is no longer touched at runtime.
         const ticketBody = String(body.body ?? '').trim();
         const subjectKey = body.subject_key ? String(body.subject_key) : null;
         const attachment = body.attachment_storage_path ? String(body.attachment_storage_path) : null;
@@ -8614,46 +8616,68 @@ Deno.serve(async (req) => {
         if (ticketBody.length > 5000) {
           return Response.json({ ok: false, error: 'body_too_long' }, { status: 400, headers: corsHeaders });
         }
-        const { data, error } = await portalAdmin
-          .from('support_tickets')
-          .insert({
-            user_id: authUserId,
-            subject_key: subjectKey,
+        if (!resolvedCustomerId) {
+          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
+        }
+        const r = await fetch(`${CRM_FUNCTIONS_URL}/web-sync-support-request`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
+          body: JSON.stringify({
+            web_user_id: resolvedCustomerId,
+            auth_user_id: authUserId,
             body: ticketBody,
+            subject_key: subjectKey,
             attachment_storage_path: attachment,
             origin: 'portal_account',
             client_trace_id: clientTrace,
-          })
-          .select('id, status, created_at')
-          .single();
-        if (error) return Response.json({ ok: false, error: 'create_failed', details: error.message }, { status: 500, headers: corsHeaders });
+          }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || j?.ok === false) {
+          console.error('[support_ticket_create] CRM bridge failed', r.status, j);
+          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}` }, { status: 502, headers: corsHeaders });
+        }
+        const d = j?.data ?? j ?? {};
         return Response.json({
           ok: true,
-          data: { ticket_id: data.id, status: data.status, created_at: data.created_at },
+          data: {
+            ticket_id: d.ticket_id ?? d.id ?? null,
+            status: d.status ?? 'open',
+            created_at: d.created_at ?? new Date().toISOString(),
+          },
         }, { headers: corsHeaders });
       }
 
       case 'support_ticket_list': {
-        const { data, error } = await portalAdmin
-          .from('support_tickets')
-          .select('id, subject_key, status, created_at, updated_at, last_reply_at')
-          .eq('user_id', authUserId)
-          .order('created_at', { ascending: false })
-          .limit(100);
-        if (error) return Response.json({ ok: false, error: 'list_failed', details: error.message }, { status: 500, headers: corsHeaders });
+        // CUTOVER: reads tickets directly from CRM via web-list-support-requests.
+        if (!resolvedCustomerId) {
+          return Response.json({ ok: true, data: { tickets: [] } }, { headers: corsHeaders });
+        }
+        const r = await fetch(`${CRM_FUNCTIONS_URL}/web-list-support-requests`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
+          body: JSON.stringify({ web_user_id: resolvedCustomerId, auth_user_id: authUserId }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || j?.ok === false) {
+          console.error('[support_ticket_list] CRM bridge failed', r.status, j);
+          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}` }, { status: 502, headers: corsHeaders });
+        }
+        const d = j?.data ?? j ?? {};
+        const raw = Array.isArray(d.tickets) ? d.tickets : Array.isArray(d) ? d : [];
         const mapUiState = (s: string) =>
           s === 'open' ? 'submitted' : s === 'in_progress' ? 'under_review' : 'resolved';
         return Response.json({
           ok: true,
           data: {
-            tickets: (data ?? []).map((t: any) => ({
-              ticket_id: t.id,
-              subject_key: t.subject_key,
+            tickets: raw.map((t: any) => ({
+              ticket_id: t.ticket_id ?? t.id,
+              subject_key: t.subject_key ?? null,
               status: t.status,
-              ui_state: mapUiState(t.status),
+              ui_state: t.ui_state ?? mapUiState(t.status),
               created_at: t.created_at,
-              updated_at: t.updated_at,
-              last_reply_at: t.last_reply_at,
+              updated_at: t.updated_at ?? t.created_at,
+              last_reply_at: t.last_reply_at ?? null,
             })),
           },
         }, { headers: corsHeaders });
