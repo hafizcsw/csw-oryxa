@@ -3,8 +3,11 @@ import { LayoutDashboard, User, Paperclip, Heart, FileText, Wallet, Settings, Br
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useStudentPayments } from "@/hooks/useStudentPayments";
 import { useMalakChat } from "@/contexts/MalakChatContext";
+import { useStudentProfile } from "@/hooks/useStudentProfile";
+import { buildAvatarDisplayUrl } from "@/features/avatar/avatarImageUtils";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
@@ -41,6 +44,15 @@ export function AccountSidebar({
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { fullLogout } = useMalakChat();
+  const { crmProfile, profile } = useStudentProfile();
+
+  const avatarBase = buildAvatarDisplayUrl(crmProfile?.avatar_url || profile?.avatar_storage_path || undefined);
+  const cacheBuster = crmProfile?.avatar_updated_at;
+  const avatarUrl = avatarBase
+    ? `${avatarBase}${avatarBase.includes('?') ? '&' : '?'}v=${cacheBuster ? new Date(cacheBuster).getTime() : ''}`
+    : undefined;
+  const displayName = crmProfile?.full_name || profile?.full_name || 'C';
+  const initial = (displayName.trim().charAt(0) || 'C').toUpperCase();
 
   const { payments } = useStudentPayments();
   const safePayments = Array.isArray(payments) ? payments : [];
@@ -126,11 +138,14 @@ export function AccountSidebar({
 
   return (
     <aside className="w-56 bg-card min-h-screen sticky top-0 hidden md:block">
-      {/* Logo area */}
+      {/* User avatar */}
       <div className="h-14 flex items-center justify-center">
-        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-          <span className="text-primary font-bold text-sm">C</span>
-        </div>
+        <Avatar className="h-9 w-9 ring-2 ring-primary/20">
+          <AvatarImage src={avatarUrl} alt={displayName} className="object-cover" />
+          <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
+            {initial}
+          </AvatarFallback>
+        </Avatar>
       </div>
 
       <nav className="p-3 space-y-1">
