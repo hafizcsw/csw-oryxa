@@ -224,7 +224,7 @@ export function useDocumentAnalysis(
   opts: UseDocumentAnalysisOptions,
 ): UseDocumentAnalysisResult {
   const [analyses, setAnalyses] = useState<DocumentAnalysis[]>([]);
-  const [proposals] = useState<ExtractionProposal[]>([]);
+  const [proposals, setProposals] = useState<ExtractionProposal[]>([]);
   const [promotedFields] = useState<PromotedField[]>([]);
   const [artifacts] = useState<Record<string, ReadingArtifact>>({});
   const [hydratedArtifactSurfaces, setHydratedArtifactSurfaces] = useState<Record<string, HydratedArtifactSurface>>({});
