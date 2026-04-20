@@ -8628,16 +8628,32 @@ Deno.serve(async (req) => {
           console.error('[identity_status_get] CRM bridge failed', r.status, j);
           return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}`, http_status: r.status }, { status: 200, headers: corsHeaders });
         }
-        const d = j?.data ?? j ?? {};
+        const d = j?.data ?? j?.request ?? j ?? {};
+        // Map CRM status enum → portal identity_status enum.
+        // CRM emits: submitted | under_review | accepted | approved | rejected | reupload_required | none
+        // Portal expects: none | pending | approved | rejected | reupload_required
+        const rawStatus = String(d.identity_status ?? d.status ?? j?.status ?? 'none').toLowerCase();
+        const PENDING_SET = new Set(['submitted', 'under_review', 'in_review', 'processing', 'pending']);
+        const APPROVED_SET = new Set(['accepted', 'approved']);
+        const REJECTED_SET = new Set(['rejected', 'denied']);
+        const REUPLOAD_SET = new Set(['reupload_required', 'needs_reupload', 'reupload']);
+        let mappedStatus: 'none' | 'pending' | 'approved' | 'rejected' | 'reupload_required' = 'none';
+        if (PENDING_SET.has(rawStatus)) mappedStatus = 'pending';
+        else if (APPROVED_SET.has(rawStatus)) mappedStatus = 'approved';
+        else if (REJECTED_SET.has(rawStatus)) mappedStatus = 'rejected';
+        else if (REUPLOAD_SET.has(rawStatus)) mappedStatus = 'reupload_required';
+        else if (rawStatus === 'none' || rawStatus === '') mappedStatus = 'none';
+        else mappedStatus = 'pending'; // safe default while CRM holds an open activation
+        const blocks = mappedStatus !== 'approved';
         return Response.json({
           ok: true,
           data: {
-            identity_status: d.identity_status ?? d.status ?? 'none',
-            blocks_academic_file: d.blocks_academic_file ?? true,
-            last_activation_id: d.last_activation_id ?? d.activation_id ?? null,
+            identity_status: mappedStatus,
+            blocks_academic_file: d.blocks_academic_file ?? blocks,
+            last_activation_id: d.last_activation_id ?? d.activation_id ?? d.id ?? null,
             decision_reason_code: d.decision_reason_code ?? d.reason_code ?? null,
             reupload_required_fields: d.reupload_required_fields ?? null,
-            decided_at: d.decided_at ?? null,
+            decided_at: d.decided_at ?? d.decision_at ?? null,
           },
         }, { headers: corsHeaders });
       }
