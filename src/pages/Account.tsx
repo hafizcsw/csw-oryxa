@@ -48,7 +48,7 @@ import { calculateProfileProgress } from "@/utils/calculateProfileProgress";
 import { useFileQuality } from "@/hooks/useFileQuality";
 import { StudentInbox } from "@/components/comm/StudentInbox";
 import { StudyFileTab } from "@/components/portal/tabs/StudyFileTab";
-import { IdentityActivationDialog } from "@/components/portal/identity/IdentityActivationDialog";
+// IdentityActivationDialog is mounted inside StudyFileTab (single canonical lock point).
 import { useIdentityStatus } from "@/hooks/useIdentityStatus";
 
 // Tab loaders for preloading
