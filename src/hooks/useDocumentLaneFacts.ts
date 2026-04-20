@@ -58,6 +58,13 @@ export function useDocumentLaneFacts() {
 
   useEffect(() => {
     void refetch();
+
+    const handleRefresh = () => {
+      void refetch();
+    };
+
+    window.addEventListener('crm-refresh-data', handleRefresh);
+    return () => window.removeEventListener('crm-refresh-data', handleRefresh);
   }, [refetch]);
 
   return { byDocId, loading, error, refetch };
