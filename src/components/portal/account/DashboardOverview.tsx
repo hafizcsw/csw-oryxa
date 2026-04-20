@@ -126,13 +126,6 @@ export function DashboardOverview({
             </div>
           ))}
         </dl>
-      </section>
-
-      {/* Verification Steps */}
-      <AccountVerificationSteps
-        currentStep={getCurrentStep()}
-        onVerifyClick={() => onNavigate("study-file")}
-      />
     </div>
   );
 }
