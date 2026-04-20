@@ -15,59 +15,10 @@ export function AccountVerificationSteps({
   const { language, t } = useLanguage();
   const isRtl = language === 'ar';
 
-  const steps = [
-    { number: 1, title: t('portal.steps.verifyAccount') },
-    { number: 2, title: t('portal.steps.fundWallet') },
-    { number: 3, title: t('portal.steps.transferMoney') }
-  ];
-
   return (
     <div className="space-y-4" dir={isRtl ? "rtl" : "ltr"}>
-      {/* Unified Grid for Steps and Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Row 1: Step Numbers with connecting lines */}
-        {steps.map((step, index) => (
-          <div key={step.number} className="relative flex items-center justify-center py-2">
-            {/* Connecting Line to previous step */}
-            {index > 0 && (
-              <div className={cn(
-                "absolute top-1/2 w-full h-0.5 -translate-y-1/2 z-0",
-                isRtl ? "left-1/2" : "right-1/2",
-                currentStep > steps[index - 1].number 
-                  ? "bg-primary" 
-                  : "bg-border"
-              )} />
-            )}
-            {/* Connecting Line to next step */}
-            {index < steps.length - 1 && (
-              <div className={cn(
-                "absolute top-1/2 w-full h-0.5 -translate-y-1/2 z-0",
-                isRtl ? "right-1/2" : "left-1/2",
-                currentStep > step.number 
-                  ? "bg-primary" 
-                  : "bg-border"
-              )} />
-            )}
-            
-            {/* Step Circle */}
-            <div className={cn(
-              "relative z-10 w-11 h-11 rounded-full flex items-center justify-center text-base font-bold transition-all duration-300",
-              currentStep === step.number && [
-                "bg-primary text-primary-foreground shadow-lg shadow-primary/30",
-                "ring-4 ring-primary/20"
-              ],
-              currentStep > step.number && "bg-primary text-primary-foreground",
-              currentStep < step.number && "bg-muted text-muted-foreground border-2 border-border"
-            )}>
-              {step.number}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Step Cards - Same grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Card 1: Account Verification - Highlighted when current */}
+      <div className="grid grid-cols-1 gap-4 max-w-md mx-auto">
+        {/* Card 1: Account Verification only */}
         <div className={cn(
           "rounded-2xl p-6 min-h-[280px] flex flex-col transition-all duration-300",
           currentStep === 1 
