@@ -8396,6 +8396,7 @@ Deno.serve(async (req) => {
           return Response.json({ ok: false, error: 'sign_failed_for_reader', details: signErr?.message }, { status: 500, headers: corsHeaders });
         }
         const fileKind = docKindRaw === 'passport' ? 'passport_id' : docKindRaw;
+        const readerDocumentId = crypto.randomUUID();
         let truthState: string | undefined;
         let family: string | undefined;
         let laneConfidence: number | undefined;
@@ -8410,7 +8411,7 @@ Deno.serve(async (req) => {
               apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '',
             },
             body: JSON.stringify({
-              document_id: crypto.randomUUID(),
+              document_id: readerDocumentId,
               bucket: 'identity-activation',
               path: docPath,
               file_kind: fileKind,
@@ -8437,14 +8438,58 @@ Deno.serve(async (req) => {
         } else {
           verdict = 'weak';
         }
+
+        // Read back the extracted facts the pipeline persisted, so the portal
+        // can show a SUMMARY step before the camera with ONLY truly-extracted
+        // fields (never invented). This is read-only — we do NOT mutate the
+        // reader output.
+        let extractedFields: Record<string, { value: string | null; confidence: number; status: string }> = {};
+        if (verdict === 'accepted_preliminarily') {
+          try {
+            const { data: laneRow } = await portalAdmin
+              .from('document_lane_facts')
+              .select('facts')
+              .eq('document_id', readerDocumentId)
+              .maybeSingle();
+            const rawFacts = (laneRow?.facts ?? {}) as Record<string, any>;
+            const ALLOWED = [
+              'full_name',
+              'passport_number',
+              'nationality',
+              'date_of_birth',
+              'expiry_date',
+              'issuing_country',
+              'gender',
+              'issue_date',
+            ];
+            for (const k of ALLOWED) {
+              const f = rawFacts[k];
+              if (!f) continue;
+              const status = String(f.status ?? '');
+              const value = f.value ?? null;
+              if (!value) continue;
+              if (status !== 'extracted' && status !== 'proposed') continue;
+              extractedFields[k] = {
+                value: String(value),
+                confidence: Number(f.confidence ?? 0),
+                status,
+              };
+            }
+          } catch (e) {
+            console.warn('[identity_reader_run] facts readback failed', e);
+          }
+        }
+
         return Response.json({
           ok: true,
           data: {
+            reader_document_id: readerDocumentId,
             reader_verdict: verdict,
             truth_state: truthState ?? null,
             family: family ?? null,
             lane_confidence: laneConfidence ?? null,
             reader_payload: readerPayload,
+            extracted_fields: extractedFields,
           },
         }, { headers: corsHeaders });
       }
