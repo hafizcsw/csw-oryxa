@@ -1,4 +1,4 @@
-import { Clock, CreditCard, ShieldCheck, IdCard, ArrowLeftRight, Loader2, LifeBuoy } from "lucide-react";
+import { Clock, CreditCard, ShieldCheck, ShieldAlert, ShieldQuestion, IdCard, ArrowLeftRight, Loader2, LifeBuoy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
