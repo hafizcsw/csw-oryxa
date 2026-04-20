@@ -8506,8 +8506,8 @@ Deno.serve(async (req) => {
       }
 
       case 'identity_activation_submit': {
-        // Persists activation as pending. Caller MUST have already run
-        // identity_reader_run and gotten verdict=accepted_preliminarily.
+        // CUTOVER: writes directly to CRM via web-sync-identity-activation.
+        // No portal-side mirror, no local table touched.
         const docKind = String(body.doc_kind ?? '');
         const docPath = String(body.doc_storage_path ?? '');
         const selfiePath = String(body.selfie_storage_path ?? '');
@@ -8529,38 +8529,44 @@ Deno.serve(async (req) => {
             return Response.json({ ok: false, error: 'path_ownership_violation' }, { status: 403, headers: corsHeaders });
           }
         }
-        const { data: row, error: insErr } = await portalAdmin
-          .from('identity_activations')
-          .insert({
-            user_id: authUserId,
+        if (!resolvedCustomerId) {
+          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
+        }
+        const r = await fetch(`${CRM_FUNCTIONS_URL}/web-sync-identity-activation`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
+          body: JSON.stringify({
+            web_user_id: resolvedCustomerId,
+            auth_user_id: authUserId,
             doc_kind: docKind,
             doc_storage_path: docPath,
             selfie_storage_path: selfiePath,
             video_storage_path: videoPath,
             reader_verdict: readerVerdict,
-            reader_payload: readerPayload as any,
-            status: 'pending',
+            reader_payload: readerPayload,
             client_trace_id: clientTrace,
-          })
-          .select('id, status, created_at')
-          .single();
-        if (insErr) {
-          return Response.json({ ok: false, error: 'persist_failed', details: insErr.message }, { status: 500, headers: corsHeaders });
+          }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || j?.ok === false) {
+          console.error('[identity_activation_submit] CRM bridge failed', r.status, j);
+          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}` }, { status: 502, headers: corsHeaders });
         }
+        const d = j?.data ?? j ?? {};
         return Response.json({
           ok: true,
-          data: { activation_id: row.id, identity_status: row.status, submitted_at: row.created_at },
+          data: {
+            activation_id: d.activation_id ?? d.id ?? null,
+            identity_status: d.status ?? d.identity_status ?? 'pending',
+            submitted_at: d.created_at ?? d.submitted_at ?? new Date().toISOString(),
+          },
         }, { headers: corsHeaders });
       }
 
       case 'identity_status_get': {
-        const { data, error } = await portalAdmin
-          .from('identity_status_mirror')
-          .select('status, last_activation_id, decision_reason_code, reupload_required_fields, blocks_academic_file, decided_at')
-          .eq('user_id', authUserId)
-          .maybeSingle();
-        if (error) return Response.json({ ok: false, error: 'read_failed', details: error.message }, { status: 500, headers: corsHeaders });
-        if (!data) {
+        // CUTOVER: reads identity status directly from CRM via web-get-identity-status.
+        // identity_status_mirror is no longer touched at runtime.
+        if (!resolvedCustomerId) {
           return Response.json({
             ok: true,
             data: {
@@ -8573,15 +8579,26 @@ Deno.serve(async (req) => {
             },
           }, { headers: corsHeaders });
         }
+        const r = await fetch(`${CRM_FUNCTIONS_URL}/web-get-identity-status`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
+          body: JSON.stringify({ web_user_id: resolvedCustomerId, auth_user_id: authUserId }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || j?.ok === false) {
+          console.error('[identity_status_get] CRM bridge failed', r.status, j);
+          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}` }, { status: 502, headers: corsHeaders });
+        }
+        const d = j?.data ?? j ?? {};
         return Response.json({
           ok: true,
           data: {
-            identity_status: data.status,
-            blocks_academic_file: data.blocks_academic_file,
-            last_activation_id: data.last_activation_id,
-            decision_reason_code: data.decision_reason_code,
-            reupload_required_fields: data.reupload_required_fields,
-            decided_at: data.decided_at,
+            identity_status: d.identity_status ?? d.status ?? 'none',
+            blocks_academic_file: d.blocks_academic_file ?? true,
+            last_activation_id: d.last_activation_id ?? d.activation_id ?? null,
+            decision_reason_code: d.decision_reason_code ?? d.reason_code ?? null,
+            reupload_required_fields: d.reupload_required_fields ?? null,
+            decided_at: d.decided_at ?? null,
           },
         }, { headers: corsHeaders });
       }
