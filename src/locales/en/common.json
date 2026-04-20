@@ -2472,6 +2472,22 @@
         "title": "Academic file is locked",
         "body": "You must verify your identity before unlocking your academic file.",
         "cta": "Start verification"
+      },
+      "summary": {
+        "title": "We read your document",
+        "subtitle": "These are the fields we extracted from your document. Please review before continuing.",
+        "noFields": "We could not extract any fields from your document with enough confidence.",
+        "disclaimer": "Only fields actually extracted from your document are shown.",
+        "retake": "Re-upload",
+        "confirm": "Data is correct, continue",
+        "field": {
+          "full_name": "Full name",
+          "nationality": "Nationality",
+          "date_of_birth": "Date of birth",
+          "passport_number": "Document number",
+          "issuing_country": "Issuing country",
+          "expiry_date": "Expiry date"
+        }
       }
     },
     "support": {

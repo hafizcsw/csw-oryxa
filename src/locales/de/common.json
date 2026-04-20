@@ -2156,6 +2156,22 @@
         "title": "Akademische Akte ist gesperrt",
         "body": "Sie müssen Ihre Identität bestätigen, bevor Sie Ihre akademische Akte freischalten.",
         "cta": "Verifizierung starten"
+      },
+      "summary": {
+        "title": "Wir haben Ihr Dokument gelesen",
+        "subtitle": "Dies sind die Daten, die wir aus Ihrem Dokument gelesen haben. Bitte vor dem Fortfahren prüfen.",
+        "noFields": "Aus dem Dokument konnten keine Daten mit ausreichender Sicherheit extrahiert werden.",
+        "disclaimer": "Es werden nur Felder angezeigt, die tatsächlich aus Ihrem Dokument extrahiert wurden.",
+        "retake": "Erneut hochladen",
+        "confirm": "Daten korrekt, fortfahren",
+        "field": {
+          "full_name": "Vollständiger Name",
+          "nationality": "Staatsangehörigkeit",
+          "date_of_birth": "Geburtsdatum",
+          "passport_number": "Dokumentnummer",
+          "issuing_country": "Ausstellungsland",
+          "expiry_date": "Ablaufdatum"
+        }
       }
     },
     "support": {

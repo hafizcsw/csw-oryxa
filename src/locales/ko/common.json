@@ -2156,6 +2156,22 @@
         "title": "학업 파일이 잠겨 있습니다",
         "body": "학업 파일을 열려면 먼저 신원을 확인해야 합니다.",
         "cta": "인증 시작"
+      },
+      "summary": {
+        "title": "문서를 읽었습니다",
+        "subtitle": "문서에서 추출한 데이터입니다. 계속하기 전에 확인하세요.",
+        "noFields": "문서에서 충분한 신뢰도로 데이터를 추출할 수 없었습니다.",
+        "disclaimer": "문서에서 실제로 추출된 필드만 표시됩니다.",
+        "retake": "다시 업로드",
+        "confirm": "데이터가 맞습니다, 계속",
+        "field": {
+          "full_name": "성명",
+          "nationality": "국적",
+          "date_of_birth": "생년월일",
+          "passport_number": "문서 번호",
+          "issuing_country": "발급 국가",
+          "expiry_date": "만료일"
+        }
       }
     },
     "support": {
