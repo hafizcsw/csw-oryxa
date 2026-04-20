@@ -10,16 +10,17 @@ import type { AcademicTruth, SubjectRow, StudyStatus, SubjectFamily } from './ty
 
 export function buildAcademicTruth(
   canonical: CanonicalStudentFile | null,
-  subjectRows: SubjectRow[],
+  subjectRows: SubjectRow[] | null | undefined,
 ): AcademicTruth {
   const acad = canonical?.academic;
+  const safeSubjectRows = Array.isArray(subjectRows) ? subjectRows : [];
 
   const familiesPresent = new Set<SubjectFamily>();
-  for (const row of subjectRows) {
+  for (const row of safeSubjectRows) {
     familiesPresent.add(row.subject_family);
   }
 
-  const totalCredits = subjectRows.reduce((sum, r) => sum + (r.credits ?? 0), 0) || null;
+  const totalCredits = safeSubjectRows.reduce((sum, r) => sum + (r.credits ?? 0), 0) || null;
 
   return {
     current_education_level: acad?.current_study_level ?? null,
@@ -37,7 +38,7 @@ export function buildAcademicTruth(
     study_status: inferStudyStatus(acad?.credential_type),
     transcript_language: null, // V1: not extracted
 
-    subject_rows: subjectRows,
+    subject_rows: safeSubjectRows,
     has_science_subjects: familiesPresent.has('biology') || familiesPresent.has('chemistry') || familiesPresent.has('physics'),
     has_math: familiesPresent.has('mathematics'),
     has_english: familiesPresent.has('english'),
