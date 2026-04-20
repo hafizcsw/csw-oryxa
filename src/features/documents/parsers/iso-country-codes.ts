@@ -1,17 +1,17 @@
 // ═══════════════════════════════════════════════════════════════
 // ISO country code lookup — STUB (legacy table removed)
 // ═══════════════════════════════════════════════════════════════
-// The real lookup table is no longer needed in the client; the
-// Mistral pipeline returns ISO-3166 alpha-2 directly. This stub
-// keeps the import contract for any remaining callers.
+// Real lookups will come from the Mistral pipeline output.
+// This stub preserves the import contract for legacy callers.
 // ═══════════════════════════════════════════════════════════════
 
 export interface CountryLookupResult {
   alpha2: string | null;
   alpha3: string | null;
   name: string | null;
+  name_en: string | null;
 }
 
 export function lookupCountry(_codeOrName: string | null | undefined): CountryLookupResult {
-  return { alpha2: null, alpha3: null, name: null };
+  return { alpha2: null, alpha3: null, name: null, name_en: null };
 }
