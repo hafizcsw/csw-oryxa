@@ -8395,7 +8395,14 @@ Deno.serve(async (req) => {
         if (signErr || !signed?.signedUrl) {
           return Response.json({ ok: false, error: 'sign_failed_for_reader', details: signErr?.message }, { status: 500, headers: corsHeaders });
         }
-        const fileKind = docKindRaw === 'passport' ? 'passport_id' : docKindRaw;
+        // The current working reader only ships a `passport_id` lane. The
+        // three doc kinds (passport, national_id, driver_license) all expose
+        // the same generic identity fields (name, document number, nationality,
+        // dob, expiry, issuing country), so we route them through the same
+        // lane intentionally. This is NOT silently passport-only: the
+        // returned `extracted_fields` are surfaced under a generic
+        // `document_number` label on the portal, not `passport_number`.
+        const fileKind = 'passport_id';
         const readerDocumentId = crypto.randomUUID();
         let truthState: string | undefined;
         let family: string | undefined;
