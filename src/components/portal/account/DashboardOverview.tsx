@@ -126,6 +126,7 @@ export function DashboardOverview({
             </div>
           ))}
         </dl>
+      </section>
     </div>
   );
 }
