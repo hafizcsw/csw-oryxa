@@ -106,6 +106,24 @@ export function useDocumentRegistry({
           file_url: result.file_url || null,
           error_message: null,
         });
+        if (record.document_id !== result.file_id) {
+          setRecords(prev =>
+            prev.map(r => {
+              if (r.document_id !== record.document_id) return r;
+              return {
+                ...r,
+                document_id: result.file_id || r.document_id,
+                crm_file_id: result.file_id || null,
+                storage_path: result.path || null,
+                file_url: result.file_url || null,
+                processing_status: 'registered',
+                upload_progress: 100,
+                error_message: null,
+                updated_at: new Date().toISOString(),
+              };
+            })
+          );
+        }
       } else {
         updateRecord(record.document_id, {
           processing_status: 'upload_failed',
