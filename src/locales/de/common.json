@@ -1278,7 +1278,13 @@
       "deleteNotAvailable": "Foto löschen nicht verfügbar",
       "replacePhoto": "Foto ersetzen",
       "deletePhoto": "Foto löschen",
-      "regularUser": "Regulärer Benutzer"
+      "regularUser": "Regulärer Benutzer",
+      "verifiedInfo": "Verifizierte Kontodaten",
+      "verifiedInfoHint": "Mit Ihrem Konto synchronisiert. Hier nicht bearbeitbar.",
+      "fullName": "Vollständiger Name",
+      "dateOfBirth": "Geburtsdatum",
+      "email": "E-Mail",
+      "notProvided": "Nicht angegeben"
     },
     "pageTitle": "Mein Konto | CSW",
     "sidebarProgress": {

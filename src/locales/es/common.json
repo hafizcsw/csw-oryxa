@@ -1278,7 +1278,13 @@
       "deleteNotAvailable": "Eliminar no disponible",
       "replacePhoto": "Reemplazar Foto",
       "deletePhoto": "Eliminar Foto",
-      "regularUser": "Usuario Regular"
+      "regularUser": "Usuario Regular",
+      "verifiedInfo": "Información verificada de la cuenta",
+      "verifiedInfoHint": "Sincronizada con tu cuenta. No editable aquí.",
+      "fullName": "Nombre completo",
+      "dateOfBirth": "Fecha de nacimiento",
+      "email": "Correo electrónico",
+      "notProvided": "No proporcionado"
     },
     "pageTitle": "Mi Cuenta | CSW",
     "sidebarProgress": {

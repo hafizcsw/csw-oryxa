@@ -1278,7 +1278,13 @@
       "deleteNotAvailable": "फ़ोटो हटाना उपलब्ध नहीं है",
       "replacePhoto": "फ़ोटो बदलें",
       "deletePhoto": "फ़ोटो हटाएं",
-      "regularUser": "सामान्य उपयोगकर्ता"
+      "regularUser": "सामान्य उपयोगकर्ता",
+      "verifiedInfo": "सत्यापित खाता जानकारी",
+      "verifiedInfoHint": "आपके खाते के साथ सिंक। यहाँ संपादन योग्य नहीं।",
+      "fullName": "पूरा नाम",
+      "dateOfBirth": "जन्म तिथि",
+      "email": "ईमेल",
+      "notProvided": "उपलब्ध नहीं"
     },
     "pageTitle": "मेरा खाता | CSW",
     "sidebarProgress": {
