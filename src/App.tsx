@@ -14,6 +14,8 @@ import { welcomeAlreadyRouted } from "@/lib/welcomeTransition";
 import { PhoneActivationGate } from "@/components/auth/PhoneActivationGate";
 import { CanonicalRedirect } from "@/components/system/CanonicalRedirect";
 import { SearchRedirect } from "@/components/system/SearchRedirect";
+import { ScrollToTop } from "@/components/system/ScrollToTop";
+import { RoutePrefetcher } from "@/components/system/RoutePrefetcher";
 import { LocaleRouteWrapper } from "@/components/routing/LocaleRouteWrapper";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { usePresenceHeartbeat } from "@/hooks/usePresence";
@@ -703,6 +705,8 @@ function AppContent() {
 
   return (
     <>
+      <ScrollToTop />
+      <RoutePrefetcher />
       {/* Route-level welcome transition — survives client-side navigation */}
       <WelcomeTransition />
       <Suspense fallback={<PageLoader />}>
