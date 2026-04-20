@@ -1241,7 +1241,9 @@
       "completed": "Abgeschlossen",
       "pending": "Ausstehend",
       "underReview": "In Prüfung",
-      "reupload": "Erneut hochladen"
+      "reupload": "Erneut hochladen",
+      "underReviewHint": "Ihre Datei wird derzeit überprüft. Die Prüfung dauert in der Regel zwischen 15 Minuten und einem Werktag. Bei Verzögerungen kontaktieren Sie bitte den Support.",
+      "contactSupport": "Support kontaktieren"
     },
     "markets": {
       "title": "Wechselkurse",

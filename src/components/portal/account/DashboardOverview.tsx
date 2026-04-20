@@ -4,6 +4,7 @@ import { AccountContentHeader } from "./AccountContentHeader";
 import { AccountVerificationSteps } from "./AccountVerificationSteps";
 import { IdentityActivationDialog } from "../identity/IdentityActivationDialog";
 import { SupportSection } from "../support/SupportSection";
+import { SupportSubmitDialog } from "../support/SupportSubmitDialog";
 import { useIdentityStatus } from "@/hooks/useIdentityStatus";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -48,6 +49,7 @@ export function DashboardOverview({
   const { t, language } = useLanguage();
   const isRtl = language === 'ar';
   const [identityOpen, setIdentityOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const { status: identityStatus } = useIdentityStatus();
 
   const getCurrentStep = () => {
@@ -94,6 +96,7 @@ export function DashboardOverview({
         currentStep={identityStatus.identity_status === 'approved' ? 2 : getCurrentStep()}
         identityStatus={identityStatus.identity_status}
         onVerifyClick={() => setIdentityOpen(true)}
+        onSupportClick={() => setSupportOpen(true)}
       />
 
       {/* Identity Activation Dialog */}
@@ -102,6 +105,9 @@ export function DashboardOverview({
         onOpenChange={setIdentityOpen}
         onApproved={() => onNavigate('study-file')}
       />
+
+      {/* Support Submit Dialog (opened from under-review state) */}
+      <SupportSubmitDialog open={supportOpen} onOpenChange={setSupportOpen} />
 
       {/* Verified (read-only) account info */}
       <section

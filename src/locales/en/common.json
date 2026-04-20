@@ -1583,7 +1583,9 @@
       "completed": "Completed",
       "pending": "Pending",
       "underReview": "Under Review",
-      "reupload": "Re-upload"
+      "reupload": "Re-upload",
+      "underReviewHint": "Your file is being reviewed. Reviews usually take between 15 minutes and 1 business day. If it takes longer, please contact support.",
+      "contactSupport": "Contact Support"
     },
     "markets": {
       "title": "Markets",

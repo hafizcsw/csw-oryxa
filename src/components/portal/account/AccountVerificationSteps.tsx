@@ -1,4 +1,4 @@
-import { Clock, CreditCard, ShieldCheck, IdCard, ArrowLeftRight, Loader2 } from "lucide-react";
+import { Clock, CreditCard, ShieldCheck, IdCard, ArrowLeftRight, Loader2, LifeBuoy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -7,12 +7,14 @@ import type { IdentityStatus } from "@/api/identitySupportInvoke";
 interface AccountVerificationStepsProps {
   currentStep?: number;
   onVerifyClick?: () => void;
+  onSupportClick?: () => void;
   identityStatus?: IdentityStatus;
 }
 
 export function AccountVerificationSteps({ 
   currentStep = 1, 
   onVerifyClick,
+  onSupportClick,
   identityStatus = 'none',
 }: AccountVerificationStepsProps) {
   const { language, t } = useLanguage();
@@ -62,13 +64,26 @@ export function AccountVerificationSteps({
           </div>
           
           {currentStep === 1 && identityStatus === 'pending' && (
-            <Button
-              disabled
-              className="w-full bg-muted text-muted-foreground font-bold text-base py-3 cursor-not-allowed"
-            >
-              <Loader2 className="w-4 h-4 me-2 animate-spin" />
-              {t('portal.steps.underReview')}
-            </Button>
+            <div className="space-y-3">
+              <Button
+                disabled
+                className="w-full bg-muted text-muted-foreground font-bold text-base py-3 cursor-not-allowed"
+              >
+                <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                {t('portal.steps.underReview')}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center leading-relaxed px-1">
+                {t('portal.steps.underReviewHint')}
+              </p>
+              <Button
+                variant="outline"
+                onClick={onSupportClick}
+                className="w-full font-medium text-sm py-2"
+              >
+                <LifeBuoy className="w-4 h-4 me-2" />
+                {t('portal.steps.contactSupport')}
+              </Button>
+            </div>
           )}
           {currentStep === 1 && identityStatus === 'reupload_required' && (
             <Button

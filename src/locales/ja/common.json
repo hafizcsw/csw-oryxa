@@ -1241,7 +1241,9 @@
       "completed": "完了",
       "pending": "保留中",
       "underReview": "審査中",
-      "reupload": "再アップロード"
+      "reupload": "再アップロード",
+      "underReviewHint": "ファイルは現在審査中です。審査は通常15分から1営業日かかります。遅れる場合はサポートにご連絡ください。",
+      "contactSupport": "サポートに連絡"
     },
     "markets": {
       "title": "為替レート",
