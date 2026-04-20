@@ -2147,6 +2147,11 @@
         "uploadFailed": "Falha no envio.",
         "videoTooLarge": "O vídeo deve ter 15 MB ou menos.",
         "cameraDenied": "Acesso à câmera negado."
+      },
+      "gate": {
+        "title": "O arquivo acadêmico está bloqueado",
+        "body": "Você deve verificar sua identidade antes de desbloquear seu arquivo acadêmico.",
+        "cta": "Iniciar verificação"
       }
     },
     "support": {

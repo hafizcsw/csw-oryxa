@@ -2147,6 +2147,11 @@
         "uploadFailed": "Upload fehlgeschlagen.",
         "videoTooLarge": "Video darf höchstens 15 MB groß sein.",
         "cameraDenied": "Kamerazugriff wurde verweigert."
+      },
+      "gate": {
+        "title": "Akademische Akte ist gesperrt",
+        "body": "Sie müssen Ihre Identität bestätigen, bevor Sie Ihre akademische Akte freischalten.",
+        "cta": "Verifizierung starten"
       }
     },
     "support": {

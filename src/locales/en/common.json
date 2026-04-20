@@ -2463,6 +2463,11 @@
         "uploadFailed": "Upload failed.",
         "videoTooLarge": "Video must be 15MB or less.",
         "cameraDenied": "Camera access was denied."
+      },
+      "gate": {
+        "title": "Academic file is locked",
+        "body": "You must verify your identity before unlocking your academic file.",
+        "cta": "Start verification"
       }
     },
     "support": {

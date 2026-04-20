@@ -2147,6 +2147,11 @@
         "uploadFailed": "업로드 실패.",
         "videoTooLarge": "영상은 15MB 이하여야 합니다.",
         "cameraDenied": "카메라 접근이 거부되었습니다."
+      },
+      "gate": {
+        "title": "학업 파일이 잠겨 있습니다",
+        "body": "학업 파일을 열려면 먼저 신원을 확인해야 합니다.",
+        "cta": "인증 시작"
       }
     },
     "support": {
