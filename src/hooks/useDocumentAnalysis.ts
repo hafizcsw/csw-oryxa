@@ -113,6 +113,9 @@ function laneToParserType(row: LaneFactsDbRow): ParserType {
   const meta = (row.engine_metadata ?? {}) as Record<string, unknown>;
   const reviewReason = typeof meta.review_reason === 'string' ? meta.review_reason : null;
   if (reviewReason === 'image_ocr_deferred_to_door_3') return 'image_ocr';
+  const producer = typeof meta.producer === 'string' ? meta.producer : '';
+  if (meta.ocr_used === true || producer.includes('mistral')) return 'image_ocr';
+  if (meta.pdf_text_used === true) return 'pdf_text';
   return 'regex_heuristic';
 }
 
