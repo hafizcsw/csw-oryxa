@@ -185,6 +185,20 @@ export default function AccountPage() {
     document.title = t('portal.pageTitle');
   }, [language, t]);
 
+  // ✅ Defense-in-depth: if user lands on study-file via URL while identity is not approved,
+  // bounce to overview and open the activation dialog.
+  useEffect(() => {
+    if (isTeacher) return;
+    if (activeTab === 'study-file' && identityStatus.blocks_academic_file) {
+      setIdentityDialogOpen(true);
+      setSearchParams(prev => {
+        const p = new URLSearchParams(prev);
+        p.set('tab', 'overview');
+        return p;
+      }, { replace: true });
+    }
+  }, [activeTab, identityStatus.blocks_academic_file, isTeacher, setSearchParams]);
+
   const handleStartProgram = useCallback((programId: string, countryCode?: string) => {
     console.log('[Account] 🚀 handleStartProgram called:', { programId, countryCode });
     // IMPORTANT: single atomic URL update to avoid losing program_id due to back-to-back setSearchParams calls
