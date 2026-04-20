@@ -204,6 +204,13 @@ export function IdentityActivationDialog({
               onCta={reset}
             />
           )}
+          {step === "accepted_summary" && (
+            <SummaryStep
+              fields={extractedFields}
+              onConfirm={() => setStep("selfie_capture")}
+              onRetry={reset}
+            />
+          )}
           {step === "selfie_capture" && (
             <SelfieStep onCaptured={handleSelfieCaptured} />
           )}
