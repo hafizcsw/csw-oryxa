@@ -8476,7 +8476,11 @@ Deno.serve(async (req) => {
               const value = f.value ?? null;
               if (!value) continue;
               if (status !== 'extracted' && status !== 'proposed') continue;
-              extractedFields[k] = {
+              // Surface the document number under a generic key so the portal
+              // can label it correctly per doc_kind (passport / national_id /
+              // driver_license) — never as "passport number" for a national ID.
+              const outKey = k === 'passport_number' ? 'document_number' : k;
+              extractedFields[outKey] = {
                 value: String(value),
                 confidence: Number(f.confidence ?? 0),
                 status,
