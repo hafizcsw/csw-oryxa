@@ -528,3 +528,82 @@ function ResultStep({
     </div>
   );
 }
+
+// Summary step: shows ONLY truly extracted fields. Never invents missing fields.
+// Never shows residence/location. Student must confirm before camera opens.
+function SummaryStep({
+  fields,
+  onConfirm,
+  onRetry,
+}: {
+  fields: Record<string, ExtractedFieldRead>;
+  onConfirm: () => void;
+  onRetry: () => void;
+}) {
+  const { t } = useLanguage();
+  // Whitelist of fields the spec allows us to display, in order.
+  // Anything not in this list is suppressed even if the reader returns it.
+  const ORDER: string[] = [
+    "full_name",
+    "nationality",
+    "date_of_birth",
+    "passport_number",
+    "issuing_country",
+    "expiry_date",
+  ];
+  const rows = ORDER
+    .map((k) => ({ key: k, field: fields[k] }))
+    .filter((r) => r.field && r.field.value && (r.field.status === "extracted" || r.field.status === "proposed"));
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-start gap-3 rounded-lg bg-success/5 border border-success/30 p-3">
+        <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">
+            {t("portal.identity.summary.title")}
+          </h3>
+          <p className="text-xs text-muted-foreground mt-1">
+            {t("portal.identity.summary.subtitle")}
+          </p>
+        </div>
+      </div>
+
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground italic text-center py-4">
+          {t("portal.identity.summary.noFields")}
+        </p>
+      ) : (
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {rows.map(({ key, field }) => (
+            <div
+              key={key}
+              className="rounded-lg border border-border/60 bg-muted/30 p-3"
+            >
+              <dt className="text-xs text-muted-foreground mb-1">
+                {t(`portal.identity.summary.field.${key}`)}
+              </dt>
+              <dd className="text-sm font-medium text-foreground break-words">
+                {field!.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      <p className="text-xs text-muted-foreground text-center">
+        {t("portal.identity.summary.disclaimer")}
+      </p>
+
+      <div className="flex gap-2">
+        <Button variant="outline" onClick={onRetry} className="flex-1">
+          <RotateCcw className="w-4 h-4 me-2" />
+          {t("portal.identity.summary.retake")}
+        </Button>
+        <Button onClick={onConfirm} className="flex-1">
+          {t("portal.identity.summary.confirm")}
+        </Button>
+      </div>
+    </div>
+  );
+}
