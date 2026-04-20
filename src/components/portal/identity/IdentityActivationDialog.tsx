@@ -77,6 +77,7 @@ export function IdentityActivationDialog({
     setDocPath("");
     setReaderVerdict(null);
     setReaderPayload({});
+    setExtractedFields({});
     setSelfieFile(null);
     setSelfiePath("");
     setVideoFile(null);
