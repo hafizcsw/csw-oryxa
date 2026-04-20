@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, ShieldCheck, AlertTriangle, Camera, Video, Upload, RotateCcw, CheckCircle2, X } from "lucide-react";
+import { Loader2, ShieldCheck, AlertTriangle, Camera, Video, Upload, RotateCcw, CheckCircle2, X, User, Globe2, Calendar, FileBadge, MapPin, CalendarX2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
@@ -567,52 +567,104 @@ function SummaryStep({
     return t(`portal.identity.summary.field.${key}`);
   };
 
+  const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+    full_name: User,
+    nationality: Globe2,
+    date_of_birth: Calendar,
+    document_number: FileBadge,
+    issuing_country: MapPin,
+    expiry_date: CalendarX2,
+  };
+
+  // Pretty-format ISO/short dates into a locale-friendly string.
+  const formatValue = (key: string, raw: string) => {
+    if (key === "date_of_birth" || key === "expiry_date") {
+      const d = new Date(raw);
+      if (!isNaN(d.getTime())) {
+        try {
+          return new Intl.DateTimeFormat(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }).format(d);
+        } catch {
+          /* fall through */
+        }
+      }
+    }
+    if (key === "issuing_country" || key === "nationality") {
+      // Title-case ALL-CAPS country names like "THE REPUBLIC OF THE SUDAN".
+      return raw
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase())
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+    return raw;
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-start gap-3 rounded-lg bg-success/5 border border-success/30 p-3">
-        <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-        <div>
-          <h3 className="text-sm font-semibold text-foreground">
+    <div className="space-y-5">
+      {/* Header banner */}
+      <div className="flex items-start gap-3 rounded-xl bg-gradient-to-br from-success/10 via-success/5 to-transparent border border-success/30 p-4">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-success/15 shrink-0">
+          <CheckCircle2 className="w-5 h-5 text-success" />
+        </div>
+        <div className="min-w-0">
+          <h3 className="text-base font-semibold text-foreground leading-tight">
             {t("portal.identity.summary.title")}
           </h3>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
             {t("portal.identity.summary.subtitle")}
           </p>
         </div>
       </div>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground italic text-center py-4">
+        <p className="text-sm text-muted-foreground italic text-center py-6">
           {t("portal.identity.summary.noFields")}
         </p>
       ) : (
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {rows.map(({ key, field }) => (
-            <div
-              key={key}
-              className="rounded-lg border border-border/60 bg-muted/30 p-3"
-            >
-              <dt className="text-xs text-muted-foreground mb-1">
-                {labelFor(key)}
-              </dt>
-              <dd className="text-sm font-medium text-foreground break-words">
-                {field!.value}
-              </dd>
-            </div>
-          ))}
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          {rows.map(({ key, field }) => {
+            const Icon = ICONS[key] ?? FileBadge;
+            const isFullWidth = key === "full_name";
+            return (
+              <div
+                key={key}
+                className={cn(
+                  "group relative rounded-xl border border-border/60 bg-card hover:border-primary/40 hover:shadow-sm transition-all p-3.5",
+                  isFullWidth && "sm:col-span-2",
+                )}
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary shrink-0">
+                    <Icon className="w-3.5 h-3.5" />
+                  </div>
+                  <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                    {labelFor(key)}
+                  </dt>
+                </div>
+                <dd className="text-sm font-semibold text-foreground break-words leading-snug ps-8">
+                  {formatValue(key, field!.value as string)}
+                </dd>
+              </div>
+            );
+          })}
         </dl>
       )}
 
-      <p className="text-xs text-muted-foreground text-center">
+      <p className="text-[11px] text-muted-foreground/80 text-center px-2 leading-relaxed">
         {t("portal.identity.summary.disclaimer")}
       </p>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 pt-1">
         <Button variant="outline" onClick={onRetry} className="flex-1">
           <RotateCcw className="w-4 h-4 me-2" />
           {t("portal.identity.summary.retake")}
         </Button>
         <Button onClick={onConfirm} className="flex-1">
+          <CheckCircle2 className="w-4 h-4 me-2" />
           {t("portal.identity.summary.confirm")}
         </Button>
       </div>
