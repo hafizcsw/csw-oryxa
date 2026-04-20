@@ -2211,9 +2211,13 @@
           "full_name": "全名",
           "nationality": "国籍",
           "date_of_birth": "出生日期",
-          "passport_number": "证件号码",
           "issuing_country": "签发国家",
-          "expiry_date": "有效期"
+          "expiry_date": "有效期",
+          "document_number": {
+            "passport": "护照号码",
+            "national_id": "身份证号码",
+            "driver_license": "驾驶证号码"
+          }
         }
       }
     },

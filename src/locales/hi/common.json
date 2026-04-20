@@ -2178,9 +2178,13 @@
           "full_name": "पूरा नाम",
           "nationality": "राष्ट्रीयता",
           "date_of_birth": "जन्म तिथि",
-          "passport_number": "दस्तावेज़ संख्या",
           "issuing_country": "जारीकर्ता देश",
-          "expiry_date": "समाप्ति तिथि"
+          "expiry_date": "समाप्ति तिथि",
+          "document_number": {
+            "passport": "पासपोर्ट संख्या",
+            "national_id": "राष्ट्रीय पहचान पत्र संख्या",
+            "driver_license": "ड्राइविंग लाइसेंस संख्या"
+          }
         }
       }
     },

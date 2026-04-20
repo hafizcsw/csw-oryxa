@@ -2168,9 +2168,13 @@
           "full_name": "성명",
           "nationality": "국적",
           "date_of_birth": "생년월일",
-          "passport_number": "문서 번호",
           "issuing_country": "발급 국가",
-          "expiry_date": "만료일"
+          "expiry_date": "만료일",
+          "document_number": {
+            "passport": "여권 번호",
+            "national_id": "주민등록번호",
+            "driver_license": "운전면허 번호"
+          }
         }
       }
     },

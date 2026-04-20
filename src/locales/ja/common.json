@@ -2168,9 +2168,13 @@
           "full_name": "氏名",
           "nationality": "国籍",
           "date_of_birth": "生年月日",
-          "passport_number": "書類番号",
           "issuing_country": "発行国",
-          "expiry_date": "有効期限"
+          "expiry_date": "有効期限",
+          "document_number": {
+            "passport": "パスポート番号",
+            "national_id": "国民ID番号",
+            "driver_license": "運転免許証番号"
+          }
         }
       }
     },

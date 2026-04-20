@@ -2168,9 +2168,13 @@
           "full_name": "Vollständiger Name",
           "nationality": "Staatsangehörigkeit",
           "date_of_birth": "Geburtsdatum",
-          "passport_number": "Dokumentnummer",
           "issuing_country": "Ausstellungsland",
-          "expiry_date": "Ablaufdatum"
+          "expiry_date": "Ablaufdatum",
+          "document_number": {
+            "passport": "Passnummer",
+            "national_id": "Personalausweisnummer",
+            "driver_license": "Führerscheinnummer"
+          }
         }
       }
     },
