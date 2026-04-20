@@ -223,10 +223,10 @@ const PASSPORT_FIELD_MAP: Record<string, string> = {
   gender: 'identity.gender',
 };
 const GRADUATION_FIELD_MAP: Record<string, string> = {
-  full_name: 'graduation.full_name',
-  institution_name: 'graduation.institution_name',
-  qualification: 'graduation.credential_name',
-  issue_date: 'graduation.issue_date',
+  full_name: 'academic.full_name',
+  institution_name: 'academic.awarding_institution',
+  qualification: 'academic.credential_name',
+  issue_date: 'academic.degree_conferral_date',
 };
 const LANGUAGE_FIELD_MAP: Record<string, string> = {
   full_name: 'language.full_name',
@@ -242,6 +242,38 @@ function fieldMapForLane(lane: string | null | undefined): Record<string, string
   return {};
 }
 
+function buildProposal(params: {
+  row: LaneFactsDbRow;
+  studentId: string;
+  fieldKey: string;
+  value: string;
+  confidence: number;
+}): ExtractionProposal {
+  const { row, studentId, fieldKey, value, confidence } = params;
+  const now = row.updated_at || row.created_at || new Date().toISOString();
+  return {
+    proposal_id: `${row.document_id}:${fieldKey}`,
+    student_id: studentId,
+    document_id: row.document_id,
+    field_key: fieldKey,
+    proposed_value: value,
+    normalized_value: value,
+    confidence,
+    proposal_status: confidence >= 0.85 ? 'auto_accepted' : 'pending_review',
+    conflict_with_current: false,
+    requires_review: confidence < 0.85,
+    auto_apply_candidate: confidence >= 0.85,
+    created_at: now,
+    updated_at: now,
+  };
+}
+
+function extractGraduationYear(value: string): string | null {
+  const years = value.match(/\b(19|20)\d{2}\b/g) ?? [];
+  if (years.length === 0) return null;
+  return years[years.length - 1] ?? null;
+}
+
 function buildProposalsFromLaneRow(
   row: LaneFactsDbRow,
   studentId: string,
@@ -251,7 +283,8 @@ function buildProposalsFromLaneRow(
     : {};
   const map = fieldMapForLane(row.lane);
   const out: ExtractionProposal[] = [];
-  const now = row.updated_at || row.created_at || new Date().toISOString();
+  const seen = new Set<string>();
+
   for (const [rawKey, raw] of Object.entries(facts)) {
     if (!raw || typeof raw !== 'object') continue;
     const fieldKey = map[rawKey];
@@ -259,23 +292,24 @@ function buildProposalsFromLaneRow(
     const value = raw.value != null ? String(raw.value) : null;
     if (!value) continue;
     const confidence = typeof raw.confidence === 'number' ? raw.confidence : 0;
-    out.push({
-      proposal_id: `${row.document_id}:${fieldKey}`,
-      student_id: studentId,
-      document_id: row.document_id,
-      field_key: fieldKey,
-      proposed_value: value,
-      normalized_value: value,
-      confidence,
-      // Mistral OCR + high confidence → auto_accepted so UI shows the value as accepted
-      proposal_status: confidence >= 0.85 ? 'auto_accepted' : 'pending_review',
-      conflict_with_current: false,
-      requires_review: confidence < 0.85,
-      auto_apply_candidate: confidence >= 0.85,
-      created_at: now,
-      updated_at: now,
-    });
+    out.push(buildProposal({ row, studentId, fieldKey, value, confidence }));
+    seen.add(fieldKey);
+
+    if (row.lane === 'graduation_lane' && rawKey === 'issue_date') {
+      const year = extractGraduationYear(value);
+      if (year && !seen.has('academic.graduation_year')) {
+        out.push(buildProposal({
+          row,
+          studentId,
+          fieldKey: 'academic.graduation_year',
+          value: year,
+          confidence: Math.max(0, confidence - 0.05),
+        }));
+        seen.add('academic.graduation_year');
+      }
+    }
   }
+
   return out;
 }
 
