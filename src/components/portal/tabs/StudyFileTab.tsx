@@ -15,6 +15,10 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AccountContentHeader } from "@/components/portal/account/AccountContentHeader";
 import { useCanonicalStudentFile } from "@/hooks/useCanonicalStudentFile";
+import { useIdentityStatus } from "@/hooks/useIdentityStatus";
+import { IdentityActivationDialog } from "@/components/portal/identity/IdentityActivationDialog";
+import { Lock, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useStudentDocuments } from "@/hooks/useStudentDocuments";
 import { useDocumentRegistry } from "@/hooks/useDocumentRegistry";
 import { useDocumentAnalysis } from "@/hooks/useDocumentAnalysis";
@@ -59,6 +63,9 @@ function uniqueFileKey(file: File): string {
 
 export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabChange, onAvatarUpdate, fileQuality }: StudyFileTabProps) {
   const { t } = useLanguage();
+  // ═══ CANONICAL IDENTITY GATE — single lock point for the academic file ═══
+  const { status: identityStatus, refetch: refetchIdentity, loading: identityLoading } = useIdentityStatus();
+  const [identityDialogOpen, setIdentityDialogOpen] = useState(false);
   const { documents, refetch: refetchDocs } = useStudentDocuments();
   // ═══ Door 2: Lane Facts truth surface ═══
   const { byDocId: laneFactsByDocId, refetch: refetchLaneFacts } = useDocumentLaneFacts();
@@ -541,6 +548,39 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     }
     return map;
   }, [analysisHook.analyses, docMimeById, t]);
+
+  // ✅ CANONICAL LOCK: render gate UI instead of academic file when identity not approved.
+  if (!identityLoading && identityStatus.blocks_academic_file) {
+    return (
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-warning/40 bg-warning/5 p-6 sm:p-8 text-center">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-warning/15 flex items-center justify-center">
+              <Lock className="w-8 h-8 text-warning" />
+            </div>
+          </div>
+          <h2 className="text-xl font-bold text-foreground mb-2">
+            {t('portal.identity.gate.title')}
+          </h2>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
+            {t('portal.identity.gate.body')}
+          </p>
+          <Button
+            onClick={() => setIdentityDialogOpen(true)}
+            className="bg-warning hover:bg-warning/90 text-warning-foreground font-semibold"
+          >
+            <ShieldCheck className="w-4 h-4 me-2" />
+            {t('portal.identity.gate.cta')}
+          </Button>
+        </div>
+        <IdentityActivationDialog
+          open={identityDialogOpen}
+          onOpenChange={setIdentityDialogOpen}
+          onApproved={() => { void refetchIdentity(); }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8" data-canonical-status={canonicalFile?.file_status.profile_completion_status ?? 'none'}>
