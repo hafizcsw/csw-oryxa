@@ -5378,51 +5378,56 @@ Deno.serve(async (req) => {
             // ✅ Build public URL from CRM storage (avatars bucket is public)
             const publicUrl = `${CRM_SUPABASE_URL}/storage/v1/object/public/avatars/${path}`;
             
-            // Try CRM RPC
-            const { data: avatarData, error: avatarErr } = await crmStorageClient.rpc('rpc_portal_set_customer_avatar_v1', {
-              p_auth_user_id: authUserId,
-              p_storage_path: path,
-              p_public_url: publicUrl,
-            });
-            
-            if (avatarErr) {
-              console.error('[crm_storage] ❌ Avatar RPC failed:', avatarErr);
+            // Staff teacher flow: persist on staff table directly
+            if (isStaffAvatarFlow) {
+              const { error: staffUpdateErr } = await crmStorageClient
+                .from('staff')
+                .update({ avatar_url: publicUrl })
+                .eq('email', gtpEmail || '');
 
-              // Staff teacher flow: persist on staff table (if available)
-              if (isStaffAvatarFlow) {
-                const { error: staffUpdateErr } = await crmStorageClient
-                  .from('staff')
-                  .update({ avatar_url: publicUrl })
-                  .eq('email', gtpEmail || '');
-
-                if (staffUpdateErr) {
-                  console.warn('[crm_storage] ⚠️ Staff avatar update skipped:', staffUpdateErr.message);
-                } else {
-                  console.log('[crm_storage] ✅ set_avatar via staff update');
-                }
-
-                return Response.json({ ok: true, file_url: publicUrl }, { headers: corsHeaders });
+              if (staffUpdateErr) {
+                console.warn('[crm_storage] ⚠️ Staff avatar update skipped:', staffUpdateErr.message);
+              } else {
+                console.log('[crm_storage] ✅ set_avatar via staff update');
               }
-
-              // Customer flow fallback: update avatar_url only (some CRM envs lack avatar_updated_at)
-              const { error: updateErr } = await crmStorageClient
-                .from('customers')
-                .update({ 
-                  avatar_url: publicUrl,
-                })
-                .eq('id', customerId);
-
-              if (updateErr) {
-                console.error('[crm_storage] ❌ Avatar update failed:', updateErr);
-                return Response.json({ ok: false, error: `set_avatar: ${updateErr.message}`, http_status: 400 }, { status: 200, headers: corsHeaders });
-              }
-
-              console.log('[crm_storage] ✅ set_avatar via customer update');
               return Response.json({ ok: true, file_url: publicUrl }, { headers: corsHeaders });
             }
-            
-            console.log('[crm_storage] ✅ set_avatar via RPC:', avatarData);
-            return Response.json({ ok: true, file_url: avatarData?.file_url || publicUrl }, { headers: corsHeaders });
+
+            // Customer flow: update by customer_id DIRECTLY.
+            // The RPC `rpc_portal_set_customer_avatar_v1` matches by p_auth_user_id, which can
+            // silently no-op when the customer's stored auth_user_id does not match the current
+            // session's auth user (multi-link / re-auth scenarios). Updating by `customers.id`
+            // (resolved via fetchCrmProfileByAuthUserId) is authoritative.
+            if (!customerId) {
+              return Response.json({ ok: false, error: 'NO_CUSTOMER_ID', http_status: 400 }, { status: 200, headers: corsHeaders });
+            }
+
+            const { data: updatedRow, error: updateErr } = await crmStorageClient
+              .from('customers')
+              .update({ avatar_url: publicUrl })
+              .eq('id', customerId)
+              .select('id, avatar_url')
+              .maybeSingle();
+
+            if (updateErr) {
+              console.error('[crm_storage] ❌ Avatar update failed:', updateErr);
+              return Response.json({ ok: false, error: `set_avatar: ${updateErr.message}`, http_status: 400 }, { status: 200, headers: corsHeaders });
+            }
+
+            console.log('[crm_storage] ✅ set_avatar via direct customer update:', updatedRow);
+
+            // Best-effort: also notify the legacy RPC (for any downstream listeners), but ignore errors.
+            try {
+              await crmStorageClient.rpc('rpc_portal_set_customer_avatar_v1', {
+                p_auth_user_id: authUserId,
+                p_storage_path: path,
+                p_public_url: publicUrl,
+              });
+            } catch (rpcErr) {
+              console.warn('[crm_storage] RPC notify (non-fatal):', rpcErr);
+            }
+
+            return Response.json({ ok: true, file_url: publicUrl }, { headers: corsHeaders });
           }
           
           // ============= DELETE FILE =============
