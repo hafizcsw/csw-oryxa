@@ -15,6 +15,7 @@ import {
   type ExtractedFieldRead,
 } from "@/api/identitySupportInvoke";
 import { useIdentityStatus } from "@/hooks/useIdentityStatus";
+import { saveExtractedIdentity } from "@/hooks/useExtractedIdentity";
 
 type Step =
   | "doc_select"
