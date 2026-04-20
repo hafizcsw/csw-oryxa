@@ -171,8 +171,30 @@ export async function uploadAndRegisterFile(params: {
     const { signFile } = await import('@/api/crmStorage');
     const signRes = await signFile(documentId);
     const crmSignedUrl = signRes.ok ? signRes.signed_url : null;
+    // eslint-disable-next-line no-console
+    console.log('[MistralPipeline] signFile result', {
+      document_id: documentId,
+      ok: signRes.ok,
+      has_url: !!crmSignedUrl,
+      error: signRes.error,
+    });
     if (!crmSignedUrl) {
       lane_skipped_reason = `crm_sign_failed:${signRes.error ?? 'unknown'}`;
+      // eslint-disable-next-line no-console
+      console.warn('[MistralPipeline] ⏭️  Skipping pipeline — no signed URL', { documentId });
+      onProgress?.('done', 100);
+      return {
+        success: true,
+        file_id: documentId,
+        file_url: confirmRes.data?.file_url,
+        path,
+        bucket,
+        foundation,
+        foundation_persisted,
+        lane_facts,
+        lane_facts_persisted,
+        lane_skipped_reason,
+      };
     }
     const { data: pipeRes, error: pipeErr } = await supabase.functions.invoke(
       'mistral-document-pipeline',
