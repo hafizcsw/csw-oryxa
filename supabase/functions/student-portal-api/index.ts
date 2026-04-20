@@ -8585,12 +8585,18 @@ Deno.serve(async (req) => {
           console.error('[identity_activation_submit] CRM bridge failed', r.status, j);
           return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}`, http_status: r.status }, { status: 200, headers: corsHeaders });
         }
-        const d = j?.data ?? j ?? {};
+        const d = j?.data ?? j?.request ?? j ?? {};
+        const rawSubStatus = String(d.identity_status ?? d.status ?? 'submitted').toLowerCase();
+        const submitStatus =
+          rawSubStatus === 'approved' || rawSubStatus === 'accepted' ? 'approved' :
+          rawSubStatus === 'rejected' || rawSubStatus === 'denied' ? 'rejected' :
+          rawSubStatus === 'reupload_required' ? 'reupload_required' :
+          'pending';
         return Response.json({
           ok: true,
           data: {
             activation_id: d.activation_id ?? d.id ?? null,
-            identity_status: d.status ?? d.identity_status ?? 'pending',
+            identity_status: submitStatus,
             submitted_at: d.created_at ?? d.submitted_at ?? new Date().toISOString(),
           },
         }, { headers: corsHeaders });
