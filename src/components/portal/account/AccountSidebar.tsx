@@ -47,7 +47,7 @@ export function AccountSidebar({
   const { crmProfile, profile } = useStudentProfile();
 
   const avatarBase = buildAvatarDisplayUrl(crmProfile?.avatar_url || profile?.avatar_storage_path || undefined);
-  const cacheBuster = crmProfile?.avatar_updated_at || crmProfile?.updated_at;
+  const cacheBuster = crmProfile?.avatar_updated_at;
   const avatarUrl = avatarBase
     ? `${avatarBase}${avatarBase.includes('?') ? '&' : '?'}v=${cacheBuster ? new Date(cacheBuster).getTime() : ''}`
     : undefined;
