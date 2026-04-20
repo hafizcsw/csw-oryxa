@@ -8557,6 +8557,8 @@ Deno.serve(async (req) => {
             return Response.json({ ok: false, error: 'path_ownership_violation' }, { status: 403, headers: corsHeaders });
           }
         }
+        // resolvedCustomerId == CRM customer_id (resolved from portal_customer_map.crm_customer_id
+        // or auth.users.user_metadata.crm_customer_id). Same UUID as profiles.customer_id.
         const { crmCustomerId: resolvedCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!resolvedCustomerId) {
           return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
@@ -8565,7 +8567,8 @@ Deno.serve(async (req) => {
           method: 'POST',
           headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
           body: JSON.stringify({
-            web_user_id: resolvedCustomerId,
+            customer_id: resolvedCustomerId,        // canonical CRM contract
+            web_user_id: resolvedCustomerId,        // legacy alias (same value)
             auth_user_id: authUserId,
             doc_kind: docKind,
             doc_storage_path: docPath,
@@ -8612,7 +8615,12 @@ Deno.serve(async (req) => {
         const r = await fetch(`${CRM_FUNCTIONS_URL}/web-get-identity-status`, {
           method: 'POST',
           headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
-          body: JSON.stringify({ web_user_id: resolvedCustomerId, auth_user_id: authUserId }),
+          // resolvedCustomerId IS the CRM customer_id; web_user_id kept as legacy alias.
+          body: JSON.stringify({
+            customer_id: resolvedCustomerId,
+            web_user_id: resolvedCustomerId,
+            auth_user_id: authUserId,
+          }),
         });
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j?.ok === false) {
@@ -8653,7 +8661,9 @@ Deno.serve(async (req) => {
         const r = await fetch(`${CRM_FUNCTIONS_URL}/web-sync-support-request`, {
           method: 'POST',
           headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
+          // resolvedCustomerId IS the CRM customer_id; web_user_id kept as legacy alias.
           body: JSON.stringify({
+            customer_id: resolvedCustomerId,
             web_user_id: resolvedCustomerId,
             auth_user_id: authUserId,
             body: ticketBody,
@@ -8688,7 +8698,12 @@ Deno.serve(async (req) => {
         const r = await fetch(`${CRM_FUNCTIONS_URL}/web-list-support-requests`, {
           method: 'POST',
           headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
-          body: JSON.stringify({ web_user_id: resolvedCustomerId, auth_user_id: authUserId }),
+          // resolvedCustomerId IS the CRM customer_id; web_user_id kept as legacy alias.
+          body: JSON.stringify({
+            customer_id: resolvedCustomerId,
+            web_user_id: resolvedCustomerId,
+            auth_user_id: authUserId,
+          }),
         });
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j?.ok === false) {
