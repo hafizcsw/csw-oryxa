@@ -346,11 +346,13 @@ export function useDocumentAnalysis(
 
     const nextAnalyses = new Map<string, DocumentAnalysis>();
     const nextHydrated: Record<string, HydratedArtifactSurface> = {};
+    const nextProposals: ExtractionProposal[] = [];
 
     for (const row of (laneRes.data ?? []) as LaneFactsDbRow[]) {
       const analysis = buildAnalysisFromLaneRow(row);
       nextAnalyses.set(row.document_id, analysis);
       nextHydrated[row.document_id] = buildHydratedSurface(row.document_id, row.facts);
+      nextProposals.push(...buildProposalsFromLaneRow(row, opts.studentId ?? ''));
     }
 
     for (const row of (reviewRes.data ?? []) as ReviewQueueDbRow[]) {
@@ -366,6 +368,7 @@ export function useDocumentAnalysis(
 
     setAnalyses(list);
     setHydratedArtifactSurfaces(nextHydrated);
+    setProposals(nextProposals);
   }, [opts.studentId]);
 
   const pollForDocument = useCallback(async (documentId: string, filename: string) => {
