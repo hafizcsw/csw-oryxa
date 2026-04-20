@@ -22,14 +22,14 @@ function readEnvClean(name: string, fallback: string): string {
   if (v.startsWith(eqPrefix)) v = v.slice(eqPrefix.length).trim();
   return v || fallback;
 }
-const CRM_FUNCTIONS_URL = readEnvClean(
-  'CRM_FUNCTIONS_URL',
-  'https://hlrkyoxwbjsgqbncgzpi.supabase.co/functions/v1',
-).replace(/\/+$/, '');
-const CRM_WEB_API_KEY = readEnvClean(
-  'CRM_WEB_INBOUND_API_KEY',
-  'csw_web_to_crm_5f2f3c9d9e3b4a0a87f142ec71d328a4',
-);
+const CRM_FUNCTIONS_URL = readEnvClean('CRM_FUNCTIONS_URL', '').replace(/\/+$/, '');
+const CRM_WEB_API_KEY = readEnvClean('CRM_WEB_INBOUND_API_KEY', '');
+if (!CRM_FUNCTIONS_URL || !CRM_WEB_API_KEY) {
+  console.error('[student-portal-api] ❌ Missing required CRM env vars', {
+    has_url: Boolean(CRM_FUNCTIONS_URL),
+    has_key: Boolean(CRM_WEB_API_KEY),
+  });
+}
 
 // ============= CORS Configuration (Allowlist-based) =============
 const ALLOWED_ORIGINS = new Set<string>([
