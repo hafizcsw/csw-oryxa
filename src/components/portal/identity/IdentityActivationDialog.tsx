@@ -534,27 +534,38 @@ function ResultStep({
 // Never shows residence/location. Student must confirm before camera opens.
 function SummaryStep({
   fields,
+  docKind,
   onConfirm,
   onRetry,
 }: {
   fields: Record<string, ExtractedFieldRead>;
+  docKind: IdentityDocKind;
   onConfirm: () => void;
   onRetry: () => void;
 }) {
   const { t } = useLanguage();
-  // Whitelist of fields the spec allows us to display, in order.
-  // Anything not in this list is suppressed even if the reader returns it.
+  // Whitelist of generic identity fields, in display order. The reader's
+  // `passport_number` fact is exposed as the generic key `document_number`
+  // so the label is honest for passport / national_id / driver_license.
   const ORDER: string[] = [
     "full_name",
     "nationality",
     "date_of_birth",
-    "passport_number",
+    "document_number",
     "issuing_country",
     "expiry_date",
   ];
   const rows = ORDER
     .map((k) => ({ key: k, field: fields[k] }))
     .filter((r) => r.field && r.field.value && (r.field.status === "extracted" || r.field.status === "proposed"));
+
+  // Doc-kind-aware label for the document number row.
+  const labelFor = (key: string) => {
+    if (key === "document_number") {
+      return t(`portal.identity.summary.field.document_number.${docKind}`);
+    }
+    return t(`portal.identity.summary.field.${key}`);
+  };
 
   return (
     <div className="space-y-4">
@@ -582,7 +593,7 @@ function SummaryStep({
               className="rounded-lg border border-border/60 bg-muted/30 p-3"
             >
               <dt className="text-xs text-muted-foreground mb-1">
-                {t(`portal.identity.summary.field.${key}`)}
+                {labelFor(key)}
               </dt>
               <dd className="text-sm font-medium text-foreground break-words">
                 {field!.value}
