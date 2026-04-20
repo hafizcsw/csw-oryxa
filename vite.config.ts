@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,ico,png,svg,woff2}'],
-          maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+          maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
           navigateFallback: null,
           navigateFallbackDenylist: [/^\/~oauth/, /./],
           skipWaiting: true,
@@ -166,19 +166,21 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks(id) {
             if (!id.includes('node_modules')) return undefined;
-            if (id.includes('react-router')) return 'router';
-            if (id.match(/[\\/](react|react-dom|scheduler)[\\/]/)) return 'react-vendor';
+            // Heavy, isolated libs — keep in their own chunks.
             if (id.includes('three') || id.includes('@react-three')) return 'three';
-            if (id.includes('framer-motion')) return 'motion';
-            if (id.includes('recharts') || id.includes('d3-')) return 'charts';
             if (id.includes('pdfjs-dist') || id.includes('pdf-lib')) return 'pdf';
+            if (id.includes('recharts') || id.includes('d3-')) return 'charts';
             if (id.includes('leaflet') || id.includes('maplibre')) return 'maps';
+            if (id.includes('framer-motion')) return 'motion';
             if (id.includes('@tanstack')) return 'query';
             if (id.includes('@radix-ui')) return 'radix';
             if (id.includes('lucide-react')) return 'icons';
             if (id.includes('date-fns') || id.includes('dayjs')) return 'dates';
             if (id.includes('@supabase')) return 'supabase';
-            return 'vendor';
+            if (id.includes('react-router')) return 'router';
+            if (id.match(/[\\/](react|react-dom|scheduler|use-sync-external-store)[\\/]/)) return 'react-vendor';
+            // Everything else: let Rollup chunk per-import-graph (no catch-all bucket).
+            return undefined;
           },
         },
       },
