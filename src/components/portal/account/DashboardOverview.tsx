@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { Lock, ShieldCheck } from "lucide-react";
 import { AccountContentHeader } from "./AccountContentHeader";
 import { AccountVerificationSteps } from "./AccountVerificationSteps";
+import { IdentityActivationDialog } from "../identity/IdentityActivationDialog";
+import { SupportSection } from "../support/SupportSection";
+import { useIdentityStatus } from "@/hooks/useIdentityStatus";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DashboardOverviewProps {
@@ -43,6 +47,8 @@ export function DashboardOverview({
 }: DashboardOverviewProps) {
   const { t, language } = useLanguage();
   const isRtl = language === 'ar';
+  const [identityOpen, setIdentityOpen] = useState(false);
+  const { status: identityStatus } = useIdentityStatus();
 
   const getCurrentStep = () => {
     const substage = crmProfile?.substage?.toLowerCase() || '';
@@ -85,8 +91,15 @@ export function DashboardOverview({
 
       {/* Verification Steps - directly under avatar */}
       <AccountVerificationSteps
-        currentStep={getCurrentStep()}
-        onVerifyClick={() => onNavigate("study-file")}
+        currentStep={identityStatus.identity_status === 'approved' ? 2 : getCurrentStep()}
+        onVerifyClick={() => setIdentityOpen(true)}
+      />
+
+      {/* Identity Activation Dialog */}
+      <IdentityActivationDialog
+        open={identityOpen}
+        onOpenChange={setIdentityOpen}
+        onApproved={() => onNavigate('study-file')}
       />
 
       {/* Verified (read-only) account info */}
@@ -127,6 +140,9 @@ export function DashboardOverview({
           ))}
         </dl>
       </section>
+
+      {/* Website Support */}
+      <SupportSection />
     </div>
   );
 }

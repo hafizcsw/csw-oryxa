@@ -2396,6 +2396,99 @@
           "transcript_language": "Transcript language"
         }
       }
+    },
+    "identity": {
+      "title": "Account Verification",
+      "subtitle": "Confirm your identity to unlock your study file.",
+      "doc": {
+        "instruction": "Choose your document type and upload a clear photo or PDF.",
+        "upload": "Upload Document"
+      },
+      "docKind": {
+        "passport": "Passport",
+        "national_id": "National ID",
+        "driver_license": "Driver License"
+      },
+      "selfie": {
+        "instruction": "Look at the camera and capture a clear selfie.",
+        "capture": "Capture Selfie"
+      },
+      "video": {
+        "instruction": "Record a 5-second video looking at the camera.",
+        "start": "Start Recording",
+        "recording": "Recording…"
+      },
+      "reader": {
+        "running": "Analyzing your document…"
+      },
+      "submit": {
+        "running": "Submitting your activation…"
+      },
+      "result": {
+        "weak": {
+          "title": "Weak Document Quality",
+          "body": "We could not read your document clearly. Please re-upload a sharper image."
+        },
+        "unsupported": {
+          "title": "Unsupported Document",
+          "body": "This file does not look like an identity document. Please upload a passport, national ID, or driver license."
+        },
+        "submitError": {
+          "title": "Submission Failed",
+          "body": "Please check your connection and try again."
+        },
+        "pending": {
+          "title": "Under Review",
+          "body": "Your activation is being reviewed. We will notify you once it’s decided."
+        },
+        "approved": {
+          "title": "Identity Approved",
+          "body": "Your identity is verified. You can now open your study file."
+        },
+        "rejected": {
+          "title": "Activation Rejected",
+          "body": "Your activation was not approved. Please review and try again."
+        },
+        "reupload": {
+          "title": "Re-upload Required",
+          "body": "Please re-upload the requested files to continue."
+        }
+      },
+      "cta": {
+        "retry": "Try Again",
+        "close": "Close",
+        "continue": "Continue"
+      },
+      "errors": {
+        "uploadFailed": "Upload failed.",
+        "videoTooLarge": "Video must be 15MB or less.",
+        "cameraDenied": "Camera access was denied."
+      }
+    },
+    "support": {
+      "section": {
+        "title": "Support Requests",
+        "new": "New Request",
+        "hint": "Submit a request and follow its status here.",
+        "empty": "No requests yet."
+      },
+      "uiState": {
+        "submitted": "Submitted",
+        "under_review": "Under Review",
+        "resolved": "Resolved"
+      },
+      "submit": {
+        "title": "New Support Request",
+        "subtitle": "Describe your issue. Our team will respond.",
+        "placeholder": "Write your message…",
+        "send": "Send",
+        "cancel": "Cancel",
+        "success": "Request submitted."
+      },
+      "errors": {
+        "bodyTooShort": "Please write a longer message.",
+        "submitFailed": "Failed to send. Try again."
+      }
     }
   },
   "compare_action": "+ Compare",

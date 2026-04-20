@@ -2123,6 +2123,99 @@
       "lane_review_reason": {
         "image_ocr_deferred_to_door_3": "目前无法自动提取图片和扫描文件。如可能，请上传原始 PDF；或继续操作，文件将被提交人工审核。"
       }
+    },
+    "identity": {
+      "title": "账户验证",
+      "subtitle": "确认您的身份以解锁您的学习档案。",
+      "doc": {
+        "instruction": "选择您的证件类型并上传清晰的照片或 PDF。",
+        "upload": "上传文件"
+      },
+      "docKind": {
+        "passport": "护照",
+        "national_id": "身份证",
+        "driver_license": "驾驶证"
+      },
+      "selfie": {
+        "instruction": "看着摄像头并拍摄清晰的自拍。",
+        "capture": "拍摄自拍"
+      },
+      "video": {
+        "instruction": "看着摄像头录制一段 5 秒的视频。",
+        "start": "开始录制",
+        "recording": "录制中…"
+      },
+      "reader": {
+        "running": "正在分析您的文件…"
+      },
+      "submit": {
+        "running": "正在提交您的激活请求…"
+      },
+      "result": {
+        "weak": {
+          "title": "文件质量不佳",
+          "body": "无法清晰读取您的文件。请重新上传更清晰的图片。"
+        },
+        "unsupported": {
+          "title": "不支持的文件类型",
+          "body": "此文件不像是身份证件。请上传护照、身份证或驾照。"
+        },
+        "submitError": {
+          "title": "提交失败",
+          "body": "请检查您的网络连接并重试。"
+        },
+        "pending": {
+          "title": "审核中",
+          "body": "您的激活请求正在审核中。我们将在决定后通知您。"
+        },
+        "approved": {
+          "title": "身份已通过",
+          "body": "您的身份已验证。现在您可以打开学习档案。"
+        },
+        "rejected": {
+          "title": "激活被拒绝",
+          "body": "您的激活未获批准。请检查并重试。"
+        },
+        "reupload": {
+          "title": "需要重新上传",
+          "body": "请重新上传所需文件以继续。"
+        }
+      },
+      "cta": {
+        "retry": "重试",
+        "close": "关闭",
+        "continue": "继续"
+      },
+      "errors": {
+        "uploadFailed": "上传失败。",
+        "videoTooLarge": "视频必须不超过 15MB。",
+        "cameraDenied": "摄像头访问被拒绝。"
+      }
+    },
+    "support": {
+      "section": {
+        "title": "支持请求",
+        "new": "新建请求",
+        "hint": "提交请求并在此处跟踪状态。",
+        "empty": "暂无请求。"
+      },
+      "uiState": {
+        "submitted": "已提交",
+        "under_review": "审核中",
+        "resolved": "已解决"
+      },
+      "submit": {
+        "title": "新支持请求",
+        "subtitle": "描述您的问题。我们的团队会回复。",
+        "placeholder": "输入您的消息…",
+        "send": "发送",
+        "cancel": "取消",
+        "success": "请求已提交。"
+      },
+      "errors": {
+        "bodyTooShort": "请填写更长的消息。",
+        "submitFailed": "发送失败。请重试。"
+      }
     }
   },
   "compare_action": "+ 对比",

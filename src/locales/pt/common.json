@@ -2080,6 +2080,99 @@
       "lane_review_reason": {
         "image_ocr_deferred_to_door_3": "Imagens e arquivos digitalizados não podem ser extraídos automaticamente nesta fase. Envie um PDF original se possível, ou continue e o arquivo será enviado para revisão."
       }
+    },
+    "identity": {
+      "title": "Verificação da conta",
+      "subtitle": "Confirme sua identidade para desbloquear seu arquivo de estudos.",
+      "doc": {
+        "instruction": "Escolha o tipo de documento e envie uma foto clara ou PDF.",
+        "upload": "Enviar documento"
+      },
+      "docKind": {
+        "passport": "Passaporte",
+        "national_id": "Documento de identidade",
+        "driver_license": "Carteira de motorista"
+      },
+      "selfie": {
+        "instruction": "Olhe para a câmera e tire uma selfie clara.",
+        "capture": "Tirar selfie"
+      },
+      "video": {
+        "instruction": "Grave um vídeo de 5 segundos olhando para a câmera.",
+        "start": "Iniciar gravação",
+        "recording": "Gravando…"
+      },
+      "reader": {
+        "running": "Analisando seu documento…"
+      },
+      "submit": {
+        "running": "Enviando sua ativação…"
+      },
+      "result": {
+        "weak": {
+          "title": "Qualidade do documento baixa",
+          "body": "Não conseguimos ler seu documento com clareza. Envie uma imagem mais nítida."
+        },
+        "unsupported": {
+          "title": "Documento não suportado",
+          "body": "Este arquivo não parece um documento de identidade. Envie um passaporte, RG ou CNH."
+        },
+        "submitError": {
+          "title": "Falha no envio",
+          "body": "Verifique sua conexão e tente novamente."
+        },
+        "pending": {
+          "title": "Em análise",
+          "body": "Sua ativação está em análise. Avisaremos quando decidirmos."
+        },
+        "approved": {
+          "title": "Identidade aprovada",
+          "body": "Sua identidade foi verificada. Agora você pode abrir seu arquivo."
+        },
+        "rejected": {
+          "title": "Ativação recusada",
+          "body": "Sua ativação não foi aprovada. Revise e tente novamente."
+        },
+        "reupload": {
+          "title": "Reenvio necessário",
+          "body": "Reenvie os arquivos solicitados para continuar."
+        }
+      },
+      "cta": {
+        "retry": "Tentar novamente",
+        "close": "Fechar",
+        "continue": "Continuar"
+      },
+      "errors": {
+        "uploadFailed": "Falha no envio.",
+        "videoTooLarge": "O vídeo deve ter 15 MB ou menos.",
+        "cameraDenied": "Acesso à câmera negado."
+      }
+    },
+    "support": {
+      "section": {
+        "title": "Solicitações de suporte",
+        "new": "Nova solicitação",
+        "hint": "Envie uma solicitação e acompanhe o status aqui.",
+        "empty": "Nenhuma solicitação ainda."
+      },
+      "uiState": {
+        "submitted": "Enviado",
+        "under_review": "Em análise",
+        "resolved": "Resolvido"
+      },
+      "submit": {
+        "title": "Nova solicitação de suporte",
+        "subtitle": "Descreva seu problema. Nossa equipe responderá.",
+        "placeholder": "Escreva sua mensagem…",
+        "send": "Enviar",
+        "cancel": "Cancelar",
+        "success": "Solicitação enviada."
+      },
+      "errors": {
+        "bodyTooShort": "Escreva uma mensagem mais longa.",
+        "submitFailed": "Falha ao enviar. Tente novamente."
+      }
     }
   },
   "studio": {
