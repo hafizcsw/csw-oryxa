@@ -52,14 +52,14 @@ export function IdentityActivationDialog({
   const [step, setStep] = useState<Step>("doc_select");
   const [docKind, setDocKind] = useState<IdentityDocKind>("passport");
   const [docFile, setDocFile] = useState<File | null>(null);
-  const [docPath, setDocPath] = useState<string>("");
+  const [docFileId, setDocFileId] = useState<string>("");
   const [readerVerdict, setReaderVerdict] = useState<ReaderVerdict | null>(null);
   const [readerPayload, setReaderPayload] = useState<Record<string, unknown>>({});
   const [extractedFields, setExtractedFields] = useState<Record<string, ExtractedFieldRead>>({});
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
-  const [selfiePath, setSelfiePath] = useState<string>("");
+  const [selfieFileId, setSelfieFileId] = useState<string>("");
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [videoPath, setVideoPath] = useState<string>("");
+  const [videoFileId, setVideoFileId] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
 
   useEffect(() => {
@@ -74,14 +74,14 @@ export function IdentityActivationDialog({
   const reset = useCallback(() => {
     setStep("doc_select");
     setDocFile(null);
-    setDocPath("");
+    setDocFileId("");
     setReaderVerdict(null);
     setReaderPayload({});
     setExtractedFields({});
     setSelfieFile(null);
-    setSelfiePath("");
+    setSelfieFileId("");
     setVideoFile(null);
-    setVideoPath("");
+    setVideoFileId("");
     setErrorMsg("");
   }, []);
 
