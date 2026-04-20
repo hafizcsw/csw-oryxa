@@ -3692,7 +3692,11 @@
     "seatsClosed": "Closed"
   },
   "documents": {
-    "label": "documents"
+    "label": "documents",
+    "external_processing_disclosure": {
+      "title": "External processing notice",
+      "body": "Files you upload are processed by an external AI service (Mistral) to extract text and structured data. No raw file content is stored outside our system."
+    }
   },
   "studyMode": {
     "onCampus": "On Campus",

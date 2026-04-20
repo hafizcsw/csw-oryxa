@@ -3313,7 +3313,11 @@
     "entranceExam": "Examen d’entrée"
   },
   "documents": {
-    "label": "documents requis"
+    "label": "documents requis",
+    "external_processing_disclosure": {
+      "title": "Avis de traitement externe",
+      "body": "Les fichiers que vous téléversez sont traités par un service d’IA externe (Mistral) pour extraire le texte et les données structurées. Aucun contenu de fichier brut n’est conservé hors de notre système."
+    }
   },
   "studyMode": {
     "onCampus": "Sur campus",

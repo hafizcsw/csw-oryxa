@@ -2476,7 +2476,11 @@
     "entranceExam": "Exame de admissão"
   },
   "documents": {
-    "label": "documentos"
+    "label": "documentos",
+    "external_processing_disclosure": {
+      "title": "Aviso de processamento externo",
+      "body": "Os arquivos enviados são processados por um serviço de IA externo (Mistral) para extrair texto e dados estruturados. Nenhum conteúdo bruto é armazenado fora do nosso sistema."
+    }
   },
   "studyMode": {
     "onCampus": "No campus",

@@ -3375,7 +3375,11 @@
     "entranceExam": "入学考试"
   },
   "documents": {
-    "label": "文档"
+    "label": "文档",
+    "external_processing_disclosure": {
+      "title": "外部处理声明",
+      "body": "您上传的文件由外部 AI 服务 (Mistral) 处理以提取文本和结构化数据。原始文件内容不会存储在我们的系统之外。"
+    }
   },
   "studyMode": {
     "onCampus": "校园",

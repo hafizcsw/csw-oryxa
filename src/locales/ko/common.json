@@ -2476,7 +2476,11 @@
     "entranceExam": "입학 시험"
   },
   "documents": {
-    "label": "서류"
+    "label": "서류",
+    "external_processing_disclosure": {
+      "title": "외부 처리 안내",
+      "body": "업로드한 파일은 외부 AI 서비스(Mistral)를 통해 텍스트 및 구조화된 데이터를 추출합니다. 원본 파일 내용은 당사 시스템 외부에 저장되지 않습니다."
+    }
   },
   "studyMode": {
     "onCampus": "캠퍼스 수업",
