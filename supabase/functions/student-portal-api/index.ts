@@ -194,7 +194,14 @@ type Action =
   | 'get_teacher_state'
   // ✅ Account Identity Changes (CRM-unified)
   | 'change_email'
-  | 'change_phone';
+  | 'change_phone'
+  // ✅ Identity Activation + Website Support (single canonical contract)
+  | 'identity_upload_sign_url'
+  | 'identity_reader_run'
+  | 'identity_activation_submit'
+  | 'identity_status_get'
+  | 'support_ticket_create'
+  | 'support_ticket_list';
 
 // ============= CRM-only staff authority helper =============
 // FINAL CUTOVER: No Portal is_admin fallback. CRM is the ONLY authority source.
@@ -8350,6 +8357,233 @@ Deno.serve(async (req) => {
           .eq('student_user_id', authUserId);
         if (dismissErr) return Response.json({ ok: false, error: dismissErr.message }, { headers: corsHeaders });
         return Response.json({ ok: true }, { headers: corsHeaders });
+      }
+
+      // ═══════════════════════════════════════════════════════════
+      // Identity Activation + Website Support (canonical, single fn)
+      // Bucket: identity-activation (private, owner-scoped paths)
+      // Reader: mistral-document-pipeline (existing — NOT replaced)
+      // ═══════════════════════════════════════════════════════════
+      case 'identity_upload_sign_url': {
+        const slot = String(body.slot ?? '');
+        const ext = String(body.ext ?? 'bin').replace(/[^a-z0-9]/gi, '').slice(0, 8) || 'bin';
+        if (!['doc', 'selfie', 'video'].includes(slot)) {
+          return Response.json({ ok: false, error: 'bad_slot' }, { status: 400, headers: corsHeaders });
+        }
+        const path = `${authUserId}/${Date.now()}_${slot}.${ext}`;
+        const { data, error } = await portalAdmin.storage
+          .from('identity-activation')
+          .createSignedUploadUrl(path);
+        if (error) return Response.json({ ok: false, error: 'sign_failed', details: error.message }, { status: 500, headers: corsHeaders });
+        return Response.json({ ok: true, data: { bucket: 'identity-activation', path, signed_url: data.signedUrl, token: data.token } }, { headers: corsHeaders });
+      }
+
+      case 'identity_reader_run': {
+        // Runs the existing mistral-document-pipeline on the uploaded identity doc
+        // ONLY. Returns canonical portal verdict so UI can decide before camera.
+        const docPath = String(body.doc_storage_path ?? '');
+        const docKindRaw = String(body.doc_kind ?? '');
+        if (!['passport', 'national_id', 'driver_license'].includes(docKindRaw)) {
+          return Response.json({ ok: false, error: 'bad_doc_kind' }, { status: 400, headers: corsHeaders });
+        }
+        if (!docPath.startsWith(`${authUserId}/`)) {
+          return Response.json({ ok: false, error: 'path_ownership_violation' }, { status: 403, headers: corsHeaders });
+        }
+        const { data: signed, error: signErr } = await portalAdmin.storage
+          .from('identity-activation')
+          .createSignedUrl(docPath, 600);
+        if (signErr || !signed?.signedUrl) {
+          return Response.json({ ok: false, error: 'sign_failed_for_reader', details: signErr?.message }, { status: 500, headers: corsHeaders });
+        }
+        const fileKind = docKindRaw === 'passport' ? 'passport_id' : docKindRaw;
+        let truthState: string | undefined;
+        let family: string | undefined;
+        let laneConfidence: number | undefined;
+        let readerOk = false;
+        let readerPayload: Record<string, unknown> = {};
+        try {
+          const pipelineRes = await fetch(`${SUPABASE_URL}/functions/v1/mistral-document-pipeline`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: req.headers.get('Authorization') ?? '',
+              apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+            },
+            body: JSON.stringify({
+              document_id: crypto.randomUUID(),
+              bucket: 'identity-activation',
+              path: docPath,
+              file_kind: fileKind,
+              declared_family: 'passport_id',
+              signed_url: signed.signedUrl,
+            }),
+          });
+          readerPayload = await pipelineRes.json().catch(() => ({}));
+          readerOk = pipelineRes.ok;
+          truthState = (readerPayload as any)?.truth_state;
+          family = (readerPayload as any)?.family;
+          laneConfidence = (readerPayload as any)?.lane_confidence;
+        } catch (e) {
+          readerPayload = { error: String(e) };
+        }
+        // Map reader → canonical verdict
+        let verdict: 'accepted_preliminarily' | 'weak' | 'unsupported' = 'weak';
+        if (family && family !== 'passport_id' && family !== 'unknown_document') {
+          verdict = 'unsupported';
+        } else if (truthState === 'extracted' || truthState === 'proposed') {
+          verdict = 'accepted_preliminarily';
+        } else if ((laneConfidence ?? 0) < 0.4 && !readerOk) {
+          verdict = 'unsupported';
+        } else {
+          verdict = 'weak';
+        }
+        return Response.json({
+          ok: true,
+          data: {
+            reader_verdict: verdict,
+            truth_state: truthState ?? null,
+            family: family ?? null,
+            lane_confidence: laneConfidence ?? null,
+            reader_payload: readerPayload,
+          },
+        }, { headers: corsHeaders });
+      }
+
+      case 'identity_activation_submit': {
+        // Persists activation as pending. Caller MUST have already run
+        // identity_reader_run and gotten verdict=accepted_preliminarily.
+        const docKind = String(body.doc_kind ?? '');
+        const docPath = String(body.doc_storage_path ?? '');
+        const selfiePath = String(body.selfie_storage_path ?? '');
+        const videoPath = String(body.video_storage_path ?? '');
+        const readerVerdict = String(body.reader_verdict ?? '');
+        const readerPayload = body.reader_payload ?? {};
+        const clientTrace = body.client_trace_id ? String(body.client_trace_id) : null;
+        if (!['passport', 'national_id', 'driver_license'].includes(docKind)) {
+          return Response.json({ ok: false, error: 'bad_doc_kind' }, { status: 400, headers: corsHeaders });
+        }
+        if (readerVerdict !== 'accepted_preliminarily') {
+          return Response.json({ ok: false, error: 'reader_not_passed' }, { status: 400, headers: corsHeaders });
+        }
+        if (!docPath || !selfiePath || !videoPath) {
+          return Response.json({ ok: false, error: 'missing_paths' }, { status: 400, headers: corsHeaders });
+        }
+        for (const p of [docPath, selfiePath, videoPath]) {
+          if (!p.startsWith(`${authUserId}/`)) {
+            return Response.json({ ok: false, error: 'path_ownership_violation' }, { status: 403, headers: corsHeaders });
+          }
+        }
+        const { data: row, error: insErr } = await portalAdmin
+          .from('identity_activations')
+          .insert({
+            user_id: authUserId,
+            doc_kind: docKind,
+            doc_storage_path: docPath,
+            selfie_storage_path: selfiePath,
+            video_storage_path: videoPath,
+            reader_verdict: readerVerdict,
+            reader_payload: readerPayload as any,
+            status: 'pending',
+            client_trace_id: clientTrace,
+          })
+          .select('id, status, created_at')
+          .single();
+        if (insErr) {
+          return Response.json({ ok: false, error: 'persist_failed', details: insErr.message }, { status: 500, headers: corsHeaders });
+        }
+        return Response.json({
+          ok: true,
+          data: { activation_id: row.id, identity_status: row.status, submitted_at: row.created_at },
+        }, { headers: corsHeaders });
+      }
+
+      case 'identity_status_get': {
+        const { data, error } = await portalAdmin
+          .from('identity_status_mirror')
+          .select('status, last_activation_id, decision_reason_code, reupload_required_fields, blocks_academic_file, decided_at')
+          .eq('user_id', authUserId)
+          .maybeSingle();
+        if (error) return Response.json({ ok: false, error: 'read_failed', details: error.message }, { status: 500, headers: corsHeaders });
+        if (!data) {
+          return Response.json({
+            ok: true,
+            data: {
+              identity_status: 'none',
+              blocks_academic_file: true,
+              last_activation_id: null,
+              decision_reason_code: null,
+              reupload_required_fields: null,
+              decided_at: null,
+            },
+          }, { headers: corsHeaders });
+        }
+        return Response.json({
+          ok: true,
+          data: {
+            identity_status: data.status,
+            blocks_academic_file: data.blocks_academic_file,
+            last_activation_id: data.last_activation_id,
+            decision_reason_code: data.decision_reason_code,
+            reupload_required_fields: data.reupload_required_fields,
+            decided_at: data.decided_at,
+          },
+        }, { headers: corsHeaders });
+      }
+
+      case 'support_ticket_create': {
+        const ticketBody = String(body.body ?? '').trim();
+        const subjectKey = body.subject_key ? String(body.subject_key) : null;
+        const attachment = body.attachment_storage_path ? String(body.attachment_storage_path) : null;
+        const clientTrace = body.client_trace_id ? String(body.client_trace_id) : null;
+        if (!ticketBody || ticketBody.length < 4) {
+          return Response.json({ ok: false, error: 'body_too_short' }, { status: 400, headers: corsHeaders });
+        }
+        if (ticketBody.length > 5000) {
+          return Response.json({ ok: false, error: 'body_too_long' }, { status: 400, headers: corsHeaders });
+        }
+        const { data, error } = await portalAdmin
+          .from('support_tickets')
+          .insert({
+            user_id: authUserId,
+            subject_key: subjectKey,
+            body: ticketBody,
+            attachment_storage_path: attachment,
+            origin: 'portal_account',
+            client_trace_id: clientTrace,
+          })
+          .select('id, status, created_at')
+          .single();
+        if (error) return Response.json({ ok: false, error: 'create_failed', details: error.message }, { status: 500, headers: corsHeaders });
+        return Response.json({
+          ok: true,
+          data: { ticket_id: data.id, status: data.status, created_at: data.created_at },
+        }, { headers: corsHeaders });
+      }
+
+      case 'support_ticket_list': {
+        const { data, error } = await portalAdmin
+          .from('support_tickets')
+          .select('id, subject_key, status, created_at, updated_at, last_reply_at')
+          .eq('user_id', authUserId)
+          .order('created_at', { ascending: false })
+          .limit(100);
+        if (error) return Response.json({ ok: false, error: 'list_failed', details: error.message }, { status: 500, headers: corsHeaders });
+        const mapUiState = (s: string) =>
+          s === 'open' ? 'submitted' : s === 'in_progress' ? 'under_review' : 'resolved';
+        return Response.json({
+          ok: true,
+          data: {
+            tickets: (data ?? []).map((t: any) => ({
+              ticket_id: t.id,
+              subject_key: t.subject_key,
+              status: t.status,
+              ui_state: mapUiState(t.status),
+              created_at: t.created_at,
+              updated_at: t.updated_at,
+              last_reply_at: t.last_reply_at,
+            })),
+          },
+        }, { headers: corsHeaders });
       }
 
       default:

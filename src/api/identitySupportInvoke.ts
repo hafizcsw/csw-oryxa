@@ -1,7 +1,9 @@
 /**
- * Contract layer for Identity Activation + Website Support.
- * Talks to portal-identity-support edge fn only.
+ * Identity Activation + Website Support — canonical contract layer.
+ * All calls go through `portalInvoke` → `student-portal-api`.
+ * No separate edge function. No second wrapper.
  */
+import { portalInvoke } from "@/api/portalInvoke";
 import { supabase } from "@/integrations/supabase/client";
 
 export type IdentityDocKind = "passport" | "national_id" | "driver_license";
@@ -25,11 +27,18 @@ export interface IdentityStatusReadback {
   decided_at: string | null;
 }
 
-export interface ActivationSubmitResult {
-  activation_id: string | null;
-  identity_status: IdentityStatus;
+export interface ReaderRunResult {
   reader_verdict: ReaderVerdict;
-  submitted_at?: string;
+  truth_state: string | null;
+  family: string | null;
+  lane_confidence: number | null;
+  reader_payload: Record<string, unknown>;
+}
+
+export interface ActivationSubmitResult {
+  activation_id: string;
+  identity_status: IdentityStatus;
+  submitted_at: string;
 }
 
 export interface SupportTicketRow {
@@ -42,43 +51,10 @@ export interface SupportTicketRow {
   last_reply_at: string | null;
 }
 
-interface InvokeResult<T> {
-  ok: boolean;
-  data?: T;
-  error?: string;
-  details?: string;
-}
-
-async function call<T>(
-  action: string,
-  body: Record<string, unknown> = {},
-): Promise<InvokeResult<T>> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) {
-    return { ok: false, error: "auth_required" };
-  }
-  try {
-    const { data, error } = await supabase.functions.invoke(
-      "portal-identity-support",
-      { body: { action, ...body } },
-    );
-    if (error) {
-      return { ok: false, error: "invoke_error", details: error.message };
-    }
-    const r = (data ?? {}) as { ok?: boolean; data?: T; error?: string; details?: string };
-    if (r.ok === false) {
-      return { ok: false, error: r.error, details: r.details };
-    }
-    return { ok: true, data: r.data as T };
-  } catch (e) {
-    return { ok: false, error: "network_error", details: e instanceof Error ? e.message : String(e) };
-  }
-}
-
 // ─── Identity ────────────────────────────────────────────────
-export async function signIdentityUploadUrl(slot: "doc" | "selfie" | "video", ext: string) {
-  return call<{ bucket: string; path: string; signed_url: string; token: string }>(
-    "identity.upload.signUrl",
+async function signIdentityUploadUrl(slot: "doc" | "selfie" | "video", ext: string) {
+  return portalInvoke<{ bucket: string; path: string; signed_url: string; token: string }>(
+    "identity_upload_sign_url",
     { slot, ext },
   );
 }
@@ -86,14 +62,24 @@ export async function signIdentityUploadUrl(slot: "doc" | "selfie" | "video", ex
 export async function uploadIdentityFile(slot: "doc" | "selfie" | "video", file: File) {
   const ext = (file.name.split(".").pop() || file.type.split("/")[1] || "bin").toLowerCase();
   const sign = await signIdentityUploadUrl(slot, ext);
-  if (!sign.ok || !sign.data) return { ok: false, error: sign.error || "sign_failed" };
-  const put = await fetch(sign.data.signed_url, {
-    method: "PUT",
-    headers: { "Content-Type": file.type || "application/octet-stream" },
-    body: file,
-  });
-  if (!put.ok) return { ok: false, error: `put_failed_${put.status}` };
-  return { ok: true, path: sign.data.path, bucket: sign.data.bucket };
+  if (!sign.ok || !sign.data) return { ok: false as const, error: sign.error || "sign_failed" };
+  // Upload via signed URL using supabase-js helper to keep auth + headers correct
+  const { error: upErr } = await supabase.storage
+    .from(sign.data.bucket)
+    .uploadToSignedUrl(sign.data.path, sign.data.token, file, {
+      contentType: file.type || "application/octet-stream",
+    });
+  if (upErr) return { ok: false as const, error: `put_failed:${upErr.message}` };
+  return { ok: true as const, path: sign.data.path, bucket: sign.data.bucket };
+}
+
+/** Runs the existing mistral-document-pipeline on the uploaded doc.
+ *  MUST be called BEFORE opening the camera flow. */
+export async function runIdentityReader(input: {
+  doc_kind: IdentityDocKind;
+  doc_storage_path: string;
+}) {
+  return portalInvoke<ReaderRunResult>("identity_reader_run", input);
 }
 
 export async function submitIdentityActivation(input: {
@@ -101,14 +87,15 @@ export async function submitIdentityActivation(input: {
   doc_storage_path: string;
   selfie_storage_path: string;
   video_storage_path: string;
-  doc_mime?: string;
+  reader_verdict: ReaderVerdict;
+  reader_payload: Record<string, unknown>;
   client_trace_id?: string;
 }) {
-  return call<ActivationSubmitResult>("identity.activation.submit", input);
+  return portalInvoke<ActivationSubmitResult>("identity_activation_submit", input);
 }
 
 export async function getIdentityStatus() {
-  return call<IdentityStatusReadback>("identity.status.get");
+  return portalInvoke<IdentityStatusReadback>("identity_status_get");
 }
 
 // ─── Support ─────────────────────────────────────────────────
@@ -118,12 +105,12 @@ export async function createSupportTicket(input: {
   attachment_storage_path?: string;
   client_trace_id?: string;
 }) {
-  return call<{ ticket_id: string; status: SupportStatus; created_at: string }>(
-    "support.ticket.create",
+  return portalInvoke<{ ticket_id: string; status: SupportStatus; created_at: string }>(
+    "support_ticket_create",
     input,
   );
 }
 
 export async function listSupportTickets() {
-  return call<{ tickets: SupportTicketRow[] }>("support.ticket.list");
+  return portalInvoke<{ tickets: SupportTicketRow[] }>("support_ticket_list");
 }
