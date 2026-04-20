@@ -2476,7 +2476,11 @@
     "entranceExam": "Aufnahmeprüfung"
   },
   "documents": {
-    "label": "Dokumente"
+    "label": "Dokumente",
+    "external_processing_disclosure": {
+      "title": "Hinweis zur externen Verarbeitung",
+      "body": "Hochgeladene Dateien werden von einem externen KI-Dienst (Mistral) verarbeitet, um Text und strukturierte Daten zu extrahieren. Keine Rohdaten werden außerhalb unseres Systems gespeichert."
+    }
   },
   "studyMode": {
     "onCampus": "Auf dem Campus",

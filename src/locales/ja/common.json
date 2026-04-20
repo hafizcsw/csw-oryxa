@@ -2476,7 +2476,11 @@
     "entranceExam": "入学試験"
   },
   "documents": {
-    "label": "書類"
+    "label": "書類",
+    "external_processing_disclosure": {
+      "title": "外部処理に関する通知",
+      "body": "アップロードしたファイルは、テキストと構造化データを抽出するために外部 AI サービス (Mistral) で処理されます。生のファイル内容は当社のシステム外には保存されません。"
+    }
   },
   "studyMode": {
     "onCampus": "キャンパス通学",
