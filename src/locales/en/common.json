@@ -2484,9 +2484,13 @@
           "full_name": "Full name",
           "nationality": "Nationality",
           "date_of_birth": "Date of birth",
-          "passport_number": "Document number",
           "issuing_country": "Issuing country",
-          "expiry_date": "Expiry date"
+          "expiry_date": "Expiry date",
+          "document_number": {
+            "passport": "Passport number",
+            "national_id": "National ID number",
+            "driver_license": "Driver's license number"
+          }
         }
       }
     },

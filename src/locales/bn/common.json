@@ -2168,9 +2168,13 @@
           "full_name": "পূর্ণ নাম",
           "nationality": "জাতীয়তা",
           "date_of_birth": "জন্ম তারিখ",
-          "passport_number": "ডকুমেন্ট নম্বর",
           "issuing_country": "ইস্যুকারী দেশ",
-          "expiry_date": "মেয়াদ শেষের তারিখ"
+          "expiry_date": "মেয়াদ শেষের তারিখ",
+          "document_number": {
+            "passport": "পাসপোর্ট নম্বর",
+            "national_id": "জাতীয় পরিচয়পত্র নম্বর",
+            "driver_license": "ড্রাইভিং লাইসেন্স নম্বর"
+          }
         }
       }
     },

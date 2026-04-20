@@ -2485,9 +2485,13 @@
           "full_name": "الاسم الكامل",
           "nationality": "الجنسية",
           "date_of_birth": "تاريخ الميلاد",
-          "passport_number": "رقم الوثيقة",
           "issuing_country": "بلد الإصدار",
-          "expiry_date": "تاريخ الانتهاء"
+          "expiry_date": "تاريخ الانتهاء",
+          "document_number": {
+            "passport": "رقم جواز السفر",
+            "national_id": "رقم الهوية الوطنية",
+            "driver_license": "رقم رخصة القيادة"
+          }
         }
       }
     },

@@ -2166,9 +2166,13 @@
           "full_name": "Nombre completo",
           "nationality": "Nacionalidad",
           "date_of_birth": "Fecha de nacimiento",
-          "passport_number": "Número de documento",
           "issuing_country": "País emisor",
-          "expiry_date": "Fecha de vencimiento"
+          "expiry_date": "Fecha de vencimiento",
+          "document_number": {
+            "passport": "Número de pasaporte",
+            "national_id": "Número de DNI",
+            "driver_license": "Número de licencia de conducir"
+          }
         }
       }
     },
