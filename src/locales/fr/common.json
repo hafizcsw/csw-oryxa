@@ -2137,6 +2137,22 @@
         "title": "Le dossier académique est verrouillé",
         "body": "Vous devez vérifier votre identité avant de débloquer votre dossier académique.",
         "cta": "Commencer la vérification"
+      },
+      "summary": {
+        "title": "Nous avons lu votre document",
+        "subtitle": "Voici les données extraites de votre document. Veuillez vérifier avant de continuer.",
+        "noFields": "Aucune donnée n'a pu être extraite du document avec une confiance suffisante.",
+        "disclaimer": "Seuls les champs réellement extraits de votre document sont affichés.",
+        "retake": "Renvoyer",
+        "confirm": "Données correctes, continuer",
+        "field": {
+          "full_name": "Nom complet",
+          "nationality": "Nationalité",
+          "date_of_birth": "Date de naissance",
+          "passport_number": "Numéro de document",
+          "issuing_country": "Pays émetteur",
+          "expiry_date": "Date d'expiration"
+        }
       }
     },
     "support": {

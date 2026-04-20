@@ -2154,6 +2154,22 @@
         "title": "El expediente académico está bloqueado",
         "body": "Debes verificar tu identidad antes de desbloquear tu expediente académico.",
         "cta": "Iniciar verificación"
+      },
+      "summary": {
+        "title": "Leímos su documento",
+        "subtitle": "Estos son los datos extraídos de su documento. Revise antes de continuar.",
+        "noFields": "No se pudieron extraer datos del documento con suficiente confianza.",
+        "disclaimer": "Solo se muestran los campos realmente extraídos de su documento.",
+        "retake": "Volver a subir",
+        "confirm": "Los datos son correctos, continuar",
+        "field": {
+          "full_name": "Nombre completo",
+          "nationality": "Nacionalidad",
+          "date_of_birth": "Fecha de nacimiento",
+          "passport_number": "Número de documento",
+          "issuing_country": "País emisor",
+          "expiry_date": "Fecha de vencimiento"
+        }
       }
     },
     "support": {

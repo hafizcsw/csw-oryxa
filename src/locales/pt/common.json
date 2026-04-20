@@ -2156,6 +2156,22 @@
         "title": "O arquivo acadêmico está bloqueado",
         "body": "Você deve verificar sua identidade antes de desbloquear seu arquivo acadêmico.",
         "cta": "Iniciar verificação"
+      },
+      "summary": {
+        "title": "Lemos seu documento",
+        "subtitle": "Estes são os dados extraídos do seu documento. Revise antes de continuar.",
+        "noFields": "Não foi possível extrair dados do documento com confiança suficiente.",
+        "disclaimer": "Apenas campos realmente extraídos do seu documento são exibidos.",
+        "retake": "Reenviar",
+        "confirm": "Dados corretos, continuar",
+        "field": {
+          "full_name": "Nome completo",
+          "nationality": "Nacionalidade",
+          "date_of_birth": "Data de nascimento",
+          "passport_number": "Número do documento",
+          "issuing_country": "País emissor",
+          "expiry_date": "Data de validade"
+        }
       }
     },
     "support": {

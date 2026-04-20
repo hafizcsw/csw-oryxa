@@ -2156,6 +2156,22 @@
         "title": "学術ファイルはロックされています",
         "body": "学術ファイルを開く前に、本人確認を完了する必要があります。",
         "cta": "確認を開始"
+      },
+      "summary": {
+        "title": "書類を読み取りました",
+        "subtitle": "書類から抽出したデータです。続行する前にご確認ください。",
+        "noFields": "書類から十分な信頼度でデータを抽出できませんでした。",
+        "disclaimer": "書類から実際に抽出されたフィールドのみを表示しています。",
+        "retake": "再アップロード",
+        "confirm": "データは正しい、続行",
+        "field": {
+          "full_name": "氏名",
+          "nationality": "国籍",
+          "date_of_birth": "生年月日",
+          "passport_number": "書類番号",
+          "issuing_country": "発行国",
+          "expiry_date": "有効期限"
+        }
       }
     },
     "support": {

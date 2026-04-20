@@ -2199,6 +2199,22 @@
         "title": "学术档案已锁定",
         "body": "您必须先验证身份才能解锁学术档案。",
         "cta": "开始验证"
+      },
+      "summary": {
+        "title": "我们已读取您的文件",
+        "subtitle": "以下是从您的文件中提取的数据。请在继续前确认。",
+        "noFields": "无法以足够的置信度从文件中提取数据。",
+        "disclaimer": "仅显示真正从您的文件中提取的字段。",
+        "retake": "重新上传",
+        "confirm": "信息正确，继续",
+        "field": {
+          "full_name": "全名",
+          "nationality": "国籍",
+          "date_of_birth": "出生日期",
+          "passport_number": "证件号码",
+          "issuing_country": "签发国家",
+          "expiry_date": "有效期"
+        }
       }
     },
     "support": {
