@@ -8541,6 +8541,7 @@ Deno.serve(async (req) => {
             return Response.json({ ok: false, error: 'path_ownership_violation' }, { status: 403, headers: corsHeaders });
           }
         }
+        const { crmCustomerId: resolvedCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!resolvedCustomerId) {
           return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
         }
@@ -8578,6 +8579,7 @@ Deno.serve(async (req) => {
       case 'identity_status_get': {
         // CUTOVER: reads identity status directly from CRM via web-get-identity-status.
         // identity_status_mirror is no longer touched at runtime.
+        const { crmCustomerId: resolvedCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!resolvedCustomerId) {
           return Response.json({
             ok: true,
@@ -8628,6 +8630,7 @@ Deno.serve(async (req) => {
         if (ticketBody.length > 5000) {
           return Response.json({ ok: false, error: 'body_too_long' }, { status: 400, headers: corsHeaders });
         }
+        const { crmCustomerId: resolvedCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!resolvedCustomerId) {
           return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
         }
@@ -8662,6 +8665,7 @@ Deno.serve(async (req) => {
 
       case 'support_ticket_list': {
         // CUTOVER: reads tickets directly from CRM via web-list-support-requests.
+        const { crmCustomerId: resolvedCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!resolvedCustomerId) {
           return Response.json({ ok: true, data: { tickets: [] } }, { headers: corsHeaders });
         }
