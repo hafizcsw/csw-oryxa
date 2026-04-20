@@ -7,7 +7,7 @@
 import { prepareUpload, confirmUpload } from "@/api/crmStorage";
 import { uploadToCrmStorage } from "@/lib/crmStorageClient";
 import { runFoundation, type FoundationOutput } from "./foundation";
-import { dispatchLane, persistLaneFacts, type LaneFactsOutput } from "./lanes";
+import type { LaneFactsOutput } from "./lanes";
 
 export interface UploadResult {
   success: boolean;
