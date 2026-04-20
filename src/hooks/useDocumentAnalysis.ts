@@ -113,6 +113,9 @@ function laneToParserType(row: LaneFactsDbRow): ParserType {
   const meta = (row.engine_metadata ?? {}) as Record<string, unknown>;
   const reviewReason = typeof meta.review_reason === 'string' ? meta.review_reason : null;
   if (reviewReason === 'image_ocr_deferred_to_door_3') return 'image_ocr';
+  const producer = typeof meta.producer === 'string' ? meta.producer : '';
+  if (meta.ocr_used === true || producer.includes('mistral')) return 'image_ocr';
+  if (meta.pdf_text_used === true) return 'pdf_text';
   return 'regex_heuristic';
 }
 
@@ -208,6 +211,74 @@ function buildAnalysisFromReviewRow(row: ReviewQueueDbRow): DocumentAnalysis {
   };
 }
 
+// ─── Mistral fact key → canonical field_key map ───────────────
+const PASSPORT_FIELD_MAP: Record<string, string> = {
+  full_name: 'identity.passport_name',
+  passport_number: 'identity.passport_number',
+  date_of_birth: 'identity.date_of_birth',
+  nationality: 'identity.citizenship',
+  issuing_country: 'identity.passport_issuing_country',
+  expiry_date: 'identity.passport_expiry_date',
+  issue_date: 'identity.passport_issue_date',
+  gender: 'identity.gender',
+};
+const GRADUATION_FIELD_MAP: Record<string, string> = {
+  full_name: 'graduation.full_name',
+  institution_name: 'graduation.institution_name',
+  qualification: 'graduation.credential_name',
+  issue_date: 'graduation.issue_date',
+};
+const LANGUAGE_FIELD_MAP: Record<string, string> = {
+  full_name: 'language.full_name',
+  test_name: 'language.english_test_type',
+  overall_score: 'language.english_total_score',
+  test_date: 'language.test_date',
+};
+
+function fieldMapForLane(lane: string | null | undefined): Record<string, string> {
+  if (lane === 'passport_lane') return PASSPORT_FIELD_MAP;
+  if (lane === 'graduation_lane') return GRADUATION_FIELD_MAP;
+  if (lane === 'language_lane') return LANGUAGE_FIELD_MAP;
+  return {};
+}
+
+function buildProposalsFromLaneRow(
+  row: LaneFactsDbRow,
+  studentId: string,
+): ExtractionProposal[] {
+  const facts = (row.facts && typeof row.facts === 'object' && !Array.isArray(row.facts))
+    ? row.facts as Record<string, any>
+    : {};
+  const map = fieldMapForLane(row.lane);
+  const out: ExtractionProposal[] = [];
+  const now = row.updated_at || row.created_at || new Date().toISOString();
+  for (const [rawKey, raw] of Object.entries(facts)) {
+    if (!raw || typeof raw !== 'object') continue;
+    const fieldKey = map[rawKey];
+    if (!fieldKey) continue;
+    const value = raw.value != null ? String(raw.value) : null;
+    if (!value) continue;
+    const confidence = typeof raw.confidence === 'number' ? raw.confidence : 0;
+    out.push({
+      proposal_id: `${row.document_id}:${fieldKey}`,
+      student_id: studentId,
+      document_id: row.document_id,
+      field_key: fieldKey,
+      proposed_value: value,
+      normalized_value: value,
+      confidence,
+      // Mistral OCR + high confidence → auto_accepted so UI shows the value as accepted
+      proposal_status: confidence >= 0.85 ? 'auto_accepted' : 'pending_review',
+      conflict_with_current: false,
+      requires_review: confidence < 0.85,
+      auto_apply_candidate: confidence >= 0.85,
+      created_at: now,
+      updated_at: now,
+    });
+  }
+  return out;
+}
+
 function buildHydratedSurface(documentId: string, structuredArtifactSummary: unknown): HydratedArtifactSurface {
   return {
     documentId,
@@ -221,7 +292,7 @@ export function useDocumentAnalysis(
   opts: UseDocumentAnalysisOptions,
 ): UseDocumentAnalysisResult {
   const [analyses, setAnalyses] = useState<DocumentAnalysis[]>([]);
-  const [proposals] = useState<ExtractionProposal[]>([]);
+  const [proposals, setProposals] = useState<ExtractionProposal[]>([]);
   const [promotedFields] = useState<PromotedField[]>([]);
   const [artifacts] = useState<Record<string, ReadingArtifact>>({});
   const [hydratedArtifactSurfaces, setHydratedArtifactSurfaces] = useState<Record<string, HydratedArtifactSurface>>({});
@@ -275,11 +346,13 @@ export function useDocumentAnalysis(
 
     const nextAnalyses = new Map<string, DocumentAnalysis>();
     const nextHydrated: Record<string, HydratedArtifactSurface> = {};
+    const nextProposals: ExtractionProposal[] = [];
 
     for (const row of (laneRes.data ?? []) as LaneFactsDbRow[]) {
       const analysis = buildAnalysisFromLaneRow(row);
       nextAnalyses.set(row.document_id, analysis);
       nextHydrated[row.document_id] = buildHydratedSurface(row.document_id, row.facts);
+      nextProposals.push(...buildProposalsFromLaneRow(row, opts.studentId ?? ''));
     }
 
     for (const row of (reviewRes.data ?? []) as ReviewQueueDbRow[]) {
@@ -295,6 +368,7 @@ export function useDocumentAnalysis(
 
     setAnalyses(list);
     setHydratedArtifactSurfaces(nextHydrated);
+    setProposals(nextProposals);
   }, [opts.studentId]);
 
   const pollForDocument = useCallback(async (documentId: string, filename: string) => {
@@ -434,7 +508,10 @@ export function useDocumentAnalysis(
     [analyses],
   );
 
-  const getProposalsForDocument = useCallback(() => [], []);
+  const getProposalsForDocument = useCallback(
+    (documentId: string) => proposals.filter(p => p.document_id === documentId),
+    [proposals],
+  );
   const noop = useCallback(() => {
     // eslint-disable-next-line no-console
     console.warn('[useDocumentAnalysis] Proposal editing is not wired to the Mistral truth tables yet.');
