@@ -401,38 +401,27 @@ Deno.serve(async (req) => {
           { onConflict: "document_id" },
         );
       if (upErr) console.warn("[mistral-pipeline] lane_facts upsert failed", upErr);
-    } else {
-      // Unrecognized: record as a needs_review row in the queue only.
-      const { error: rqErr } = await supabase
-        .from("document_review_queue")
-        .upsert(
-          {
-            document_id: body.document_id,
-            user_id,
-            state: "pending",
-            reason: review_reason ?? "document_unrecognized",
-            payload: { engine_metadata, notes: ext.notes },
-          },
-          { onConflict: "document_id" },
-        );
-      if (rqErr) console.warn("[mistral-pipeline] review_queue upsert failed", rqErr);
     }
 
-    // 6. Mirror to review queue if needed
-    if (lane && requires_review) {
-      const { error: rqErr } = await supabase
+    // 6. Mirror to review queue when review is required (or unrecognized)
+    if (requires_review || !lane) {
+      // Replace any prior pending row for this document
+      await supabase
         .from("document_review_queue")
-        .upsert(
-          {
-            document_id: body.document_id,
-            user_id,
-            state: "pending",
-            reason: review_reason ?? "needs_review",
-            payload: { facts: ext.facts, engine_metadata },
-          },
-          { onConflict: "document_id" },
-        );
-      if (rqErr) console.warn("[mistral-pipeline] review_queue mirror failed", rqErr);
+        .delete()
+        .eq("document_id", body.document_id)
+        .eq("state", "pending");
+
+      const { error: rqErr } = await supabase.from("document_review_queue").insert({
+        document_id: body.document_id,
+        user_id,
+        lane: lane ?? "unknown_lane",
+        state: "pending",
+        reason: review_reason ?? "needs_review",
+        evidence_summary: { facts: ext.facts, notes: ext.notes },
+        confidence_summary: { lane_confidence, family_confidence: ext.family_confidence },
+      });
+      if (rqErr) console.warn("[mistral-pipeline] review_queue insert failed", rqErr);
     }
 
     return json({
