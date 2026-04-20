@@ -52,6 +52,7 @@ export function DashboardOverview({
   const [identityOpen, setIdentityOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
   const { status: identityStatus } = useIdentityStatus();
+  const { fields: extracted } = useExtractedIdentity();
 
   const getCurrentStep = () => {
     const substage = crmProfile?.substage?.toLowerCase() || '';
@@ -70,9 +71,30 @@ export function DashboardOverview({
     return 1;
   };
 
-  const fullName = crmProfile?.full_name || profile?.full_name || null;
+  // Verified-info fields. Source priority: extracted (live from reader) > CRM > local profile.
+  // Date-of-birth is normalised to a locale-friendly string when possible.
+  const formatDate = (raw?: string | null) => {
+    if (!raw) return null;
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return raw;
+    try {
+      return new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long', day: 'numeric' }).format(d);
+    } catch {
+      return raw;
+    }
+  };
+  const titleCase = (s?: string | null) => {
+    if (!s) return null;
+    return s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).replace(/\s+/g, ' ').trim();
+  };
+
+  const fullName = extracted.full_name || crmProfile?.full_name || profile?.full_name || null;
   const email = crmProfile?.email || profile?.email || null;
-  const dob = crmProfile?.dob || crmProfile?.birth_year || null;
+  const dob = formatDate(extracted.date_of_birth) || crmProfile?.dob || crmProfile?.birth_year || null;
+  const nationality = titleCase(extracted.nationality);
+  const documentNumber = extracted.document_number || null;
+  const issuingCountry = titleCase(extracted.issuing_country);
+  const expiryDate = formatDate(extracted.expiry_date);
 
   const notProvided = t('portal.header.notProvided');
 
@@ -80,6 +102,10 @@ export function DashboardOverview({
     { key: 'fullName', label: t('portal.header.fullName'), value: fullName },
     { key: 'dateOfBirth', label: t('portal.header.dateOfBirth'), value: dob },
     { key: 'email', label: t('portal.header.email'), value: email },
+    { key: 'nationality', label: t('portal.identity.summary.field.nationality'), value: nationality },
+    { key: 'documentNumber', label: t('portal.identity.summary.field.document_number.passport'), value: documentNumber },
+    { key: 'issuingCountry', label: t('portal.identity.summary.field.issuing_country'), value: issuingCountry },
+    { key: 'expiryDate', label: t('portal.identity.summary.field.expiry_date'), value: expiryDate },
   ];
 
   return (
