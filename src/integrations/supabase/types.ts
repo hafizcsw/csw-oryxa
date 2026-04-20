@@ -5178,6 +5178,104 @@ export type Database = {
         }
         Relationships: []
       }
+      identity_activations: {
+        Row: {
+          client_trace_id: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_reason_code: string | null
+          doc_kind: Database["public"]["Enums"]["identity_doc_kind"]
+          doc_storage_path: string
+          id: string
+          reader_payload: Json
+          reader_verdict: Database["public"]["Enums"]["identity_reader_verdict"]
+          reupload_required_fields: string[] | null
+          selfie_storage_path: string
+          status: Database["public"]["Enums"]["identity_status"]
+          updated_at: string
+          user_id: string
+          video_storage_path: string
+        }
+        Insert: {
+          client_trace_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason_code?: string | null
+          doc_kind: Database["public"]["Enums"]["identity_doc_kind"]
+          doc_storage_path: string
+          id?: string
+          reader_payload?: Json
+          reader_verdict: Database["public"]["Enums"]["identity_reader_verdict"]
+          reupload_required_fields?: string[] | null
+          selfie_storage_path: string
+          status?: Database["public"]["Enums"]["identity_status"]
+          updated_at?: string
+          user_id: string
+          video_storage_path: string
+        }
+        Update: {
+          client_trace_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason_code?: string | null
+          doc_kind?: Database["public"]["Enums"]["identity_doc_kind"]
+          doc_storage_path?: string
+          id?: string
+          reader_payload?: Json
+          reader_verdict?: Database["public"]["Enums"]["identity_reader_verdict"]
+          reupload_required_fields?: string[] | null
+          selfie_storage_path?: string
+          status?: Database["public"]["Enums"]["identity_status"]
+          updated_at?: string
+          user_id?: string
+          video_storage_path?: string
+        }
+        Relationships: []
+      }
+      identity_status_mirror: {
+        Row: {
+          blocks_academic_file: boolean
+          decided_at: string | null
+          decision_reason_code: string | null
+          last_activation_id: string | null
+          reupload_required_fields: string[] | null
+          status: Database["public"]["Enums"]["identity_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          blocks_academic_file?: boolean
+          decided_at?: string | null
+          decision_reason_code?: string | null
+          last_activation_id?: string | null
+          reupload_required_fields?: string[] | null
+          status?: Database["public"]["Enums"]["identity_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          blocks_academic_file?: boolean
+          decided_at?: string | null
+          decision_reason_code?: string | null
+          last_activation_id?: string | null
+          reupload_required_fields?: string[] | null
+          status?: Database["public"]["Enums"]["identity_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "identity_status_mirror_last_activation_id_fkey"
+            columns: ["last_activation_id"]
+            isOneToOne: false
+            referencedRelation: "identity_activations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       import_logs: {
         Row: {
           applied_at: string | null
@@ -16996,6 +17094,48 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          attachment_storage_path: string | null
+          body: string
+          client_trace_id: string | null
+          created_at: string
+          id: string
+          last_reply_at: string | null
+          origin: string
+          status: Database["public"]["Enums"]["support_ticket_status"]
+          subject_key: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attachment_storage_path?: string | null
+          body: string
+          client_trace_id?: string | null
+          created_at?: string
+          id?: string
+          last_reply_at?: string | null
+          origin?: string
+          status?: Database["public"]["Enums"]["support_ticket_status"]
+          subject_key?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attachment_storage_path?: string | null
+          body?: string
+          client_trace_id?: string | null
+          created_at?: string
+          id?: string
+          last_reply_at?: string | null
+          origin?: string
+          status?: Database["public"]["Enums"]["support_ticket_status"]
+          subject_key?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -27727,6 +27867,14 @@ export type Database = {
         | "rejected"
         | "stale"
         | "superseded"
+      identity_doc_kind: "passport" | "national_id" | "driver_license"
+      identity_reader_verdict: "accepted_preliminarily" | "weak" | "unsupported"
+      identity_status:
+        | "none"
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "reupload_required"
       inbox_thread_status: "open" | "assigned" | "closed"
       orx_badge:
         | "future_ready"
@@ -27775,6 +27923,7 @@ export type Database = {
         | "news_press"
       orx_status: "scored" | "evaluating" | "insufficient"
       orx_trust_level: "high" | "medium" | "low"
+      support_ticket_status: "open" | "in_progress" | "resolved" | "closed"
       university_page_role:
         | "full_control"
         | "page_admin"
@@ -27986,6 +28135,19 @@ export const Constants = {
         "stale",
         "superseded",
       ],
+      identity_doc_kind: ["passport", "national_id", "driver_license"],
+      identity_reader_verdict: [
+        "accepted_preliminarily",
+        "weak",
+        "unsupported",
+      ],
+      identity_status: [
+        "none",
+        "pending",
+        "approved",
+        "rejected",
+        "reupload_required",
+      ],
       inbox_thread_status: ["open", "assigned", "closed"],
       orx_badge: [
         "future_ready",
@@ -28039,6 +28201,7 @@ export const Constants = {
       ],
       orx_status: ["scored", "evaluating", "insufficient"],
       orx_trust_level: ["high", "medium", "low"],
+      support_ticket_status: ["open", "in_progress", "resolved", "closed"],
       university_page_role: [
         "full_control",
         "page_admin",
