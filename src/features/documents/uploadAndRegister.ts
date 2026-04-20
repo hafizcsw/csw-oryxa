@@ -158,35 +158,53 @@ export async function uploadAndRegisterFile(params: {
     console.warn('[FoundationGate] persistence threw', e);
   }
 
-  // ========== STAGE 6: LANE DISPATCH (Door 2 — Fast Value Gate) ==========
-  // Best-effort: lane failure does NOT fail the upload, but is reported.
-  // Lanes are only run for passport_id, graduation_certificate, language_certificate.
+  // ========== STAGE 6: MISTRAL PIPELINE (single engine, no fallbacks) ==========
+  // Calls the unified mistral-document-pipeline edge function.
+  // It writes truth rows to document_lane_facts and document_review_queue.
+  // Lane failure does NOT fail the upload — it is recorded as needs_review.
   let lane_facts: LaneFactsOutput | undefined;
   let lane_facts_persisted = false;
   let lane_skipped_reason: string | undefined;
   try {
-    const dispatch = await dispatchLane({ foundation, file });
-    if (dispatch.ran) {
-      lane_facts = dispatch.output;
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { data: pipeRes, error: pipeErr } = await supabase.functions.invoke(
+      'mistral-document-pipeline',
+      {
+        body: {
+          document_id: documentId,
+          bucket,
+          path,
+          file_kind,
+          declared_family: foundation.route.route_family,
+        },
+      },
+    );
+    if (pipeErr) {
       // eslint-disable-next-line no-console
-      console.log('[LaneDispatch] ✅ ran', {
+      console.warn('[MistralPipeline] invoke error', pipeErr);
+      lane_skipped_reason = `mistral_invoke_error:${pipeErr.message ?? 'unknown'}`;
+    } else if (pipeRes?.ok) {
+      // eslint-disable-next-line no-console
+      console.log('[MistralPipeline] ✅ ran', {
         document_id: documentId,
-        lane: dispatch.output.lane,
-        truth_state: dispatch.output.truth_state,
-        confidence: dispatch.output.lane_confidence,
-        requires_review: dispatch.output.requires_review,
-        ms: dispatch.output.engine_metadata.processing_ms,
+        family: pipeRes.family,
+        lane: pipeRes.lane,
+        truth_state: pipeRes.truth_state,
+        confidence: pipeRes.lane_confidence,
+        requires_review: pipeRes.requires_review,
+        review_reason: pipeRes.review_reason,
+        ms: pipeRes.processing_ms,
       });
-      lane_facts_persisted = await persistLaneFacts(dispatch.output);
-    } else if (dispatch.ran === false) {
-      lane_skipped_reason = dispatch.reason;
+      lane_facts_persisted = true;
+    } else {
       // eslint-disable-next-line no-console
-      console.log('[LaneDispatch] skipped', { document_id: documentId, reason: dispatch.reason });
+      console.warn('[MistralPipeline] pipeline reported failure', pipeRes);
+      lane_skipped_reason = `mistral_failed:${pipeRes?.error ?? 'unknown'}`;
     }
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.warn('[LaneDispatch] threw — non-fatal', e);
-    lane_skipped_reason = e instanceof Error ? `lane_threw:${e.message}` : 'lane_threw';
+    console.warn('[MistralPipeline] threw — non-fatal', e);
+    lane_skipped_reason = e instanceof Error ? `mistral_threw:${e.message}` : 'mistral_threw';
   }
 
   // ========== DONE ==========
