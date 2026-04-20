@@ -329,17 +329,23 @@ Deno.serve(async (req) => {
   const declaredFamily = (body.declared_family ?? familyFromFileKind(body.file_kind)) as Family;
 
   try {
-    // 1. Sign URL (10 min)
-    const { data: signed, error: sErr } = await supabase
-      .storage
-      .from(body.bucket)
-      .createSignedUrl(body.path, 600);
-    if (sErr || !signed?.signedUrl) {
-      throw new Error("sign_url_failed:" + (sErr?.message ?? "unknown"));
+    // 1. Sign URL — storage lives on the CRM Supabase project, not this one.
+    //    Caller MUST pass a pre-signed GET URL (obtained via CRM `sign_file`).
+    //    Fallback: try this project's storage (rare; only if bucket really exists here).
+    let signedUrl = body.signed_url ?? null;
+    if (!signedUrl) {
+      const { data: signed, error: sErr } = await supabase
+        .storage
+        .from(body.bucket)
+        .createSignedUrl(body.path, 600);
+      if (sErr || !signed?.signedUrl) {
+        throw new Error("sign_url_failed:" + (sErr?.message ?? "unknown"));
+      }
+      signedUrl = signed.signedUrl;
     }
 
     // 2. OCR
-    const ocr = await mistralOcr({ signedUrl: signed.signedUrl, apiKey: MISTRAL_API_KEY });
+    const ocr = await mistralOcr({ signedUrl, apiKey: MISTRAL_API_KEY });
 
     // 3. Extract
     const ext = await mistralExtract({
