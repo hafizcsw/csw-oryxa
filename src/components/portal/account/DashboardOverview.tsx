@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { Lock, ShieldCheck } from "lucide-react";
 import { AccountContentHeader } from "./AccountContentHeader";
 import { AccountVerificationSteps } from "./AccountVerificationSteps";
+import { IdentityActivationDialog } from "../identity/IdentityActivationDialog";
+import { SupportSection } from "../support/SupportSection";
+import { useIdentityStatus } from "@/hooks/useIdentityStatus";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DashboardOverviewProps {
