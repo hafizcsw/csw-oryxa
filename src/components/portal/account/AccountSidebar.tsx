@@ -3,8 +3,11 @@ import { LayoutDashboard, User, Paperclip, Heart, FileText, Wallet, Settings, Br
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useStudentPayments } from "@/hooks/useStudentPayments";
 import { useMalakChat } from "@/contexts/MalakChatContext";
+import { useStudentProfile } from "@/hooks/useStudentProfile";
+import { buildAvatarDisplayUrl } from "@/features/avatar/avatarImageUtils";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
