@@ -10,10 +10,26 @@ console.log('[student-portal-api] VERSION=2026-04-20_crm_bridge_cutover_v1');
 //   web-sync-identity-activation, web-get-identity-status,
 //   web-sync-support-request, web-list-support-requests
 // Auth header: x-api-key
-const CRM_FUNCTIONS_URL = Deno.env.get('CRM_FUNCTIONS_URL')
-  ?? 'https://hlrkyoxwbjsgqbncgzpi.supabase.co/functions/v1';
-const CRM_WEB_API_KEY = Deno.env.get('CRM_WEB_INBOUND_API_KEY')
-  ?? 'csw_web_to_crm_5f2f3c9d9e3b4a0a87f142ec71d328a4';
+// Sanitize secret values: tolerate accidental "KEY=value" pastes and surrounding quotes/whitespace.
+function readEnvClean(name: string, fallback: string): string {
+  const raw = Deno.env.get(name) ?? '';
+  let v = raw.trim();
+  if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+    v = v.slice(1, -1).trim();
+  }
+  // If someone pasted "NAME=value", strip the leading "NAME=".
+  const eqPrefix = `${name}=`;
+  if (v.startsWith(eqPrefix)) v = v.slice(eqPrefix.length).trim();
+  return v || fallback;
+}
+const CRM_FUNCTIONS_URL = readEnvClean(
+  'CRM_FUNCTIONS_URL',
+  'https://hlrkyoxwbjsgqbncgzpi.supabase.co/functions/v1',
+).replace(/\/+$/, '');
+const CRM_WEB_API_KEY = readEnvClean(
+  'CRM_WEB_INBOUND_API_KEY',
+  'csw_web_to_crm_5f2f3c9d9e3b4a0a87f142ec71d328a4',
+);
 
 // ============= CORS Configuration (Allowlist-based) =============
 const ALLOWED_ORIGINS = new Set<string>([
