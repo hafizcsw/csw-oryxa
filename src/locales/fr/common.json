@@ -2128,6 +2128,11 @@
         "uploadFailed": "Échec du téléversement.",
         "videoTooLarge": "La vidéo doit faire 15 Mo ou moins.",
         "cameraDenied": "L’accès à la caméra a été refusé."
+      },
+      "gate": {
+        "title": "Le dossier académique est verrouillé",
+        "body": "Vous devez vérifier votre identité avant de débloquer votre dossier académique.",
+        "cta": "Commencer la vérification"
       }
     },
     "support": {

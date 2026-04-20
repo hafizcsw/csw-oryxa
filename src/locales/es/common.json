@@ -2145,6 +2145,11 @@
         "uploadFailed": "Error al subir.",
         "videoTooLarge": "El video debe ser de 15 MB o menos.",
         "cameraDenied": "Se denegó el acceso a la cámara."
+      },
+      "gate": {
+        "title": "El expediente académico está bloqueado",
+        "body": "Debes verificar tu identidad antes de desbloquear tu expediente académico.",
+        "cta": "Iniciar verificación"
       }
     },
     "support": {

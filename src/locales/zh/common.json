@@ -2190,6 +2190,11 @@
         "uploadFailed": "上传失败。",
         "videoTooLarge": "视频必须不超过 15MB。",
         "cameraDenied": "摄像头访问被拒绝。"
+      },
+      "gate": {
+        "title": "学术档案已锁定",
+        "body": "您必须先验证身份才能解锁学术档案。",
+        "cta": "开始验证"
       }
     },
     "support": {
