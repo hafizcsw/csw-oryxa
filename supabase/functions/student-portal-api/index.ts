@@ -1,7 +1,19 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-console.log('[student-portal-api] VERSION=2026-03-15_contract_v9_p_customer_id');
+console.log('[student-portal-api] VERSION=2026-04-20_crm_bridge_cutover_v1');
+
+// ============= CRM Bridge (locked endpoints) =============
+// Identity + support flows are now CRM-source-of-truth. No portal-side
+// runtime reads/writes for: identity_status_mirror, identity_activations,
+// support_tickets. All 4 actions proxy to CRM via these exact endpoints:
+//   web-sync-identity-activation, web-get-identity-status,
+//   web-sync-support-request, web-list-support-requests
+// Auth header: x-api-key
+const CRM_FUNCTIONS_URL = Deno.env.get('CRM_FUNCTIONS_URL')
+  ?? 'https://hlrkyoxwbjsgqbncgzpi.supabase.co/functions/v1';
+const CRM_WEB_API_KEY = Deno.env.get('CRM_WEB_INBOUND_API_KEY')
+  ?? 'csw_web_to_crm_5f2f3c9d9e3b4a0a87f142ec71d328a4';
 
 // ============= CORS Configuration (Allowlist-based) =============
 const ALLOWED_ORIGINS = new Set<string>([
@@ -8506,8 +8518,8 @@ Deno.serve(async (req) => {
       }
 
       case 'identity_activation_submit': {
-        // Persists activation as pending. Caller MUST have already run
-        // identity_reader_run and gotten verdict=accepted_preliminarily.
+        // CUTOVER: writes directly to CRM via web-sync-identity-activation.
+        // No portal-side mirror, no local table touched.
         const docKind = String(body.doc_kind ?? '');
         const docPath = String(body.doc_storage_path ?? '');
         const selfiePath = String(body.selfie_storage_path ?? '');
@@ -8529,38 +8541,44 @@ Deno.serve(async (req) => {
             return Response.json({ ok: false, error: 'path_ownership_violation' }, { status: 403, headers: corsHeaders });
           }
         }
-        const { data: row, error: insErr } = await portalAdmin
-          .from('identity_activations')
-          .insert({
-            user_id: authUserId,
+        if (!resolvedCustomerId) {
+          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
+        }
+        const r = await fetch(`${CRM_FUNCTIONS_URL}/web-sync-identity-activation`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
+          body: JSON.stringify({
+            web_user_id: resolvedCustomerId,
+            auth_user_id: authUserId,
             doc_kind: docKind,
             doc_storage_path: docPath,
             selfie_storage_path: selfiePath,
             video_storage_path: videoPath,
             reader_verdict: readerVerdict,
-            reader_payload: readerPayload as any,
-            status: 'pending',
+            reader_payload: readerPayload,
             client_trace_id: clientTrace,
-          })
-          .select('id, status, created_at')
-          .single();
-        if (insErr) {
-          return Response.json({ ok: false, error: 'persist_failed', details: insErr.message }, { status: 500, headers: corsHeaders });
+          }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || j?.ok === false) {
+          console.error('[identity_activation_submit] CRM bridge failed', r.status, j);
+          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}` }, { status: 502, headers: corsHeaders });
         }
+        const d = j?.data ?? j ?? {};
         return Response.json({
           ok: true,
-          data: { activation_id: row.id, identity_status: row.status, submitted_at: row.created_at },
+          data: {
+            activation_id: d.activation_id ?? d.id ?? null,
+            identity_status: d.status ?? d.identity_status ?? 'pending',
+            submitted_at: d.created_at ?? d.submitted_at ?? new Date().toISOString(),
+          },
         }, { headers: corsHeaders });
       }
 
       case 'identity_status_get': {
-        const { data, error } = await portalAdmin
-          .from('identity_status_mirror')
-          .select('status, last_activation_id, decision_reason_code, reupload_required_fields, blocks_academic_file, decided_at')
-          .eq('user_id', authUserId)
-          .maybeSingle();
-        if (error) return Response.json({ ok: false, error: 'read_failed', details: error.message }, { status: 500, headers: corsHeaders });
-        if (!data) {
+        // CUTOVER: reads identity status directly from CRM via web-get-identity-status.
+        // identity_status_mirror is no longer touched at runtime.
+        if (!resolvedCustomerId) {
           return Response.json({
             ok: true,
             data: {
@@ -8573,20 +8591,33 @@ Deno.serve(async (req) => {
             },
           }, { headers: corsHeaders });
         }
+        const r = await fetch(`${CRM_FUNCTIONS_URL}/web-get-identity-status`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
+          body: JSON.stringify({ web_user_id: resolvedCustomerId, auth_user_id: authUserId }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || j?.ok === false) {
+          console.error('[identity_status_get] CRM bridge failed', r.status, j);
+          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}` }, { status: 502, headers: corsHeaders });
+        }
+        const d = j?.data ?? j ?? {};
         return Response.json({
           ok: true,
           data: {
-            identity_status: data.status,
-            blocks_academic_file: data.blocks_academic_file,
-            last_activation_id: data.last_activation_id,
-            decision_reason_code: data.decision_reason_code,
-            reupload_required_fields: data.reupload_required_fields,
-            decided_at: data.decided_at,
+            identity_status: d.identity_status ?? d.status ?? 'none',
+            blocks_academic_file: d.blocks_academic_file ?? true,
+            last_activation_id: d.last_activation_id ?? d.activation_id ?? null,
+            decision_reason_code: d.decision_reason_code ?? d.reason_code ?? null,
+            reupload_required_fields: d.reupload_required_fields ?? null,
+            decided_at: d.decided_at ?? null,
           },
         }, { headers: corsHeaders });
       }
 
       case 'support_ticket_create': {
+        // CUTOVER: writes directly to CRM via web-sync-support-request.
+        // support_tickets local table is no longer touched at runtime.
         const ticketBody = String(body.body ?? '').trim();
         const subjectKey = body.subject_key ? String(body.subject_key) : null;
         const attachment = body.attachment_storage_path ? String(body.attachment_storage_path) : null;
@@ -8597,46 +8628,68 @@ Deno.serve(async (req) => {
         if (ticketBody.length > 5000) {
           return Response.json({ ok: false, error: 'body_too_long' }, { status: 400, headers: corsHeaders });
         }
-        const { data, error } = await portalAdmin
-          .from('support_tickets')
-          .insert({
-            user_id: authUserId,
-            subject_key: subjectKey,
+        if (!resolvedCustomerId) {
+          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
+        }
+        const r = await fetch(`${CRM_FUNCTIONS_URL}/web-sync-support-request`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
+          body: JSON.stringify({
+            web_user_id: resolvedCustomerId,
+            auth_user_id: authUserId,
             body: ticketBody,
+            subject_key: subjectKey,
             attachment_storage_path: attachment,
             origin: 'portal_account',
             client_trace_id: clientTrace,
-          })
-          .select('id, status, created_at')
-          .single();
-        if (error) return Response.json({ ok: false, error: 'create_failed', details: error.message }, { status: 500, headers: corsHeaders });
+          }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || j?.ok === false) {
+          console.error('[support_ticket_create] CRM bridge failed', r.status, j);
+          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}` }, { status: 502, headers: corsHeaders });
+        }
+        const d = j?.data ?? j ?? {};
         return Response.json({
           ok: true,
-          data: { ticket_id: data.id, status: data.status, created_at: data.created_at },
+          data: {
+            ticket_id: d.ticket_id ?? d.id ?? null,
+            status: d.status ?? 'open',
+            created_at: d.created_at ?? new Date().toISOString(),
+          },
         }, { headers: corsHeaders });
       }
 
       case 'support_ticket_list': {
-        const { data, error } = await portalAdmin
-          .from('support_tickets')
-          .select('id, subject_key, status, created_at, updated_at, last_reply_at')
-          .eq('user_id', authUserId)
-          .order('created_at', { ascending: false })
-          .limit(100);
-        if (error) return Response.json({ ok: false, error: 'list_failed', details: error.message }, { status: 500, headers: corsHeaders });
+        // CUTOVER: reads tickets directly from CRM via web-list-support-requests.
+        if (!resolvedCustomerId) {
+          return Response.json({ ok: true, data: { tickets: [] } }, { headers: corsHeaders });
+        }
+        const r = await fetch(`${CRM_FUNCTIONS_URL}/web-list-support-requests`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
+          body: JSON.stringify({ web_user_id: resolvedCustomerId, auth_user_id: authUserId }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || j?.ok === false) {
+          console.error('[support_ticket_list] CRM bridge failed', r.status, j);
+          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}` }, { status: 502, headers: corsHeaders });
+        }
+        const d = j?.data ?? j ?? {};
+        const raw = Array.isArray(d.tickets) ? d.tickets : Array.isArray(d) ? d : [];
         const mapUiState = (s: string) =>
           s === 'open' ? 'submitted' : s === 'in_progress' ? 'under_review' : 'resolved';
         return Response.json({
           ok: true,
           data: {
-            tickets: (data ?? []).map((t: any) => ({
-              ticket_id: t.id,
-              subject_key: t.subject_key,
+            tickets: raw.map((t: any) => ({
+              ticket_id: t.ticket_id ?? t.id,
+              subject_key: t.subject_key ?? null,
               status: t.status,
-              ui_state: mapUiState(t.status),
+              ui_state: t.ui_state ?? mapUiState(t.status),
               created_at: t.created_at,
-              updated_at: t.updated_at,
-              last_reply_at: t.last_reply_at,
+              updated_at: t.updated_at ?? t.created_at,
+              last_reply_at: t.last_reply_at ?? null,
             })),
           },
         }, { headers: corsHeaders });
