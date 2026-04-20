@@ -4,6 +4,7 @@ import { AccountContentHeader } from "./AccountContentHeader";
 import { AccountVerificationSteps } from "./AccountVerificationSteps";
 import { IdentityActivationDialog } from "../identity/IdentityActivationDialog";
 import { SupportSection } from "../support/SupportSection";
+import { SupportSubmitDialog } from "../support/SupportSubmitDialog";
 import { useIdentityStatus } from "@/hooks/useIdentityStatus";
 import { useLanguage } from "@/contexts/LanguageContext";
 
