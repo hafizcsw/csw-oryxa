@@ -162,6 +162,20 @@ interface ExtractionResult {
   notes: string[];
 }
 
+function detectTruncation(raw: string): boolean {
+  const text = (raw ?? "").trim();
+  if (!text) return false;
+  let braces = 0;
+  let brackets = 0;
+  for (const ch of text) {
+    if (ch === "{") braces += 1;
+    else if (ch === "}") braces -= 1;
+    else if (ch === "[") brackets += 1;
+    else if (ch === "]") brackets -= 1;
+  }
+  return braces !== 0 || brackets !== 0;
+}
+
 async function mistralExtract(args: {
   ocrText: string;
   declaredFamily: Family;
@@ -223,7 +237,7 @@ async function mistralExtract(args: {
     `Declared file kind hint: ${args.declaredFamily}\n\n` +
     `OCR_TEXT_BEGIN\n${args.ocrText.slice(0, 12000)}\nOCR_TEXT_END\n\n` +
     `Required keys per family:\n` +
-    `- passport_id: full_name, passport_number, nationality, date_of_birth, expiry_date, issuing_country\n` +
+    `- passport_id: full_name, passport_number, nationality, date_of_birth, expiry_date, issuing_country, gender, issue_date\n` +
     `- graduation_certificate: full_name, institution_name, qualification, issue_date\n` +
     `- language_certificate: full_name, test_name, overall_score, test_date\n` +
     `- academic_transcript: full_name, institution_name (rows handled elsewhere)\n` +
@@ -238,6 +252,7 @@ async function mistralExtract(args: {
     body: JSON.stringify({
       model: LLM_MODEL,
       temperature: 0,
+      max_tokens: 1800,
       messages: [
         { role: "system", content: sys },
         { role: "user", content: user },
@@ -251,8 +266,12 @@ async function mistralExtract(args: {
     throw new Error(`mistral_extract_${r.status}:${body.slice(0, 200)}`);
   }
   const json = await r.json();
+  const finishReason = json?.choices?.[0]?.finish_reason ?? null;
   const call = json?.choices?.[0]?.message?.tool_calls?.[0];
   if (!call?.function?.arguments) throw new Error("mistral_extract_no_tool_call");
+  if (finishReason === "length" || detectTruncation(call.function.arguments)) {
+    throw new Error(`mistral_extract_truncated:${finishReason ?? "unknown"}`);
+  }
   let parsed: any;
   try {
     parsed = JSON.parse(call.function.arguments);
