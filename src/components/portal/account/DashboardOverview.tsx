@@ -71,8 +71,6 @@ export function DashboardOverview({
         onVerifyClick={() => onNavigate("study-file")}
       />
 
-      {/* Transfer Countries Section */}
-      <TransferCountriesSection />
     </div>
   );
 }
