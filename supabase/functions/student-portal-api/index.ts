@@ -8570,7 +8570,8 @@ Deno.serve(async (req) => {
             customer_id: resolvedCustomerId,        // canonical CRM contract
             web_user_id: resolvedCustomerId,        // legacy alias (same value)
             auth_user_id: authUserId,
-            doc_kind: docKind,
+            id_doc_type: docKind,                   // CRM canonical field name
+            doc_kind: docKind,                       // legacy alias
             doc_storage_path: docPath,
             selfie_storage_path: selfiePath,
             video_storage_path: videoPath,
