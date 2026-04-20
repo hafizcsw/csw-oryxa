@@ -442,16 +442,20 @@ Deno.serve(async (req) => {
 
     // Honest failure: persist needs_review row so the file is not lost.
     try {
-      await supabase.from("document_review_queue").upsert(
-        {
-          document_id: body.document_id,
-          user_id,
-          state: "pending",
-          reason: "mistral_pipeline_error",
-          payload: { error: msg, declared_family: declaredFamily },
-        },
-        { onConflict: "document_id" },
-      );
+      await supabase
+        .from("document_review_queue")
+        .delete()
+        .eq("document_id", body.document_id)
+        .eq("state", "pending");
+      await supabase.from("document_review_queue").insert({
+        document_id: body.document_id,
+        user_id,
+        lane: "unknown_lane",
+        state: "pending",
+        reason: "mistral_pipeline_error",
+        evidence_summary: { error: msg, declared_family: declaredFamily },
+        confidence_summary: {},
+      });
     } catch { /* swallow */ }
 
     return json(
