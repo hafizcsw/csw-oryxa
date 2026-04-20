@@ -83,6 +83,12 @@ export function DashboardOverview({
         onAvatarUpdate={onAvatarUpdate}
       />
 
+      {/* Verification Steps - directly under avatar */}
+      <AccountVerificationSteps
+        currentStep={getCurrentStep()}
+        onVerifyClick={() => onNavigate("study-file")}
+      />
+
       {/* Verified (read-only) account info */}
       <section
         dir={isRtl ? 'rtl' : 'ltr'}
@@ -121,12 +127,6 @@ export function DashboardOverview({
           ))}
         </dl>
       </section>
-
-      {/* Verification Steps */}
-      <AccountVerificationSteps
-        currentStep={getCurrentStep()}
-        onVerifyClick={() => onNavigate("study-file")}
-      />
     </div>
   );
 }
