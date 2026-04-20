@@ -64,13 +64,26 @@ export function AccountVerificationSteps({
           </div>
           
           {currentStep === 1 && identityStatus === 'pending' && (
-            <Button
-              disabled
-              className="w-full bg-muted text-muted-foreground font-bold text-base py-3 cursor-not-allowed"
-            >
-              <Loader2 className="w-4 h-4 me-2 animate-spin" />
-              {t('portal.steps.underReview')}
-            </Button>
+            <div className="space-y-3">
+              <Button
+                disabled
+                className="w-full bg-muted text-muted-foreground font-bold text-base py-3 cursor-not-allowed"
+              >
+                <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                {t('portal.steps.underReview')}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center leading-relaxed px-1">
+                {t('portal.steps.underReviewHint')}
+              </p>
+              <Button
+                variant="outline"
+                onClick={onSupportClick}
+                className="w-full font-medium text-sm py-2"
+              >
+                <LifeBuoy className="w-4 h-4 me-2" />
+                {t('portal.steps.contactSupport')}
+              </Button>
+            </div>
           )}
           {currentStep === 1 && identityStatus === 'reupload_required' && (
             <Button
