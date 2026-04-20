@@ -8630,6 +8630,7 @@ Deno.serve(async (req) => {
         if (ticketBody.length > 5000) {
           return Response.json({ ok: false, error: 'body_too_long' }, { status: 400, headers: corsHeaders });
         }
+        const { crmCustomerId: resolvedCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!resolvedCustomerId) {
           return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
         }
