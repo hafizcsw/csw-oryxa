@@ -1,16 +1,19 @@
-import { Clock, CreditCard, ShieldCheck, IdCard, ArrowLeftRight } from "lucide-react";
+import { Clock, CreditCard, ShieldCheck, IdCard, ArrowLeftRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import type { IdentityStatus } from "@/api/identitySupportInvoke";
 
 interface AccountVerificationStepsProps {
   currentStep?: number;
   onVerifyClick?: () => void;
+  identityStatus?: IdentityStatus;
 }
 
 export function AccountVerificationSteps({ 
   currentStep = 1, 
-  onVerifyClick 
+  onVerifyClick,
+  identityStatus = 'none',
 }: AccountVerificationStepsProps) {
   const { language, t } = useLanguage();
   const isRtl = language === 'ar';
