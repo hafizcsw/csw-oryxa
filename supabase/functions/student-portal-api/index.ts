@@ -8579,6 +8579,7 @@ Deno.serve(async (req) => {
       case 'identity_status_get': {
         // CUTOVER: reads identity status directly from CRM via web-get-identity-status.
         // identity_status_mirror is no longer touched at runtime.
+        const { crmCustomerId: resolvedCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!resolvedCustomerId) {
           return Response.json({
             ok: true,
