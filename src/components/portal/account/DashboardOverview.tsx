@@ -98,15 +98,25 @@ export function DashboardOverview({
 
   const notProvided = t('portal.header.notProvided');
 
-  const fields: { key: string; label: string; value: string | null }[] = [
+  const baseFields: { key: string; label: string; value: string | null }[] = [
     { key: 'fullName', label: t('portal.header.fullName'), value: fullName },
     { key: 'dateOfBirth', label: t('portal.header.dateOfBirth'), value: dob },
     { key: 'email', label: t('portal.header.email'), value: email },
-    { key: 'nationality', label: t('portal.identity.summary.field.nationality'), value: nationality },
-    { key: 'documentNumber', label: t('portal.identity.summary.field.document_number.passport'), value: documentNumber },
-    { key: 'issuingCountry', label: t('portal.identity.summary.field.issuing_country'), value: issuingCountry },
-    { key: 'expiryDate', label: t('portal.identity.summary.field.expiry_date'), value: expiryDate },
   ];
+
+  // Show document-derived fields only once we actually have a reader output
+  // (live or post-approval). Otherwise the card stays as-is.
+  const hasExtracted = !!(nationality || documentNumber || issuingCountry || expiryDate);
+  const extraFields: { key: string; label: string; value: string | null }[] = hasExtracted
+    ? [
+        { key: 'nationality', label: t('portal.identity.summary.field.nationality', { defaultValue: 'الجنسية' }), value: nationality },
+        { key: 'documentNumber', label: t(`portal.identity.summary.field.document_number.${extracted.document_number ? 'passport' : 'passport'}`, { defaultValue: 'رقم الوثيقة' }), value: documentNumber },
+        { key: 'issuingCountry', label: t('portal.identity.summary.field.issuing_country', { defaultValue: 'بلد الإصدار' }), value: issuingCountry },
+        { key: 'expiryDate', label: t('portal.identity.summary.field.expiry_date', { defaultValue: 'تاريخ الانتهاء' }), value: expiryDate },
+      ].filter((f) => f.value)
+    : [];
+
+  const fields = [...baseFields, ...extraFields];
 
   return (
     <div className="space-y-8">
