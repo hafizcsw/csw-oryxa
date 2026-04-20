@@ -152,8 +152,8 @@ export default function AccountPage() {
   const urlTab = searchParams.get('tab') || 'overview';
   const activeTab = VALID_TABS.has(urlTab) ? urlTab : 'overview';
   
-  // ✅ Identity status (read-only here; the LOCK lives inside StudyFileTab)
-  const { status: identityStatus, refetch: refetchIdentity } = useIdentityStatus();
+  // Identity status no longer read here — the gate lives inside StudyFileTab.
+
 
   const setActiveTab = useCallback((tab: string) => {
     // ✅ Decision tracking: service step opened
