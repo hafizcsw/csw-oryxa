@@ -1,6 +1,6 @@
 import { AccountContentHeader } from "./AccountContentHeader";
 import { AccountVerificationSteps } from "./AccountVerificationSteps";
-import { TransferCountriesSection } from "./TransferCountriesSection";
+
 
 interface DashboardOverviewProps {
   profile: {
@@ -71,8 +71,6 @@ export function DashboardOverview({
         onVerifyClick={() => onNavigate("study-file")}
       />
 
-      {/* Transfer Countries Section */}
-      <TransferCountriesSection />
     </div>
   );
 }
