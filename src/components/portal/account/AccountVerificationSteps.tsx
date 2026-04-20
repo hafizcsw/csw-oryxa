@@ -1,4 +1,4 @@
-import { Clock, CreditCard, ShieldCheck, IdCard, ArrowLeftRight, Loader2, LifeBuoy } from "lucide-react";
+import { Clock, CreditCard, ShieldCheck, ShieldAlert, ShieldQuestion, IdCard, ArrowLeftRight, Loader2, LifeBuoy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -40,18 +40,28 @@ export function AccountVerificationSteps({
               {t('portal.steps.completeIdentity')}
             </p>
             
-            {/* Verification Icon */}
+            {/* Verification Icon — color reflects identity status */}
             <div className="flex justify-center my-6">
               <div className="relative">
-                <div className={cn(
-                  "w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all",
-                  currentStep >= 1 ? "bg-success" : "bg-muted"
-                )}>
-                  <ShieldCheck className={cn(
-                    "w-10 h-10",
-                    currentStep >= 1 ? "text-success-foreground" : "text-muted-foreground"
-                  )} />
-                </div>
+                {(() => {
+                  const statusVisuals = {
+                    approved: { bg: 'bg-success', fg: 'text-success-foreground', Icon: ShieldCheck },
+                    pending: { bg: 'bg-warning', fg: 'text-warning-foreground', Icon: Clock },
+                    reupload_required: { bg: 'bg-destructive', fg: 'text-destructive-foreground', Icon: ShieldAlert },
+                    rejected: { bg: 'bg-destructive', fg: 'text-destructive-foreground', Icon: ShieldAlert },
+                    none: { bg: 'bg-muted', fg: 'text-muted-foreground', Icon: ShieldQuestion },
+                  } as const;
+                  const v = statusVisuals[identityStatus] ?? statusVisuals.none;
+                  const Icon = v.Icon;
+                  return (
+                    <div className={cn(
+                      "w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all",
+                      v.bg
+                    )}>
+                      <Icon className={cn("w-10 h-10", v.fg)} />
+                    </div>
+                  );
+                })()}
                 {/* Small ID card icon in corner */}
                 <div className={cn(
                   "absolute -bottom-1 bg-primary/10 rounded-lg p-1.5 shadow-md",
