@@ -1622,7 +1622,13 @@
       "deleteNotAvailable": "حذف الصورة غير متاح حالياً",
       "replacePhoto": "استبدال الصورة",
       "deletePhoto": "حذف الصورة",
-      "regularUser": "طالب"
+      "regularUser": "طالب",
+      "verifiedInfo": "معلومات الحساب الموثقة",
+      "verifiedInfoHint": "متزامنة مع حسابك. لا يمكن تعديلها من هنا.",
+      "fullName": "الاسم الكامل",
+      "dateOfBirth": "تاريخ الميلاد",
+      "email": "البريد الإلكتروني",
+      "notProvided": "غير متوفر"
     },
     "pageTitle": "بوابة الطالب",
     "sidebarProgress": {

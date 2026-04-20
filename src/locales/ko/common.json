@@ -1278,7 +1278,13 @@
       "deleteNotAvailable": "사진 삭제를 사용할 수 없습니다",
       "replacePhoto": "사진 교체",
       "deletePhoto": "사진 삭제",
-      "regularUser": "일반 사용자"
+      "regularUser": "일반 사용자",
+      "verifiedInfo": "확인된 계정 정보",
+      "verifiedInfoHint": "계정과 동기화됨. 여기서는 편집할 수 없습니다.",
+      "fullName": "전체 이름",
+      "dateOfBirth": "생년월일",
+      "email": "이메일",
+      "notProvided": "미제공"
     },
     "pageTitle": "내 계정 | CSW",
     "sidebarProgress": {

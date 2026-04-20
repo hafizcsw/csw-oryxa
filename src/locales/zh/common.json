@@ -1279,7 +1279,13 @@
       "deleteNotAvailable": "删除不可用",
       "replacePhoto": "更换照片",
       "deletePhoto": "删除照片",
-      "regularUser": "普通用户"
+      "regularUser": "普通用户",
+      "verifiedInfo": "已验证的账户信息",
+      "verifiedInfoHint": "与您的账户同步,无法在此处编辑。",
+      "fullName": "全名",
+      "dateOfBirth": "出生日期",
+      "email": "电子邮箱",
+      "notProvided": "未提供"
     },
     "pageTitle": "我的账户 | CSW",
     "sidebarProgress": {

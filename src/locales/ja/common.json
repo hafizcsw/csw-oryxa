@@ -1278,7 +1278,13 @@
       "deleteNotAvailable": "写真の削除は利用できません",
       "replacePhoto": "写真を置換",
       "deletePhoto": "写真を削除",
-      "regularUser": "一般ユーザー"
+      "regularUser": "一般ユーザー",
+      "verifiedInfo": "認証済みアカウント情報",
+      "verifiedInfoHint": "アカウントと同期されています。ここでは編集できません。",
+      "fullName": "氏名",
+      "dateOfBirth": "生年月日",
+      "email": "メール",
+      "notProvided": "未入力"
     },
     "pageTitle": "マイアカウント | CSW",
     "sidebarProgress": {

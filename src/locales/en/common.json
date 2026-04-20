@@ -1621,7 +1621,13 @@
       "deleteNotAvailable": "Photo deletion is not available yet",
       "replacePhoto": "Replace Photo",
       "deletePhoto": "Delete Photo",
-      "regularUser": "Student"
+      "regularUser": "Student",
+      "verifiedInfo": "Verified account info",
+      "verifiedInfoHint": "Synced with your account. Cannot be edited here.",
+      "fullName": "Full name",
+      "dateOfBirth": "Date of birth",
+      "email": "Email",
+      "notProvided": "Not provided"
     },
     "pageTitle": "Student Portal",
     "sidebarProgress": {
