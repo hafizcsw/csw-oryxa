@@ -225,6 +225,7 @@ type Action =
   | 'change_phone'
   // ✅ Identity Activation + Website Support (single canonical contract)
   | 'identity_upload_sign_url'
+  | 'identity_upload_confirm'
   | 'identity_reader_run'
   | 'identity_activation_submit'
   | 'identity_status_get'
