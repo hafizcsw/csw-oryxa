@@ -1,7 +1,19 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-console.log('[student-portal-api] VERSION=2026-03-15_contract_v9_p_customer_id');
+console.log('[student-portal-api] VERSION=2026-04-20_crm_bridge_cutover_v1');
+
+// ============= CRM Bridge (locked endpoints) =============
+// Identity + support flows are now CRM-source-of-truth. No portal-side
+// runtime reads/writes for: identity_status_mirror, identity_activations,
+// support_tickets. All 4 actions proxy to CRM via these exact endpoints:
+//   web-sync-identity-activation, web-get-identity-status,
+//   web-sync-support-request, web-list-support-requests
+// Auth header: x-api-key
+const CRM_FUNCTIONS_URL = Deno.env.get('CRM_FUNCTIONS_URL')
+  ?? 'https://hlrkyoxwbjsgqbncgzpi.supabase.co/functions/v1';
+const CRM_WEB_API_KEY = Deno.env.get('CRM_WEB_INBOUND_API_KEY')
+  ?? 'csw_web_to_crm_5f2f3c9d9e3b4a0a87f142ec71d328a4';
 
 // ============= CORS Configuration (Allowlist-based) =============
 const ALLOWED_ORIGINS = new Set<string>([
