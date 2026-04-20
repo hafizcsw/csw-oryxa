@@ -8661,7 +8661,9 @@ Deno.serve(async (req) => {
         const r = await fetch(`${CRM_FUNCTIONS_URL}/web-sync-support-request`, {
           method: 'POST',
           headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
+          // resolvedCustomerId IS the CRM customer_id; web_user_id kept as legacy alias.
           body: JSON.stringify({
+            customer_id: resolvedCustomerId,
             web_user_id: resolvedCustomerId,
             auth_user_id: authUserId,
             body: ticketBody,
