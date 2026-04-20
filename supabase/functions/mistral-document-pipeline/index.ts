@@ -56,6 +56,8 @@ interface PipelineRequest {
   path: string;
   file_kind: string | null;
   declared_family?: Family | null;
+  /** Pre-signed GET URL from CRM storage (storage lives on CRM Supabase, not this project). */
+  signed_url?: string | null;
 }
 
 // ───────────────────────── helpers ─────────────────────────
