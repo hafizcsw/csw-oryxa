@@ -8541,6 +8541,7 @@ Deno.serve(async (req) => {
             return Response.json({ ok: false, error: 'path_ownership_violation' }, { status: 403, headers: corsHeaders });
           }
         }
+        const { crmCustomerId: resolvedCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!resolvedCustomerId) {
           return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
         }
