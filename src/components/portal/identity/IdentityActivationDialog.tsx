@@ -12,6 +12,7 @@ import {
   submitIdentityActivation,
   type IdentityDocKind,
   type ReaderVerdict,
+  type ExtractedFieldRead,
 } from "@/api/identitySupportInvoke";
 import { useIdentityStatus } from "@/hooks/useIdentityStatus";
 
@@ -20,6 +21,7 @@ type Step =
   | "reader_running"
   | "blocked_weak"
   | "blocked_unsupported"
+  | "accepted_summary"
   | "selfie_capture"
   | "video_capture"
   | "submitting"
