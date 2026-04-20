@@ -207,6 +207,7 @@ export function IdentityActivationDialog({
           {step === "accepted_summary" && (
             <SummaryStep
               fields={extractedFields}
+              docKind={docKind}
               onConfirm={() => setStep("selfie_capture")}
               onRetry={reset}
             />
