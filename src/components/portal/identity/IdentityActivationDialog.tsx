@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, ShieldCheck, AlertTriangle, Camera, Video, Upload, RotateCcw, CheckCircle2, X } from "lucide-react";
+import { Loader2, ShieldCheck, AlertTriangle, Camera, Video, Upload, RotateCcw, CheckCircle2, X, User, Globe2, Calendar, FileBadge, MapPin, CalendarX2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
