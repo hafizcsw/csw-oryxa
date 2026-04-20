@@ -1241,7 +1241,9 @@
       "completed": "Concluído",
       "pending": "Pendente",
       "underReview": "Em análise",
-      "reupload": "Reenviar"
+      "reupload": "Reenviar",
+      "underReviewHint": "Seu arquivo está em análise. A análise geralmente leva entre 15 minutos e 1 dia útil. Se demorar mais, entre em contato com o suporte.",
+      "contactSupport": "Contatar suporte"
     },
     "markets": {
       "title": "Taxas de Câmbio",

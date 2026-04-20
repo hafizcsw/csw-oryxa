@@ -1238,7 +1238,9 @@
       "completed": "Completed",
       "pending": "En attente",
       "underReview": "En cours d'examen",
-      "reupload": "Renvoyer"
+      "reupload": "Renvoyer",
+      "underReviewHint": "Votre dossier est en cours d'examen. L'examen prend généralement entre 15 minutes et 1 jour ouvrable. En cas de retard, contactez le support.",
+      "contactSupport": "Contacter le support"
     },
     "markets": {
       "title": "Markets",

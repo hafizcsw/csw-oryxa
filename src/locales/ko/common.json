@@ -1241,7 +1241,9 @@
       "completed": "완료",
       "pending": "대기 중",
       "underReview": "검토 중",
-      "reupload": "다시 업로드"
+      "reupload": "다시 업로드",
+      "underReviewHint": "파일이 검토 중입니다. 검토는 보통 15분에서 1영업일이 소요됩니다. 지연되는 경우 지원팀에 문의하세요.",
+      "contactSupport": "지원팀에 문의"
     },
     "markets": {
       "title": "환율",

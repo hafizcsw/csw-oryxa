@@ -1241,7 +1241,9 @@
       "completed": "Completado",
       "pending": "Pendiente",
       "underReview": "En revisión",
-      "reupload": "Volver a subir"
+      "reupload": "Volver a subir",
+      "underReviewHint": "Su archivo está siendo revisado. La revisión suele tardar entre 15 minutos y 1 día laborable. Si tarda más, contacte con soporte.",
+      "contactSupport": "Contactar soporte"
     },
     "markets": {
       "title": "Tasas de cambio",

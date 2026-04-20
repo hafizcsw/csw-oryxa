@@ -1242,7 +1242,9 @@
       "completed": "已完成",
       "pending": "待处理",
       "underReview": "审核中",
-      "reupload": "重新上传"
+      "reupload": "重新上传",
+      "underReviewHint": "您的文件正在审核中。审核通常需要15分钟到1个工作日。如有延迟，请联系客服。",
+      "contactSupport": "联系客服"
     },
     "markets": {
       "title": "汇率",
