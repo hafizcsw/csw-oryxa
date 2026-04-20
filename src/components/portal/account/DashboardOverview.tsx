@@ -47,6 +47,8 @@ export function DashboardOverview({
 }: DashboardOverviewProps) {
   const { t, language } = useLanguage();
   const isRtl = language === 'ar';
+  const [identityOpen, setIdentityOpen] = useState(false);
+  const { status: identityStatus } = useIdentityStatus();
 
   const getCurrentStep = () => {
     const substage = crmProfile?.substage?.toLowerCase() || '';
