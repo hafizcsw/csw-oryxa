@@ -44,6 +44,15 @@ export function AccountSidebar({
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { fullLogout } = useMalakChat();
+  const { crmProfile, profile } = useStudentProfile();
+
+  const avatarBase = buildAvatarDisplayUrl(crmProfile?.avatar_url || profile?.avatar_storage_path || undefined);
+  const cacheBuster = crmProfile?.avatar_updated_at || crmProfile?.updated_at;
+  const avatarUrl = avatarBase
+    ? `${avatarBase}${avatarBase.includes('?') ? '&' : '?'}v=${cacheBuster ? new Date(cacheBuster).getTime() : ''}`
+    : undefined;
+  const displayName = crmProfile?.full_name || profile?.full_name || 'C';
+  const initial = (displayName.trim().charAt(0) || 'C').toUpperCase();
 
   const { payments } = useStudentPayments();
   const safePayments = Array.isArray(payments) ? payments : [];
