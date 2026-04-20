@@ -109,6 +109,9 @@ export function IdentityActivationDialog({
       setReaderVerdict(r.data.reader_verdict);
       setReaderPayload(r.data.reader_payload || {});
       setExtractedFields(r.data.extracted_fields || {});
+      // Persist immediately so account "Verified info" reflects the reader output
+      // before CRM approval lands.
+      saveExtractedIdentity(r.data.extracted_fields || {});
       if (r.data.reader_verdict === "weak") return setStep("blocked_weak");
       if (r.data.reader_verdict === "unsupported") return setStep("blocked_unsupported");
       // accepted_preliminarily → show summary BEFORE camera
