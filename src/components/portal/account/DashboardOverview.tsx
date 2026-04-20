@@ -49,6 +49,7 @@ export function DashboardOverview({
   const { t, language } = useLanguage();
   const isRtl = language === 'ar';
   const [identityOpen, setIdentityOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const { status: identityStatus } = useIdentityStatus();
 
   const getCurrentStep = () => {
