@@ -167,6 +167,13 @@ export async function uploadAndRegisterFile(params: {
   let lane_skipped_reason: string | undefined;
   try {
     const { supabase } = await import('@/integrations/supabase/client');
+    // Storage lives on the CRM project — get a CRM-side signed GET URL first.
+    const { signFile } = await import('@/api/crmStorage');
+    const signRes = await signFile(documentId);
+    const crmSignedUrl = signRes.ok ? signRes.signed_url : null;
+    if (!crmSignedUrl) {
+      lane_skipped_reason = `crm_sign_failed:${signRes.error ?? 'unknown'}`;
+    }
     const { data: pipeRes, error: pipeErr } = await supabase.functions.invoke(
       'mistral-document-pipeline',
       {
@@ -176,6 +183,7 @@ export async function uploadAndRegisterFile(params: {
           path,
           file_kind,
           declared_family: foundation.route.route_family,
+          signed_url: crmSignedUrl,
         },
       },
     );
