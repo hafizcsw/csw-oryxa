@@ -61,40 +61,71 @@ export interface SupportTicketRow {
 
 // ─── Identity ────────────────────────────────────────────────
 async function signIdentityUploadUrl(slot: "doc" | "selfie" | "video", ext: string) {
-  return portalInvoke<{ bucket: string; path: string; signed_url: string; token: string }>(
+  return portalInvoke<{ bucket: string; path: string; signed_url: string; token: string; file_kind: string }>(
     "identity_upload_sign_url",
     { slot, ext },
   );
 }
 
+async function confirmIdentityUpload(input: {
+  slot: "doc" | "selfie" | "video";
+  bucket: string;
+  path: string;
+  file_name: string;
+  mime_type: string;
+  size_bytes: number;
+}) {
+  return portalInvoke<{ file_id: string; bucket: string; path: string; file_kind: string }>(
+    "identity_upload_confirm",
+    input,
+  );
+}
+
+/** Uploads identity bytes to CRM storage and registers them as a CRM
+ *  customer_files row. Returns the canonical CRM file_id. */
 export async function uploadIdentityFile(slot: "doc" | "selfie" | "video", file: File) {
   const ext = (file.name.split(".").pop() || file.type.split("/")[1] || "bin").toLowerCase();
   const sign = await signIdentityUploadUrl(slot, ext);
   if (!sign.ok || !sign.data) return { ok: false as const, error: sign.error || "sign_failed" };
-  // Upload via signed URL using supabase-js helper to keep auth + headers correct
   const { error: upErr } = await supabase.storage
     .from(sign.data.bucket)
-    .uploadToSignedUrl(sign.data.path, sign.data.token, file, {
+    .uploadToSignedUrl(sign.data.path, (sign.data as any).token, file, {
       contentType: file.type || "application/octet-stream",
     });
   if (upErr) return { ok: false as const, error: `put_failed:${upErr.message}` };
-  return { ok: true as const, path: sign.data.path, bucket: sign.data.bucket };
+  const conf = await confirmIdentityUpload({
+    slot,
+    bucket: sign.data.bucket,
+    path: sign.data.path,
+    file_name: file.name || `${slot}.${ext}`,
+    mime_type: file.type || "application/octet-stream",
+    size_bytes: file.size || 0,
+  });
+  if (!conf.ok || !conf.data?.file_id) {
+    return { ok: false as const, error: conf.error || "register_failed" };
+  }
+  return {
+    ok: true as const,
+    file_id: conf.data.file_id,
+    bucket: sign.data.bucket,
+    path: sign.data.path,
+  };
 }
 
-/** Runs the existing mistral-document-pipeline on the uploaded doc.
+/** Runs the existing mistral-document-pipeline on the CRM-registered identity doc.
  *  MUST be called BEFORE opening the camera flow. */
 export async function runIdentityReader(input: {
   doc_kind: IdentityDocKind;
-  doc_storage_path: string;
+  id_doc_file_id: string;
 }) {
   return portalInvoke<ReaderRunResult>("identity_reader_run", input);
 }
 
 export async function submitIdentityActivation(input: {
-  doc_kind: IdentityDocKind;
-  doc_storage_path: string;
-  selfie_storage_path: string;
-  video_storage_path: string;
+  id_doc_type: IdentityDocKind;
+  id_doc_file_id: string;
+  selfie_file_id: string;
+  video_file_id: string;
   reader_verdict: ReaderVerdict;
   reader_payload: Record<string, unknown>;
   client_trace_id?: string;

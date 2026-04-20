@@ -52,14 +52,14 @@ export function IdentityActivationDialog({
   const [step, setStep] = useState<Step>("doc_select");
   const [docKind, setDocKind] = useState<IdentityDocKind>("passport");
   const [docFile, setDocFile] = useState<File | null>(null);
-  const [docPath, setDocPath] = useState<string>("");
+  const [docFileId, setDocFileId] = useState<string>("");
   const [readerVerdict, setReaderVerdict] = useState<ReaderVerdict | null>(null);
   const [readerPayload, setReaderPayload] = useState<Record<string, unknown>>({});
   const [extractedFields, setExtractedFields] = useState<Record<string, ExtractedFieldRead>>({});
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
-  const [selfiePath, setSelfiePath] = useState<string>("");
+  const [selfieFileId, setSelfieFileId] = useState<string>("");
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [videoPath, setVideoPath] = useState<string>("");
+  const [videoFileId, setVideoFileId] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
 
   useEffect(() => {
@@ -74,18 +74,18 @@ export function IdentityActivationDialog({
   const reset = useCallback(() => {
     setStep("doc_select");
     setDocFile(null);
-    setDocPath("");
+    setDocFileId("");
     setReaderVerdict(null);
     setReaderPayload({});
     setExtractedFields({});
     setSelfieFile(null);
-    setSelfiePath("");
+    setSelfieFileId("");
     setVideoFile(null);
-    setVideoPath("");
+    setVideoFileId("");
     setErrorMsg("");
   }, []);
 
-  // ✅ CANONICAL ORDER: upload doc → run reader → decide verdict → only then open camera.
+  // ✅ CANONICAL ORDER: upload doc → register in CRM → run reader → decide verdict → only then open camera.
   const handleDocChosen = useCallback(
     async (file: File) => {
       setDocFile(file);
@@ -97,9 +97,9 @@ export function IdentityActivationDialog({
         setStep("submit_error");
         return;
       }
-      setDocPath(up.path);
+      setDocFileId(up.file_id);
       // Run the existing mistral-document-pipeline NOW, before camera.
-      const r = await runIdentityReader({ doc_kind: docKind, doc_storage_path: up.path });
+      const r = await runIdentityReader({ doc_kind: docKind, id_doc_file_id: up.file_id });
       if (!r.ok || !r.data) {
         setErrorMsg(r.error || "reader_failed");
         setStep("submit_error");
@@ -123,7 +123,7 @@ export function IdentityActivationDialog({
       toast({ title: t("portal.identity.errors.uploadFailed"), variant: "destructive" });
       return;
     }
-    setSelfiePath(up.path);
+    setSelfieFileId(up.file_id);
     setStep("video_capture");
   }, [toast, t]);
 
@@ -138,7 +138,7 @@ export function IdentityActivationDialog({
       toast({ title: t("portal.identity.errors.uploadFailed"), variant: "destructive" });
       return;
     }
-    setVideoPath(up.path);
+    setVideoFileId(up.file_id);
     setStep("submitting");
     if (!readerVerdict || readerVerdict !== "accepted_preliminarily") {
       // Defensive — should never happen because camera only opens after verdict.
@@ -146,11 +146,16 @@ export function IdentityActivationDialog({
       setStep("submit_error");
       return;
     }
+    if (!docFileId || !selfieFileId) {
+      setErrorMsg("missing_file_ids");
+      setStep("submit_error");
+      return;
+    }
     const res = await submitIdentityActivation({
-      doc_kind: docKind,
-      doc_storage_path: docPath,
-      selfie_storage_path: selfiePath,
-      video_storage_path: up.path,
+      id_doc_type: docKind,
+      id_doc_file_id: docFileId,
+      selfie_file_id: selfieFileId,
+      video_file_id: up.file_id,
       reader_verdict: readerVerdict,
       reader_payload: readerPayload,
       client_trace_id: crypto.randomUUID(),
@@ -162,7 +167,7 @@ export function IdentityActivationDialog({
     }
     setStep("awaiting_decision");
     refetch();
-  }, [docKind, docPath, selfiePath, readerVerdict, readerPayload, toast, t, refetch]);
+  }, [docKind, docFileId, selfieFileId, readerVerdict, readerPayload, toast, t, refetch]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
