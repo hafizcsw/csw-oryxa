@@ -8464,15 +8464,39 @@ Deno.serve(async (req) => {
           slot === 'selfie' ? 'identity_selfie' :
           'identity_video';
         const crmStorage = createClient(CRM_SUPABASE_URL, CRM_SERVICE_ROLE_KEY);
+        const { data: existingFile, error: existingFileErr } = await crmStorage
+          .from('customer_files')
+          .select('id')
+          .eq('customer_id', crmCustomerId)
+          .eq('storage_bucket', bucket)
+          .eq('storage_path', path)
+          .maybeSingle();
+        if (existingFileErr) {
+          console.warn('[identity_upload_confirm] existing lookup failed', existingFileErr);
+        }
+        if (existingFile?.id) {
+          return Response.json({
+            ok: true,
+            data: {
+              file_id: existingFile.id,
+              bucket,
+              path,
+              file_kind: fileKind,
+            },
+          }, { headers: corsHeaders });
+        }
         // Probe: ensure object actually landed in CRM storage before we register it.
         let verified = false;
-        const probeDelays = [200, 400, 800, 1500, 2500];
+        const probeDelays = slot === 'video'
+          ? [0, 500, 1000, 2000, 4000, 8000]
+          : [0, 250, 500, 1000, 2000];
         for (let attempt = 0; attempt < probeDelays.length; attempt++) {
-          if (attempt > 0) await new Promise(r => setTimeout(r, probeDelays[attempt - 1]));
+          if (attempt > 0) await new Promise(r => setTimeout(r, probeDelays[attempt]));
           const { data: probe, error: probeErr } = await crmStorage.storage.from(bucket).createSignedUrl(path, 30);
           if (probe?.signedUrl && !probeErr) { verified = true; break; }
         }
         if (!verified) {
+          console.error('[identity_upload_confirm] object not visible yet', { slot, bucket, path, sizeBytes, mimeType });
           return Response.json({ ok: false, error: 'OBJECT_NOT_FOUND', details: `not visible in ${bucket}/${path}` }, { status: 404, headers: corsHeaders });
         }
         const fileUrl = `storage://${bucket}/${path}`;

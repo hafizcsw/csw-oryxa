@@ -110,16 +110,30 @@ export async function uploadIdentityFile(slot: "doc" | "selfie" | "video", file:
   } catch (e) {
     return { ok: false as const, error: `put_failed:${e instanceof Error ? e.message : String(e)}` };
   }
-  const conf = await confirmIdentityUpload({
+  const confirmPayload = {
     slot,
     bucket: sign.data.bucket,
     path: sign.data.path,
     file_name: file.name || `${slot}.${ext}`,
     mime_type: file.type || "application/octet-stream",
     size_bytes: file.size || 0,
-  });
-  if (!conf.ok || !conf.data?.file_id) {
-    return { ok: false as const, error: conf.error || "register_failed" };
+  };
+  const retryDelays = slot === "video" ? [0, 1200, 2500, 5000] : [0, 700, 1500];
+  let conf: Awaited<ReturnType<typeof confirmIdentityUpload>> | null = null;
+  for (let attempt = 0; attempt < retryDelays.length; attempt++) {
+    if (attempt > 0) {
+      await new Promise((resolve) => window.setTimeout(resolve, retryDelays[attempt]));
+    }
+    conf = await confirmIdentityUpload(confirmPayload);
+    if (conf.ok && conf.data?.file_id) break;
+    const retryable = conf.error === "OBJECT_NOT_FOUND";
+    if (!retryable) break;
+  }
+  if (!conf?.ok || !conf.data?.file_id) {
+    return {
+      ok: false as const,
+      error: [conf?.error || "register_failed", conf?.details].filter(Boolean).join(":"),
+    };
   }
   return {
     ok: true as const,
