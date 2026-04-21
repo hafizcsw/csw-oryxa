@@ -161,7 +161,7 @@ export function NotificationsPopover() {
         align="end"
         sideOffset={0}
         collisionPadding={0}
-        style={{ position: 'fixed', top: '64px', right: '8px', left: 'auto' }}
+        style={{ position: 'fixed', top: '64px', right: '8px', left: 'auto', transform: 'none' }}
         className="w-[380px] max-w-[calc(100vw-1rem)] p-0 rounded-2xl shadow-2xl border-border overflow-hidden"
       >
         <AnimatePresence>
