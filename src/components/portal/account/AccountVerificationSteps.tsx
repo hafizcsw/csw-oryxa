@@ -311,6 +311,43 @@ export function AccountVerificationSteps({
           )}
         </div>
       </div>
+
+      <Dialog open={whyOpen} onOpenChange={setWhyOpen}>
+        <DialogContent dir={isRtl ? "rtl" : "ltr"} className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className={cn("text-xl font-bold", isRtl ? "text-right" : "text-left")}>
+              {t('portal.steps.whyVerifyTitle')}
+            </DialogTitle>
+            <DialogDescription className={cn("text-sm leading-relaxed pt-1", isRtl ? "text-right" : "text-left")}>
+              {t('portal.steps.whyVerifyIntro')}
+            </DialogDescription>
+          </DialogHeader>
+
+          <ul className="space-y-4 mt-2">
+            {[
+              { Icon: ShieldCheck, title: 'portal.steps.whyVerifyPoint1Title', body: 'portal.steps.whyVerifyPoint1Body' },
+              { Icon: GraduationCap, title: 'portal.steps.whyVerifyPoint2Title', body: 'portal.steps.whyVerifyPoint2Body' },
+              { Icon: Users, title: 'portal.steps.whyVerifyPoint3Title', body: 'portal.steps.whyVerifyPoint3Body' },
+            ].map(({ Icon, title, body }) => (
+              <li key={title} className="flex gap-3">
+                <div className="shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Icon className="w-4.5 h-4.5 text-primary" />
+                </div>
+                <div className={cn("flex-1", isRtl ? "text-right" : "text-left")}>
+                  <h4 className="text-sm font-bold text-foreground mb-1">{t(title)}</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{t(body)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <DialogFooter className="mt-2">
+            <Button onClick={() => setWhyOpen(false)} className="w-full sm:w-auto">
+              {t('portal.steps.whyVerifyClose')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
