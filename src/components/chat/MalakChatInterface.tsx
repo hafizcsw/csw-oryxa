@@ -1216,7 +1216,7 @@ export function MalakChatInterface({
   const chatBoxClassName = cn(
     "flex flex-col overflow-hidden",
     isFullscreen
-      ? "fixed inset-0 z-[9999] h-screen w-screen rounded-none bg-background border-0"
+      ? "fixed inset-0 z-[9999] h-[100dvh] w-screen rounded-none bg-background border-0"
       : isFloating
         ? "h-full bg-card"
         : isInDeepSearch
@@ -1268,10 +1268,11 @@ export function MalakChatInterface({
            )}
 
 
-        {/* Messages Area - hidden in compact-empty state to keep box small */}
-        {!(compact && messages.length === 0 && state === 'idle') && (
+        {/* Messages Area - hidden in compact-empty state to keep box small (but always shown in fullscreen) */}
+        {!(compact && messages.length === 0 && state === 'idle' && !isFullscreen) && (
         <div ref={scrollRef} onScroll={handleScroll} className={cn(
           "flex-1 overflow-y-auto min-h-0",
+          isFullscreen && "w-full max-w-3xl mx-auto px-4",
           isFloating
             ? "px-2 py-2 space-y-3"
             : isCompactMobileStandalone
@@ -1387,8 +1388,8 @@ export function MalakChatInterface({
         {/* Clarify filters UI removed — search is conversational via bot only */}
 
         {/* Input area */}
-        <div className={cn("flex-shrink-0", compact ? "px-3 pb-3 pt-3 bg-transparent border-0" : "border-t border-border", !compact && (isFloating ? "px-2 pb-1.5 pt-1 bg-background" : isCompactMobileStandalone ? "px-3 pb-3 pt-2 bg-muted/30" : "px-6 pb-6 pt-4 bg-muted/30"))}
-          style={isFloating ? { paddingBottom: 'max(6px, env(safe-area-inset-bottom, 6px))' } : undefined}
+        <div className={cn("flex-shrink-0", compact ? "px-3 pb-3 pt-3 bg-transparent border-0" : "border-t border-border", !compact && (isFloating ? "px-2 pb-1.5 pt-1 bg-background" : isCompactMobileStandalone ? "px-3 pb-3 pt-2 bg-muted/30" : "px-6 pb-6 pt-4 bg-muted/30"), isFullscreen && "w-full max-w-3xl mx-auto !px-4 !pb-8 !pt-3 bg-background border-t border-border")}
+          style={isFloating ? { paddingBottom: 'max(6px, env(safe-area-inset-bottom, 6px))' } : isFullscreen ? { paddingBottom: 'max(32px, env(safe-area-inset-bottom, 32px))' } : undefined}
         >
           {/* الاقتراحات - فقط في البداية وليس compact */}
           {messages.length === 0 && !compact && state !== 'awaiting_phone' && state !== 'awaiting_otp' && <div className={cn("animate-fade-in", isFloating ? "mb-2" : "mb-3")}>
