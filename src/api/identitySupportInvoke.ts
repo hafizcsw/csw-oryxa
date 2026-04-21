@@ -67,7 +67,7 @@ function getRegistryMimeType(slot: "doc" | "selfie" | "video", file: File) {
 
 function getPutContentType(slot: "doc" | "selfie" | "video", file: File) {
   if (slot !== "video") return file.type || "application/octet-stream";
-  return "application/octet-stream";
+  return getRegistryMimeType(slot, file);
 }
 
 // ─── Identity ────────────────────────────────────────────────

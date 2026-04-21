@@ -136,6 +136,7 @@ export function IdentityActivationDialog({
       toast({ title: t("portal.identity.errors.videoTooLarge"), variant: "destructive" });
       return;
     }
+    setErrorMsg("");
     setVideoFile(file);
     const up = await uploadIdentityFile("video", file);
     if (!up.ok) {
@@ -231,7 +232,7 @@ export function IdentityActivationDialog({
             <SelfieStep onCaptured={handleSelfieCaptured} />
           )}
           {step === "video_capture" && (
-            <VideoStep onCaptured={handleVideoCaptured} />
+            <VideoStep onCaptured={handleVideoCaptured} errorMessage={errorMsg} />
           )}
           {step === "submitting" && <RunningStep label={t("portal.identity.submit.running")} />}
           {step === "submit_error" && (
@@ -440,7 +441,20 @@ function SelfieStep({ onCaptured }: { onCaptured: (file: File) => void }) {
   );
 }
 
-function VideoStep({ onCaptured }: { onCaptured: (file: File) => void }) {
+function getPreferredVideoRecordingMime() {
+  const candidates = [
+    "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+    "video/mp4;codecs=h264,aac",
+    "video/mp4",
+    "video/webm;codecs=vp9,opus",
+    "video/webm;codecs=vp8,opus",
+    "video/webm",
+  ];
+
+  return candidates.find((mime) => MediaRecorder.isTypeSupported(mime)) || "";
+}
+
+function VideoStep({ onCaptured, errorMessage }: { onCaptured: (file: File) => void; errorMessage?: string }) {
   const { t } = useLanguage();
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -477,17 +491,17 @@ function VideoStep({ onCaptured }: { onCaptured: (file: File) => void }) {
   const start = useCallback(() => {
     if (!streamRef.current) return;
     chunksRef.current = [];
-    const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-      ? "video/webm;codecs=vp9"
-      : MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")
-      ? "video/webm;codecs=vp8,opus"
-      : "video/webm";
-    const mr = new MediaRecorder(streamRef.current, { mimeType: mime });
+    const requestedMime = getPreferredVideoRecordingMime();
+    const mr = requestedMime
+      ? new MediaRecorder(streamRef.current, { mimeType: requestedMime })
+      : new MediaRecorder(streamRef.current);
     recorderRef.current = mr;
     mr.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
     mr.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: mime });
-      const file = new File([blob], "liveness.webm", { type: mime });
+      const actualMime = (mr.mimeType || requestedMime || "video/webm").split(";")[0] || "video/webm";
+      const extension = actualMime.includes("mp4") ? "mp4" : "webm";
+      const blob = new Blob(chunksRef.current, { type: actualMime });
+      const file = new File([blob], `liveness.${extension}`, { type: actualMime });
       onCaptured(file);
     };
     mr.start();
@@ -532,6 +546,7 @@ function VideoStep({ onCaptured }: { onCaptured: (file: File) => void }) {
               ? `${t("portal.identity.video.recording")} ${secondsLeft}s`
               : t("portal.identity.video.start")}
           </Button>
+          {errorMessage ? <p className="text-sm text-destructive break-words" dir="ltr">{errorMessage}</p> : null}
         </>
       )}
     </div>
