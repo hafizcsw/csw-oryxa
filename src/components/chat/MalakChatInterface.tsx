@@ -1268,10 +1268,11 @@ export function MalakChatInterface({
            )}
 
 
-        {/* Messages Area - hidden in compact-empty state to keep box small */}
-        {!(compact && messages.length === 0 && state === 'idle') && (
+        {/* Messages Area - hidden in compact-empty state to keep box small (but always shown in fullscreen) */}
+        {!(compact && messages.length === 0 && state === 'idle' && !isFullscreen) && (
         <div ref={scrollRef} onScroll={handleScroll} className={cn(
           "flex-1 overflow-y-auto min-h-0",
+          isFullscreen && "w-full max-w-3xl mx-auto px-4",
           isFloating
             ? "px-2 py-2 space-y-3"
             : isCompactMobileStandalone
