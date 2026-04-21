@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { FloatingSupportLauncher } from "./FloatingSupportLauncher";
 
-const PORTAL_PATH_RE = /^\/(account|messages|portal|student-portal)(\/|$)/;
+const PORTAL_PATH_RE = /^\/($|account|messages|portal|student-portal)(\/|$)?/;
 
 /**
  * Mounts the floating support launcher only when:
