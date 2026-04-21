@@ -935,13 +935,13 @@ function ResultStep({
     info: "ring-primary/20 bg-primary/5",
   }[tone];
   return (
-    <div className="flex flex-col items-center text-center gap-4 py-10 max-w-lg mx-auto">
-      <div className={cn("flex items-center justify-center w-24 h-24 rounded-full ring-8 ring-offset-2 ring-offset-background", ringTone)}>
+    <div className="flex flex-col items-center text-center gap-3 py-6 max-w-sm mx-auto">
+      <div className={cn("flex items-center justify-center w-[76px] h-[76px] rounded-full ring-[6px] ring-offset-2 ring-offset-background [&>svg]:w-10 [&>svg]:h-10", ringTone)}>
         {icon}
       </div>
-      <h3 className="text-xl font-bold text-foreground">{title}</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
-      <Button size="lg" onClick={onCta} className="mt-3 min-w-[200px]">
+      <h3 className="text-base font-bold text-foreground">{title}</h3>
+      <p className="text-xs text-muted-foreground leading-relaxed">{body}</p>
+      <Button size="default" onClick={onCta} className="mt-2 min-w-[160px] h-10 text-sm">
         {ctaLabel}
       </Button>
     </div>
