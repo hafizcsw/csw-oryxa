@@ -1587,7 +1587,16 @@
       "underReview": "قيد المراجعة",
       "reupload": "إعادة الرفع",
       "underReviewHint": "تتم الآن مراجعة ملفك. عادةً تستغرق المراجعة من 15 دقيقة إلى يوم عمل واحد. في حال التأخر، تواصل مع الدعم.",
-      "contactSupport": "تواصل مع الدعم"
+      "contactSupport": "تواصل مع الدعم",
+      "walletWaitlistTitle": "تفعيل المحفظة",
+      "walletWaitlistDesc": "انضم إلى قائمة الانتظار وسنراسلك فور تفعيل محفظتك.",
+      "walletJoinWaitlist": "انضم لقائمة الانتظار",
+      "walletWaitlistJoined": "أنت في قائمة الانتظار",
+      "walletWaitlistJoinedHint": "المحفظة غير مفعلة بعد. انضممت إلى قائمة الانتظار وسوف نراسلك فور تفعيل المحفظة.",
+      "walletApprovedTitle": "تمت الموافقة على المحفظة",
+      "walletApprovedDesc": "تم تفعيل محفظتك. يمكنك الآن الإيداع والتحويل.",
+      "walletApprovedBadge": "مفعّلة",
+      "walletLockedNeedVerify": "وثّق حسابك أولاً"
     },
     "markets": {
       "title": "الأسواق",
