@@ -160,9 +160,10 @@ export function NotificationsPopover() {
       <PopoverContent
         align="end"
         sideOffset={10}
-        alignOffset={-4}
-        collisionPadding={8}
-        className="w-[380px] max-w-[calc(100vw-1rem)] p-0 rounded-2xl shadow-2xl border-border overflow-hidden"
+        avoidCollisions={false}
+        collisionPadding={0}
+        style={{ position: 'fixed', top: 64, insetInlineEnd: 12, insetInlineStart: 'auto', left: 'auto', right: 'auto' }}
+        className="w-[380px] max-w-[calc(100vw-1rem)] p-0 rounded-2xl shadow-2xl border-border overflow-hidden data-[side]:!translate-x-0 data-[side]:!translate-y-0"
       >
         <AnimatePresence>
           <motion.div
