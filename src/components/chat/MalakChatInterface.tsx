@@ -1216,7 +1216,9 @@ export function MalakChatInterface({
             ? "h-full bg-card" 
             : isInDeepSearch
               ? "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl h-full min-h-[400px]"
-              : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[550px] h-[70vh] max-h-[800px]"
+              : compact
+                ? "bg-card/80 backdrop-blur-sm rounded-2xl border border-border/60 shadow-lg"
+                : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[550px] h-[70vh] max-h-[800px]"
         )}>
            {/* Header - Only in standalone mode */}
            {!isFloating && (
