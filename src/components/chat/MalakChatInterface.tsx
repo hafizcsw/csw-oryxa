@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useStaffAuthority } from '@/hooks/useStaffAuthority';
 import { useSmartScroll } from '@/hooks/useSmartScroll';
-import { flushSync } from 'react-dom';
+import { flushSync, createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useMalakChat } from '@/contexts/MalakChatContext';
