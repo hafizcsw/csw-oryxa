@@ -462,9 +462,71 @@ function buildGatewayEnvelope(
   });
 }
 
+// ============================================================
+// 🟡 TEMPORARY: CSW Support Bot (Lovable AI) — bypasses CRM proxy
+// Toggle off by setting VITE_USE_CSW_TEMP_BOT=false
+// ============================================================
+const CSW_TEMP_BOT_ENABLED = (import.meta.env.VITE_USE_CSW_TEMP_BOT ?? 'true') !== 'false';
+const cswHistoryStore: Map<string, { role: 'user' | 'assistant'; content: string }[]> = new Map();
+
+async function sendChatMessageViaCSWBot<T>(
+  payload: GatewayMessagePayload
+): Promise<GatewayResponse<T>> {
+  const start = performance.now();
+  const sessionKey = payload.session_id || 'default';
+  const text = (payload.text || payload.message || '').toString().trim();
+  if (!text) {
+    return { ok: false, data: null, error: 'empty_text', latency_ms: 0 };
+  }
+  const history = cswHistoryStore.get(sessionKey) || [];
+  try {
+    const { data, error } = await supabase.functions.invoke('csw-support-chat', {
+      body: {
+        text,
+        history,
+        locale: payload.locale || 'ar',
+      },
+    });
+    const latency_ms = Math.round(performance.now() - start);
+    if (error || !data?.ok) {
+      const errMsg = (data?.message || data?.error || error?.message || 'csw_bot_error') as string;
+      return { ok: false, data: null, error: errMsg, latency_ms };
+    }
+    const reply: string = data.reply || '...';
+    // update history
+    const newHistory = [...history, { role: 'user' as const, content: text }, { role: 'assistant' as const, content: reply }].slice(-20);
+    cswHistoryStore.set(sessionKey, newHistory);
+
+    const shaped = {
+      ok: true,
+      messages: [
+        {
+          from: 'bot',
+          type: 'text',
+          content: reply,
+          timestamp: new Date().toISOString(),
+        },
+      ],
+      universities: [],
+      state: 'idle',
+      actions: [],
+    };
+    return { ok: true, data: shaped as unknown as T, error: null, latency_ms };
+  } catch (e) {
+    const latency_ms = Math.round(performance.now() - start);
+    const message = e instanceof Error ? e.message : 'csw_bot_exception';
+    return { ok: false, data: null, error: message, latency_ms };
+  }
+}
+
 export async function sendChatMessage<T = any>(
   payload: GatewayMessagePayload
 ): Promise<GatewayResponse<T>> {
+  // 🟡 TEMPORARY override — route everything to CSW support bot
+  if (CSW_TEMP_BOT_ENABLED) {
+    return sendChatMessageViaCSWBot<T>(payload);
+  }
+
   // PORTAL-ORDER-2: ASYNC session identity check (CRITICAL for accurate auth detection)
   // We check Supabase Auth FIRST before using localStorage-based identity
   let identity = getSessionIdentity();
