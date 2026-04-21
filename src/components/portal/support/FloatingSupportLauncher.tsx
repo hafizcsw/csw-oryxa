@@ -30,7 +30,10 @@ export function FloatingSupportLauncher() {
 
   return (
     <>
+      <AnimatePresence>
+        {!open && (
       <motion.button
+        key="oryxa-fab"
         ref={fabRef}
         type="button"
         aria-label={
@@ -58,7 +61,8 @@ export function FloatingSupportLauncher() {
         }}
         initial={reduced ? { opacity: 1 } : { scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={reduced ? { duration: 0 } : { ...SPRING, delay: 0.2 }}
+        exit={reduced ? { opacity: 0 } : { scale: 0, opacity: 0, transition: { duration: 0.18 } }}
+        transition={reduced ? { duration: 0 } : { ...SPRING, delay: 0.05 }}
         whileHover={reduced ? undefined : { scale: 1.06 }}
         whileTap={reduced ? undefined : { scale: 0.94 }}
         className={cn(
@@ -142,6 +146,8 @@ export function FloatingSupportLauncher() {
           )}
         </AnimatePresence>
       </motion.button>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {open && <FloatingSupportPanel onClose={() => setOpen(false)} />}
