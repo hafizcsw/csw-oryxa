@@ -1472,7 +1472,32 @@
       "status_confirming": "جارٍ التأكيد…",
       "status_registered": "مسجّل",
       "status_upload_failed": "فشل",
-      "status_cancelled": "ملغى"
+      "status_cancelled": "ملغى",
+      "guidance": {
+        "subtitle": "ارفع مستنداتك الأكاديمية والشخصية ليُبنى ملفك الذكي تلقائياً",
+        "secure_badge": "موثّق ومُشفَّر",
+        "what_to_upload": "ما يمكنك رفعه",
+        "examples": {
+          "passport": "جواز السفر / الهوية",
+          "transcripts": "الشهادات وكشوف الدرجات",
+          "language": "شهادات اللغة (IELTS، TOEFL...)",
+          "cv": "السيرة الذاتية / خطابات التوصية"
+        },
+        "formats_label": "الصيغ المدعومة",
+        "formats_value": "PDF · JPG · PNG · DOCX",
+        "size_label": "الحد الأقصى",
+        "size_value": "20MB لكل ملف",
+        "tip": "نصيحة: ارفع ملف PDF أصلي بدلاً من صورة ممسوحة للحصول على استخراج أدق"
+      },
+      "after_upload": {
+        "title": "ماذا يحدث بعد الرفع؟",
+        "step1_title": "نقرأ المستند",
+        "step1_desc": "OCR ذكي يفهم أي صيغة",
+        "step2_title": "نستخرج بياناتك",
+        "step2_desc": "اسم، تواريخ، درجات، تخصص",
+        "step3_title": "نبني ملفك",
+        "step3_desc": "ملف موحّد يُقدَّم للجامعات"
+      }
     },
     "saveDocs": {
       "region_label": "مستندات غير محفوظة",
