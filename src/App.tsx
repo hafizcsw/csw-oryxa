@@ -280,7 +280,10 @@ async function migrateGuestShortlistOnLogin() {
 function AppContent() {
   const { pathname } = useLocation();
   const navigateRouter = useNavigate();
-  const hideFab = pathname.startsWith("/admin") || pathname.startsWith("/apply") || pathname === "/maintenance";
+  // Hide public AI FAB on admin/apply/maintenance AND on portal/authenticated surfaces
+  // (PortalAuthFloater takes over there — never show both).
+  const isPortalSurface = /^\/(account|messages|portal|student-portal)(\/|$)/.test(pathname);
+  const hideFab = pathname.startsWith("/admin") || pathname.startsWith("/apply") || pathname === "/maintenance" || isPortalSurface;
   
   // Sync document language and RTL direction
   useHtmlLangDir();
