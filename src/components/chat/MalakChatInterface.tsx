@@ -1473,10 +1473,10 @@ export function MalakChatInterface({
               } 
               disabled={isChatPaused}
               className={cn(
-                "resize-none rounded-3xl border shadow-sm focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 placeholder:text-muted-foreground",
+                "resize-none rounded-3xl border shadow-sm outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground",
                 compact && messages.length === 0 && state === 'idle'
-                  ? "bg-transparent border-transparent text-white placeholder:text-white/40 shadow-none focus:outline-none focus-visible:outline-none focus:border-transparent focus-visible:border-transparent"
-                  : "bg-white dark:bg-zinc-800 border-border/50 text-foreground",
+                  ? "bg-transparent border-transparent text-white placeholder:text-white/40 shadow-none focus:border-transparent focus-visible:border-transparent"
+                  : "bg-white dark:bg-zinc-800 border-border/50 text-foreground focus:border-border/50 focus-visible:border-border/50",
                 isFloating 
                   ? "min-h-[40px] text-sm py-2.5 px-3.5 pb-10" 
                   : isCompactMobileStandalone
