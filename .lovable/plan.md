@@ -1,52 +1,69 @@
 
 
-# إصلاح فوري: المساحات الفارغة في رحلة التوثيق
+# تحسينات ثلاثة على رحلة التوثيق
 
-## المشكلة (من اللقطة)
-على شاشة 1713px، نصف الـ Dialog الأيسر فارغ تماماً. السبب: عمودا الـ Grid (الإرشادات + المحتوى) يضعان كل شيء في عمود واحد فقط على RTL، والعمود الآخر يحتوي فقط على Stepper صغير عمودي بلا محتوى تحته.
+## 1. نقل زر الإغلاق (X) إلى الجهة المعاكسة
+**الملف:** `src/components/ui/dialog.tsx` — لكن التعديل سيكون **محصوراً داخل** `IdentityActivationDialog` فقط لتجنّب التأثير على باقي الـ Dialogs في الموقع.
 
-## الإصلاح (ملف واحد فقط)
-**الملف:** `src/components/portal/identity/IdentityActivationDialog.tsx`
+**الطريقة:** إخفاء الـ X الافتراضي في `IdentityActivationDialog` عبر CSS، وإضافة زر إغلاق مخصّص في الـ `DialogHeader` على الجهة المقابلة لأيقونة الدرع:
+- في RTL (عربي): الدرع على اليمين → X على اليسار  
+- في LTR (إنجليزي): الدرع على اليسار → X على اليمين
 
-### 1. تغيير بنية الـ Layout الرئيسي
-- إزالة الـ Stepper العمودي الجانبي
-- جعل الـ Stepper **أفقي علوي** يمتد بعرض الـ Dialog كله
-- استخدام عرض المحتوى بالكامل (single full-width column) بدلاً من `grid-cols-2`
-
-### 2. خطوة المستند (`doc_select`)
-Layout أفقي ذكي يستغل المساحة:
-```text
-┌────────────────────────────────────────────┐
-│  [Stepper أفقي علوي يمتد كاملاً]           │
-├──────────────────┬─────────────────────────┤
-│  نوع الوثيقة     │   منطقة السحب والإفلات  │
-│  ○ جواز السفر    │   (كبيرة، min-h-[420px])│
-│  ○ هوية وطنية    │   [أيقونة كبيرة]        │
-│  ○ رخصة قيادة    │   [زر رفع كبير]         │
-│  (عمود يسار)     │   (يأخذ 2/3 من العرض)   │
-└──────────────────┴─────────────────────────┘
+```tsx
+// IdentityActivationDialog.tsx
+<DialogContent className="... [&>button]:hidden">
+  <DialogHeader>
+    <div className="flex items-start justify-between gap-3">
+      <DialogTitle>...</DialogTitle>
+      <button onClick={() => onOpenChange(false)} 
+              className="rounded-full p-1.5 hover:bg-muted">
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  </DialogHeader>
 ```
-- `lg:grid-cols-[1fr_2fr]` — منطقة الرفع تأخذ ضعف عرض قائمة النوع
-- بطاقات نوع الوثيقة بحجم مريح (مش مزدحمة)
 
-### 3. خطوة السيلفي والفيديو
-نفس المبدأ:
-- `lg:grid-cols-[2fr_1fr]` — الكاميرا/المعاينة على اليسار بمساحة كبيرة
-- الإرشادات والأزرار على اليمين
+## 2. تصغير بطاقات المعلومات والخط (SummaryStep)
+**الملف:** `src/components/portal/identity/IdentityActivationDialog.tsx` — مكوّن `SummaryStep`
 
-### 4. بطاقة المعاينة (selfie/video بعد الالتقاط)
-- `max-w-2xl mx-auto` على الديسكتوب (بدلاً من max-w-md)
-- `aspect-video` للفيديو، `aspect-[4/3]` للسيلفي
+تعديلات على بطاقات الحقول المستخرجة لتتناسق على الموبايل واللابتوب:
+- `min-h-[110px]` → `min-h-[88px]`
+- `p-4` → `p-3`
+- `gap-3` → `gap-2`
+- أيقونة: `h-8 w-8` → `h-7 w-7`، الأيقونة الداخلية `w-4 h-4` → `w-3.5 h-3.5`
+- نص الحقل: `text-sm` → `text-[13px]`
+- الاسم الكامل: `text-base leading-7` → `text-sm leading-6`
+- البانر العلوي: `p-5` → `p-4`، أيقونة `h-11 w-11` → `h-10 w-10`، عنوان `text-base` → `text-sm`، نص الوصف `text-sm` → `text-xs`
+- المسافات بين البطاقات: `gap-3` → `gap-2.5`
 
-### 5. Footer ثابت بعرض كامل
-- زرّان كبيران: السابق (يسار) / التالي (يمين)
-- يمتد بعرض الـ Dialog
+النتيجة: كثافة معلومات أعلى، أقل تمدّد عمودي، تناسق بين الموبايل (390px) واللابتوب الكبير.
 
-## لا تغيير في:
-- منطق الرفع / MIME types / API
-- ترجمات (الموجود كافٍ)
-- خطوات أخرى من الـ flow
+## 3. إخفاء زر "بدء التسجيل" فور انتهاء التسجيل
+**المشكلة الحالية:** في `VideoStep`، عند انتهاء العدّاد، يستدعي `recorderRef.current?.stop()` ثم `setRecording(false)` فوراً. لكن `onCaptured` (الذي يحوّل الخطوة عبر `setStep`) لا يُستدعى إلا داخل `mr.onstop` بعد مرور ~1-2 ثانية. خلال هذه الفجوة:
+- `recording = false` → الزر يعود لحالته الافتراضية "بدء التسجيل" ✗
+- يبقى مرئياً → المستخدم يظنّ أن عليه الضغط مجدداً
 
-## النتيجة
-استغلال كامل للمساحة على 1713px، بدون فراغات، مع تجربة متدفقة من المستند → السيلفي → الفيديو.
+**الإصلاح:** إضافة state جديد `processing` يبقى `true` من لحظة `onstop` حتى انتقال الخطوة، ودمجه في حالة الزر:
+
+```tsx
+const [processing, setProcessing] = useState(false);
+
+// عند انتهاء العدّاد:
+recorderRef.current?.stop();
+setRecording(false);
+setProcessing(true);  // ← فوراً
+
+// زر:
+<Button disabled={!ready || recording || processing || !!err}>
+  {recording ? "جاري التسجيل..." 
+   : processing ? <><Loader2 className="animate-spin"/> جاري المعالجة...</>
+   : "بدء التسجيل"}
+</Button>
+```
+
+كذلك سنُخفي الزر بالكامل عند `processing` (`hidden`) بدلاً من تعطيله فقط، لمنع أي توهّم بأنّه ينتظر ضغطة.
+
+## نطاق التعديل
+- ملف واحد فقط: `src/components/portal/identity/IdentityActivationDialog.tsx`
+- لا تغيير في API، الترجمات، أو منطق الرفع
 
