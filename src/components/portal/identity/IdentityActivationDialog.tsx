@@ -139,7 +139,13 @@ export function IdentityActivationDialog({
     setVideoFile(file);
     const up = await uploadIdentityFile("video", file);
     if (!up.ok) {
-      toast({ title: t("portal.identity.errors.uploadFailed"), variant: "destructive" });
+      const message = up.error || t("portal.identity.errors.uploadFailed");
+      setErrorMsg(message);
+      toast({
+        title: t("portal.identity.errors.uploadFailed"),
+        description: message,
+        variant: "destructive",
+      });
       return;
     }
     setVideoFileId(up.file_id);
