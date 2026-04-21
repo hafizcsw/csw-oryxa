@@ -1,50 +1,68 @@
 
 
 ## الهدف
-تبسيط الهيرو ليشبه واجهة Lovable: عنوان واحد + صندوق شات صغير مع placeholder متحرك (typewriter)، بدون الكرة/التصميم الحالي.
+استبدال تأثير الجسيمات الحالي بتأثير Antigravity الحقيقي: **شبكة (grid) من الخطوط الرفيعة جدًا** التي تتنفس وتتفاعل مع الماوس بموجة لطيفة، مع توهج ناعم في نقاط التقاطع. هذا هو التوقيع البصري الحقيقي لـ antigravity.google — وليس نقاط متناثرة.
 
-## التغييرات
+## ما يحدث الآن (المشكلة)
+`HeroParticleField.tsx` يرسم 140 نقطة بيضاء صغيرة. هذا يشبه "starfield" عام — لا يوجد فيه أي شيء يربطه بـ Antigravity.
 
-### 1) `src/components/home/HeroSection.tsx`
-- إزالة الخلفية المتدرجة الحالية (`bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500`).
-- إزالة الـ `DeepSearchLayout` wrapper المعقد للـ initial state — يبقى فقط للـ deep search mode.
-- خلفية بسيطة: `bg-background` مع لمسة aurora خفيفة جدًا (radial-gradient ناعم) أو خلفية نظيفة.
-- العنوان فوق الصندوق: **"Let's find the best for you"** (مفتاح ترجمة جديد، 12-language ready).
-- صندوق الشات صغير ومتمركز (max-w-2xl تقريبًا)، بدون الكروت المحيطة أو suggestions الظاهرة افتراضيًا.
+## ما سنبنيه فعلًا
 
-### 2) `src/components/chat/MalakChatInterface.tsx`
-- في الحالة الفارغة (لا رسائل) يُعرض فقط: **input box** + placeholder متحرك typewriter.
-- إخفاء suggested prompts/cards/quick actions في الحالة الفارغة (تظهر فقط بعد أول تفاعل أو لا تظهر مطلقًا في الواجهة المبسّطة).
-- compact styling: ارتفاع أقل، حدود ناعمة، shadow خفيف يشبه Lovable.
+### 1) طبقة Grid (الأساس البصري الحقيقي)
+- خطوط أفقية + عمودية بمسافة ~64px
+- لون أبيض، شفافية منخفضة جدًا (0.04–0.06)
+- سمك 1px فعلي (مع DPR scaling)
+- نقاط (dots) صغيرة في كل تقاطع — قطر ~1.2px، شفافية أعلى قليلًا (0.10–0.18)
 
-### 3) مكوّن جديد: `src/components/chat/TypewriterPlaceholder.tsx`
-- يدوّر بين عبارات (rotating placeholder) كل 3-4 ثوانٍ بتأثير type/erase.
-- العبارات من ملفات الترجمة (مصفوفة 4-5 جمل):
-  - "ابحث عن ما يهم مستقبلك..."
-  - "اكتشف أفضل الجامعات لك..."
-  - "اسأل عن منحة، تخصص، أو دولة..."
-  - "ابدأ رحلتك الأكاديمية الآن..."
-- يحترم `prefers-reduced-motion` (يعرض جملة ثابتة).
-- يدعم RTL/LTR تلقائيًا.
+### 2) Mouse Field (التأثير المميز)
+هذا أهم شيء وما يجعله "Antigravity":
+- نصف قطر تأثير ~220px حول الماوس
+- داخل النصف القطر: شفافية الخطوط والنقاط ترتفع تدريجيًا (falloff ناعم)
+- النقاط القريبة جدًا تتحرك ~2–4px فقط بعيدًا عن الماوس (إحساس "تنفس" خفيف)
+- العودة بطيئة وسلسة (ease ~0.06)
 
-### 4) ملفات الترجمة (12 لغة)
-- مفتاح جديد: `home.hero.title` = "Let's find the best for you"
-- مفاتيح: `home.hero.placeholders.0..4` للعبارات الدوّارة
-- إضافة في كل ملفات `src/locales/*.json` المتاحة.
+### 3) Idle Breathing
+- موجة sine عامة بطيئة جدًا (دورة ~8 ثوانٍ) ترفع/تخفض شفافية الـ grid بـ ±0.01
+- هذا يعطي إحساس "حياة" حتى بدون ماوس
 
-### 5) ما يبقى كما هو
-- `DeepSearchLayout` + `SearchResultsPanel` يعملان كالعادة بعد أول بحث.
-- News Ticker, Compare Drawer, Floating launchers — بدون تغيير.
-- منطق `MalakChatContext` بدون تغيير.
+### 4) الأداء والـ Accessibility
+- Canvas واحد، rAF واحد
+- Pause عند `document.hidden`
+- `prefers-reduced-motion` → grid ثابت بدون breathing/mouse
+- Mobile (`max-width: 640px`) → mouse field معطّل، الـ grid يبقى
 
-## الملفات المتأثرة
-- ✏️ `src/components/home/HeroSection.tsx`
-- ✏️ `src/components/chat/MalakChatInterface.tsx` (تبسيط empty state فقط)
-- ➕ `src/components/chat/TypewriterPlaceholder.tsx`
-- ✏️ `src/locales/*.json` (12 ملف لغة)
+### 5) التكامل مع التصميم
+- لا تغيير على الـ gradient، النص، صندوق ORYXA
+- نفس الموضع: `position: absolute; inset: 0; z-index: 1; pointer-events: none`
+- يبقى تحت المحتوى (z-index: 2)
 
-## خارج النطاق
-- لا تغيير على منطق الشات/الـ API/الذاكرة المؤقتة (سبق إصلاحها).
-- لا إضافة مكتبات (typewriter بـ React state خام).
-- لا مساس بـ Brain Visualizer (سيُحذف من الهيرو ضمنيًا بحذف التصميم الحالي).
+## الملفات
+
+**`src/components/home/HeroParticleField.tsx`** — إعادة كتابة كاملة:
+- إزالة منطق الجسيمات المتناثرة
+- منطق جديد: رسم grid lines + intersection dots + mouse-reactive opacity field
+- نفس الـ API الخارجي (`<HeroParticleField />` بدون props) → لا حاجة لتعديل `HeroSection.tsx`
+- config object قابل للتعديل: `gridSpacing`, `lineOpacity`, `dotOpacity`, `mouseRadius`, `mouseOpacityBoost`, `mouseDisplacement`, `breatheAmplitude`, `breatheSpeedSec`
+
+## القيم الابتدائية المقترحة
+```
+gridSpacing: 64
+lineOpacity: 0.05
+dotOpacityMin: 0.10, dotOpacityMax: 0.18
+mouseRadius: 220
+mouseOpacityBoost: 0.12   // يضاف للخطوط/النقاط داخل النصف القطر
+mouseDisplacement: 3      // إزاحة dots فقط، خطوط ثابتة
+breatheAmplitude: 0.01
+breatheSpeedSec: 8
+```
+
+## معيار القبول
+- بدون ماوس: شبكة هادئة بالكاد مرئية تتنفس ببطء
+- مع الماوس: هالة دائرية ناعمة تتبع المؤشر وتُضيء الـ grid محليًا
+- لا glow صريح، لا trails، لا نقاط متناثرة
+- النص و ORYXA box يبقيان أوضح عنصر
+
+## بعد التنفيذ
+لو الـ effect قوي → نخفض `lineOpacity` و `mouseOpacityBoost`.
+لو ضعيف → نرفعهما تدريجيًا.
 
