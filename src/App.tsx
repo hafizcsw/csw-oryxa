@@ -95,6 +95,7 @@ const BlogPage = lazy(() => import("./pages/Blog"));
 const FAQPage = lazy(() => import("./pages/FAQ"));
 const WhereWeArePage = lazy(() => import("./pages/WhereWeAre"));
 const CommunityPage = lazy(() => import("./pages/Community"));
+const CommunityProfilePage = lazy(() => import("./pages/CommunityProfile"));
 const EventsPage = lazy(() => import("./pages/Events"));
 const CareersPage = lazy(() => import("./pages/Careers"));
 const ForInstitutionsPage = lazy(() => import("./pages/ForInstitutions"));
@@ -816,6 +817,8 @@ function AppContent() {
           <Route path="/for-institutions" element={<ForInstitutionsPage />} />
           <Route path="/where-we-are" element={<WhereWeArePage />} />
           <Route path="/community" element={<CommunityPage />} />
+          <Route path="/community/me" element={<CommunityProfilePage />} />
+          <Route path="/community/u/:userId" element={<CommunityProfilePage />} />
           <Route path="/events" element={<EventsPage />} />
           
           {/* ORX RANK Routes */}
