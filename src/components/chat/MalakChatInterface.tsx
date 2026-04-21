@@ -52,7 +52,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 // Native scroll used instead of ScrollArea for better compatibility
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Send, Trash2, AlertCircle, Sparkles, Search, Loader2, Mic, MicOff, Square, User, ChevronDown, Clock, X, Plus, Check, ArrowUp, History, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { Send, Trash2, AlertCircle, Sparkles, Search, Loader2, Mic, MicOff, Square, User, ChevronDown, Clock, X, Plus, Check, ArrowUp, History, PanelLeftClose, PanelLeft, Maximize2, Minimize2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -233,6 +233,7 @@ export function MalakChatInterface({
   const [ctaDismissed, setCtaDismissed] = useState(false);
   const [guestLimitReached, setGuestLimitReached] = useState(false);
   const [showStatusBar, setShowStatusBar] = useState(false); // 🆕 شريط الحالة مخفي افتراضياً
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [sessionFilters, setSessionFilters] = useState<ClarifyFilters>({});
   
   // ✅ 3-Phase Workflow: Consent state
@@ -1218,16 +1219,18 @@ export function MalakChatInterface({
       
 <div className={cn("flex-1 flex flex-col", (isFloating || isInDeepSearch) ? "h-full" : "")}>
         <div data-tour-id="tour-chat-box" className={cn(
-          "flex flex-col overflow-hidden", 
-          isFloating 
-            ? "h-full bg-card" 
-            : isInDeepSearch
-              ? "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl h-full min-h-[400px]"
-                : compact
-                  ? (messages.length === 0 && state === 'idle'
-                      ? "bg-[#1a1a1f]/90 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-                      : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[593px] h-[77vh] max-h-[773px]")
-                  : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[360px] h-[50vh] max-h-[520px]"
+          "flex flex-col overflow-hidden",
+          isFullscreen
+            ? "fixed inset-0 z-[9999] h-screen w-screen rounded-none bg-background border-0"
+            : isFloating
+              ? "h-full bg-card"
+              : isInDeepSearch
+                ? "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl h-full min-h-[400px]"
+                  : compact
+                    ? (messages.length === 0 && state === 'idle'
+                        ? "bg-[#1a1a1f]/90 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                        : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[593px] h-[77vh] max-h-[773px]")
+                    : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[360px] h-[50vh] max-h-[520px]"
         )}>
            {/* Header - Only in standalone mode */}
            {!isFloating && (
@@ -1252,9 +1255,17 @@ export function MalakChatInterface({
                      </span>
                    )}
                  </div>
-               </div>
+                </div>
 
-                {/* header action buttons removed */}
+                <button
+                  type="button"
+                  onClick={() => setIsFullscreen(v => !v)}
+                  className="ml-auto h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                  aria-label={isFullscreen ? t('common.exitFullscreen', { defaultValue: 'Exit fullscreen' }) : t('common.fullscreen', { defaultValue: 'Fullscreen' })}
+                  title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+                >
+                  {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                </button>
              </div>
            )}
 
