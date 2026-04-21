@@ -2404,9 +2404,18 @@
     "identity": {
       "title": "Account Verification",
       "subtitle": "Confirm your identity to unlock your study file.",
+      "stepper": {
+        "document": "Document",
+        "selfie": "Selfie",
+        "video": "Video"
+      },
       "doc": {
-        "instruction": "Choose your document type and upload a clear photo or PDF.",
-        "upload": "Upload Document"
+        "chooseTitle": "Choose document type",
+        "instruction": "Pick the document you want to verify and upload a clear photo or PDF.",
+        "upload": "Upload Document",
+        "dropTitle": "Drop your document here",
+        "dropHint": "or click to browse from your device",
+        "formats": "JPG, PNG, WEBP or PDF — up to 10MB"
       },
       "docKind": {
         "passport": "Passport",
@@ -2414,13 +2423,25 @@
         "driver_license": "Driver License"
       },
       "selfie": {
-        "instruction": "Look at the camera and capture a clear selfie.",
-        "capture": "Capture Selfie"
+        "title": "Take a clear selfie",
+        "instruction": "Center your face inside the guide and look directly at the camera.",
+        "capture": "Capture Selfie",
+        "tip": {
+          "lighting": "Use good, even lighting",
+          "frame": "Keep your full face inside the oval",
+          "noAccessories": "Remove sunglasses, hats and masks"
+        }
       },
       "video": {
-        "instruction": "Record a 5-second video looking at the camera.",
+        "title": "Record a 5-second liveness video",
+        "instruction": "Stay still, look at the camera, and follow the prompts during the recording.",
         "start": "Start Recording",
-        "recording": "Recording…"
+        "recording": "Recording…",
+        "tip": {
+          "lookCamera": "Look directly at the camera",
+          "turnHead": "Slowly turn your head left and right",
+          "smile": "Give a natural smile"
+        }
       },
       "reader": {
         "running": "Analyzing your document…"
