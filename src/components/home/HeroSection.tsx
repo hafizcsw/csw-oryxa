@@ -163,12 +163,26 @@ export function HeroSection() {
         ref={containerRef}
         className={`relative overflow-hidden ${isDeepSearchMode ? 'h-[calc(100dvh-80px)] sm:h-[calc(100dvh-100px)]' : 'min-h-[calc(100dvh-80px)] sm:min-h-[calc(100dvh-100px)]'}`}
       >
-        {/* Soft aurora background */}
+        {/* Lovable-style ambient gradient background */}
+        <div className="absolute inset-0 bg-[#0a0a0f]" />
         <div
-          className="absolute inset-0 bg-background"
+          className="absolute inset-0"
+          style={{
+            backgroundImage: [
+              'radial-gradient(ellipse 70% 55% at 18% 88%, rgba(220, 38, 38, 0.55), transparent 60%)',
+              'radial-gradient(ellipse 65% 50% at 85% 85%, rgba(234, 88, 12, 0.45), transparent 60%)',
+              'radial-gradient(ellipse 80% 60% at 50% 95%, rgba(244, 114, 22, 0.35), transparent 65%)',
+              'radial-gradient(ellipse 60% 50% at 90% 20%, rgba(124, 58, 237, 0.35), transparent 60%)',
+              'radial-gradient(ellipse 55% 45% at 10% 15%, rgba(30, 64, 175, 0.40), transparent 60%)',
+            ].join(', '),
+          }}
+        />
+        {/* subtle vignette to deepen edges */}
+        <div
+          className="absolute inset-0"
           style={{
             backgroundImage:
-              'radial-gradient(ellipse 80% 60% at 50% 0%, hsl(var(--primary) / 0.08), transparent 60%), radial-gradient(ellipse 60% 50% at 80% 100%, hsl(var(--accent) / 0.06), transparent 60%)',
+              'radial-gradient(ellipse 90% 70% at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%)',
           }}
         />
 
@@ -186,7 +200,7 @@ export function HeroSection() {
             </div>
           ) : (
             <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-8 animate-fade-in">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-center text-foreground">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-center text-white drop-shadow-lg">
                 {t('home.hero.title')}
               </h1>
               <div className="w-full">
