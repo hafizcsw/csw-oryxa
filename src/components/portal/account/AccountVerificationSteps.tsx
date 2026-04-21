@@ -313,36 +313,71 @@ export function AccountVerificationSteps({
       </div>
 
       <Dialog open={whyOpen} onOpenChange={setWhyOpen}>
-        <DialogContent dir={isRtl ? "rtl" : "ltr"} className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className={cn("text-xl font-bold", isRtl ? "text-right" : "text-left")}>
-              {t('portal.steps.whyVerifyTitle')}
-            </DialogTitle>
-            <DialogDescription className={cn("text-sm leading-relaxed pt-1", isRtl ? "text-right" : "text-left")}>
-              {t('portal.steps.whyVerifyIntro')}
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent
+          dir={isRtl ? "rtl" : "ltr"}
+          className="max-w-xl p-0 overflow-hidden gap-0 border-border/60"
+        >
+          {/* Hero header */}
+          <div className="relative bg-gradient-to-br from-primary/15 via-primary/5 to-transparent px-6 pt-7 pb-6 border-b border-border/40">
+            <div className={cn("flex items-start gap-4", isRtl && "flex-row-reverse")}>
+              <div className="shrink-0 w-12 h-12 rounded-2xl bg-primary/15 ring-1 ring-primary/20 flex items-center justify-center shadow-sm">
+                <ShieldCheck className="w-6 h-6 text-primary" />
+              </div>
+              <div className={cn("flex-1 min-w-0", isRtl ? "text-right" : "text-left")}>
+                <DialogHeader className="space-y-1.5">
+                  <DialogTitle className={cn("text-xl font-bold tracking-tight text-foreground", isRtl ? "text-right" : "text-left")}>
+                    {t('portal.steps.whyVerifyTitle')}
+                  </DialogTitle>
+                  <DialogDescription className={cn("text-[13px] leading-relaxed text-muted-foreground", isRtl ? "text-right" : "text-left")}>
+                    {t('portal.steps.whyVerifyIntro')}
+                  </DialogDescription>
+                </DialogHeader>
+              </div>
+            </div>
+          </div>
 
-          <ul className="space-y-4 mt-2">
-            {[
-              { Icon: ShieldCheck, title: 'portal.steps.whyVerifyPoint1Title', body: 'portal.steps.whyVerifyPoint1Body' },
-              { Icon: GraduationCap, title: 'portal.steps.whyVerifyPoint2Title', body: 'portal.steps.whyVerifyPoint2Body' },
-              { Icon: Users, title: 'portal.steps.whyVerifyPoint3Title', body: 'portal.steps.whyVerifyPoint3Body' },
-            ].map(({ Icon, title, body }) => (
-              <li key={title} className="flex gap-3">
-                <div className="shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Icon className="w-4.5 h-4.5 text-primary" />
-                </div>
-                <div className={cn("flex-1", isRtl ? "text-right" : "text-left")}>
-                  <h4 className="text-sm font-bold text-foreground mb-1">{t(title)}</h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{t(body)}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+          {/* Benefits list */}
+          <div className="px-6 py-5 max-h-[55vh] overflow-y-auto">
+            <ul className="space-y-2.5">
+              {[
+                { Icon: ShieldCheck, title: 'portal.steps.whyVerifyPoint1Title', body: 'portal.steps.whyVerifyPoint1Body', tone: 'success' },
+                { Icon: GraduationCap, title: 'portal.steps.whyVerifyPoint2Title', body: 'portal.steps.whyVerifyPoint2Body', tone: 'primary' },
+                { Icon: Users, title: 'portal.steps.whyVerifyPoint3Title', body: 'portal.steps.whyVerifyPoint3Body', tone: 'warning' },
+              ].map(({ Icon, title, body, tone }) => (
+                <li
+                  key={title}
+                  className={cn(
+                    "group rounded-xl p-3.5 border border-border/50 bg-card/50 hover:bg-card hover:border-border transition-all duration-200",
+                    "flex gap-3.5",
+                    isRtl && "flex-row-reverse"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ring-1 transition-transform group-hover:scale-105",
+                      tone === 'success' && "bg-success/10 ring-success/20 text-success",
+                      tone === 'primary' && "bg-primary/10 ring-primary/20 text-primary",
+                      tone === 'warning' && "bg-warning/10 ring-warning/30 text-warning",
+                    )}
+                  >
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className={cn("flex-1 min-w-0", isRtl ? "text-right" : "text-left")}>
+                    <h4 className="text-sm font-semibold text-foreground mb-1 leading-snug">{t(title)}</h4>
+                    <p className="text-[13px] text-muted-foreground leading-relaxed">{t(body)}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-          <DialogFooter className="mt-2">
-            <Button onClick={() => setWhyOpen(false)} className="w-full sm:w-auto">
+          {/* Footer */}
+          <DialogFooter className="px-6 py-4 border-t border-border/40 bg-muted/20 sm:justify-end">
+            <Button
+              onClick={() => setWhyOpen(false)}
+              className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-sm"
+            >
+              <CheckCircle2 className="w-4 h-4 me-2" />
               {t('portal.steps.whyVerifyClose')}
             </Button>
           </DialogFooter>
