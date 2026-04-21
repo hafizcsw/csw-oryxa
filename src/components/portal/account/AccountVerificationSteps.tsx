@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
-import { Clock, CreditCard, ShieldCheck, ShieldAlert, ShieldQuestion, IdCard, ArrowLeftRight, Loader2, LifeBuoy, Hourglass, CheckCircle2, Wallet, Lock } from "lucide-react";
+import { Clock, CreditCard, ShieldCheck, ShieldAlert, ShieldQuestion, IdCard, ArrowLeftRight, Loader2, LifeBuoy, Hourglass, CheckCircle2, Wallet, Lock, HelpCircle, GraduationCap, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +42,7 @@ export function AccountVerificationSteps({
   // Local-only waitlist flag (per-device). Keeps UI honest without backend coupling.
   const [waitlistJoined, setWaitlistJoined] = useState<boolean>(false);
   const [joining, setJoining] = useState(false);
+  const [whyOpen, setWhyOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -80,9 +89,22 @@ export function AccountVerificationSteps({
             <h3 className="text-lg font-bold text-foreground mb-2">
               {t('portal.steps.verifyAccount')}
             </h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-muted-foreground mb-3">
               {t('portal.steps.completeIdentity')}
             </p>
+
+            <div className={cn("mb-4", isRtl ? "text-right" : "text-left")}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setWhyOpen(true)}
+                className="h-auto px-2 py-1 text-xs text-primary hover:text-primary hover:bg-primary/5 gap-1.5"
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                {t('portal.steps.whyVerifyButton')}
+              </Button>
+            </div>
 
             <div className="flex justify-center my-6">
               <div className="relative">
@@ -289,6 +311,43 @@ export function AccountVerificationSteps({
           )}
         </div>
       </div>
+
+      <Dialog open={whyOpen} onOpenChange={setWhyOpen}>
+        <DialogContent dir={isRtl ? "rtl" : "ltr"} className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className={cn("text-xl font-bold", isRtl ? "text-right" : "text-left")}>
+              {t('portal.steps.whyVerifyTitle')}
+            </DialogTitle>
+            <DialogDescription className={cn("text-sm leading-relaxed pt-1", isRtl ? "text-right" : "text-left")}>
+              {t('portal.steps.whyVerifyIntro')}
+            </DialogDescription>
+          </DialogHeader>
+
+          <ul className="space-y-4 mt-2">
+            {[
+              { Icon: ShieldCheck, title: 'portal.steps.whyVerifyPoint1Title', body: 'portal.steps.whyVerifyPoint1Body' },
+              { Icon: GraduationCap, title: 'portal.steps.whyVerifyPoint2Title', body: 'portal.steps.whyVerifyPoint2Body' },
+              { Icon: Users, title: 'portal.steps.whyVerifyPoint3Title', body: 'portal.steps.whyVerifyPoint3Body' },
+            ].map(({ Icon, title, body }) => (
+              <li key={title} className="flex gap-3">
+                <div className="shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Icon className="w-4.5 h-4.5 text-primary" />
+                </div>
+                <div className={cn("flex-1", isRtl ? "text-right" : "text-left")}>
+                  <h4 className="text-sm font-bold text-foreground mb-1">{t(title)}</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{t(body)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <DialogFooter className="mt-2">
+            <Button onClick={() => setWhyOpen(false)} className="w-full sm:w-auto">
+              {t('portal.steps.whyVerifyClose')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

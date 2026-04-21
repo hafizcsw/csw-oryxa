@@ -1585,7 +1585,17 @@
       "underReview": "Under Review",
       "reupload": "Re-upload",
       "underReviewHint": "Your file is being reviewed. Reviews usually take between 15 minutes and 1 business day. If it takes longer, please contact support.",
-      "contactSupport": "Contact Support"
+      "contactSupport": "Contact Support",
+      "whyVerifyButton": "Why verify my account?",
+      "whyVerifyTitle": "Why is account verification important?",
+      "whyVerifyIntro": "Verifying your account links you directly with our dedicated team and unlocks real opportunities that are not available to unverified accounts.",
+      "whyVerifyPoint1Title": "Protect and recover your account",
+      "whyVerifyPoint1Body": "If you ever lose access, your data stays protected — recovery is only possible with your ID and a live video session with our support team.",
+      "whyVerifyPoint2Title": "Scholarships and programs worldwide",
+      "whyVerifyPoint2Body": "Your verified profile is shown to partner universities, so they reach out with offers to join their programs and scholarships instead of you chasing them.",
+      "whyVerifyPoint3Title": "Publish in the verified-students community",
+      "whyVerifyPoint3Body": "You'll be able to post inside the CSW community we're building to support student projects — including launching investment campaigns for your own project.",
+      "whyVerifyClose": "Got it, thanks"
     },
     "markets": {
       "title": "Markets",
