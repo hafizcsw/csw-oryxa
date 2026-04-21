@@ -241,32 +241,38 @@ export function IdentityActivationDialog({
         ) : (
           <DialogHeader
             className={cn(
-              "border-b border-border/50 bg-card/40 backdrop-blur-sm",
-              "px-5 sm:px-8 pt-6 pb-4 space-y-2",
+              "flex flex-col gap-3 border-b border-border/50 bg-card/40 backdrop-blur-sm",
+              "px-5 sm:px-8 pt-4 pb-4",
             )}
           >
-            <div className="flex items-start justify-between gap-3">
-              <DialogTitle className="flex items-center gap-2.5 text-lg sm:text-xl">
-                <div className="flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-glow text-primary-foreground shadow-md h-9 w-9">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                {t("portal.identity.title")}
-              </DialogTitle>
+            {/* Top row: X (corner) + centered title block */}
+            <div className="relative flex items-center justify-center w-full min-h-[2.25rem]">
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
+                className="absolute top-0 ltr:left-0 rtl:right-0 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                 aria-label="Close"
               >
                 <X className="w-4 h-4" />
               </button>
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-glow text-primary-foreground shadow-md h-9 w-9 shrink-0">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col items-center text-center">
+                  <DialogTitle className="text-base sm:text-lg font-semibold leading-tight">
+                    {t("portal.identity.title")}
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                    {t("portal.identity.subtitle")}
+                  </DialogDescription>
+                </div>
+              </div>
             </div>
-            <DialogDescription className="text-sm">
-              {t("portal.identity.subtitle")}
-            </DialogDescription>
 
+            {/* Bottom row: full-width Stepper */}
             {showStepper && (
-              <div className="pt-3">
+              <div className="w-full pt-1">
                 <Stepper currentIndex={stepperIdx} />
               </div>
             )}
