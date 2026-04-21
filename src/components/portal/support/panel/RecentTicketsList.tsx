@@ -1,5 +1,5 @@
-import { motion, useReducedMotion } from "framer-motion";
-import { ChevronRight, Inbox } from "lucide-react";
+import { motion } from "framer-motion";
+import { Inbox } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { SupportTicketRow } from "@/api/identitySupportInvoke";
 import { cn } from "@/lib/utils";
@@ -32,8 +32,6 @@ function formatRelative(iso: string, locale: string, justNowLabel: string): stri
 
 export function RecentTicketsList({ tickets }: RecentTicketsListProps) {
   const { t, language } = useLanguage();
-  const reduced = useReducedMotion();
-  const isRtl = language === "ar";
 
   if (tickets.length === 0) {
     return (
@@ -68,9 +66,8 @@ export function RecentTicketsList({ tickets }: RecentTicketsListProps) {
         return (
           <motion.li
             key={tk.ticket_id}
-            whileHover={reduced ? undefined : { x: isRtl ? -2 : 2 }}
             transition={{ duration: 0.15 }}
-            className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/40 transition-colors cursor-default"
+            className="flex items-center gap-3 p-2.5 rounded-xl cursor-default"
           >
             <span className={cn("h-2 w-2 rounded-full shrink-0", dot)} aria-hidden="true" />
             <div className="flex-1 min-w-0">
@@ -81,11 +78,6 @@ export function RecentTicketsList({ tickets }: RecentTicketsListProps) {
                 <span>{time}</span>
               </div>
             </div>
-            <ChevronRight
-              className={cn("h-4 w-4 text-muted-foreground/60 shrink-0", isRtl && "rotate-180")}
-              strokeWidth={2}
-              aria-hidden="true"
-            />
           </motion.li>
         );
       })}
