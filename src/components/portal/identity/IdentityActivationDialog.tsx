@@ -216,51 +216,62 @@ export function IdentityActivationDialog({
           "border-border/60 shadow-2xl rounded-2xl",
           "[&>button]:hidden",
           isResultStep
-            ? "!max-w-md w-[96vw] max-h-fit text-center font-sans border"
+            ? "!max-w-md w-[96vw] max-h-fit border"
             : "!max-w-[min(1400px,96vw)] w-[96vw] max-h-[92vh] px-[14px] text-center",
         )}
       >
         {/* Header */}
-        <DialogHeader
-          className={cn(
-            "border-b border-border/50 bg-card/40 backdrop-blur-sm",
-            isResultStep
-              ? "px-5 pt-4 pb-3 space-y-1 py-[17px] my-[3px] sm:text-center"
-              : "px-5 sm:px-8 pt-6 pb-4 space-y-2",
-          )}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <DialogTitle className={cn(
-              "flex items-center gap-2.5",
-              isResultStep ? "text-base" : "text-lg sm:text-xl",
-            )}>
-              <div className={cn(
-                "flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-glow text-primary-foreground shadow-md",
-                isResultStep ? "h-7 w-7" : "h-9 w-9",
-              )}>
-                <ShieldCheck className={isResultStep ? "w-4 h-4" : "w-5 h-5"} />
-              </div>
+        {isResultStep ? (
+          <div className="relative border-b border-border/40 bg-card/30 px-5 pt-4 pb-3">
+            <DialogTitle className="text-[11px] font-semibold text-muted-foreground/80 uppercase tracking-[0.18em] text-center">
               {t("portal.identity.title")}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {t("portal.identity.subtitle")}
+            </DialogDescription>
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
+              className="absolute top-2.5 ltr:right-2.5 rtl:left-2.5 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               aria-label="Close"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
-          <DialogDescription className={cn(isResultStep ? "text-xs" : "text-sm")}>
-            {t("portal.identity.subtitle")}
-          </DialogDescription>
-
-          {showStepper && !isResultStep && (
-            <div className="pt-3">
-              <Stepper currentIndex={stepperIdx} />
+        ) : (
+          <DialogHeader
+            className={cn(
+              "border-b border-border/50 bg-card/40 backdrop-blur-sm",
+              "px-5 sm:px-8 pt-6 pb-4 space-y-2",
+            )}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <DialogTitle className="flex items-center gap-2.5 text-lg sm:text-xl">
+                <div className="flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-glow text-primary-foreground shadow-md h-9 w-9">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                {t("portal.identity.title")}
+              </DialogTitle>
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-          )}
-        </DialogHeader>
+            <DialogDescription className="text-sm">
+              {t("portal.identity.subtitle")}
+            </DialogDescription>
+
+            {showStepper && (
+              <div className="pt-3">
+                <Stepper currentIndex={stepperIdx} />
+              </div>
+            )}
+          </DialogHeader>
+        )}
 
         {/* Scrollable content */}
         <div
@@ -968,7 +979,7 @@ function ResultStep({
     info: "bg-primary text-primary-foreground hover:bg-primary/90",
   }[tone];
   return (
-    <div className="flex flex-col items-center text-center gap-4 py-4 w-full max-w-sm mx-auto">
+    <div className="flex flex-col items-center text-center gap-3 pt-2 pb-4 w-full max-w-sm mx-auto">
       <div className={cn("flex items-center justify-center w-[72px] h-[72px] rounded-full ring-[6px] ring-offset-2 ring-offset-background [&>svg]:w-9 [&>svg]:h-9", ringTone)}>
         {icon}
       </div>
