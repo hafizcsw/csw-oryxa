@@ -88,12 +88,19 @@
   },
   "home": {
     "hero": {
-      "title": "Tu socio educativo global",
+      "title": "Encontremos lo mejor para ti",
       "subtitle": "Busca programas, encuentra tu universidad ideal",
       "searchPlaceholder": "Ingresa el nombre de la universidad...",
       "ticker": {
         "closeAriaLabel": "Cerrar cinta de noticias"
-      }
+      },
+      "placeholders": [
+        "Busca lo que define tu futuro...",
+        "Descubre las mejores universidades para ti...",
+        "Pregunta sobre una beca, carrera o país...",
+        "Comienza tu viaje académico ahora...",
+        "Cuéntame tu sueño — encontraré el camino..."
+      ]
     },
     "services": {
       "heading": "Nuestros servicios premium para estudiantes",

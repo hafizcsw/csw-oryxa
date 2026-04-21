@@ -88,12 +88,19 @@
   },
   "home": {
     "hero": {
-      "title": "Votre partenaire éducatif mondial",
+      "title": "Trouvons le meilleur pour vous",
       "subtitle": "Recherchez des programmes, trouvez votre université idéale",
       "searchPlaceholder": "Entrez le nom de l'université...",
       "ticker": {
         "closeAriaLabel": "Fermer le bandeau d’actualités"
-      }
+      },
+      "placeholders": [
+        "Cherchez ce qui façonne votre avenir...",
+        "Découvrez les meilleures universités pour vous...",
+        "Posez une question sur une bourse, une filière ou un pays...",
+        "Commencez votre parcours académique maintenant...",
+        "Dites-moi votre rêve — je trouverai la voie..."
+      ]
     },
     "services": {
       "heading": "Nos services premium pour étudiants",
