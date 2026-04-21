@@ -20,6 +20,7 @@ import { LocaleRouteWrapper } from "@/components/routing/LocaleRouteWrapper";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { usePresenceHeartbeat } from "@/hooks/usePresence";
 import FloatingChat from "@/components/FloatingChat";
+import { PortalAuthFloater } from "@/components/portal/support/PortalAuthFloater";
 import { Layout } from "@/components/layout/Layout";
 import { InstitutionGuard } from "@/components/institution/InstitutionGuard";
 import { StaffGuard } from "@/components/staff/StaffGuard";
@@ -960,6 +961,9 @@ function AppContent() {
       
       {/* Floating AI Chat - Hidden in admin/apply/maintenance */}
       {!hideFab && <FloatingChat />}
+
+      {/* Portal Support Launcher - auth + portal-route gated */}
+      <PortalAuthFloater />
       
       {/* CRM Test Mode Panel - Activated via ?testmode=1 */}
       <CrmTestPanel />
