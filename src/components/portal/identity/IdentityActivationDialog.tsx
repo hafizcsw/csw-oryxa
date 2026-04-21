@@ -216,7 +216,7 @@ export function IdentityActivationDialog({
           "border-border/60 shadow-2xl rounded-2xl",
           "[&>button]:hidden",
           isResultStep
-            ? "!max-w-md w-[96vw] max-h-fit"
+            ? "!max-w-md w-[96vw] max-h-fit text-center font-sans border"
             : "!max-w-[min(1400px,96vw)] w-[96vw] max-h-[92vh] px-[14px] text-center",
         )}
       >
@@ -225,7 +225,7 @@ export function IdentityActivationDialog({
           className={cn(
             "border-b border-border/50 bg-card/40 backdrop-blur-sm",
             isResultStep
-              ? "px-5 pt-4 pb-3 space-y-1"
+              ? "px-5 pt-4 pb-3 space-y-1 py-[17px] my-[3px] sm:text-center"
               : "px-5 sm:px-8 pt-6 pb-4 space-y-2",
           )}
         >
