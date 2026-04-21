@@ -30,7 +30,7 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
 
   const [identityOpen, setIdentityOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [activeView, setActiveView] = useState<PanelView>("oryxa");
+  const [activeView, setActiveView] = useState<PanelView>("default");
   const [authed, setAuthed] = useState(false);
   const [fallbackName, setFallbackName] = useState<string | null>(null);
 
@@ -143,7 +143,7 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
           )}
         </div>
 
-        {showGrid && (
+        {showGrid && activeView === "default" && (
           <PanelCategoriesGrid
             activeView={activeView}
             identityApproved={identityApproved}
@@ -154,19 +154,20 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
         )}
 
         <div className="flex-1 min-h-0 overflow-hidden">
-          {!showGrid || activeView === "oryxa" || activeView === "default" ? (
-            <OryxaTab />
+          {!showGrid || activeView === "oryxa" ? (
+            <OryxaTab onBack={showGrid ? () => setActiveView("default") : undefined} />
           ) : activeView === "messages" ? (
             <MessagesTab
               identityApproved={identityApproved}
               onOpenIdentity={() => setIdentityOpen(true)}
+              onBack={() => setActiveView("default")}
             />
-          ) : (
+          ) : activeView === "getSupport" ? (
             <GetSupportView
-              onBack={() => setActiveView("oryxa")}
+              onBack={() => setActiveView("default")}
               onSubmitted={() => setActiveView("oryxa")}
             />
-          )}
+          ) : null}
         </div>
       </motion.div>
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Send, Loader2, RotateCcw } from "lucide-react";
+import { Send, Loader2, RotateCcw, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ChatMessage } from "@/components/chat/ChatMessage";
@@ -9,8 +9,14 @@ import { useMalakChat } from "@/contexts/MalakChatContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSmartScroll } from "@/hooks/useSmartScroll";
 
-export function OryxaTab() {
-  const { t } = useLanguage();
+interface OryxaTabProps {
+  onBack?: () => void;
+}
+
+export function OryxaTab({ onBack }: OryxaTabProps = {}) {
+  const { t, language } = useLanguage();
+  const isRtl = language === "ar";
+  const Arrow = isRtl ? ArrowRight : ArrowLeft;
   const {
     messages,
     universities,
@@ -61,6 +67,18 @@ export function OryxaTab() {
 
   return (
     <div className="flex flex-col h-full min-h-0">
+      {onBack && (
+        <div className="flex items-center px-3 py-2 border-b border-border/40 bg-card/40">
+          <button
+            type="button"
+            onClick={onBack}
+            className="h-8 px-2 inline-flex items-center gap-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors text-[12px]"
+          >
+            <Arrow className="h-3.5 w-3.5" />
+            {t("portal.support.panel.back", { defaultValue: "Back" })}
+          </button>
+        </div>
+      )}
       <div
         ref={scrollRef}
         onScroll={handleScroll}
