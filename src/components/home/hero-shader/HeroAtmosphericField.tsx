@@ -143,6 +143,14 @@ export function HeroAtmosphericField({ variant = 'quieter', className }: Props) 
       const ms = program.uniforms.uMouseStrength;
       ms.value += (mouseTarget.strength - ms.value) * MOUSE_LERP;
 
+      // Tint follows theme: black ink on light bg, white ink on dark bg
+      const isDark = document.documentElement.classList.contains('dark');
+      const tint = program.uniforms.uTint.value as Vec3;
+      const target = isDark ? 1 : 0;
+      tint.x += (target - tint.x) * 0.1;
+      tint.y = tint.x;
+      tint.z = tint.x;
+
       program.uniforms.uTime.value = elapsed;
       renderer.render({ scene: mesh });
       raf = requestAnimationFrame(loop);
@@ -191,7 +199,7 @@ export function HeroAtmosphericField({ variant = 'quieter', className }: Props) 
         height: '100%',
         pointerEvents: 'none',
         zIndex: 1,
-        mixBlendMode: 'difference',
+        mixBlendMode: 'normal',
       }}
     />
   );
