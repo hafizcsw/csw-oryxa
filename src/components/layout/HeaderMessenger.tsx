@@ -1,28 +1,17 @@
 /**
- * Facebook-style Messenger + Notifications icons for the global navbar.
- * Uses canonical comm backbone for unread counts.
+ * Facebook-style Notifications icon for the global navbar.
+ * The Messages icon was removed; messaging lives in the floating support panel.
  */
-import { Bell } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useTranslation } from 'react-i18next';
+import { NotificationsPopover } from './NotificationsPopover';
 
 interface HeaderMessengerProps {
   onMessagesClick?: () => void;
 }
 
-export function HeaderMessenger({ onMessagesClick: _onMessagesClick }: HeaderMessengerProps) {
-  const { t } = useTranslation();
-
+export function HeaderMessenger(_props: HeaderMessengerProps) {
   return (
     <div className="flex items-center gap-0.5">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="relative rounded-full hover:bg-muted transition-all h-8 w-8 sm:h-9 sm:w-9"
-        title={t('notifications.title')}
-      >
-        <Bell className="w-[18px] h-[18px] text-foreground/80" />
-      </Button>
+      <NotificationsPopover />
     </div>
   );
 }
