@@ -961,14 +961,22 @@ function ResultStep({
     destructive: "ring-destructive/20 bg-destructive/5",
     info: "ring-primary/20 bg-primary/5",
   }[tone];
+  const btnTone = {
+    success: "bg-success text-success-foreground hover:bg-success/90",
+    warning: "bg-warning text-warning-foreground hover:bg-warning/90",
+    destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+    info: "bg-primary text-primary-foreground hover:bg-primary/90",
+  }[tone];
   return (
-    <div className="flex flex-col items-center text-center gap-3 py-6 max-w-sm mx-auto">
-      <div className={cn("flex items-center justify-center w-[76px] h-[76px] rounded-full ring-[6px] ring-offset-2 ring-offset-background [&>svg]:w-10 [&>svg]:h-10", ringTone)}>
+    <div className="flex flex-col items-center text-center gap-4 py-4 w-full max-w-sm mx-auto">
+      <div className={cn("flex items-center justify-center w-[72px] h-[72px] rounded-full ring-[6px] ring-offset-2 ring-offset-background [&>svg]:w-9 [&>svg]:h-9", ringTone)}>
         {icon}
       </div>
-      <h3 className="text-base font-bold text-foreground">{title}</h3>
-      <p className="text-xs text-muted-foreground leading-relaxed">{body}</p>
-      <Button size="default" onClick={onCta} className="mt-2 min-w-[160px] h-10 text-sm">
+      <div className="space-y-1.5">
+        <h3 className="text-base font-bold text-foreground leading-tight">{title}</h3>
+        <p className="text-xs text-muted-foreground leading-relaxed px-2">{body}</p>
+      </div>
+      <Button onClick={onCta} className={cn("w-full h-11 text-sm font-semibold rounded-xl shadow-sm", btnTone)}>
         {ctaLabel}
       </Button>
     </div>
