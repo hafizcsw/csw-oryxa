@@ -208,7 +208,7 @@ export function IdentityActivationDialog({
           "bg-gradient-to-br from-background via-background to-muted/30",
           "border-border/60 shadow-2xl rounded-2xl",
           "max-h-[92vh]",
-          "[&>button]:hidden",
+          "[&>button]:hidden px-[14px] text-center",
         )}
       >
         {/* Header */}
