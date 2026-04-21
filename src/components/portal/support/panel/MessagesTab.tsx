@@ -229,18 +229,44 @@ export function MessagesTab({ identityApproved, onOpenIdentity, onBack }: Messag
         )}
       </div>
 
-      <div className="p-3 border-t border-border/40">
-        <button
-          type="button"
-          onClick={() => navigate("/messages")}
-          className="w-full text-center text-[12px] text-primary hover:underline py-1"
-        >
-          {t("portal.support.panel.messages.openFullPage", {
-            defaultValue: "Open Messages page",
-          })}
-          {" →"}
-        </button>
-      </div>
+      {identityApproved ? (
+        <div className="mt-auto shrink-0 bg-card border-t border-border/40 px-3 py-2.5 flex items-center gap-2">
+          <Textarea
+            value={quickMsg}
+            onChange={(e) => setQuickMsg(e.target.value)}
+            onKeyDown={onQuickKey}
+            placeholder={t("portal.support.panel.messages.quickPlaceholder", {
+              defaultValue: "Write a message…",
+            })}
+            rows={1}
+            disabled={sending}
+            className="min-h-[40px] max-h-28 resize-none text-sm flex-1 bg-muted/40 border-0 rounded-full px-4 py-2 focus-visible:ring-1 focus-visible:ring-ring/40"
+          />
+          <Button
+            type="button"
+            size="icon"
+            onClick={sendQuick}
+            disabled={!quickMsg.trim() || sending}
+            className="h-9 w-9 rounded-full flex-shrink-0"
+            aria-label={t("portal.support.panel.messages.send", { defaultValue: "Send" })}
+          >
+            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          </Button>
+        </div>
+      ) : (
+        <div className="p-3 border-t border-border/40">
+          <button
+            type="button"
+            onClick={() => navigate("/messages")}
+            className="w-full text-center text-[12px] text-primary hover:underline py-1"
+          >
+            {t("portal.support.panel.messages.openFullPage", {
+              defaultValue: "Open Messages page",
+            })}
+            {" →"}
+          </button>
+        </div>
+      )}
 
       <SupportSubmitDialog
         open={newOpen}
