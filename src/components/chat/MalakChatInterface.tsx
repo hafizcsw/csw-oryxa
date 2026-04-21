@@ -1618,7 +1618,6 @@ export function MalakChatInterface({
           </div>
           </div>
         </div>
-      </div>
   );
 
   return (
