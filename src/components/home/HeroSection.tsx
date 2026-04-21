@@ -23,10 +23,11 @@ interface TickerSettings {
 
 export function HeroSection() {
   const { language, t } = useLanguage();
-  const { showSuggestedPrograms, universities, messages } = useMalakChat();
+  const { showSuggestedPrograms, universities } = useMalakChat();
   const isArabic = language === 'ar';
   const [isTickerVisible, setIsTickerVisible] = useState(true);
   const [compareDrawerOpen, setCompareDrawerOpen] = useState(false);
+  const [chatMessageCount, setChatMessageCount] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Check if we're in deep search mode
