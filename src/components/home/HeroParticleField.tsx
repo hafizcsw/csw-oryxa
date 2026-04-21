@@ -1,71 +1,55 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * HeroParticleField — Antigravity-style subtle particle layer.
- * White-only, low opacity, ultra-soft non-synchronized flicker.
- * Sits above gradient, below content (caller controls z-index via wrapper).
+ * HeroParticleField — Antigravity-style grid field.
+ * Thin white grid lines + intersection dots that breathe and react to mouse.
+ * No scattered particles. Sits above gradient, below content.
  */
-export interface ParticleFieldConfig {
-  particleCount: number;
-  sizeMin: number;
-  sizeMax: number;
-  baseOpacityMin: number;
-  baseOpacityMax: number;
-  flickerAmplitudeMin: number;
-  flickerAmplitudeMax: number;
-  flickerSpeedMinSec: number;
-  flickerSpeedMaxSec: number;
+export interface GridFieldConfig {
   gridSpacing: number;
-  jitter: number;
-  drift: number;
+  lineOpacity: number;
+  dotOpacityMin: number;
+  dotOpacityMax: number;
+  dotRadius: number;
   mouseRadius: number;
-  mouseDisplacement: number;
   mouseOpacityBoost: number;
-  mouseEase: number; // 0..1, higher = faster return
+  mouseDisplacement: number;
+  mouseEase: number;
+  breatheAmplitude: number;
+  breatheSpeedSec: number;
 }
 
-const DEFAULT_CONFIG: ParticleFieldConfig = {
-  particleCount: 140,
-  sizeMin: 0.8,
-  sizeMax: 1.6,
-  baseOpacityMin: 0.08,
-  baseOpacityMax: 0.18,
-  flickerAmplitudeMin: 0.02,
-  flickerAmplitudeMax: 0.06,
-  flickerSpeedMinSec: 3,
-  flickerSpeedMaxSec: 6,
-  gridSpacing: 80,
-  jitter: 20,
-  drift: 0.1,
-  mouseRadius: 160,
-  mouseDisplacement: 8,
-  mouseOpacityBoost: 0.06,
-  mouseEase: 0.08,
+const DEFAULT_CONFIG: GridFieldConfig = {
+  gridSpacing: 64,
+  lineOpacity: 0.05,
+  dotOpacityMin: 0.10,
+  dotOpacityMax: 0.18,
+  dotRadius: 1.2,
+  mouseRadius: 220,
+  mouseOpacityBoost: 0.12,
+  mouseDisplacement: 3,
+  mouseEase: 0.06,
+  breatheAmplitude: 0.01,
+  breatheSpeedSec: 8,
 };
 
-interface Particle {
-  hx: number; // home x
-  hy: number; // home y
+interface Dot {
+  hx: number;
+  hy: number;
   x: number;
   y: number;
-  size: number;
   baseOpacity: number;
-  flickerAmp: number;
-  flickerOmega: number;
-  flickerPhase: number;
-  driftAngle: number;
-  driftSpeed: number;
 }
 
 export function HeroParticleField({
   config: userConfig,
   className,
 }: {
-  config?: Partial<ParticleFieldConfig>;
+  config?: Partial<GridFieldConfig>;
   className?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const configRef = useRef<ParticleFieldConfig>({ ...DEFAULT_CONFIG, ...userConfig });
+  const configRef = useRef<GridFieldConfig>({ ...DEFAULT_CONFIG, ...userConfig });
 
   useEffect(() => {
     configRef.current = { ...DEFAULT_CONFIG, ...userConfig };
@@ -80,7 +64,9 @@ export function HeroParticleField({
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const isMobile = window.matchMedia('(max-width: 640px)').matches;
 
-    let particles: Particle[] = [];
+    let dots: Dot[] = [];
+    let cols: number[] = []; // x positions of vertical lines
+    let rows: number[] = []; // y positions of horizontal lines
     let width = 0;
     let height = 0;
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -90,44 +76,38 @@ export function HeroParticleField({
 
     const mouse = { x: -9999, y: -9999, active: false };
 
-    const rand = (min: number, max: number) => min + Math.random() * (max - min);
-
-    const buildParticles = () => {
+    const buildGrid = () => {
       const cfg = configRef.current;
-      const spacing = cfg.gridSpacing * (isMobile ? 1.2 : 1);
-      const cols = Math.max(1, Math.floor(width / spacing));
-      const rows = Math.max(1, Math.floor(height / spacing));
-      const cellW = width / cols;
-      const cellH = height / rows;
+      const spacing = cfg.gridSpacing * (isMobile ? 1.15 : 1);
 
-      const targetCount = isMobile
-        ? Math.floor(cfg.particleCount / 2)
-        : cfg.particleCount;
+      cols = [];
+      rows = [];
+      const nCols = Math.ceil(width / spacing) + 1;
+      const nRows = Math.ceil(height / spacing) + 1;
+      // Center the grid so it feels intentional
+      const offsetX = (width - (nCols - 1) * spacing) / 2;
+      const offsetY = (height - (nRows - 1) * spacing) / 2;
 
-      const arr: Particle[] = [];
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (arr.length >= targetCount) break;
-          const cx = c * cellW + cellW / 2 + rand(-cfg.jitter, cfg.jitter);
-          const cy = r * cellH + cellH / 2 + rand(-cfg.jitter, cfg.jitter);
+      for (let c = 0; c < nCols; c++) cols.push(offsetX + c * spacing);
+      for (let r = 0; r < nRows; r++) rows.push(offsetY + r * spacing);
+
+      const arr: Dot[] = [];
+      for (let r = 0; r < rows.length; r++) {
+        for (let c = 0; c < cols.length; c++) {
+          const x = cols[c];
+          const y = rows[r];
           arr.push({
-            hx: cx,
-            hy: cy,
-            x: cx,
-            y: cy,
-            size: rand(cfg.sizeMin, cfg.sizeMax),
-            baseOpacity: rand(cfg.baseOpacityMin, cfg.baseOpacityMax),
-            flickerAmp: rand(cfg.flickerAmplitudeMin, cfg.flickerAmplitudeMax),
-            flickerOmega:
-              (Math.PI * 2) /
-              rand(cfg.flickerSpeedMinSec, cfg.flickerSpeedMaxSec),
-            flickerPhase: Math.random() * Math.PI * 2,
-            driftAngle: Math.random() * Math.PI * 2,
-            driftSpeed: rand(0.3, 1) * cfg.drift,
+            hx: x,
+            hy: y,
+            x,
+            y,
+            baseOpacity:
+              cfg.dotOpacityMin +
+              Math.random() * (cfg.dotOpacityMax - cfg.dotOpacityMin),
           });
         }
       }
-      particles = arr;
+      dots = arr;
     };
 
     const resize = () => {
@@ -138,7 +118,7 @@ export function HeroParticleField({
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      buildParticles();
+      buildGrid();
     };
 
     const onMove = (e: MouseEvent) => {
@@ -160,7 +140,61 @@ export function HeroParticleField({
       } else if (!running) {
         running = true;
         startTime = performance.now();
-        loop(startTime);
+        rafId = requestAnimationFrame(loop);
+      }
+    };
+
+    // Draw a horizontal line with mouse-aware opacity falloff via segmenting
+    const drawLineWithMouse = (
+      x1: number,
+      y1: number,
+      x2: number,
+      y2: number,
+      baseAlpha: number,
+      mouseEnabled: boolean,
+      cfg: GridFieldConfig,
+    ) => {
+      if (!mouseEnabled) {
+        ctx.strokeStyle = `rgba(255,255,255,${baseAlpha})`;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        return;
+      }
+
+      // Segment line every ~24px and modulate alpha per segment
+      const isHoriz = y1 === y2;
+      const len = isHoriz ? x2 - x1 : y2 - y1;
+      const seg = 24;
+      const steps = Math.max(1, Math.ceil(len / seg));
+      const r2 = cfg.mouseRadius * cfg.mouseRadius;
+
+      for (let i = 0; i < steps; i++) {
+        const t1 = i / steps;
+        const t2 = (i + 1) / steps;
+        const sx1 = isHoriz ? x1 + len * t1 : x1;
+        const sx2 = isHoriz ? x1 + len * t2 : x1;
+        const sy1 = isHoriz ? y1 : y1 + len * t1;
+        const sy2 = isHoriz ? y1 : y1 + len * t2;
+
+        const mx = (sx1 + sx2) / 2;
+        const my = (sy1 + sy2) / 2;
+        const dx = mx - mouse.x;
+        const dy = my - mouse.y;
+        const d2 = dx * dx + dy * dy;
+
+        let alpha = baseAlpha;
+        if (d2 < r2) {
+          const falloff = 1 - Math.sqrt(d2) / cfg.mouseRadius;
+          alpha = baseAlpha + falloff * cfg.mouseOpacityBoost;
+        }
+
+        ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+        ctx.beginPath();
+        ctx.moveTo(sx1, sy1);
+        ctx.lineTo(sx2, sy2);
+        ctx.stroke();
       }
     };
 
@@ -171,53 +205,56 @@ export function HeroParticleField({
 
       ctx.clearRect(0, 0, width, height);
 
-      const mouseEnabled = !isMobile && mouse.active;
+      // Idle breathing — global subtle alpha modulation
+      const breathe = reduceMotion
+        ? 0
+        : Math.sin((t * Math.PI * 2) / cfg.breatheSpeedSec) * cfg.breatheAmplitude;
+
+      const mouseEnabled = !isMobile && !reduceMotion && mouse.active;
       const r2 = cfg.mouseRadius * cfg.mouseRadius;
+      const lineAlpha = Math.max(0, cfg.lineOpacity + breathe);
 
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
+      ctx.lineWidth = 1;
 
-        // Idle drift — extremely small, slow wandering around home position
-        if (!reduceMotion) {
-          p.driftAngle += 0.0008;
-          const dxIdle = Math.cos(p.driftAngle) * p.driftSpeed;
-          const dyIdle = Math.sin(p.driftAngle) * p.driftSpeed;
-          p.hx += dxIdle * 0.02;
-          p.hy += dyIdle * 0.02;
-        }
+      // Vertical lines
+      for (let c = 0; c < cols.length; c++) {
+        const x = cols[c];
+        drawLineWithMouse(x, 0, x, height, lineAlpha, mouseEnabled, cfg);
+      }
+      // Horizontal lines
+      for (let r = 0; r < rows.length; r++) {
+        const y = rows[r];
+        drawLineWithMouse(0, y, width, y, lineAlpha, mouseEnabled, cfg);
+      }
 
-        // Mouse field
-        let targetX = p.hx;
-        let targetY = p.hy;
-        let opacityBoost = 0;
+      // Intersection dots — with displacement + opacity boost near mouse
+      for (let i = 0; i < dots.length; i++) {
+        const d = dots[i];
+
+        let targetX = d.hx;
+        let targetY = d.hy;
+        let alpha = d.baseOpacity + breathe;
 
         if (mouseEnabled) {
-          const dx = p.hx - mouse.x;
-          const dy = p.hy - mouse.y;
-          const d2 = dx * dx + dy * dy;
-          if (d2 < r2 && d2 > 0) {
-            const d = Math.sqrt(d2);
-            const falloff = 1 - d / cfg.mouseRadius; // 0..1
+          const dx = d.hx - mouse.x;
+          const dy = d.hy - mouse.y;
+          const dist2 = dx * dx + dy * dy;
+          if (dist2 < r2 && dist2 > 0) {
+            const dist = Math.sqrt(dist2);
+            const falloff = 1 - dist / cfg.mouseRadius;
             const push = falloff * cfg.mouseDisplacement;
-            targetX = p.hx + (dx / d) * push;
-            targetY = p.hy + (dy / d) * push;
-            opacityBoost = falloff * cfg.mouseOpacityBoost;
+            targetX = d.hx + (dx / dist) * push;
+            targetY = d.hy + (dy / dist) * push;
+            alpha += falloff * cfg.mouseOpacityBoost;
           }
         }
 
-        // Ease toward target (smooth return when mouse leaves)
-        p.x += (targetX - p.x) * cfg.mouseEase;
-        p.y += (targetY - p.y) * cfg.mouseEase;
+        d.x += (targetX - d.x) * cfg.mouseEase;
+        d.y += (targetY - d.y) * cfg.mouseEase;
 
-        // Flicker — sine wave with per-particle phase/freq → non-synchronized
-        const flicker = reduceMotion
-          ? 0
-          : Math.sin(t * p.flickerOmega + p.flickerPhase) * p.flickerAmp;
-
-        const alpha = Math.max(0, Math.min(1, p.baseOpacity + flicker + opacityBoost));
-
+        alpha = Math.max(0, Math.min(1, alpha));
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.arc(d.x, d.y, cfg.dotRadius, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255,255,255,${alpha})`;
         ctx.fill();
       }
