@@ -163,17 +163,16 @@ export function HeroSection() {
         ref={containerRef}
         className={`relative overflow-hidden ${isDeepSearchMode ? 'h-[calc(100dvh-80px)] sm:h-[calc(100dvh-100px)]' : 'min-h-[calc(100dvh-80px)] sm:min-h-[calc(100dvh-100px)]'}`}
       >
-        {/* Lovable-style ambient gradient background */}
+        {/* Lovable-style ambient gradient: blue top → pink middle → orange bottom */}
         <div className="absolute inset-0 bg-[#0a0a0f]" />
         <div
           className="absolute inset-0"
           style={{
             backgroundImage: [
-              'radial-gradient(ellipse 70% 55% at 18% 88%, rgba(220, 38, 38, 0.55), transparent 60%)',
-              'radial-gradient(ellipse 65% 50% at 85% 85%, rgba(234, 88, 12, 0.45), transparent 60%)',
-              'radial-gradient(ellipse 80% 60% at 50% 95%, rgba(244, 114, 22, 0.35), transparent 65%)',
-              'radial-gradient(ellipse 60% 50% at 90% 20%, rgba(124, 58, 237, 0.35), transparent 60%)',
-              'radial-gradient(ellipse 55% 45% at 10% 15%, rgba(30, 64, 175, 0.40), transparent 60%)',
+              'radial-gradient(ellipse 90% 55% at 50% 35%, rgba(37, 99, 235, 0.55), transparent 65%)',
+              'radial-gradient(ellipse 95% 50% at 50% 65%, rgba(236, 72, 153, 0.60), transparent 65%)',
+              'radial-gradient(ellipse 100% 55% at 50% 100%, rgba(249, 115, 22, 0.65), transparent 70%)',
+              'radial-gradient(ellipse 70% 40% at 50% 0%, rgba(10, 10, 20, 0.9), transparent 70%)',
             ].join(', '),
           }}
         />
@@ -182,7 +181,7 @@ export function HeroSection() {
           className="absolute inset-0"
           style={{
             backgroundImage:
-              'radial-gradient(ellipse 90% 70% at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%)',
+              'radial-gradient(ellipse 95% 75% at 50% 50%, transparent 50%, rgba(0,0,0,0.45) 100%)',
           }}
         />
 
