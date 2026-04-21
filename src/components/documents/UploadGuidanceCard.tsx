@@ -17,7 +17,7 @@ export function UploadGuidanceCard() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="rounded-xl border border-border bg-card text-card-foreground shadow-sm overflow-hidden"
+      className="overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border bg-muted/30">

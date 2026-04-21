@@ -603,21 +603,25 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         onSave={handleSaveDocuments}
       />
 
-      {/* ═══ Door 2: Central Upload Hub ═══ */}
-      <section className="space-y-4">
+      {/* ═══ Door 2: Central Upload Hub — unified card ═══ */}
+      <section className="rounded-xl border border-border bg-card text-card-foreground shadow-sm overflow-hidden">
         <UploadGuidanceCard />
-        <CentralUploadHub
-          records={registry.records}
-          isUploading={registry.isUploading}
-          disabled={crmProfile?.docs_locked}
-          onFilesSelected={handleFilesSelected}
-          onCancel={registry.cancelRecord}
-          onDismiss={handleDismissUploadHub}
-          onClearCompleted={registry.clearCompleted}
-          onPreviewsReady={handlePreviewsReady}
-          issuesByDocId={issuesByDocId}
-        />
-        <PostUploadSteps />
+        <div className="border-t border-border bg-background/40 px-4 py-4">
+          <CentralUploadHub
+            records={registry.records}
+            isUploading={registry.isUploading}
+            disabled={crmProfile?.docs_locked}
+            onFilesSelected={handleFilesSelected}
+            onCancel={registry.cancelRecord}
+            onDismiss={handleDismissUploadHub}
+            onClearCompleted={registry.clearCompleted}
+            onPreviewsReady={handlePreviewsReady}
+            issuesByDocId={issuesByDocId}
+          />
+        </div>
+        <div className="border-t border-border">
+          <PostUploadSteps />
+        </div>
       </section>
 
       {/* ═══ Live engine activity — what is the engine doing right now ═══ */}
