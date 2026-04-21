@@ -353,7 +353,7 @@ function Stepper({ currentIndex }: { currentIndex: number }) {
   );
 
   return (
-    <div className="flex items-center w-full max-w-2xl mx-auto px-1">
+    <div className="flex items-center w-full max-w-3xl mx-auto px-1">
       {steps.map((s, i) => {
         const done = i < currentIndex;
         const active = i === currentIndex;
