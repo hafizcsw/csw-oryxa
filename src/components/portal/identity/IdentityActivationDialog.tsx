@@ -634,9 +634,9 @@ function SelfieStep({ onCaptured }: { onCaptured: (file: File) => void }) {
   }, [onCaptured]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 items-start">
-      {/* Camera (large) */}
-      <div className="lg:col-span-3">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 items-start max-w-3xl mx-auto">
+      {/* Camera (reduced ~50%) */}
+      <div className="lg:col-span-3 max-w-md mx-auto w-full">
         {err ? (
           <div className="rounded-2xl border-2 border-destructive/30 bg-destructive/5 p-8 text-center">
             <X className="w-12 h-12 text-destructive mx-auto mb-3" />
@@ -802,9 +802,9 @@ function VideoStep({ onCaptured, errorMessage }: { onCaptured: (file: File) => v
   const progress = recording ? ((5 - secondsLeft) / 5) * circumference : 0;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 items-start">
-      {/* Camera (large) */}
-      <div className="lg:col-span-3">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 items-start max-w-3xl mx-auto">
+      {/* Camera (reduced ~50%) */}
+      <div className="lg:col-span-3 max-w-md mx-auto w-full">
         {err ? (
           <div className="rounded-2xl border-2 border-destructive/30 bg-destructive/5 p-8 text-center">
             <X className="w-12 h-12 text-destructive mx-auto mb-3" />
