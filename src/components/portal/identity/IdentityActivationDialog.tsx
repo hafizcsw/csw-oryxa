@@ -208,16 +208,27 @@ export function IdentityActivationDialog({
           "bg-gradient-to-br from-background via-background to-muted/30",
           "border-border/60 shadow-2xl rounded-2xl",
           "max-h-[92vh]",
+          "[&>button]:hidden",
         )}
       >
         {/* Header */}
         <DialogHeader className="px-5 sm:px-8 pt-6 pb-4 border-b border-border/50 bg-card/40 backdrop-blur-sm space-y-2">
-          <DialogTitle className="flex items-center gap-2.5 text-lg sm:text-xl">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-glow text-primary-foreground shadow-md">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            {t("portal.identity.title")}
-          </DialogTitle>
+          <div className="flex items-start justify-between gap-3">
+            <DialogTitle className="flex items-center gap-2.5 text-lg sm:text-xl">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-glow text-primary-foreground shadow-md">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              {t("portal.identity.title")}
+            </DialogTitle>
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
           <DialogDescription className="text-sm">
             {t("portal.identity.subtitle")}
           </DialogDescription>
@@ -673,6 +684,7 @@ function VideoStep({ onCaptured, errorMessage }: { onCaptured: (file: File) => v
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const [recording, setRecording] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [ready, setReady] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(5);
@@ -718,6 +730,7 @@ function VideoStep({ onCaptured, errorMessage }: { onCaptured: (file: File) => v
     };
     mr.start();
     setRecording(true);
+    setProcessing(false);
     setSecondsLeft(5);
     const tick = setInterval(() => {
       setSecondsLeft((s) => {
@@ -725,6 +738,7 @@ function VideoStep({ onCaptured, errorMessage }: { onCaptured: (file: File) => v
           clearInterval(tick);
           recorderRef.current?.stop();
           setRecording(false);
+          setProcessing(true);
           return 0;
         }
         return s - 1;
@@ -734,6 +748,7 @@ function VideoStep({ onCaptured, errorMessage }: { onCaptured: (file: File) => v
       if (recorderRef.current?.state === "recording") {
         recorderRef.current.stop();
         setRecording(false);
+        setProcessing(true);
       }
     }, VIDEO_MAX_MS + 200);
   }, [onCaptured]);
@@ -840,25 +855,32 @@ function VideoStep({ onCaptured, errorMessage }: { onCaptured: (file: File) => v
           ))}
         </ul>
 
-        <Button
-          size="lg"
-          className="w-full h-12 text-base"
-          variant={recording ? "destructive" : "default"}
-          onClick={start}
-          disabled={!ready || recording || !!err}
-        >
-          {recording ? (
-            <>
-              <Loader2 className="w-5 h-5 me-2 animate-spin" />
-              {t("portal.identity.video.recording")} {secondsLeft}s
-            </>
-          ) : (
-            <>
-              <Video className="w-5 h-5 me-2" />
-              {t("portal.identity.video.start")}
-            </>
-          )}
-        </Button>
+        {processing ? (
+          <div className="w-full h-12 flex items-center justify-center gap-2 rounded-md bg-muted/50 text-sm font-medium text-muted-foreground">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            {t("portal.identity.submit.running")}
+          </div>
+        ) : (
+          <Button
+            size="lg"
+            className="w-full h-12 text-base"
+            variant={recording ? "destructive" : "default"}
+            onClick={start}
+            disabled={!ready || recording || !!err}
+          >
+            {recording ? (
+              <>
+                <Loader2 className="w-5 h-5 me-2 animate-spin" />
+                {t("portal.identity.video.recording")} {secondsLeft}s
+              </>
+            ) : (
+              <>
+                <Video className="w-5 h-5 me-2" />
+                {t("portal.identity.video.start")}
+              </>
+            )}
+          </Button>
+        )}
 
         {errorMessage ? (
           <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
@@ -1006,17 +1028,17 @@ function SummaryStep({
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-5 max-w-4xl mx-auto">
       {/* Banner */}
-      <div className="flex items-start gap-3 rounded-2xl bg-gradient-to-br from-success/10 via-success/5 to-transparent border border-success/30 p-5">
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-success/15 shrink-0">
-          <Sparkles className="w-5 h-5 text-success" />
+      <div className="flex items-start gap-3 rounded-2xl bg-gradient-to-br from-success/10 via-success/5 to-transparent border border-success/30 p-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/15 shrink-0">
+          <Sparkles className="w-4 h-4 text-success" />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-base font-semibold text-foreground leading-tight">
+          <h3 className="text-sm font-semibold text-foreground leading-tight">
             {t("portal.identity.summary.title")}
           </h3>
-          <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
             {t("portal.identity.summary.subtitle")}
           </p>
         </div>
@@ -1027,21 +1049,21 @@ function SummaryStep({
           {t("portal.identity.summary.noFields")}
         </p>
       ) : (
-        <dl className="grid grid-cols-1 sm:grid-cols-6 gap-3">
+        <dl className="grid grid-cols-1 sm:grid-cols-6 gap-2.5">
           {rows.map(({ key, field }) => {
             const Icon = ICONS[key] ?? FileBadge;
             return (
               <div
                 key={key}
                 className={cn(
-                  "rounded-2xl border border-border/60 bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md",
-                  "flex min-h-[110px] flex-col justify-between gap-3",
+                  "rounded-2xl border border-border/60 bg-card p-3 transition-all hover:border-primary/40 hover:shadow-md",
+                  "flex min-h-[88px] flex-col justify-between gap-2",
                   GRID_SPANS[key] ?? "sm:col-span-3",
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
-                    <Icon className="w-4 h-4" />
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+                    <Icon className="w-3.5 h-3.5" />
                   </div>
                   <dt className="text-xs font-medium leading-none text-muted-foreground">
                     {labelFor(key)}
@@ -1050,8 +1072,8 @@ function SummaryStep({
                 <dd
                   dir={key === "document_number" ? "ltr" : "auto"}
                   className={cn(
-                    "break-words text-sm font-semibold leading-6 text-foreground",
-                    key === "full_name" && "text-base leading-7",
+                    "break-words text-[13px] font-semibold leading-5 text-foreground",
+                    key === "full_name" && "text-sm leading-6",
                   )}
                 >
                   {formatValue(key, field!.value as string)}
