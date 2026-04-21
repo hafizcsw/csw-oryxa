@@ -14,6 +14,11 @@ const DEFAULT: IdentityStatusReadback = {
 
 const CACHE_KEY = "identity_status_cache_v1";
 
+// Only "terminal" CRM decisions are safe to cache aggressively.
+// pending/none must always re-check CRM, because the Supabase mirror
+// table is not always updated by CRM and realtime won't fire.
+const TERMINAL_STATUSES = new Set(["approved", "rejected", "reupload_required"]);
+
 interface CacheEntry {
   user_id: string;
   status: IdentityStatusReadback;
