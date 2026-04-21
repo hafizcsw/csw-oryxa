@@ -1428,12 +1428,36 @@ export function MalakChatInterface({
 
           {/* ✅ Chat-First: textarea واحد دائماً - بدون PhoneInput/OTPInput منفصلة */}
           <div className="relative" dir={isRTL ? 'rtl' : 'ltr'}>
+            {/* Rotating placeholder overlay - only when compact + empty + not focused-typing */}
+            {compact && messages.length === 0 && !inputValue && !isChatPaused && (
+              <div className={cn(
+                "pointer-events-none absolute inset-y-0 flex items-start text-muted-foreground",
+                isRTL ? "right-4 left-auto" : "left-4 right-auto",
+                "top-3 sm:top-3.5 text-sm sm:text-base"
+              )}>
+                <TypewriterPlaceholder
+                  phrases={[
+                    t('home.hero.placeholders.0'),
+                    t('home.hero.placeholders.1'),
+                    t('home.hero.placeholders.2'),
+                    t('home.hero.placeholders.3'),
+                    t('home.hero.placeholders.4'),
+                  ]}
+                />
+              </div>
+            )}
             <Textarea 
               ref={textareaRef} 
               value={inputValue} 
               onChange={handleInputChange} 
               onKeyDown={handleKeyDown} 
-              placeholder={isChatPaused ? t('chatPause.placeholder') : (language === 'ar' ? 'اكتب رسالتك...' : 'Type your message...')} 
+              placeholder={
+                compact && messages.length === 0
+                  ? ''
+                  : isChatPaused
+                    ? t('chatPause.placeholder')
+                    : (language === 'ar' ? 'اكتب رسالتك...' : 'Type your message...')
+              } 
               disabled={isChatPaused}
               className={cn(
                 "resize-none rounded-3xl bg-white dark:bg-zinc-800 border border-border/50 shadow-sm focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 text-foreground placeholder:text-muted-foreground",
