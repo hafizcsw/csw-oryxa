@@ -222,7 +222,7 @@ export function IdentityActivationDialog({
       >
         {/* Header */}
         {isResultStep ? (
-          <div className="relative border-b border-border/40 bg-card/30 px-5 pt-4 pb-3">
+          <div className="relative border-b border-border/40 bg-card/30 px-12 pt-3.5 pb-2.5">
             <DialogTitle className="text-[11px] font-semibold text-muted-foreground/80 uppercase tracking-[0.18em] text-center">
               {t("portal.identity.title")}
             </DialogTitle>
@@ -232,7 +232,7 @@ export function IdentityActivationDialog({
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="absolute top-2.5 ltr:right-2.5 rtl:left-2.5 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="absolute top-1/2 -translate-y-1/2 ltr:right-3 rtl:left-3 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               aria-label="Close"
             >
               <X className="w-4 h-4" />
