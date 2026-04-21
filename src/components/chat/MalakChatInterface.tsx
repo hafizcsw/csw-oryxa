@@ -1227,7 +1227,7 @@ export function MalakChatInterface({
                   ? (messages.length === 0 && state === 'idle'
                       ? "bg-[#1a1a1f]/90 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
                       : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[260px] h-[40vh] max-h-[420px]")
-                  : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[550px] h-[70vh] max-h-[800px]"
+                  : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[360px] h-[50vh] max-h-[520px]"
         )}>
            {/* Header - Only in standalone mode */}
            {!isFloating && !compact && (
