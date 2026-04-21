@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { MalakChatInterface } from '@/components/chat/MalakChatInterface';
+import { HeroParticleField } from '@/components/home/HeroParticleField';
 import { DeepSearchLayout } from '@/components/chat/DeepSearchLayout';
 import { SearchResultsPanel } from '@/components/chat/SearchResultsPanel';
 import { DebugOverlay } from '@/components/chat/DebugOverlay';
