@@ -14,6 +14,11 @@ const DEFAULT: IdentityStatusReadback = {
 
 const CACHE_KEY = "identity_status_cache_v1";
 
+// Only "terminal" CRM decisions are safe to cache aggressively.
+// pending/none must always re-check CRM, because the Supabase mirror
+// table is not always updated by CRM and realtime won't fire.
+const TERMINAL_STATUSES = new Set(["approved", "rejected", "reupload_required"]);
+
 interface CacheEntry {
   user_id: string;
   status: IdentityStatusReadback;
@@ -87,22 +92,22 @@ export function useIdentityStatus() {
       userIdRef.current = uid;
       if (!uid) return;
 
-      channel = supabase
-        .channel(`identity-mirror-${uid}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'identity_status_mirror',
-            filter: `user_id=eq.${uid}`,
-          },
-          () => {
-            // CRM-driven change → bypass cache and refetch from CRM.
-            void refetch();
-          }
-        )
-        .subscribe();
+      const ch = supabase.channel(`identity-mirror-${uid}`);
+      ch.on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'identity_status_mirror',
+          filter: `user_id=eq.${uid}`,
+        },
+        () => {
+          // CRM-driven change → bypass cache and refetch from CRM.
+          void refetch();
+        }
+      );
+      ch.subscribe();
+      channel = ch;
     });
 
     ensureAuthListener(qc);
@@ -120,11 +125,14 @@ export function useIdentityStatus() {
       const userId = userData.user?.id ?? null;
       userIdRef.current = userId;
 
-      // Cache-first: if we already have a cached status for this user,
-      // return it without hitting CRM. CRM-driven invalidation is the
-      // only path that should refresh this cache.
+      // Cache-first ONLY for terminal CRM decisions
+      // (approved / rejected / reupload_required).
+      // pending / none must always re-check CRM, because Supabase
+      // mirror is not guaranteed to be in sync and realtime won't fire.
       const cached = readCache(userId);
-      if (cached) return cached;
+      if (cached && TERMINAL_STATUSES.has(cached.identity_status)) {
+        return cached;
+      }
 
       const res = await getIdentityStatus();
       const status = res.ok && res.data ? res.data : DEFAULT;
