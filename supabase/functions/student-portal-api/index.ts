@@ -8729,6 +8729,24 @@ Deno.serve(async (req) => {
         });
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j?.ok === false) {
+          const detailStr = String(j?.detail ?? j?.error ?? '').toLowerCase();
+          // ✅ Idempotent submit — if a prior open request exists, surface as "pending"
+          // instead of a hard failure. The student already has a request being reviewed.
+          const isDuplicateOpen =
+            detailStr.includes('uq_identity_open_request_per_customer') ||
+            detailStr.includes('duplicate key');
+          if (isDuplicateOpen) {
+            console.warn('[identity_activation_submit] open request already exists — returning pending');
+            return Response.json({
+              ok: true,
+              data: {
+                activation_id: null,
+                identity_status: 'pending',
+                submitted_at: new Date().toISOString(),
+                already_open: true,
+              },
+            }, { headers: corsHeaders });
+          }
           console.error('[identity_activation_submit] CRM bridge failed', r.status, j);
           return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}`, http_status: r.status }, { status: 200, headers: corsHeaders });
         }
