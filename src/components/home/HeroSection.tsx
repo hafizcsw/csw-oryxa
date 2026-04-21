@@ -165,23 +165,23 @@ export function HeroSection() {
       >
         {/* Lovable-style ambient gradient: blue top → pink middle → orange bottom */}
         <div className="absolute inset-0 bg-[#0a0a0f]" />
-        {/* Lovable-exact gradient: deep blue top → vivid pink middle → orange bottom */}
+        {/* Lovable gradient-v3 inspired: indigo/blue → magenta/pink → orange */}
         <div
           className="absolute inset-0"
           style={{
             backgroundImage: [
-              'radial-gradient(ellipse 120% 60% at 50% 0%, rgba(30, 64, 175, 0.95), transparent 60%)',
-              'radial-gradient(ellipse 110% 55% at 50% 50%, rgba(236, 72, 153, 0.85), transparent 65%)',
-              'radial-gradient(ellipse 130% 60% at 50% 100%, rgba(249, 115, 22, 0.90), transparent 65%)',
+              'radial-gradient(ellipse 100% 70% at 50% 0%, #1e3a8a 0%, transparent 55%)',
+              'radial-gradient(ellipse 110% 55% at 50% 30%, #4f46e5 0%, transparent 60%)',
+              'radial-gradient(ellipse 120% 60% at 50% 60%, #db2777 0%, transparent 60%)',
+              'radial-gradient(ellipse 130% 65% at 50% 100%, #f97316 0%, transparent 65%)',
             ].join(', '),
           }}
         />
-        {/* soft vignette only on edges */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage:
-              'radial-gradient(ellipse 100% 90% at 50% 50%, transparent 65%, rgba(0,0,0,0.35) 100%)',
+              'radial-gradient(ellipse 100% 90% at 50% 50%, transparent 70%, rgba(0,0,0,0.4) 100%)',
           }}
         />
 
