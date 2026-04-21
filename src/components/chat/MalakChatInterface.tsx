@@ -1257,8 +1257,8 @@ export function MalakChatInterface({
               ? "px-3 py-2 space-y-3"
               : "px-6 py-4 space-y-6"
         )}>
-          {/* Welcome message - يظهر فقط إذا لم توجد رسائل */}
-          {messages.length === 0 && <div className={cn(
+          {/* Welcome message - يظهر فقط إذا لم توجد رسائل وليس compact */}
+          {messages.length === 0 && !compact && <div className={cn(
             "flex flex-col items-center justify-center h-full",
             isFloating
               ? "min-h-[80px] space-y-1"
