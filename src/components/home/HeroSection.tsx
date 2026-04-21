@@ -203,7 +203,7 @@ export function HeroSection() {
               className={`w-full max-w-2xl mx-auto animate-fade-in flex flex-col transition-all duration-300 ${
                 chatMessageCount === 0
                   ? 'gap-8 items-center justify-center pt-[35vh] pb-10'
-                  : 'gap-4 items-stretch justify-start pt-0 pb-6'
+                  : 'gap-4 items-stretch justify-start pt-[8vh] pb-8'
               }`}
             >
               {chatMessageCount === 0 && (
