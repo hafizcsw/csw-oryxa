@@ -1,68 +1,72 @@
 
 
 ## الهدف
-استبدال تأثير الجسيمات الحالي بتأثير Antigravity الحقيقي: **شبكة (grid) من الخطوط الرفيعة جدًا** التي تتنفس وتتفاعل مع الماوس بموجة لطيفة، مع توهج ناعم في نقاط التقاطع. هذا هو التوقيع البصري الحقيقي لـ antigravity.google — وليس نقاط متناثرة.
+استبدال `HeroParticleField` (Canvas 2D) بـ **WebGL shader-based atmospheric field** يعتمد على noise-driven motion + mouse disturbance + depth، مذاب تمامًا داخل الـ gradient الحالي. التصميم/الألوان/الـ layout بدون أي تغيير.
 
-## ما يحدث الآن (المشكلة)
-`HeroParticleField.tsx` يرسم 140 نقطة بيضاء صغيرة. هذا يشبه "starfield" عام — لا يوجد فيه أي شيء يربطه بـ Antigravity.
+## فئة الإيفكت
+**Single full-screen fragment shader** (OGL — ~15 KB gz) يرسم حقل بسيط حيًا فوق الخلفية بـ blend mode `screen`/`additive`، بدون particles مرئية، بدون نقاط، بدون شبكة.
 
-## ما سنبنيه فعلًا
-
-### 1) طبقة Grid (الأساس البصري الحقيقي)
-- خطوط أفقية + عمودية بمسافة ~64px
-- لون أبيض، شفافية منخفضة جدًا (0.04–0.06)
-- سمك 1px فعلي (مع DPR scaling)
-- نقاط (dots) صغيرة في كل تقاطع — قطر ~1.2px، شفافية أعلى قليلًا (0.10–0.18)
-
-### 2) Mouse Field (التأثير المميز)
-هذا أهم شيء وما يجعله "Antigravity":
-- نصف قطر تأثير ~220px حول الماوس
-- داخل النصف القطر: شفافية الخطوط والنقاط ترتفع تدريجيًا (falloff ناعم)
-- النقاط القريبة جدًا تتحرك ~2–4px فقط بعيدًا عن الماوس (إحساس "تنفس" خفيف)
-- العودة بطيئة وسلسة (ease ~0.06)
-
-### 3) Idle Breathing
-- موجة sine عامة بطيئة جدًا (دورة ~8 ثوانٍ) ترفع/تخفض شفافية الـ grid بـ ±0.01
-- هذا يعطي إحساس "حياة" حتى بدون ماوس
-
-### 4) الأداء والـ Accessibility
-- Canvas واحد، rAF واحد
-- Pause عند `document.hidden`
-- `prefers-reduced-motion` → grid ثابت بدون breathing/mouse
-- Mobile (`max-width: 640px`) → mouse field معطّل، الـ grid يبقى
-
-### 5) التكامل مع التصميم
-- لا تغيير على الـ gradient، النص، صندوق ORYXA
-- نفس الموضع: `position: absolute; inset: 0; z-index: 1; pointer-events: none`
-- يبقى تحت المحتوى (z-index: 2)
+## المكتبة
+**OGL** — أصغر بكثير من Three.js، يكفي لـ full-screen shader pass.
 
 ## الملفات
 
-**`src/components/home/HeroParticleField.tsx`** — إعادة كتابة كاملة:
-- إزالة منطق الجسيمات المتناثرة
-- منطق جديد: رسم grid lines + intersection dots + mouse-reactive opacity field
-- نفس الـ API الخارجي (`<HeroParticleField />` بدون props) → لا حاجة لتعديل `HeroSection.tsx`
-- config object قابل للتعديل: `gridSpacing`, `lineOpacity`, `dotOpacity`, `mouseRadius`, `mouseOpacityBoost`, `mouseDisplacement`, `breatheAmplitude`, `breatheSpeedSec`
+### 1) ‎`src/components/home/hero-shader/atmosphericFieldShader.ts` (جديد)
+- `vertex`: full-screen quad ثابت.
+- `fragment`: 
+  - 3D simplex noise (مدمج، ~50 سطر GLSL).
+  - طبقتان من الـ noise بترددات/سرعات مختلفة → **ميكرو-فليكر غير متزامن**.
+  - حقل depth وهمي عبر noise بطيء جدًا (FBM-lite) → إحساس عمق.
+  - **Mouse disturbance**: `uMouse` (vec2 في 0..1) مع `uMouseStrength` (smoothed). تشويش soft Gaussian falloff حول الماوس.
+  - النتيجة: قناع شفافية أبيض monochrome (RGB=1, A=mask) يتراكب فوق الـ gradient → لا يغير الألوان، يضيف "حياة".
+- `uniforms`: `uTime`, `uResolution`, `uMouse`, `uMouseStrength`, `uIntensity`, `uNoiseScale`, `uSpeed`, `uMouseRadius`, `uDepthBoost`.
 
-## القيم الابتدائية المقترحة
-```
-gridSpacing: 64
-lineOpacity: 0.05
-dotOpacityMin: 0.10, dotOpacityMax: 0.18
-mouseRadius: 220
-mouseOpacityBoost: 0.12   // يضاف للخطوط/النقاط داخل النصف القطر
-mouseDisplacement: 3      // إزاحة dots فقط، خطوط ثابتة
-breatheAmplitude: 0.01
-breatheSpeedSec: 8
-```
+### 2) ‎`src/components/home/hero-shader/HeroAtmosphericField.tsx` (جديد، يستبدل HeroParticleField)
+- يُنشئ OGL `Renderer`, `Program`, `Mesh` (full-screen triangle) داخل canvas.
+- `requestAnimationFrame` loop واحد.
+- معالجات `pointermove`/`pointerleave` تحدّث `uMouse` + تنعيم `uMouseStrength` (lerp).
+- `ResizeObserver` لتحديث الـ resolution + DPR (مقصور على 1.5).
+- `document.visibilitychange` → pause.
+- `prefers-reduced-motion` → freeze time + disable mouse.
+- Mobile (`max-width: 640px`) → mouse معطّل، intensity أخفض.
+- **WebGL fallback**: لو `getContext('webgl2'||'webgl')` فشل → render nothing (لا fallback لـ canvas 2D).
+- **Two presets** (الـ A/B المطلوبان) يُمرَّران عبر prop `variant`:
+  ```ts
+  PRESETS = {
+    quieter:    { intensity: 0.10, noiseScale: 1.2, speed: 0.06, mouseRadius: 0.22, depthBoost: 0.35 },
+    reactive:   { intensity: 0.16, noiseScale: 1.6, speed: 0.10, mouseRadius: 0.30, depthBoost: 0.50 },
+  }
+  ```
+- نفس الـ wrapper styling: `position:absolute; inset:0; z-index:1; pointer-events:none; mix-blend-mode: screen` (للذوبان داخل الـ gradient).
 
-## معيار القبول
-- بدون ماوس: شبكة هادئة بالكاد مرئية تتنفس ببطء
-- مع الماوس: هالة دائرية ناعمة تتبع المؤشر وتُضيء الـ grid محليًا
-- لا glow صريح، لا trails، لا نقاط متناثرة
-- النص و ORYXA box يبقيان أوضح عنصر
+### 3) ‎`src/components/home/HeroSection.tsx` (تعديل سطر واحد)
+- استبدال `<HeroParticleField />` بـ `<HeroAtmosphericField variant="quieter" />`.
+- أضع متغير `HERO_FIELD_VARIANT` في أعلى الملف لتبديل سهل بين `'quieter'` و `'reactive'`.
 
-## بعد التنفيذ
-لو الـ effect قوي → نخفض `lineOpacity` و `mouseOpacityBoost`.
-لو ضعيف → نرفعهما تدريجيًا.
+### 4) ‎`src/components/home/HeroParticleField.tsx`
+- **حذف الملف** (لم يعد مستخدمًا).
+
+## مكان الـ config الموحّد
+كل القيم القابلة للتعديل (الـ presets + الثوابت العامة) في رأس `HeroAtmosphericField.tsx` تحت `// === CONFIG ===` block واحد.
+
+## التبعيات
+- إضافة: `ogl@^1.0.11` (~15 KB gz).
+- لا three، لا @react-three/fiber.
+
+## التوافق مع التصميم
+| العنصر | الحالة |
+|---|---|
+| الـ gradient الأزرق→البنفسجي→البرتقالي | بدون تغيير |
+| النص + ORYXA box | بدون تغيير، يبقى z-index: 2 فوق الـ canvas |
+| الـ spacing/layout | بدون تغيير |
+| الألوان | الـ shader يخرج أبيض monochrome فقط، blend `screen` يحافظ على الـ palette |
+
+## التسليم النهائي
+- ملفات مضافة: `hero-shader/atmosphericFieldShader.ts`, `hero-shader/HeroAtmosphericField.tsx`.
+- ملف معدّل: `HeroSection.tsx` (سطر import + سطر JSX + ثابت variant).
+- ملف محذوف: `HeroParticleField.tsx`.
+- التبديل بين A/B = تغيير قيمة `HERO_FIELD_VARIANT` في `HeroSection.tsx`.
+
+## ملاحظة على فيديوهات desktop/mobile
+لا أستطيع توليد فيديوهات تلقائيًا. بعد التنفيذ سأطلب منك مراجعة الـ preview على الشاشتين، وسأرسل screenshots عبر المتصفح إن طلبت.
 
