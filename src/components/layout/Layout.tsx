@@ -212,6 +212,11 @@ export function Layout({
               </>
             )}
 
+            {/* Notifications (authenticated only) — placed right next to avatar */}
+            {isAuthenticated && !hideStudentNav && (
+              <HeaderMessenger />
+            )}
+
             {/* 5. Account/Auth */}
             <HeaderAuth />
           </div>
