@@ -168,27 +168,9 @@ export function HeroSection() {
         ref={containerRef}
         className={`relative overflow-hidden ${isDeepSearchMode ? 'h-[calc(100dvh-80px)] sm:h-[calc(100dvh-100px)]' : 'min-h-[calc(100dvh-80px)] sm:min-h-[calc(100dvh-100px)]'}`}
       >
-        {/* Lovable-style ambient gradient: blue top → pink middle → orange bottom */}
-        <div className="absolute inset-0 bg-[#0a0a0f]" />
-        {/* Lovable gradient-v3 inspired: indigo/blue → magenta/pink → orange */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: [
-              'radial-gradient(ellipse 100% 70% at 50% 0%, #1e3a8a 0%, transparent 55%)',
-              'radial-gradient(ellipse 110% 55% at 50% 30%, #4f46e5 0%, transparent 60%)',
-              'radial-gradient(ellipse 120% 60% at 50% 60%, #db2777 0%, transparent 60%)',
-              'radial-gradient(ellipse 130% 65% at 50% 100%, #f97316 0%, transparent 65%)',
-            ].join(', '),
-          }}
-        />
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage:
-              'radial-gradient(ellipse 100% 90% at 50% 50%, transparent 70%, rgba(0,0,0,0.4) 100%)',
-          }}
-        />
+        {/* Solid hero background: white in light mode, black in dark mode */}
+        <div className="absolute inset-0 bg-white dark:bg-black" />
+
 
         {/* WebGL atmospheric field — noise-driven, mouse-reactive, blends via screen */}
         <HeroAtmosphericField variant={HERO_FIELD_VARIANT} />

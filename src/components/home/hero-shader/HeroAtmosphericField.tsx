@@ -190,7 +190,7 @@ export function HeroAtmosphericField({ variant = 'quieter', className }: Props) 
         height: '100%',
         pointerEvents: 'none',
         zIndex: 1,
-        mixBlendMode: 'screen',
+        mixBlendMode: 'difference',
       }}
     />
   );
