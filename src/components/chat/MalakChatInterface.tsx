@@ -1388,8 +1388,8 @@ export function MalakChatInterface({
         {/* Clarify filters UI removed — search is conversational via bot only */}
 
         {/* Input area */}
-        <div className={cn("flex-shrink-0", compact ? "px-3 pb-3 pt-3 bg-transparent border-0" : "border-t border-border", !compact && (isFloating ? "px-2 pb-1.5 pt-1 bg-background" : isCompactMobileStandalone ? "px-3 pb-3 pt-2 bg-muted/30" : "px-6 pb-6 pt-4 bg-muted/30"))}
-          style={isFloating ? { paddingBottom: 'max(6px, env(safe-area-inset-bottom, 6px))' } : undefined}
+        <div className={cn("flex-shrink-0", compact ? "px-3 pb-3 pt-3 bg-transparent border-0" : "border-t border-border", !compact && (isFloating ? "px-2 pb-1.5 pt-1 bg-background" : isCompactMobileStandalone ? "px-3 pb-3 pt-2 bg-muted/30" : "px-6 pb-6 pt-4 bg-muted/30"), isFullscreen && "w-full max-w-3xl mx-auto !px-4 !pb-8 !pt-3 bg-background border-t border-border")}
+          style={isFloating ? { paddingBottom: 'max(6px, env(safe-area-inset-bottom, 6px))' } : isFullscreen ? { paddingBottom: 'max(32px, env(safe-area-inset-bottom, 32px))' } : undefined}
         >
           {/* الاقتراحات - فقط في البداية وليس compact */}
           {messages.length === 0 && !compact && state !== 'awaiting_phone' && state !== 'awaiting_otp' && <div className={cn("animate-fade-in", isFloating ? "mb-2" : "mb-3")}>
