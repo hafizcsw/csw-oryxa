@@ -59,6 +59,12 @@ export interface SupportTicketRow {
   last_reply_at: string | null;
 }
 
+function getUploadMimeType(slot: "doc" | "selfie" | "video", file: File) {
+  const fallback = file.type || "application/octet-stream";
+  if (slot !== "video") return fallback;
+  return fallback.split(";")[0]?.trim().toLowerCase() || "video/webm";
+}
+
 // ─── Identity ────────────────────────────────────────────────
 async function signIdentityUploadUrl(slot: "doc" | "selfie" | "video", ext: string) {
   return portalInvoke<{ bucket: string; path: string; signed_url: string; token: string; file_kind: string }>(
@@ -85,6 +91,7 @@ async function confirmIdentityUpload(input: {
  *  customer_files row. Returns the canonical CRM file_id. */
 export async function uploadIdentityFile(slot: "doc" | "selfie" | "video", file: File) {
   const ext = (file.name.split(".").pop() || file.type.split("/")[1] || "bin").toLowerCase();
+  const uploadMimeType = getUploadMimeType(slot, file);
   const sign = await signIdentityUploadUrl(slot, ext);
   if (!sign.ok || !sign.data) return { ok: false as const, error: sign.error || "sign_failed" };
   // PUT directly to the CRM-issued signed URL. Do NOT use the portal supabase
@@ -98,7 +105,7 @@ export async function uploadIdentityFile(slot: "doc" | "selfie" | "video", file:
     const putRes = await fetch(putUrl, {
       method: "PUT",
       headers: {
-        "content-type": file.type || "application/octet-stream",
+        "content-type": uploadMimeType,
         "cache-control": "max-age=3600",
       },
       body: file,
@@ -115,7 +122,7 @@ export async function uploadIdentityFile(slot: "doc" | "selfie" | "video", file:
     bucket: sign.data.bucket,
     path: sign.data.path,
     file_name: file.name || `${slot}.${ext}`,
-    mime_type: file.type || "application/octet-stream",
+    mime_type: uploadMimeType,
     size_bytes: file.size || 0,
   };
   const retryDelays = slot === "video" ? [0, 1200, 2500, 5000] : [0, 700, 1500];
