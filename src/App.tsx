@@ -19,7 +19,7 @@ import { RoutePrefetcher } from "@/components/system/RoutePrefetcher";
 import { LocaleRouteWrapper } from "@/components/routing/LocaleRouteWrapper";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { usePresenceHeartbeat } from "@/hooks/usePresence";
-import FloatingChat from "@/components/FloatingChat";
+
 import { PortalAuthFloater } from "@/components/portal/support/PortalAuthFloater";
 import { Layout } from "@/components/layout/Layout";
 import { InstitutionGuard } from "@/components/institution/InstitutionGuard";
