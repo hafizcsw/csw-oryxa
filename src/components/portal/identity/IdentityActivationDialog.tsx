@@ -1055,7 +1055,7 @@ function SummaryStep({
   };
 
   return (
-    <div className="space-y-5 max-w-4xl mx-auto">
+    <div className="space-y-5 max-w-2xl mx-auto">
       {/* Banner */}
       <div className="flex items-start gap-3 rounded-2xl bg-gradient-to-br from-success/10 via-success/5 to-transparent border border-success/30 p-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/15 shrink-0">
