@@ -11,9 +11,11 @@ import { useSupportTickets } from "@/hooks/useSupportTickets";
 export function SupportSubmitDialog({
   open,
   onOpenChange,
+  defaultSubjectKey,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultSubjectKey?: string;
 }) {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -29,6 +31,7 @@ export function SupportSubmitDialog({
     setSubmitting(true);
     const res = await createSupportTicket({
       body: body.trim(),
+      subject_key: defaultSubjectKey,
       client_trace_id: crypto.randomUUID(),
     });
     setSubmitting(false);
