@@ -471,59 +471,58 @@ function DocSelectStep({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
-      {/* Left: doc kind + instructions */}
-      <div className="lg:col-span-2 space-y-5">
-        <div>
-          <h3 className="text-base font-semibold text-foreground mb-1.5">
-            {t("portal.identity.doc.chooseTitle")}
-          </h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {t("portal.identity.doc.instruction")}
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          {kinds.map(({ key, Icon }) => {
-            const active = docKind === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => onKindChange(key)}
-                className={cn(
-                  "group w-full flex items-center gap-3 rounded-xl border-2 p-3.5 text-start transition-all duration-200",
-                  active
-                    ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
-                    : "border-border hover:border-primary/40 hover:bg-muted/40",
-                )}
-              >
-                <div
-                  className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-lg transition-colors shrink-0",
-                    active
-                      ? "bg-gradient-to-br from-primary to-primary-glow text-primary-foreground shadow-sm"
-                      : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
-                  )}
-                >
-                  <Icon className="w-5 h-5" />
-                </div>
-                <span className="text-sm font-semibold text-foreground flex-1">
-                  {t(`portal.identity.docKind.${key}`)}
-                </span>
-                {active && (
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0">
-                    <Check className="w-3 h-3" />
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+    <div className="mx-auto w-full max-w-3xl space-y-5 text-start">
+      {/* Heading */}
+      <div className="text-center space-y-1">
+        <h3 className="text-base font-semibold text-foreground">
+          {t("portal.identity.doc.chooseTitle")}
+        </h3>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          {t("portal.identity.doc.instruction")}
+        </p>
       </div>
 
-      {/* Right: drop zone */}
-      <div className="lg:col-span-3">
+      {/* Doc kind selector — compact horizontal row */}
+      <div className="grid grid-cols-3 gap-2.5">
+        {kinds.map(({ key, Icon }) => {
+          const active = docKind === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onKindChange(key)}
+              className={cn(
+                "group relative flex flex-col items-center justify-center gap-2 rounded-xl border-2 px-2 py-3 text-center transition-all duration-200",
+                active
+                  ? "border-primary bg-primary/5 shadow-sm shadow-primary/10"
+                  : "border-border hover:border-primary/40 hover:bg-muted/40",
+              )}
+            >
+              <div
+                className={cn(
+                  "flex h-9 w-9 items-center justify-center rounded-lg transition-colors",
+                  active
+                    ? "bg-gradient-to-br from-primary to-primary-glow text-primary-foreground shadow-sm"
+                    : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+                )}
+              >
+                <Icon className="w-4.5 h-4.5" />
+              </div>
+              <span className="text-xs sm:text-sm font-semibold text-foreground leading-tight">
+                {t(`portal.identity.docKind.${key}`)}
+              </span>
+              {active && (
+                <span className="absolute top-1.5 end-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <Check className="w-2.5 h-2.5" />
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Drop zone — compact, balanced */}
+      <div>
         <input
           ref={inputRef}
           type="file"
@@ -541,24 +540,24 @@ function DocSelectStep({
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
           className={cn(
-            "w-full min-h-[280px] lg:min-h-[420px] flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed transition-all duration-300 p-8 text-center",
+            "w-full flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed transition-all duration-300 px-6 py-7 text-center",
             dragOver
-              ? "border-primary bg-primary/10 scale-[1.01]"
+              ? "border-primary bg-primary/10"
               : "border-border bg-muted/20 hover:border-primary/50 hover:bg-muted/40",
           )}
         >
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 text-primary">
-            <Upload className="w-10 h-10" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 text-primary">
+            <Upload className="w-7 h-7" />
           </div>
-          <div className="space-y-1.5">
-            <p className="text-base font-semibold text-foreground">
+          <div className="space-y-0.5">
+            <p className="text-sm font-semibold text-foreground">
               {t("portal.identity.doc.dropTitle")}
             </p>
-            <p className="text-sm text-muted-foreground max-w-sm">
+            <p className="text-xs text-muted-foreground">
               {t("portal.identity.doc.dropHint")}
             </p>
           </div>
-          <Button size="lg" type="button" className="mt-2 pointer-events-none">
+          <Button size="sm" type="button" className="mt-1 pointer-events-none">
             <Upload className="w-4 h-4 me-2" />
             {t("portal.identity.doc.upload")}
           </Button>
