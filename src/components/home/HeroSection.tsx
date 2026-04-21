@@ -158,27 +158,42 @@ export function HeroSection() {
           </div>
         </div>
       )}
-      {/* Main Chat Section - Fixed Height */}
-      <div ref={containerRef} className="relative overflow-hidden h-[calc(100dvh-80px)] sm:h-[calc(100dvh-100px)]">
-        {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 opacity-90" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
-        
-        {/* Content Container - Perfect Centering */}
-        <div className="relative z-10 w-full h-full max-w-6xl mx-auto px-4 sm:px-8 py-4 flex items-center justify-center">
-          {/* Deep Search Layout */}
-          <div className="flex-1 min-h-0 max-h-[calc(100%-2rem)]">
-            <DeepSearchLayout
-              chatComponent={
-<div className="w-full h-full max-w-4xl mx-auto animate-fade-in" style={{ animationDelay: '200ms' }}>
-                  <MalakChatInterface isInDeepSearch={isDeepSearchMode} />
-                </div>
-              }
-              resultsComponent={
-                <SearchResultsPanel />
-              }
-            />
-          </div>
+      {/* Main Chat Section */}
+      <div
+        ref={containerRef}
+        className={`relative overflow-hidden ${isDeepSearchMode ? 'h-[calc(100dvh-80px)] sm:h-[calc(100dvh-100px)]' : 'min-h-[calc(100dvh-80px)] sm:min-h-[calc(100dvh-100px)]'}`}
+      >
+        {/* Soft aurora background */}
+        <div
+          className="absolute inset-0 bg-background"
+          style={{
+            backgroundImage:
+              'radial-gradient(ellipse 80% 60% at 50% 0%, hsl(var(--primary) / 0.08), transparent 60%), radial-gradient(ellipse 60% 50% at 80% 100%, hsl(var(--accent) / 0.06), transparent 60%)',
+          }}
+        />
+
+        <div className="relative z-10 w-full h-full max-w-6xl mx-auto px-4 sm:px-8 py-8 flex items-center justify-center">
+          {isDeepSearchMode ? (
+            <div className="flex-1 min-h-0 max-h-[calc(100%-2rem)] w-full">
+              <DeepSearchLayout
+                chatComponent={
+                  <div className="w-full h-full max-w-4xl mx-auto animate-fade-in" style={{ animationDelay: '200ms' }}>
+                    <MalakChatInterface isInDeepSearch={isDeepSearchMode} />
+                  </div>
+                }
+                resultsComponent={<SearchResultsPanel />}
+              />
+            </div>
+          ) : (
+            <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-8 animate-fade-in">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-center text-foreground">
+                {t('home.hero.title')}
+              </h1>
+              <div className="w-full">
+                <MalakChatInterface isInDeepSearch={false} compact />
+              </div>
+            </div>
+          )}
         </div>
       </div>
       

@@ -47,6 +47,7 @@ import { BuildStamp, InlineBuildStamp } from './BuildStamp';
 import { ConsentBanner } from './ConsentBanner';
 
 import { AIIcon } from '@/components/icons/AIIcon';
+import { TypewriterPlaceholder } from './TypewriterPlaceholder';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 // Native scroll used instead of ScrollArea for better compatibility
@@ -137,10 +138,13 @@ function getSmartErrorMessage(err: any, t: (key: string) => string): SmartErrorR
 interface MalakChatInterfaceProps {
   variant?: 'standalone' | 'floating';
   isInDeepSearch?: boolean;
+  /** Compact landing mode: hides welcome orb + suggested prompts, shows rotating placeholder. */
+  compact?: boolean;
 }
 export function MalakChatInterface({
   variant = 'standalone',
-  isInDeepSearch = false
+  isInDeepSearch = false,
+  compact = false,
 }: MalakChatInterfaceProps) {
   const isFloating = variant === 'floating';
   const isMobile = useIsMobile();
@@ -1212,10 +1216,12 @@ export function MalakChatInterface({
             ? "h-full bg-card" 
             : isInDeepSearch
               ? "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl h-full min-h-[400px]"
-              : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[550px] h-[70vh] max-h-[800px]"
+              : compact
+                ? "bg-card/80 backdrop-blur-sm rounded-2xl border border-border/60 shadow-lg"
+                : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[550px] h-[70vh] max-h-[800px]"
         )}>
            {/* Header - Only in standalone mode */}
-           {!isFloating && (
+           {!isFloating && !compact && (
              <div className={cn(
                "flex items-center justify-between border-b border-border bg-muted/30",
                isCompactMobileStandalone ? "px-3 py-2" : "px-6 py-3"
@@ -1244,7 +1250,8 @@ export function MalakChatInterface({
            )}
 
 
-        {/* Messages Area - Native scroll */}
+        {/* Messages Area - hidden in compact-empty state to keep box small */}
+        {!(compact && messages.length === 0 && state === 'idle') && (
         <div ref={scrollRef} onScroll={handleScroll} className={cn(
           "flex-1 overflow-y-auto min-h-0",
           isFloating
@@ -1253,8 +1260,8 @@ export function MalakChatInterface({
               ? "px-3 py-2 space-y-3"
               : "px-6 py-4 space-y-6"
         )}>
-          {/* Welcome message - يظهر فقط إذا لم توجد رسائل */}
-          {messages.length === 0 && <div className={cn(
+          {/* Welcome message - يظهر فقط إذا لم توجد رسائل وليس compact */}
+          {messages.length === 0 && !compact && <div className={cn(
             "flex flex-col items-center justify-center h-full",
             isFloating
               ? "min-h-[80px] space-y-1"
@@ -1315,6 +1322,7 @@ export function MalakChatInterface({
 
           <div ref={messagesEndRef} id="chat_bottom" />
         </div>
+        )}
 
         {/* Error alert */}
         {error && <div className="p-4 border-t border-border">
@@ -1364,8 +1372,8 @@ export function MalakChatInterface({
         <div className={cn("flex-shrink-0 border-t border-border", isFloating ? "px-2 pb-1.5 pt-1 bg-background" : isCompactMobileStandalone ? "px-3 pb-3 pt-2 bg-muted/30" : "px-6 pb-6 pt-4 bg-muted/30")}
           style={isFloating ? { paddingBottom: 'max(6px, env(safe-area-inset-bottom, 6px))' } : undefined}
         >
-          {/* الاقتراحات - فقط في البداية */}
-          {messages.length === 0 && state !== 'awaiting_phone' && state !== 'awaiting_otp' && <div className={cn("animate-fade-in", isFloating ? "mb-2" : "mb-3")}>
+          {/* الاقتراحات - فقط في البداية وليس compact */}
+          {messages.length === 0 && !compact && state !== 'awaiting_phone' && state !== 'awaiting_otp' && <div className={cn("animate-fade-in", isFloating ? "mb-2" : "mb-3")}>
               <div className={cn("grid grid-cols-2 mx-auto", isFloating ? "gap-1.5 max-w-[320px]" : isCompactMobileStandalone ? "gap-2 max-w-[340px]" : "gap-2 max-w-2xl")}>
                 {SUGGESTED_PROMPTS.map((prompt, i) => <button key={i} onClick={() => handlePromptClick(prompt)} disabled={state === 'thinking'} className={cn("inline-flex items-center font-medium rounded-lg border border-border bg-muted/80 hover:bg-muted hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed", isFloating ? "gap-1 px-1.5 py-1 text-[9px]" : isCompactMobileStandalone ? "gap-1.5 px-2 py-1.5 text-[11px]" : "gap-1.5 px-3 py-2 text-xs")}>
                     <Sparkles className={cn("text-blue-600 dark:text-blue-400 flex-shrink-0", isFloating ? "w-2.5 h-2.5" : isCompactMobileStandalone ? "w-3 h-3" : "w-3.5 h-3.5")} />
@@ -1424,12 +1432,36 @@ export function MalakChatInterface({
 
           {/* ✅ Chat-First: textarea واحد دائماً - بدون PhoneInput/OTPInput منفصلة */}
           <div className="relative" dir={isRTL ? 'rtl' : 'ltr'}>
+            {/* Rotating placeholder overlay - only when compact + empty + not focused-typing */}
+            {compact && messages.length === 0 && !inputValue && !isChatPaused && (
+              <div className={cn(
+                "pointer-events-none absolute inset-y-0 flex items-start text-muted-foreground",
+                isRTL ? "right-4 left-auto" : "left-4 right-auto",
+                "top-3 sm:top-3.5 text-sm sm:text-base"
+              )}>
+                <TypewriterPlaceholder
+                  phrases={[
+                    t('home.hero.placeholders.0'),
+                    t('home.hero.placeholders.1'),
+                    t('home.hero.placeholders.2'),
+                    t('home.hero.placeholders.3'),
+                    t('home.hero.placeholders.4'),
+                  ]}
+                />
+              </div>
+            )}
             <Textarea 
               ref={textareaRef} 
               value={inputValue} 
               onChange={handleInputChange} 
               onKeyDown={handleKeyDown} 
-              placeholder={isChatPaused ? t('chatPause.placeholder') : (language === 'ar' ? 'اكتب رسالتك...' : 'Type your message...')} 
+              placeholder={
+                compact && messages.length === 0
+                  ? ''
+                  : isChatPaused
+                    ? t('chatPause.placeholder')
+                    : (language === 'ar' ? 'اكتب رسالتك...' : 'Type your message...')
+              } 
               disabled={isChatPaused}
               className={cn(
                 "resize-none rounded-3xl bg-white dark:bg-zinc-800 border border-border/50 shadow-sm focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 text-foreground placeholder:text-muted-foreground",

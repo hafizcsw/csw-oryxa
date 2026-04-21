@@ -107,12 +107,19 @@
   },
   "home": {
     "hero": {
-      "title": "Your Global Education Partner",
+      "title": "Let's find the best for you",
       "subtitle": "Search programs, find your perfect university destination",
       "searchPlaceholder": "Enter university name...",
       "ticker": {
         "closeAriaLabel": "Close news ticker"
-      }
+      },
+      "placeholders": [
+        "Search for what shapes your future...",
+        "Discover the best universities for you...",
+        "Ask about a scholarship, major, or country...",
+        "Start your academic journey now...",
+        "Tell me your dream — I'll find the path..."
+      ]
     },
     "services": {
       "heading": "Our Premium Student Services",
