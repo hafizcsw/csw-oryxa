@@ -477,18 +477,17 @@ function VideoStep({ onCaptured }: { onCaptured: (file: File) => void }) {
   const start = useCallback(() => {
     if (!streamRef.current) return;
     chunksRef.current = [];
-    const mime = MediaRecorder.isTypeSupported("video/mp4")
-      ? "video/mp4"
-      : MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+    const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
       ? "video/webm;codecs=vp9"
+      : MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")
+      ? "video/webm;codecs=vp8,opus"
       : "video/webm";
     const mr = new MediaRecorder(streamRef.current, { mimeType: mime });
     recorderRef.current = mr;
     mr.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
     mr.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: mime });
-      const ext = mime.includes("mp4") ? "mp4" : "webm";
-      const file = new File([blob], `liveness.${ext}`, { type: mime });
+      const file = new File([blob], "liveness.webm", { type: mime });
       onCaptured(file);
     };
     mr.start();
