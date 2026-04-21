@@ -20,9 +20,11 @@ export function AccountVerificationSteps({
   const { language, t } = useLanguage();
   const isRtl = language === 'ar';
 
+  const isVerified = currentStep > 1 || identityStatus === 'approved';
+
   return (
     <div className="space-y-4" dir={isRtl ? "rtl" : "ltr"}>
-      <div className="grid grid-cols-1 gap-4 max-w-md mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
         {/* Card 1: Account Verification only */}
         <div className={cn(
           "rounded-2xl p-6 min-h-[280px] flex flex-col transition-all duration-300",
