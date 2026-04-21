@@ -2,20 +2,16 @@
  * Facebook-style Messenger + Notifications icons for the global navbar.
  * Uses canonical comm backbone for unread counts.
  */
-import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Bell } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useCommUnreadCount } from '@/hooks/useCommApi';
 import { useTranslation } from 'react-i18next';
 
 interface HeaderMessengerProps {
   onMessagesClick?: () => void;
 }
 
-export function HeaderMessenger({ onMessagesClick }: HeaderMessengerProps) {
-  const navigate = useNavigate();
+export function HeaderMessenger({ onMessagesClick: _onMessagesClick }: HeaderMessengerProps) {
   const { t } = useTranslation();
-  const { count } = useCommUnreadCount();
 
   return (
     <div className="flex items-center gap-0.5">
