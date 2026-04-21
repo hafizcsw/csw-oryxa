@@ -198,7 +198,7 @@ export function HeroSection() {
               />
             </div>
           ) : (
-            <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-8 animate-fade-in">
+            <div className="w-full max-w-2xl mx-auto gap-8 animate-fade-in items-center justify-start flex flex-col my-[240px] pt-[73px] pb-0 pr-[15px]">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-center text-white drop-shadow-lg">
                 {t('home.hero.title')}
               </h1>
