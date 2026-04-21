@@ -962,10 +962,7 @@ function AppContent() {
         </Routes>
       </Suspense>
       
-      {/* Floating AI Chat - Hidden in admin/apply/maintenance */}
-      {!hideFab && <FloatingChat />}
-
-      {/* Portal Support Launcher - auth + portal-route gated */}
+      {/* Unified Floating Launcher — Support + Oryxa AI merged */}
       <PortalAuthFloater />
       
       {/* CRM Test Mode Panel - Activated via ?testmode=1 */}
