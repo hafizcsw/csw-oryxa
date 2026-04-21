@@ -93,15 +93,6 @@ function buildCrmProxyHeaders(params: { apiKey?: string; jwt?: string; traceId: 
   return headers;
 }
 
-function mapCrmIdentityStatus(raw: unknown): 'none' | 'pending' | 'approved' | 'rejected' | 'reupload_required' {
-  const value = String(raw ?? 'none').toLowerCase();
-  if (['submitted', 'under_review', 'in_review', 'processing', 'pending'].includes(value)) return 'pending';
-  if (['accepted', 'approved'].includes(value)) return 'approved';
-  if (['rejected', 'denied'].includes(value)) return 'rejected';
-  if (['reupload_required', 'needs_reupload', 'reupload'].includes(value)) return 'reupload_required';
-  return 'none';
-}
-
 // CRM Project - Source of Truth
 const CRM_SUPABASE_URL = Deno.env.get("CRM_URL") || "https://hlrkyoxwbjsgqbncgzpi.supabase.co";
 const CRM_SERVICE_ROLE_KEY = Deno.env.get("CRM_SERVICE_ROLE_KEY") || "";
@@ -8738,7 +8729,7 @@ Deno.serve(async (req) => {
         });
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j?.ok === false) {
-          const detailStr = [j?.detail, j?.details, j?.message, j?.error].filter(Boolean).join(' ').toLowerCase();
+          const detailStr = String(j?.detail ?? j?.error ?? '').toLowerCase();
           // ✅ Idempotent submit — if a prior open request exists, surface as "pending"
           // instead of a hard failure. The student already has a request being reviewed.
           const isDuplicateOpen =
@@ -8756,46 +8747,8 @@ Deno.serve(async (req) => {
               },
             }, { headers: corsHeaders });
           }
-
-          const shouldProbeExistingStatus = detailStr.includes('insert_failed') || r.status >= 500;
-          if (shouldProbeExistingStatus) {
-            try {
-              const statusResp = await fetch(`${CRM_FUNCTIONS_URL}/web-get-identity-status`, {
-                method: 'POST',
-                headers: { 'content-type': 'application/json', 'x-api-key': CRM_WEB_API_KEY },
-                body: JSON.stringify({
-                  customer_id: resolvedCustomerId,
-                  web_user_id: resolvedCustomerId,
-                  auth_user_id: authUserId,
-                }),
-              });
-              const statusJson = await statusResp.json().catch(() => ({}));
-              if (statusResp.ok && statusJson?.ok !== false) {
-                const statusData = statusJson?.data ?? statusJson?.request ?? statusJson ?? {};
-                const recoveredStatus = mapCrmIdentityStatus(statusData.identity_status ?? statusData.status ?? statusJson?.status);
-                if (recoveredStatus !== 'none') {
-                  console.warn('[identity_activation_submit] recovered from CRM bridge error via status probe', {
-                    http_status: r.status,
-                    recovered_status: recoveredStatus,
-                  });
-                  return Response.json({
-                    ok: true,
-                    data: {
-                      activation_id: statusData.activation_id ?? statusData.id ?? null,
-                      identity_status: recoveredStatus,
-                      submitted_at: statusData.created_at ?? statusData.submitted_at ?? new Date().toISOString(),
-                      recovered_from_bridge_error: true,
-                    },
-                  }, { headers: corsHeaders });
-                }
-              }
-            } catch (statusProbeError) {
-              console.warn('[identity_activation_submit] status probe after CRM bridge error failed', statusProbeError);
-            }
-          }
-
           console.error('[identity_activation_submit] CRM bridge failed', r.status, j);
-          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? j?.message ?? `http_${r.status}`, http_status: r.status }, { status: 200, headers: corsHeaders });
+          return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}`, http_status: r.status }, { status: 200, headers: corsHeaders });
         }
         const d = j?.data ?? j?.request ?? j ?? {};
         const rawSubStatus = String(d.identity_status ?? d.status ?? 'submitted').toLowerCase();
@@ -8847,7 +8800,21 @@ Deno.serve(async (req) => {
           return Response.json({ ok: false, error: 'crm_bridge_failed', details: j?.error ?? `http_${r.status}`, http_status: r.status }, { status: 200, headers: corsHeaders });
         }
         const d = j?.data ?? j?.request ?? j ?? {};
-        const mappedStatus = mapCrmIdentityStatus(d.identity_status ?? d.status ?? j?.status);
+        // Map CRM status enum → portal identity_status enum.
+        // CRM emits: submitted | under_review | accepted | approved | rejected | reupload_required | none
+        // Portal expects: none | pending | approved | rejected | reupload_required
+        const rawStatus = String(d.identity_status ?? d.status ?? j?.status ?? 'none').toLowerCase();
+        const PENDING_SET = new Set(['submitted', 'under_review', 'in_review', 'processing', 'pending']);
+        const APPROVED_SET = new Set(['accepted', 'approved']);
+        const REJECTED_SET = new Set(['rejected', 'denied']);
+        const REUPLOAD_SET = new Set(['reupload_required', 'needs_reupload', 'reupload']);
+        let mappedStatus: 'none' | 'pending' | 'approved' | 'rejected' | 'reupload_required' = 'none';
+        if (PENDING_SET.has(rawStatus)) mappedStatus = 'pending';
+        else if (APPROVED_SET.has(rawStatus)) mappedStatus = 'approved';
+        else if (REJECTED_SET.has(rawStatus)) mappedStatus = 'rejected';
+        else if (REUPLOAD_SET.has(rawStatus)) mappedStatus = 'reupload_required';
+        else if (rawStatus === 'none' || rawStatus === '') mappedStatus = 'none';
+        else mappedStatus = 'pending'; // safe default while CRM holds an open activation
         const blocks = mappedStatus !== 'approved';
         return Response.json({
           ok: true,
