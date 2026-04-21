@@ -582,7 +582,7 @@ function SummaryStep({
   onConfirm: () => void;
   onRetry: () => void;
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   // Whitelist of generic identity fields, in display order. The reader's
   // `passport_number` fact is exposed as the generic key `document_number`
   // so the label is honest for passport / national_id / driver_license.
@@ -615,13 +615,22 @@ function SummaryStep({
     expiry_date: CalendarX2,
   };
 
+  const GRID_SPANS: Record<string, string> = {
+    full_name: "sm:col-span-6",
+    nationality: "sm:col-span-3",
+    document_number: "sm:col-span-3",
+    date_of_birth: "sm:col-span-2",
+    issuing_country: "sm:col-span-2",
+    expiry_date: "sm:col-span-2",
+  };
+
   // Pretty-format ISO/short dates into a locale-friendly string.
   const formatValue = (key: string, raw: string) => {
     if (key === "date_of_birth" || key === "expiry_date") {
       const d = new Date(raw);
       if (!isNaN(d.getTime())) {
         try {
-          return new Intl.DateTimeFormat(undefined, {
+          return new Intl.DateTimeFormat(language || undefined, {
             year: "numeric",
             month: "long",
             day: "numeric",
@@ -633,13 +642,14 @@ function SummaryStep({
     }
     if (key === "issuing_country" || key === "nationality") {
       // Title-case ALL-CAPS country names like "THE REPUBLIC OF THE SUDAN".
+      if (!/[A-Za-z]/.test(raw)) return raw.trim();
       return raw
         .toLowerCase()
         .replace(/\b\w/g, (c) => c.toUpperCase())
         .replace(/\s+/g, " ")
         .trim();
     }
-    return raw;
+    return raw.trim();
   };
 
   return (
@@ -664,27 +674,33 @@ function SummaryStep({
           {t("portal.identity.summary.noFields")}
         </p>
       ) : (
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <dl className="grid grid-cols-1 sm:grid-cols-6 gap-3">
           {rows.map(({ key, field }) => {
             const Icon = ICONS[key] ?? FileBadge;
-            const isFullWidth = key === "full_name";
             return (
               <div
                 key={key}
                 className={cn(
-                  "group relative rounded-xl border border-border/60 bg-card hover:border-primary/40 hover:shadow-sm transition-all p-3.5",
-                  isFullWidth && "sm:col-span-2",
+                  "rounded-2xl border border-border/60 bg-muted/30 p-4 transition-colors hover:border-primary/30",
+                  "flex min-h-[104px] flex-col justify-between gap-3",
+                  GRID_SPANS[key] ?? "sm:col-span-3",
                 )}
               >
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary shrink-0">
-                    <Icon className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+                    <Icon className="w-4 h-4" />
                   </div>
-                  <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  <dt className="text-xs font-medium leading-none text-muted-foreground">
                     {labelFor(key)}
                   </dt>
                 </div>
-                <dd className="text-sm font-semibold text-foreground break-words leading-snug ps-8">
+                <dd
+                  dir={key === "document_number" ? "ltr" : "auto"}
+                  className={cn(
+                    "break-words text-sm font-semibold leading-6 text-foreground",
+                    key === "full_name" && "text-base leading-7",
+                  )}
+                >
                   {formatValue(key, field!.value as string)}
                 </dd>
               </div>
