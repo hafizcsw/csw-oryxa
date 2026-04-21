@@ -1,13 +1,15 @@
 /**
- * Atmospheric field shader — full-screen fragment shader.
- * Outputs a monochrome white mask (RGB=1, A=mask) intended to be blended
- * over the existing hero gradient via mix-blend-mode: screen.
+ * Particle dash field — full-screen fragment shader.
+ * Renders thousands of tiny rounded dashes scattered across the viewport
+ * via a hash-grid (jittered cells). Each dash:
+ *   - has its own size, orientation, brightness phase
+ *   - flickers asynchronously (micro twinkle)
+ *   - drifts very slowly
+ *   - reacts to the mouse with soft local push + brightness
  *
- * Visual signature:
- *  - Two layers of 3D simplex noise at different frequencies/speeds
- *    create non-synchronized micro-flicker.
- *  - A very slow low-frequency layer adds depth/parallax feel.
- *  - A soft Gaussian disturbance follows the mouse and locally lifts the field.
+ * Output is premultiplied RGBA. Color is theme-aware via uTint.
+ *   - Light theme: warm multi-hue palette on white
+ *   - Dark theme:  cool blue-leaning palette on black
  */
 
 export const vertex = /* glsl */ `
@@ -26,130 +28,148 @@ export const fragment = /* glsl */ `
 
   uniform float uTime;
   uniform vec2  uResolution;
-  uniform vec2  uMouse;          // 0..1 in canvas space (y flipped to match uv)
+  uniform vec2  uMouse;          // 0..1 (y already flipped in JS)
   uniform float uMouseStrength;  // 0..1 smoothed
-  uniform float uIntensity;      // overall mask multiplier
-  uniform float uNoiseScale;     // base spatial frequency
-  uniform float uSpeed;          // base time speed
-  uniform float uMouseRadius;    // 0..1 in normalized space
-  uniform float uDepthBoost;     // 0..1 depth layer contribution
-  uniform vec3  uTint;           // ink color (black on light bg, white on dark bg)
+  uniform float uIntensity;      // overall brightness
+  uniform float uDensity;        // cells per shorter-axis unit (e.g. 26..40)
+  uniform float uSpeed;          // global time multiplier
+  uniform float uMouseRadius;    // 0..1
+  uniform float uDashLength;     // dash length in cell units (e.g. 0.32)
+  uniform float uDashThickness;  // dash thickness in cell units (e.g. 0.08)
+  uniform float uIsDark;         // 1.0 dark theme, 0.0 light theme
 
-  // ---- 3D simplex noise (Ashima / Stefan Gustavson) ----
-  vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
-  vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
-  vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
-  vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
-
-  float snoise(vec3 v){
-    const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-    const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-    vec3 i  = floor(v + dot(v, C.yyy));
-    vec3 x0 = v - i + dot(i, C.xxx);
-    vec3 g = step(x0.yzx, x0.xyz);
-    vec3 l = 1.0 - g;
-    vec3 i1 = min(g.xyz, l.zxy);
-    vec3 i2 = max(g.xyz, l.zxy);
-    vec3 x1 = x0 - i1 + C.xxx;
-    vec3 x2 = x0 - i2 + C.yyy;
-    vec3 x3 = x0 - D.yyy;
-    i = mod289(i);
-    vec4 p = permute(permute(permute(
-              i.z + vec4(0.0, i1.z, i2.z, 1.0))
-            + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-            + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-    float n_ = 0.142857142857;
-    vec3 ns = n_ * D.wyz - D.xzx;
-    vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-    vec4 x_ = floor(j * ns.z);
-    vec4 y_ = floor(j - 7.0 * x_);
-    vec4 x = x_ * ns.x + ns.yyyy;
-    vec4 y = y_ * ns.x + ns.yyyy;
-    vec4 h = 1.0 - abs(x) - abs(y);
-    vec4 b0 = vec4(x.xy, y.xy);
-    vec4 b1 = vec4(x.zw, y.zw);
-    vec4 s0 = floor(b0)*2.0 + 1.0;
-    vec4 s1 = floor(b1)*2.0 + 1.0;
-    vec4 sh = -step(h, vec4(0.0));
-    vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-    vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
-    vec3 p0 = vec3(a0.xy, h.x);
-    vec3 p1 = vec3(a0.zw, h.y);
-    vec3 p2 = vec3(a1.xy, h.z);
-    vec3 p3 = vec3(a1.zw, h.w);
-    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
-    p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
-    vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-    m = m * m;
-    return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+  // -------- hash helpers --------
+  float hash11(float p){ p = fract(p*0.1031); p *= p+33.33; p *= p+p; return fract(p); }
+  vec2  hash22(vec2 p){
+    p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+    return fract(sin(p) * 43758.5453);
+  }
+  vec3  hash32(vec2 p){
+    vec3 q = vec3(dot(p, vec2(127.1, 311.7)),
+                  dot(p, vec2(269.5, 183.3)),
+                  dot(p, vec2(113.5,  74.7)));
+    return fract(sin(q) * 43758.5453);
   }
 
-  // 2D rotation helper for layer offsets
-  vec2 rot(vec2 v, float a) {
-    float c = cos(a), s = sin(a);
-    return mat2(c, -s, s, c) * v;
+  // SDF: rounded box (a "dash"), centered at origin, half-extents b, radius r
+  float sdRoundBox(vec2 p, vec2 b, float r){
+    vec2 q = abs(p) - b + vec2(r);
+    return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
   }
 
-  void main() {
-    // Aspect-correct uv so noise cells stay roughly square
-    vec2 uv = vUv;
-    float aspect = uResolution.x / max(uResolution.y, 1.0);
-    vec2 p = vec2(uv.x * aspect, uv.y);
+  // Theme-aware color palette per cell
+  vec3 cellColor(vec2 cellId){
+    vec3 h = hash32(cellId + 17.31);
+    if (uIsDark > 0.5) {
+      // Cool palette: blues with rare cyan/violet sparks
+      vec3 blue   = vec3(0.36, 0.55, 1.00);
+      vec3 indigo = vec3(0.45, 0.40, 0.95);
+      vec3 cyan   = vec3(0.55, 0.85, 1.00);
+      vec3 base   = mix(blue, indigo, h.x);
+      base = mix(base, cyan, smoothstep(0.85, 1.0, h.y));
+      return base;
+    } else {
+      // Warm multi-hue palette: blue, violet, magenta, orange (Antigravity light)
+      vec3 blue    = vec3(0.20, 0.40, 0.95);
+      vec3 violet  = vec3(0.50, 0.30, 0.90);
+      vec3 magenta = vec3(0.90, 0.25, 0.55);
+      vec3 orange  = vec3(0.98, 0.55, 0.20);
+      vec3 c = mix(blue, violet,  smoothstep(0.0, 0.45, h.x));
+      c     = mix(c,    magenta, smoothstep(0.45, 0.75, h.x));
+      c     = mix(c,    orange,  smoothstep(0.75, 1.0,  h.x));
+      return c;
+    }
+  }
 
-    float t = uTime * uSpeed;
+  void main(){
+    vec2 res = uResolution;
+    float aspect = res.x / max(res.y, 1.0);
 
-    // ---- Mouse vector field (flow distortion, not just additive lift) ----
+    // Aspect-correct space: x in [0..aspect], y in [0..1]
+    vec2 p = vec2(vUv.x * aspect, vUv.y);
+
+    // Cell grid sized by density (relative to short axis)
+    float cellSize = 1.0 / max(uDensity, 1.0);
+    vec2 cellP = p / cellSize;
+
+    // Slow global drift so the field is alive
+    vec2 drift = vec2(uTime * uSpeed * 0.05, uTime * uSpeed * 0.03);
+    cellP += drift;
+
+    // Mouse vector in same aspect space
     vec2 mp = vec2(uMouse.x * aspect, uMouse.y);
-    vec2 toM = p - mp;
-    float dM = length(toM);
-    float r = max(uMouseRadius, 0.0001);
-    float gauss = exp(-(dM * dM) / (2.0 * r * r));
-    // Swirl direction perpendicular to mouse-radial → curl flow
-    vec2 swirl = vec2(-toM.y, toM.x) / max(dM, 1e-4);
-    vec2 flow = swirl * gauss * 0.06 * uMouseStrength;
-    vec2 pf = p + flow; // distorted sample position for mid/far layers
 
-    // ---- Energy zones (very-low-frequency mask) ----
-    // Defines slow-moving "active" vs "calm" regions; not uniform field.
-    float zone = snoise(vec3(p * 0.6, t * 0.18 + 41.0));
-    zone = smoothstep(-0.25, 0.85, zone); // 0..1 weight
+    vec3 accumColor = vec3(0.0);
+    float accumAlpha = 0.0;
 
-    // ---- Far layer (depth, slow, large cells) ----
-    float nFar = snoise(vec3(rot(pf, 0.3) * (uNoiseScale * 0.35), t * 0.22));
-    float far  = smoothstep(0.20, 0.95, nFar * 0.5 + 0.5);
+    // 3x3 neighborhood lookup so dashes can extend across cell borders
+    vec2 cellIdF = floor(cellP);
+    vec2 fcell = fract(cellP);
 
-    // ---- Mid layer (primary atmosphere) ----
-    float nMid = snoise(vec3(pf * uNoiseScale, t));
-    float mid  = smoothstep(0.40, 0.88, nMid * 0.5 + 0.5);
+    for (int oy = -1; oy <= 1; oy++) {
+      for (int ox = -1; ox <= 1; ox++) {
+        vec2 offs = vec2(float(ox), float(oy));
+        vec2 cid  = cellIdF + offs;
 
-    // ---- Near layer (faster, secondary, non-synchronized) ----
-    float nNear = snoise(vec3(rot(pf, -0.7) * (uNoiseScale * 2.1) + 11.7, t * 1.7 + 3.1));
-    float near  = smoothstep(0.45, 0.92, nNear * 0.5 + 0.5);
+        // Per-cell randomness
+        vec2  r2  = hash22(cid);                      // jitter inside cell
+        vec3  r3  = hash32(cid + 7.0);                // size, angle, phase
+        float r1  = hash11(cid.x * 73.1 + cid.y * 19.7); // existence prob
 
-    // ---- Micro-detail (high-frequency, very subtle texture) ----
-    float micro = snoise(vec3(p * (uNoiseScale * 6.5), t * 0.6 + 91.3));
-    micro = micro * 0.5 + 0.5;
-    float microContribution = (micro - 0.5) * 0.18; // can subtract slightly too
+        // ~62% of cells have a dash → not uniform, leaves breathing space
+        if (r1 < 0.38) continue;
 
-    // ---- Compose with depth weighting ----
-    // Far is broad/soft, mid is the body, near adds bright peaks.
-    float field =
-        far  * (0.30 + uDepthBoost * 0.35)
-      + mid  * 0.55
-      + near * 0.40;
+        // Dash center inside neighbor cell, in current-cell local coords
+        vec2 center = offs + r2; // in cell units relative to cellIdF
+        vec2 d = fcell - center; // vector from current point to dash center, in cell units
 
-    // Spatial variation: zones modulate amplitude (active vs calm regions)
-    field *= mix(0.55, 1.25, zone);
+        // Rotation
+        float ang = r3.y * 6.28318 + uTime * uSpeed * (0.05 + r3.z * 0.10) * (r3.x > 0.5 ? 1.0 : -1.0);
+        float ca = cos(ang), sa = sin(ang);
+        vec2 dr = mat2(ca, -sa, sa, ca) * d;
 
-    // Sprinkle micro texture
-    field += microContribution * mix(0.4, 1.0, zone);
+        // Size variance: some long, some short, some tiny
+        float sizeJitter = mix(0.55, 1.25, r3.x);
+        vec2  half_ext   = vec2(uDashLength, uDashThickness) * sizeJitter;
+        float radius     = uDashThickness * sizeJitter;
 
-    // ---- Mouse: distortion already applied; add subtle local lift too ----
-    field += gauss * 0.30 * uMouseStrength;
+        // SDF in cell-local units; convert to pixels for AA width
+        float sdf = sdRoundBox(dr, half_ext, radius);
+        // Approx pixel size of a cell unit
+        float pxPerCell = (res.y * cellSize);
+        float aa = 1.5 / max(pxPerCell, 1.0);
+        float shape = 1.0 - smoothstep(0.0, aa, sdf);
 
-    // Final intensity, clamped
-    float a = clamp(field * uIntensity, 0.0, 1.0);
+        if (shape <= 0.001) continue;
 
-    gl_FragColor = vec4(uTint, a);
+        // Async micro-flicker per cell
+        float phase = r3.z * 6.28318;
+        float flick = 0.55 + 0.45 * sin(uTime * (1.2 + r3.y * 2.4) + phase);
+        // Occasional twinkle bursts
+        float twk   = pow(0.5 + 0.5 * sin(uTime * (0.6 + r3.x * 0.9) + phase * 1.7), 6.0);
+        float bright = mix(0.45, 1.0, flick) + twk * 0.4;
+
+        // Mouse influence: extra brightness inside radius
+        float md = distance(p, mp);
+        float gauss = exp(-(md * md) / (2.0 * uMouseRadius * uMouseRadius));
+        bright += gauss * 0.9 * uMouseStrength;
+
+        // Distance-based fade per cell so edges of dashes are soft, not boxy
+        float a = shape * clamp(bright, 0.0, 2.2);
+
+        vec3 col = cellColor(cid);
+
+        // Premultiplied accumulation
+        accumColor += col * a;
+        accumAlpha += a;
+      }
+    }
+
+    // Soft cap so densest spots don't blow out
+    float outA = clamp(accumAlpha, 0.0, 1.0) * uIntensity;
+    vec3  outC = accumAlpha > 0.0 ? (accumColor / accumAlpha) : vec3(0.0);
+
+    // Tint multiplier (kept for theme tweaks; default 1,1,1)
+    gl_FragColor = vec4(outC * outA, outA);
   }
 `;
