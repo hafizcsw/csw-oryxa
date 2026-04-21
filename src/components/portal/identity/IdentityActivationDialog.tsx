@@ -211,7 +211,7 @@ export function IdentityActivationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "p-0 overflow-hidden gap-0",
+          "p-0 overflow-hidden gap-0 !flex !flex-col",
           "bg-gradient-to-br from-background via-background to-muted/30",
           "border-border/60 shadow-2xl rounded-2xl",
           "[&>button]:hidden",
