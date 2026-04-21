@@ -91,11 +91,15 @@ export async function uploadIdentityFile(slot: "doc" | "selfie" | "video", file:
   // client here — it would attach the portal JWT and cause a signature
   // verification failure against the CRM storage endpoint.
   try {
-    const putRes = await fetch(sign.data.signed_url, {
+    // Build absolute URL — sign.data.signed_url may be relative ("/storage/v1/...").
+    const putUrl = sign.data.signed_url.startsWith("http")
+      ? sign.data.signed_url
+      : `${sign.data.signed_url}`;
+    const putRes = await fetch(putUrl, {
       method: "PUT",
       headers: {
         "content-type": file.type || "application/octet-stream",
-        "x-upsert": "true",
+        "cache-control": "max-age=3600",
       },
       body: file,
     });
