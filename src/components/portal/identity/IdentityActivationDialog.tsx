@@ -198,25 +198,47 @@ export function IdentityActivationDialog({
 
   const stepperIdx = stepperIndexFor(step);
   const showStepper = stepperIdx >= 0;
+  const isResultStep =
+    step === "awaiting_decision" ||
+    step === "approved" ||
+    step === "rejected" ||
+    step === "reupload_required" ||
+    step === "submit_error" ||
+    step === "blocked_weak" ||
+    step === "blocked_unsupported";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "!max-w-[min(1400px,96vw)] w-[96vw]",
           "p-0 overflow-hidden gap-0",
           "bg-gradient-to-br from-background via-background to-muted/30",
           "border-border/60 shadow-2xl rounded-2xl",
-          "max-h-[92vh]",
-          "[&>button]:hidden px-[14px] text-center",
+          "[&>button]:hidden",
+          isResultStep
+            ? "!max-w-md w-[96vw] max-h-fit"
+            : "!max-w-[min(1400px,96vw)] w-[96vw] max-h-[92vh] px-[14px] text-center",
         )}
       >
         {/* Header */}
-        <DialogHeader className="px-5 sm:px-8 pt-6 pb-4 border-b border-border/50 bg-card/40 backdrop-blur-sm space-y-2">
+        <DialogHeader
+          className={cn(
+            "border-b border-border/50 bg-card/40 backdrop-blur-sm",
+            isResultStep
+              ? "px-5 pt-4 pb-3 space-y-1"
+              : "px-5 sm:px-8 pt-6 pb-4 space-y-2",
+          )}
+        >
           <div className="flex items-start justify-between gap-3">
-            <DialogTitle className="flex items-center gap-2.5 text-lg sm:text-xl">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-glow text-primary-foreground shadow-md">
-                <ShieldCheck className="w-5 h-5" />
+            <DialogTitle className={cn(
+              "flex items-center gap-2.5",
+              isResultStep ? "text-base" : "text-lg sm:text-xl",
+            )}>
+              <div className={cn(
+                "flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-glow text-primary-foreground shadow-md",
+                isResultStep ? "h-7 w-7" : "h-9 w-9",
+              )}>
+                <ShieldCheck className={isResultStep ? "w-4 h-4" : "w-5 h-5"} />
               </div>
               {t("portal.identity.title")}
             </DialogTitle>
@@ -229,11 +251,11 @@ export function IdentityActivationDialog({
               <X className="w-4 h-4" />
             </button>
           </div>
-          <DialogDescription className="text-sm">
+          <DialogDescription className={cn(isResultStep ? "text-xs" : "text-sm")}>
             {t("portal.identity.subtitle")}
           </DialogDescription>
 
-          {showStepper && (
+          {showStepper && !isResultStep && (
             <div className="pt-3">
               <Stepper currentIndex={stepperIdx} />
             </div>
@@ -241,7 +263,13 @@ export function IdentityActivationDialog({
         </DialogHeader>
 
         {/* Scrollable content */}
-        <div className="overflow-y-auto px-5 sm:px-8 py-6 sm:py-8" style={{ maxHeight: "calc(92vh - 220px)" }}>
+        <div
+          className={cn(
+            "overflow-y-auto",
+            isResultStep ? "px-5 py-5" : "px-5 sm:px-8 py-6 sm:py-8",
+          )}
+          style={isResultStep ? undefined : { maxHeight: "calc(92vh - 220px)" }}
+        >
           <div key={step} className="animate-fade-in">
             {step === "doc_select" && (
               <DocSelectStep
