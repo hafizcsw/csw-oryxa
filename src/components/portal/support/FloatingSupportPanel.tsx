@@ -6,14 +6,12 @@ import { useSupportTickets } from "@/hooks/useSupportTickets";
 import { supabase } from "@/integrations/supabase/client";
 import { SupportSubmitDialog } from "./SupportSubmitDialog";
 import { IdentityActivationDialog } from "@/components/portal/identity/IdentityActivationDialog";
-import { PanelHeader } from "./panel/PanelHeader";
-import { PanelGreeting } from "./panel/PanelGreeting";
-import { IdentityStatusCard } from "./panel/IdentityStatusCard";
-import { SupportQuickCategories } from "./panel/SupportQuickCategories";
-import { RecentTicketsList } from "./panel/RecentTicketsList";
-import { PanelLinksRow } from "./panel/PanelLinksRow";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { PanelTopBar } from "./panel/PanelTopBar";
+import { PanelHero } from "./panel/PanelHero";
+import { QuickCategoriesGrid } from "./panel/QuickCategoriesGrid";
+import { IdentityProgressCard } from "./panel/IdentityProgressCard";
+import { FAQSuggestionsList } from "./panel/FAQSuggestionsList";
+import { PanelStickyFooter } from "./panel/PanelStickyFooter";
 import { cn } from "@/lib/utils";
 
 const SPRING = { type: "spring" as const, stiffness: 320, damping: 30, mass: 0.8 };
@@ -25,11 +23,12 @@ interface FloatingSupportPanelProps {
 export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
   const { t, language } = useLanguage();
   const { status, refetch: refetchIdentity } = useIdentityStatus();
-  const { tickets, refetch: refetchTickets } = useSupportTickets();
+  const { refetch: refetchTickets } = useSupportTickets();
   const reduced = useReducedMotion();
   const isRtl = language === "ar";
   const [submitOpen, setSubmitOpen] = useState(false);
   const [submitSubject, setSubmitSubject] = useState<string | undefined>();
+  const [submitMessage, setSubmitMessage] = useState<string | undefined>();
   const [identityOpen, setIdentityOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
@@ -47,13 +46,13 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
     });
   }, []);
 
-  // focus close on open
   useEffect(() => {
     closeBtnRef.current?.focus();
   }, []);
 
-  const openNewTicket = (subjectKey?: string) => {
+  const openNewTicket = (subjectKey?: string, message?: string) => {
     setSubmitSubject(subjectKey);
+    setSubmitMessage(message);
     setSubmitOpen(true);
   };
 
@@ -61,6 +60,7 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
     setSubmitOpen(open);
     if (!open) {
       setSubmitSubject(undefined);
+      setSubmitMessage(undefined);
       refetchTickets();
     }
   };
@@ -76,14 +76,14 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
   };
   const containerVariants = {
     hidden: {},
-    show: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } },
+    show: { transition: { staggerChildren: 0.05, delayChildren: 0.05 } },
   };
 
   return (
     <>
       {/* Mobile backdrop */}
       <motion.div
-        initial={reduced ? { opacity: 0 } : { opacity: 0 }}
+        initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.18 }}
@@ -103,19 +103,17 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
         transition={reduced ? { duration: 0.15 } : SPRING}
         style={{ transformOrigin: isRtl ? "bottom left" : "bottom right" }}
         className={cn(
-          // Mobile: bottom sheet
           "fixed inset-x-0 bottom-0 z-[58] w-full h-[88vh] rounded-t-3xl rounded-b-none",
-          // Desktop: floating panel — width depends on expanded state
           "sm:inset-x-auto sm:bottom-24 sm:end-6 sm:h-auto sm:max-h-[calc(100vh-8rem)] sm:rounded-3xl",
           expanded ? "sm:w-[520px]" : "sm:w-[400px]",
-          "bg-card/95 backdrop-blur-xl",
+          "bg-muted/20 backdrop-blur-xl",
           "border border-border/50",
           "shadow-2xl",
           "flex flex-col overflow-hidden",
           "transition-[width] duration-300 ease-out",
         )}
       >
-        <PanelHeader
+        <PanelTopBar
           onClose={onClose}
           closeRef={closeBtnRef}
           expanded={expanded}
@@ -126,68 +124,33 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="flex-1 overflow-y-auto px-5 py-4 space-y-5 [scrollbar-width:thin]"
+          className="flex-1 overflow-y-auto px-4 pt-2 pb-4 space-y-3 [scrollbar-width:thin]"
         >
-          <motion.div variants={sectionVariants}>
-            <PanelGreeting name={userName} />
+          <motion.div variants={sectionVariants} className="pt-2 pb-1">
+            <PanelHero name={userName} />
           </motion.div>
 
-          <motion.section variants={sectionVariants} aria-labelledby="support-identity-heading">
-            <h3
-              id="support-identity-heading"
-              className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-0.5"
-            >
-              {t("portal.support.panel.identitySectionTitle")}
-            </h3>
-            <IdentityStatusCard
-              status={status}
-              onAction={() => setIdentityOpen(true)}
-            />
-          </motion.section>
+          <motion.div variants={sectionVariants}>
+            <QuickCategoriesGrid onPick={(k) => openNewTicket(k)} onClose={onClose} />
+          </motion.div>
 
-          <motion.section variants={sectionVariants} aria-labelledby="support-quick-heading">
-            <h3
-              id="support-quick-heading"
-              className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-0.5"
-            >
-              {t("portal.support.panel.supportSectionTitle")}
-            </h3>
-            <SupportQuickCategories onPick={openNewTicket} />
-          </motion.section>
+          <motion.div variants={sectionVariants}>
+            <IdentityProgressCard status={status} onAction={() => setIdentityOpen(true)} />
+          </motion.div>
 
-          <motion.section variants={sectionVariants} aria-labelledby="support-recent-heading">
-            <div className="flex items-center justify-between mb-2 px-0.5">
-              <h3
-                id="support-recent-heading"
-                className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
-              >
-                {t("portal.support.panel.recentTicketsTitle")}
-              </h3>
-            </div>
-            <RecentTicketsList tickets={tickets.slice(0, 4)} />
-          </motion.section>
-
-          <motion.section variants={sectionVariants}>
-            <PanelLinksRow />
-          </motion.section>
+          <motion.div variants={sectionVariants}>
+            <FAQSuggestionsList onPick={(k, msg) => openNewTicket(k, msg)} />
+          </motion.div>
         </motion.div>
 
-        <div className="border-t border-border/50 bg-card/80 backdrop-blur-sm px-5 py-3">
-          <Button
-            onClick={() => openNewTicket()}
-            className="w-full h-11 rounded-xl font-medium"
-            size="lg"
-          >
-            <Plus className="h-4 w-4 me-2" strokeWidth={2.5} />
-            {t("portal.support.panel.newRequest")}
-          </Button>
-        </div>
+        <PanelStickyFooter onClick={() => openNewTicket()} />
       </motion.div>
 
       <SupportSubmitDialog
         open={submitOpen}
         onOpenChange={handleSubmitChange}
         defaultSubjectKey={submitSubject}
+        defaultMessage={submitMessage}
       />
       <IdentityActivationDialog
         open={identityOpen}

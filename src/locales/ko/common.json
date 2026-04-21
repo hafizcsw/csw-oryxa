@@ -10087,5 +10087,22 @@
   "portal.support.quick.application": "지원서",
   "portal.support.quick.technical": "기술",
   "portal.support.quick.other": "기타",
-  "portal.support.ticket.relativeJustNow": "방금 전"
+  "portal.support.ticket.relativeJustNow": "방금 전",
+  "portal.support.panel.welcomeTo": "{{brand}} 지원에 오신 것을 환영합니다",
+  "portal.support.panel.kycTitle": "KYC 인증",
+  "portal.support.panel.kycReasonChip": "사유",
+  "portal.support.panel.kycStep": "{{current}}/{{total}}",
+  "portal.support.panel.faqTitle": "자주 묻는 질문",
+  "portal.support.panel.faqViewMore": "더 보기",
+  "portal.support.panel.getSupport": "지원 받기",
+  "portal.support.categories.account_security": "계정 보안",
+  "portal.support.categories.programs": "프로그램 및 적합성",
+  "portal.support.categories.messages": "메시지",
+  "portal.support.categories.oryxa": "Oryxa AI",
+  "portal.support.faq.q1": "신원을 어떻게 인증하나요?",
+  "portal.support.faq.q2": "여권을 어떻게 업데이트하나요?",
+  "portal.support.faq.q3": "지원서를 어떻게 추적하나요?",
+  "portal.support.faq.q4": "주소를 어떻게 변경하나요?",
+  "portal.support.faq.q5": "어떤 결제 수단이 지원되나요?",
+  "portal.support.faq.q6": "문서를 어떻게 다운로드하나요?"
 }

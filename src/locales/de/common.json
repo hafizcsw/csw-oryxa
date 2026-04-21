@@ -10066,5 +10066,22 @@
   "portal.support.quick.application": "Bewerbung",
   "portal.support.quick.technical": "Technisch",
   "portal.support.quick.other": "Andere",
-  "portal.support.ticket.relativeJustNow": "Gerade eben"
+  "portal.support.ticket.relativeJustNow": "Gerade eben",
+  "portal.support.panel.welcomeTo": "Willkommen beim {{brand}}-Support",
+  "portal.support.panel.kycTitle": "KYC-Verifizierung",
+  "portal.support.panel.kycReasonChip": "Grund",
+  "portal.support.panel.kycStep": "{{current}}/{{total}}",
+  "portal.support.panel.faqTitle": "Sie möchten vielleicht fragen",
+  "portal.support.panel.faqViewMore": "Mehr anzeigen",
+  "portal.support.panel.getSupport": "Support erhalten",
+  "portal.support.categories.account_security": "Kontosicherheit",
+  "portal.support.categories.programs": "Programme & Eignung",
+  "portal.support.categories.messages": "Nachrichten",
+  "portal.support.categories.oryxa": "Oryxa AI",
+  "portal.support.faq.q1": "Wie verifiziere ich meine Identität?",
+  "portal.support.faq.q2": "Wie aktualisiere ich meinen Reisepass?",
+  "portal.support.faq.q3": "Wie verfolge ich meine Bewerbung?",
+  "portal.support.faq.q4": "Wie ändere ich meine Adresse?",
+  "portal.support.faq.q5": "Welche Zahlungsmethoden werden unterstützt?",
+  "portal.support.faq.q6": "Wie lade ich meine Dokumente herunter?"
 }

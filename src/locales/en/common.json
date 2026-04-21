@@ -13903,5 +13903,22 @@
   "portal.support.quick.application": "Application",
   "portal.support.quick.technical": "Technical",
   "portal.support.quick.other": "Other",
-  "portal.support.ticket.relativeJustNow": "Just now"
+  "portal.support.ticket.relativeJustNow": "Just now",
+  "portal.support.panel.welcomeTo": "Welcome to {{brand}} support",
+  "portal.support.panel.kycTitle": "KYC Verification",
+  "portal.support.panel.kycReasonChip": "Reason",
+  "portal.support.panel.kycStep": "{{current}}/{{total}}",
+  "portal.support.panel.faqTitle": "You may want to ask",
+  "portal.support.panel.faqViewMore": "View more",
+  "portal.support.panel.getSupport": "Get support",
+  "portal.support.categories.account_security": "Account security",
+  "portal.support.categories.programs": "Programs & fit",
+  "portal.support.categories.messages": "Messages",
+  "portal.support.categories.oryxa": "Oryxa AI",
+  "portal.support.faq.q1": "How do I verify my identity?",
+  "portal.support.faq.q2": "How do I update my passport?",
+  "portal.support.faq.q3": "How do I track my application?",
+  "portal.support.faq.q4": "How do I change my address?",
+  "portal.support.faq.q5": "What payment methods are supported?",
+  "portal.support.faq.q6": "How do I download my documents?"
 }

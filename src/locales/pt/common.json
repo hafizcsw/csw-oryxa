@@ -10087,5 +10087,22 @@
   "portal.support.quick.application": "Candidatura",
   "portal.support.quick.technical": "Técnico",
   "portal.support.quick.other": "Outro",
-  "portal.support.ticket.relativeJustNow": "Agora mesmo"
+  "portal.support.ticket.relativeJustNow": "Agora mesmo",
+  "portal.support.panel.welcomeTo": "Bem-vindo ao suporte {{brand}}",
+  "portal.support.panel.kycTitle": "Verificação KYC",
+  "portal.support.panel.kycReasonChip": "Motivo",
+  "portal.support.panel.kycStep": "{{current}}/{{total}}",
+  "portal.support.panel.faqTitle": "Você pode querer perguntar",
+  "portal.support.panel.faqViewMore": "Ver mais",
+  "portal.support.panel.getSupport": "Obter suporte",
+  "portal.support.categories.account_security": "Segurança da conta",
+  "portal.support.categories.programs": "Programas e adequação",
+  "portal.support.categories.messages": "Mensagens",
+  "portal.support.categories.oryxa": "Oryxa AI",
+  "portal.support.faq.q1": "Como verifico minha identidade?",
+  "portal.support.faq.q2": "Como atualizo meu passaporte?",
+  "portal.support.faq.q3": "Como acompanho minha candidatura?",
+  "portal.support.faq.q4": "Como mudo meu endereço?",
+  "portal.support.faq.q5": "Quais métodos de pagamento são suportados?",
+  "portal.support.faq.q6": "Como faço download dos meus documentos?"
 }

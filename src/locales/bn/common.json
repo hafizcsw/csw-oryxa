@@ -10087,5 +10087,22 @@
   "portal.support.quick.application": "আবেদন",
   "portal.support.quick.technical": "প্রযুক্তিগত",
   "portal.support.quick.other": "অন্যান্য",
-  "portal.support.ticket.relativeJustNow": "এইমাত্র"
+  "portal.support.ticket.relativeJustNow": "এইমাত্র",
+  "portal.support.panel.welcomeTo": "{{brand}} সাপোর্টে স্বাগতম",
+  "portal.support.panel.kycTitle": "KYC যাচাইকরণ",
+  "portal.support.panel.kycReasonChip": "কারণ",
+  "portal.support.panel.kycStep": "{{current}}/{{total}}",
+  "portal.support.panel.faqTitle": "আপনি জিজ্ঞাসা করতে পারেন",
+  "portal.support.panel.faqViewMore": "আরও দেখুন",
+  "portal.support.panel.getSupport": "সহায়তা নিন",
+  "portal.support.categories.account_security": "অ্যাকাউন্ট সুরক্ষা",
+  "portal.support.categories.programs": "প্রোগ্রাম এবং উপযুক্ততা",
+  "portal.support.categories.messages": "বার্তা",
+  "portal.support.categories.oryxa": "Oryxa AI",
+  "portal.support.faq.q1": "কীভাবে আমার পরিচয় যাচাই করব?",
+  "portal.support.faq.q2": "কীভাবে আমার পাসপোর্ট আপডেট করব?",
+  "portal.support.faq.q3": "কীভাবে আমার আবেদন ট্র্যাক করব?",
+  "portal.support.faq.q4": "কীভাবে আমার ঠিকানা পরিবর্তন করব?",
+  "portal.support.faq.q5": "কোন পেমেন্ট পদ্ধতি সমর্থিত?",
+  "portal.support.faq.q6": "কীভাবে আমার নথি ডাউনলোড করব?"
 }

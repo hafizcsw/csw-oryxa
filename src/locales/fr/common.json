@@ -11090,5 +11090,22 @@
   "portal.support.quick.application": "Candidature",
   "portal.support.quick.technical": "Technique",
   "portal.support.quick.other": "Autre",
-  "portal.support.ticket.relativeJustNow": "À l'instant"
+  "portal.support.ticket.relativeJustNow": "À l'instant",
+  "portal.support.panel.welcomeTo": "Bienvenue dans le support {{brand}}",
+  "portal.support.panel.kycTitle": "Vérification KYC",
+  "portal.support.panel.kycReasonChip": "Raison",
+  "portal.support.panel.kycStep": "{{current}}/{{total}}",
+  "portal.support.panel.faqTitle": "Vous voudrez peut-être demander",
+  "portal.support.panel.faqViewMore": "Voir plus",
+  "portal.support.panel.getSupport": "Obtenir de l'aide",
+  "portal.support.categories.account_security": "Sécurité du compte",
+  "portal.support.categories.programs": "Programmes et adéquation",
+  "portal.support.categories.messages": "Messages",
+  "portal.support.categories.oryxa": "Oryxa AI",
+  "portal.support.faq.q1": "Comment vérifier mon identité ?",
+  "portal.support.faq.q2": "Comment mettre à jour mon passeport ?",
+  "portal.support.faq.q3": "Comment suivre ma candidature ?",
+  "portal.support.faq.q4": "Comment changer mon adresse ?",
+  "portal.support.faq.q5": "Quels modes de paiement sont pris en charge ?",
+  "portal.support.faq.q6": "Comment télécharger mes documents ?"
 }
