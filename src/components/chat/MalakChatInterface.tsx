@@ -1322,6 +1322,7 @@ export function MalakChatInterface({
 
           <div ref={messagesEndRef} id="chat_bottom" />
         </div>
+        )}
 
         {/* Error alert */}
         {error && <div className="p-4 border-t border-border">
