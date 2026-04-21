@@ -666,24 +666,24 @@ function SelfieStep({ onCaptured }: { onCaptured: (file: File) => void }) {
       </div>
 
       {/* Instructions + action */}
-      <div className="w-full flex flex-col gap-4 items-end justify-center text-right">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Camera className="w-5 h-5 text-primary" />
-          </div>
-          <div className="flex flex-col">
+      <div className="w-full flex flex-col gap-4 items-stretch justify-center text-right">
+        <div className="space-y-2 text-center">
+          <div className="flex items-center justify-center gap-2">
             <h3 className="text-lg font-semibold leading-tight text-foreground">
               {t("portal.identity.selfie.title")}
             </h3>
-            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-              {t("portal.identity.selfie.instruction")}
-            </p>
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Camera className="w-4 h-4 text-primary" />
+            </div>
           </div>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
+            {t("portal.identity.selfie.instruction")}
+          </p>
         </div>
 
         <div className="bg-muted/30 border border-border/40 rounded-xl p-4 space-y-2.5">
           {["lighting", "frame", "noAccessories"].map((tip) => (
-            <div key={tip} className="flex items-start gap-2.5 text-sm text-foreground/90">
+            <div key={tip} className="flex flex-row-reverse items-start gap-2.5 text-sm text-foreground/90 text-right">
               <div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0">
                 <Check className="w-3 h-3" />
               </div>
