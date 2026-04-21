@@ -19,7 +19,7 @@ import { RoutePrefetcher } from "@/components/system/RoutePrefetcher";
 import { LocaleRouteWrapper } from "@/components/routing/LocaleRouteWrapper";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { usePresenceHeartbeat } from "@/hooks/usePresence";
-import FloatingChat from "@/components/FloatingChat";
+
 import { PortalAuthFloater } from "@/components/portal/support/PortalAuthFloater";
 import { Layout } from "@/components/layout/Layout";
 import { InstitutionGuard } from "@/components/institution/InstitutionGuard";
@@ -962,10 +962,7 @@ function AppContent() {
         </Routes>
       </Suspense>
       
-      {/* Floating AI Chat - Hidden in admin/apply/maintenance */}
-      {!hideFab && <FloatingChat />}
-
-      {/* Portal Support Launcher - auth + portal-route gated */}
+      {/* Unified Floating Launcher — Support + Oryxa AI merged */}
       <PortalAuthFloater />
       
       {/* CRM Test Mode Panel - Activated via ?testmode=1 */}
