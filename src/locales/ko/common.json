@@ -10104,19 +10104,5 @@
   "portal.support.faq.q3": "지원서를 어떻게 추적하나요?",
   "portal.support.faq.q4": "주소를 어떻게 변경하나요?",
   "portal.support.faq.q5": "어떤 결제 수단이 지원되나요?",
-  "portal.support.faq.q6": "문서를 어떻게 다운로드하나요?",
-  "portal.support.panel.tabs.oryxa": "Oryxa AI",
-  "portal.support.panel.tabs.messages": "메시지",
-  "portal.support.panel.messages.empty.title": "메시지가 없습니다",
-  "portal.support.panel.messages.empty.cta": "대화 시작",
-  "portal.support.panel.messages.newButton": "새로 만들기",
-  "portal.support.panel.messages.openFullPage": "메시지 페이지 열기",
-  "portal.support.panel.messages.viewFullThread": "전체 열기",
-  "portal.support.panel.messages.replyPlaceholder": "답장 입력…",
-  "portal.support.panel.messages.send": "보내기",
-  "portal.support.panel.messages.back": "뒤로",
-  "portal.support.panel.identityBanner": "신원을 인증하여 메시지를 활성화하세요",
-  "portal.support.panel.oryxa.clear": "대화 지우기",
-  "portal.support.panel.oryxa.placeholder": "Oryxa에게 질문…",
-  "portal.support.panel.greeting.guest": "환영합니다"
+  "portal.support.faq.q6": "문서를 어떻게 다운로드하나요?"
 }

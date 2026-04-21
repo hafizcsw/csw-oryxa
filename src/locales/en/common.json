@@ -13920,19 +13920,5 @@
   "portal.support.faq.q3": "How do I track my application?",
   "portal.support.faq.q4": "How do I change my address?",
   "portal.support.faq.q5": "What payment methods are supported?",
-  "portal.support.faq.q6": "How do I download my documents?",
-  "portal.support.panel.tabs.oryxa": "Oryxa AI",
-  "portal.support.panel.tabs.messages": "Messages",
-  "portal.support.panel.messages.empty.title": "No messages yet",
-  "portal.support.panel.messages.empty.cta": "Start a conversation",
-  "portal.support.panel.messages.newButton": "New",
-  "portal.support.panel.messages.openFullPage": "Open Messages page",
-  "portal.support.panel.messages.viewFullThread": "Open full",
-  "portal.support.panel.messages.replyPlaceholder": "Type a reply…",
-  "portal.support.panel.messages.send": "Send",
-  "portal.support.panel.messages.back": "Back",
-  "portal.support.panel.identityBanner": "Verify your identity to unlock full messaging",
-  "portal.support.panel.oryxa.clear": "Clear conversation",
-  "portal.support.panel.oryxa.placeholder": "Ask Oryxa anything…",
-  "portal.support.panel.greeting.guest": "Welcome"
+  "portal.support.faq.q6": "How do I download my documents?"
 }
