@@ -11180,5 +11180,12 @@
   "portal.support.panel.getSupport.s4": "Обновить данные аккаунта",
   "portal.support.panel.getSupport.placeholder": "Опишите вашу проблему здесь…",
   "portal.support.panel.getSupport.send": "Отправить",
-  "portal.support.panel.back": "Назад"
+  "portal.support.panel.back": "Назад",
+  "portal.support.panel.suggestions.title": "Возможно, вы хотите спросить",
+  "portal.support.panel.suggestions.s1": "Как подтвердить личность?",
+  "portal.support.panel.suggestions.s2": "Как подать заявку в университет?",
+  "portal.support.panel.suggestions.s3": "Какие способы оплаты принимаются?",
+  "portal.support.panel.suggestions.s4": "Как отслеживать заявку?",
+  "portal.support.panel.suggestions.s5": "Доступные стипендии",
+  "portal.support.panel.suggestions.s6": "Обновить данные аккаунта"
 }

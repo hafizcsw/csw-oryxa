@@ -10146,5 +10146,12 @@
   "portal.support.panel.getSupport.s4": "खाता जानकारी अपडेट करें",
   "portal.support.panel.getSupport.placeholder": "अपनी समस्या यहां लिखें…",
   "portal.support.panel.getSupport.send": "भेजें",
-  "portal.support.panel.back": "वापस"
+  "portal.support.panel.back": "वापस",
+  "portal.support.panel.suggestions.title": "आप पूछना चाह सकते हैं",
+  "portal.support.panel.suggestions.s1": "मैं अपनी पहचान कैसे सत्यापित करूं?",
+  "portal.support.panel.suggestions.s2": "विश्वविद्यालय में कैसे आवेदन करें?",
+  "portal.support.panel.suggestions.s3": "कौन से भुगतान तरीके स्वीकार किए जाते हैं?",
+  "portal.support.panel.suggestions.s4": "मेरे आवेदन को कैसे ट्रैक करें?",
+  "portal.support.panel.suggestions.s5": "उपलब्ध छात्रवृत्तियां",
+  "portal.support.panel.suggestions.s6": "खाता जानकारी अपडेट करें"
 }

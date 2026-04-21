@@ -13997,5 +13997,12 @@
   "portal.support.panel.getSupport.s4": "تعديل بيانات الحساب",
   "portal.support.panel.getSupport.placeholder": "اكتب مشكلتك هنا…",
   "portal.support.panel.getSupport.send": "إرسال",
-  "portal.support.panel.back": "رجوع"
+  "portal.support.panel.back": "رجوع",
+  "portal.support.panel.suggestions.title": "قد ترغب في السؤال",
+  "portal.support.panel.suggestions.s1": "كيف أوثّق هويتي؟",
+  "portal.support.panel.suggestions.s2": "كيف أتقدّم إلى جامعة؟",
+  "portal.support.panel.suggestions.s3": "ما طرق الدفع المقبولة؟",
+  "portal.support.panel.suggestions.s4": "كيف أتابع طلبي؟",
+  "portal.support.panel.suggestions.s5": "المنح الدراسية المتاحة",
+  "portal.support.panel.suggestions.s6": "تعديل بيانات حسابي"
 }

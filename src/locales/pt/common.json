@@ -10136,5 +10136,12 @@
   "portal.support.panel.getSupport.s4": "Atualizar minha conta",
   "portal.support.panel.getSupport.placeholder": "Descreva seu problema aqui…",
   "portal.support.panel.getSupport.send": "Enviar",
-  "portal.support.panel.back": "Voltar"
+  "portal.support.panel.back": "Voltar",
+  "portal.support.panel.suggestions.title": "Você pode querer perguntar",
+  "portal.support.panel.suggestions.s1": "Como verifico minha identidade?",
+  "portal.support.panel.suggestions.s2": "Como me candidato a uma universidade?",
+  "portal.support.panel.suggestions.s3": "Quais métodos de pagamento são aceitos?",
+  "portal.support.panel.suggestions.s4": "Como rastreio minha candidatura?",
+  "portal.support.panel.suggestions.s5": "Bolsas disponíveis",
+  "portal.support.panel.suggestions.s6": "Atualizar minha conta"
 }

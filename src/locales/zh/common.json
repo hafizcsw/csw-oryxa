@@ -10752,5 +10752,12 @@
   "portal.support.panel.getSupport.s4": "更新账户信息",
   "portal.support.panel.getSupport.placeholder": "在此描述您的问题…",
   "portal.support.panel.getSupport.send": "发送",
-  "portal.support.panel.back": "返回"
+  "portal.support.panel.back": "返回",
+  "portal.support.panel.suggestions.title": "您可能想问",
+  "portal.support.panel.suggestions.s1": "如何验证我的身份？",
+  "portal.support.panel.suggestions.s2": "如何申请大学？",
+  "portal.support.panel.suggestions.s3": "接受哪些付款方式？",
+  "portal.support.panel.suggestions.s4": "如何跟踪我的申请？",
+  "portal.support.panel.suggestions.s5": "可用的奖学金",
+  "portal.support.panel.suggestions.s6": "更新账户信息"
 }
