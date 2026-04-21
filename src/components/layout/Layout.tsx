@@ -189,10 +189,6 @@ export function Layout({
             </div>
             )}
 
-            {/* 2. Messenger + Notifications (authenticated only) */}
-            {isAuthenticated && !hideStudentNav && (
-              <HeaderMessenger />
-            )}
 
             {/* 3. Shortlist Heart Button */}
             {!hideStudentNav && (
@@ -214,6 +210,11 @@ export function Layout({
                   <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </Button>
               </>
+            )}
+
+            {/* Notifications (authenticated only) — placed right next to avatar */}
+            {isAuthenticated && !hideStudentNav && (
+              <HeaderMessenger />
             )}
 
             {/* 5. Account/Auth */}

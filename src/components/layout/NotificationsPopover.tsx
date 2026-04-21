@@ -160,7 +160,6 @@ export function NotificationsPopover() {
       <PopoverContent
         align="end"
         sideOffset={10}
-        alignOffset={-4}
         collisionPadding={8}
         className="w-[380px] max-w-[calc(100vw-1rem)] p-0 rounded-2xl shadow-2xl border-border overflow-hidden"
       >
