@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Users, Filter, Building2, Loader2 } from "lucide-react";
+import { Users, Filter, Building2, Loader2, UserCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Layout } from "@/components/layout/Layout";
@@ -210,6 +211,15 @@ export default function Community() {
             <h1 className="text-3xl md:text-4xl font-bold text-foreground">
               {isAr ? "مجتمع الطلاب والجامعات" : "Student & University Community"}
             </h1>
+            {userId && (
+              <Link
+                to="/community/me"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+              >
+                <UserCircle2 className="w-3.5 h-3.5" />
+                {isAr ? "حسابي ومحفوظاتي" : "My profile & saved"}
+              </Link>
+            )}
           </motion.div>
 
           {/* Sticky filter bar */}

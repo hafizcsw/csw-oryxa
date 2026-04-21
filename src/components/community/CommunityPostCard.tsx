@@ -144,9 +144,12 @@ export function CommunityPostCard({ post, isAr, userId, onChange, index }: Props
       {/* Header */}
       <div className="flex items-start gap-3 p-4 pb-3">
         <button
-          onClick={() => isUni && post.university_slug && navigate(`/university/${post.university_slug}`)}
+          onClick={() => {
+            if (isUni && post.university_slug) navigate(`/university/${post.university_slug}`);
+            else if (!isUni && post.author_user_id) navigate(`/community/u/${post.author_user_id}`);
+          }}
           className={cn(
-            "w-11 h-11 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0",
+            "w-11 h-11 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 hover:ring-2 hover:ring-primary/40 transition-all",
             isUni ? "bg-muted border border-border" : "bg-gradient-to-br from-primary/25 to-accent/25"
           )}
         >
@@ -161,7 +164,15 @@ export function CommunityPostCard({ post, isAr, userId, onChange, index }: Props
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-semibold text-sm text-foreground truncate">{displayName}</span>
+            <button
+              onClick={() => {
+                if (isUni && post.university_slug) navigate(`/university/${post.university_slug}`);
+                else if (!isUni && post.author_user_id) navigate(`/community/u/${post.author_user_id}`);
+              }}
+              className="font-semibold text-sm text-foreground truncate hover:underline text-start"
+            >
+              {displayName}
+            </button>
             {isUni && (
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600">
                 ✓ {isAr ? "موثّق" : "Verified"}
