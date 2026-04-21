@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 interface MessagesTabProps {
   identityApproved: boolean;
   onOpenIdentity: () => void;
+  onBack?: () => void;
 }
 
 function relativeTime(iso: string | null, locale: string): string {
@@ -25,7 +26,7 @@ function relativeTime(iso: string | null, locale: string): string {
   return `${d}d`;
 }
 
-export function MessagesTab({ identityApproved, onOpenIdentity }: MessagesTabProps) {
+export function MessagesTab({ identityApproved, onOpenIdentity, onBack }: MessagesTabProps) {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const isRtl = language === "ar";

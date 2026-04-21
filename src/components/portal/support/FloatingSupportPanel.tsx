@@ -30,7 +30,7 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
 
   const [identityOpen, setIdentityOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [activeView, setActiveView] = useState<PanelView>("oryxa");
+  const [activeView, setActiveView] = useState<PanelView>("default");
   const [authed, setAuthed] = useState(false);
   const [fallbackName, setFallbackName] = useState<string | null>(null);
 
