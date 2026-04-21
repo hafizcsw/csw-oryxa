@@ -228,10 +228,17 @@ export function MalakChatInterface({
   const [consentState, setConsentState] = useState<ConsentState | null>(null);
   const [isConsentLoading, setIsConsentLoading] = useState(false);
   
-  // ✅ WEB Command Pack v4.1: History Sidebar state - threadKey is SEPARATE from session_id
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [threadKey, setThreadKey] = useState(() => getOrCreateThreadKey());
+  const threadKey = useMemo(() => sessionId || 'ephemeral', [sessionId]);
 
+  useEffect(() => {
+    clearAllHistory();
+    try {
+      sessionStorage.removeItem(getClarifyFiltersStorageKey(threadKey));
+    } catch {
+      // no-op
+    }
+    setMessages([]);
+  }, [threadKey]);
 
   useEffect(() => {
     try {
@@ -249,14 +256,14 @@ export function MalakChatInterface({
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   // 🆕 Cards Pipeline: Dedup + Abort refs to prevent race conditions
   const lastCardsKeyRef = useRef<string | null>(null);
   const cardsAbortRef = useRef<AbortController | null>(null);
   const pendingAckRef = useRef<{query_id:string;sequence:number;count:number}|null>(null);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [lastCardsQuery, setLastCardsQuery] = useState<any | null>(null);
-  
+
   /* Clarify UI state removed — search is conversational via bot only */
   const {
     isRecording,
@@ -331,96 +338,12 @@ export function MalakChatInterface({
     messages.some(m => (m as any).isNew === true),
     [messages]
   );
-  
+
   const { scrollRef, handleScroll } = useSmartScroll({
     messagesCount: messages.length,
     isTyping: state === 'thinking' || state === 'searching',
     hasNewMessage
   });
-
-  // ✅ WEB Command Pack v4: Load messages when thread changes
-  useEffect(() => {
-    const savedMsgs = loadThreadMessages(threadKey);
-    if (savedMsgs.length > 0) {
-      console.log('[MalakChat] 📂 Loading', savedMsgs.length, 'messages from thread:', threadKey);
-      const mapped = savedMsgs.map((m: HistoryMessage) => ({
-        id: m.id,
-        from: m.role === 'user' ? 'user' : 'bot',
-        type: 'text' as const,
-        content: m.text,
-        timestamp: new Date(m.created_at),
-        isNew: false
-      }));
-      
-      // ✅ تنظيف رسائل ACK القديمة لتجنب الازدواجية مع المؤشر الموحد
-      const cleaned = mapped.filter((m: any) => 
-        !m.content?.includes('لحظة واحدة') && 
-        !m.content?.includes('تمام —') &&
-        !(m as any).isAck
-      );
-      
-      console.log('[MalakChat] 🧹 Cleaned ACK messages:', mapped.length - cleaned.length);
-      setMessages(cleaned as (WebChatMessage & { isNew?: boolean })[]);
-    }
-  }, [threadKey]);
-
-  // ✅ WEB Command Pack v4.1: Save messages + update thread metadata with session info
-  useEffect(() => {
-    if (!messages || messages.length === 0) return;
-
-    const toSave: HistoryMessage[] = messages.map((m, idx) => ({
-      id: (m as any).id || `${Date.now()}_${idx}`,
-      role: m.from === 'bot' ? 'assistant' as const : 'user' as const,
-      text: m.content || '',
-      created_at: m.timestamp ? new Date(m.timestamp).toISOString() : new Date().toISOString(),
-    }));
-
-    const sessionIds = getSessionIdentifiers();
-
-    const t = setTimeout(() => {
-      saveThreadMessages(threadKey, toSave);
-      
-      // ✅ Update thread with current session mapping
-      upsertThread({
-        thread_key: threadKey,
-        title: deriveTitle(toSave),
-        updated_at: new Date().toISOString(),
-        metadata: {
-          guest_session_id: sessionIds.guest_session_id,
-          session_id: sessionIds.session_id,
-          customer_id: sessionIds.customer_id || undefined,
-          session_type: sessionIds.session_type,
-        }
-      });
-      
-      // ✅ Also update metadata separately for quick lookup
-      updateThreadMetadata(threadKey, {
-        guest_session_id: sessionIds.guest_session_id,
-        session_id: sessionIds.session_id,
-        customer_id: sessionIds.customer_id || undefined,
-        session_type: sessionIds.session_type,
-      });
-    }, 500); // Debounce 500ms
-
-    return () => clearTimeout(t);
-  }, [messages, threadKey]);
-
-  // ✅ WEB Command Pack v4.1: Handle new chat creation with proper session separation
-  const handleNewChat = useCallback(() => {
-    const { threadKey: newThreadKey } = createNewConversation();
-    setThreadKey(newThreadKey);
-    setActiveThreadKey(newThreadKey);
-    setMessages([]);
-    setState('idle');
-    setError(null);
-    console.log('[MalakChat] 🆕 Started new chat thread:', newThreadKey);
-  }, []);
-
-  // ✅ WEB Command Pack v4: Handle thread selection from sidebar
-  const handlePickThread = useCallback((key: string) => {
-    setThreadKey(key);
-    setHistoryOpen(false);
-  }, []);
 
   // 🆕 حساب حالة القفل المحدثة
   const {
@@ -1137,9 +1060,10 @@ export function MalakChatInterface({
   };
   const handleClearHistory = () => {
     setMessages([]);
-    setUniversities([], false); // يمسح من Context ويخفي القسم
+    setUniversities([], false);
     setState('idle');
     setError(null);
+    clearAllHistory();
     clearHistory();
   };
   const handleLike = async (universityId: string) => {
