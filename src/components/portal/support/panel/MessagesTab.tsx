@@ -1,9 +1,11 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, ArrowRight, ArrowLeft, Loader2, MessageSquare, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ArrowRight, ArrowLeft, Loader2, MessageSquare, ShieldCheck, ChevronLeft, ChevronRight, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useCommThreads, type CommThread } from "@/hooks/useCommApi";
+import { useCommThreads, commCreateThread, type CommThread } from "@/hooks/useCommApi";
 import { CommThreadView } from "@/components/comm/CommThreadView";
 import { SupportSubmitDialog } from "../SupportSubmitDialog";
 import { cn } from "@/lib/utils";
@@ -33,6 +35,40 @@ export function MessagesTab({ identityApproved, onOpenIdentity, onBack }: Messag
   const { threads, loading, refresh } = useCommThreads();
   const [selected, setSelected] = useState<CommThread | null>(null);
   const [newOpen, setNewOpen] = useState(false);
+  const [quickMsg, setQuickMsg] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const sendQuick = async () => {
+    const body = quickMsg.trim();
+    if (!body || sending) return;
+    setSending(true);
+    try {
+      const res: any = await commCreateThread({
+        thread_type: "support",
+        first_message: body,
+      });
+      setQuickMsg("");
+      await refresh();
+      const newId = res?.thread?.id || res?.id;
+      if (newId) {
+        const found = (await refresh()) as unknown;
+        // Try to open new thread from refreshed list
+        const t = (Array.isArray(found) ? found : threads).find?.((x: any) => x.id === newId);
+        if (t) setSelected(t as CommThread);
+      }
+    } catch (e) {
+      toast.error(t("portal.support.panel.messages.sendError", { defaultValue: "Failed to send" }));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const onQuickKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendQuick();
+    }
+  };
 
   const sortedThreads = useMemo(
     () =>
@@ -193,18 +229,44 @@ export function MessagesTab({ identityApproved, onOpenIdentity, onBack }: Messag
         )}
       </div>
 
-      <div className="p-3 border-t border-border/40">
-        <button
-          type="button"
-          onClick={() => navigate("/messages")}
-          className="w-full text-center text-[12px] text-primary hover:underline py-1"
-        >
-          {t("portal.support.panel.messages.openFullPage", {
-            defaultValue: "Open Messages page",
-          })}
-          {" →"}
-        </button>
-      </div>
+      {identityApproved ? (
+        <div className="mt-auto shrink-0 bg-card border-t border-border/40 px-3 py-2.5 flex items-center gap-2">
+          <Textarea
+            value={quickMsg}
+            onChange={(e) => setQuickMsg(e.target.value)}
+            onKeyDown={onQuickKey}
+            placeholder={t("portal.support.panel.messages.quickPlaceholder", {
+              defaultValue: "Write a message…",
+            })}
+            rows={1}
+            disabled={sending}
+            className="min-h-[40px] max-h-28 resize-none text-sm flex-1 bg-muted/40 border-0 rounded-full px-4 py-2 focus-visible:ring-1 focus-visible:ring-ring/40"
+          />
+          <Button
+            type="button"
+            size="icon"
+            onClick={sendQuick}
+            disabled={!quickMsg.trim() || sending}
+            className="h-9 w-9 rounded-full flex-shrink-0"
+            aria-label={t("portal.support.panel.messages.send", { defaultValue: "Send" })}
+          >
+            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          </Button>
+        </div>
+      ) : (
+        <div className="p-3 border-t border-border/40">
+          <button
+            type="button"
+            onClick={() => navigate("/messages")}
+            className="w-full text-center text-[12px] text-primary hover:underline py-1"
+          >
+            {t("portal.support.panel.messages.openFullPage", {
+              defaultValue: "Open Messages page",
+            })}
+            {" →"}
+          </button>
+        </div>
+      )}
 
       <SupportSubmitDialog
         open={newOpen}
