@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,16 +12,22 @@ export function SupportSubmitDialog({
   open,
   onOpenChange,
   defaultSubjectKey,
+  defaultMessage,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultSubjectKey?: string;
+  defaultMessage?: string;
 }) {
   const { t } = useLanguage();
   const { toast } = useToast();
   const { refetch } = useSupportTickets();
-  const [body, setBody] = useState("");
+  const [body, setBody] = useState(defaultMessage ?? "");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open) setBody(defaultMessage ?? "");
+  }, [open, defaultMessage]);
 
   const submit = async () => {
     if (body.trim().length < 4) {
