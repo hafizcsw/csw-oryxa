@@ -1216,9 +1216,11 @@ export function MalakChatInterface({
             ? "h-full bg-card" 
             : isInDeepSearch
               ? "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl h-full min-h-[400px]"
-              : compact
-                ? "bg-[#1a1a1f]/90 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-                : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[550px] h-[70vh] max-h-[800px]"
+                : compact
+                  ? (messages.length === 0 && state === 'idle'
+                      ? "bg-[#1a1a1f]/90 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                      : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[550px] h-[70vh] max-h-[800px]")
+                  : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[550px] h-[70vh] max-h-[800px]"
         )}>
            {/* Header - Only in standalone mode */}
            {!isFloating && !compact && (
@@ -1465,7 +1467,7 @@ export function MalakChatInterface({
               disabled={isChatPaused}
               className={cn(
                 "resize-none rounded-3xl border shadow-sm focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 placeholder:text-muted-foreground",
-                compact
+                compact && messages.length === 0 && state === 'idle'
                   ? "bg-transparent border-transparent text-white placeholder:text-white/40 shadow-none"
                   : "bg-white dark:bg-zinc-800 border-border/50 text-foreground",
                 isFloating 
