@@ -1,9 +1,11 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, ArrowRight, ArrowLeft, Loader2, MessageSquare, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ArrowRight, ArrowLeft, Loader2, MessageSquare, ShieldCheck, ChevronLeft, ChevronRight, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useCommThreads, type CommThread } from "@/hooks/useCommApi";
+import { useCommThreads, commCreateThread, type CommThread } from "@/hooks/useCommApi";
 import { CommThreadView } from "@/components/comm/CommThreadView";
 import { SupportSubmitDialog } from "../SupportSubmitDialog";
 import { cn } from "@/lib/utils";
@@ -33,6 +35,40 @@ export function MessagesTab({ identityApproved, onOpenIdentity, onBack }: Messag
   const { threads, loading, refresh } = useCommThreads();
   const [selected, setSelected] = useState<CommThread | null>(null);
   const [newOpen, setNewOpen] = useState(false);
+  const [quickMsg, setQuickMsg] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const sendQuick = async () => {
+    const body = quickMsg.trim();
+    if (!body || sending) return;
+    setSending(true);
+    try {
+      const res: any = await commCreateThread({
+        thread_type: "support",
+        first_message: body,
+      });
+      setQuickMsg("");
+      await refresh();
+      const newId = res?.thread?.id || res?.id;
+      if (newId) {
+        const found = (await refresh()) as unknown;
+        // Try to open new thread from refreshed list
+        const t = (Array.isArray(found) ? found : threads).find?.((x: any) => x.id === newId);
+        if (t) setSelected(t as CommThread);
+      }
+    } catch (e) {
+      toast.error(t("portal.support.panel.messages.sendError", { defaultValue: "Failed to send" }));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const onQuickKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendQuick();
+    }
+  };
 
   const sortedThreads = useMemo(
     () =>
