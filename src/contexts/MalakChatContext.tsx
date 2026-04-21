@@ -155,16 +155,8 @@ export function MalakChatProvider({ children }: { children: ReactNode }) {
 
   // Load from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem('malak_chat_history');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setMessages(parsed.messages || []);
-        // لا نحمّل universities من localStorage - تظهر فقط ديناميكياً من الشات
-      } catch (e) {
-        console.warn('Failed to parse stored chat history');
-      }
-    }
+    // ✅ لا نحتفظ بسجل رسائل بين الجلسات - نمسح أي بقايا قديمة
+    localStorage.removeItem('malak_chat_history');
 
     const storedUserId = localStorage.getItem('web_user_id');
     if (storedUserId) setWebUserId(storedUserId);
