@@ -222,8 +222,8 @@ export function IdentityActivationDialog({
       >
         {/* Header */}
         {isResultStep ? (
-          <div className="relative border-b border-border/40 bg-card/30 px-12 pt-3.5 pb-2.5">
-            <DialogTitle className="text-[11px] font-semibold text-muted-foreground/80 uppercase tracking-[0.18em] text-center">
+          <div className="relative border-b border-border/40 bg-card/30 px-6 pt-4 pb-3">
+            <DialogTitle className="text-sm font-semibold text-foreground text-center leading-none">
               {t("portal.identity.title")}
             </DialogTitle>
             <DialogDescription className="sr-only">
@@ -232,7 +232,7 @@ export function IdentityActivationDialog({
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="absolute top-1/2 -translate-y-1/2 ltr:right-3 rtl:left-3 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="absolute top-3 ltr:right-3 rtl:left-3 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               aria-label="Close"
             >
               <X className="w-4 h-4" />
@@ -979,7 +979,7 @@ function ResultStep({
     info: "bg-primary text-primary-foreground hover:bg-primary/90",
   }[tone];
   return (
-    <div className="flex flex-col items-center text-center gap-3 pt-2 pb-4 w-full max-w-sm mx-auto">
+    <div className="flex flex-col items-center text-center gap-3 pt-3 pb-4 w-full max-w-sm mx-auto">
       <div className={cn("flex items-center justify-center w-[72px] h-[72px] rounded-full ring-[6px] ring-offset-2 ring-offset-background [&>svg]:w-9 [&>svg]:h-9", ringTone)}>
         {icon}
       </div>
@@ -987,7 +987,7 @@ function ResultStep({
         <h3 className="text-base font-bold text-foreground leading-tight">{title}</h3>
         <p className="text-xs text-muted-foreground leading-relaxed px-2">{body}</p>
       </div>
-      <Button onClick={onCta} className={cn("w-full h-11 text-sm font-semibold rounded-xl shadow-sm", btnTone)}>
+      <Button onClick={onCta} className={cn("mt-2 h-11 min-w-[176px] px-6 text-sm font-semibold rounded-xl shadow-sm", btnTone)}>
         {ctaLabel}
       </Button>
     </div>
