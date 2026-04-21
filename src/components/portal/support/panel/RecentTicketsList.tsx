@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Inbox } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { SupportTicketRow } from "@/api/identitySupportInvoke";
@@ -32,8 +32,6 @@ function formatRelative(iso: string, locale: string, justNowLabel: string): stri
 
 export function RecentTicketsList({ tickets }: RecentTicketsListProps) {
   const { t, language } = useLanguage();
-  const reduced = useReducedMotion();
-  const isRtl = language === "ar";
 
   if (tickets.length === 0) {
     return (
