@@ -1230,7 +1230,7 @@ export function MalakChatInterface({
                   : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[360px] h-[50vh] max-h-[520px]"
         )}>
            {/* Header - Only in standalone mode */}
-           {!isFloating && !compact && (
+           {!isFloating && (
              <div className={cn(
                "flex items-center justify-between border-b border-border bg-muted/30",
                isCompactMobileStandalone ? "px-3 py-2" : "px-6 py-3"
