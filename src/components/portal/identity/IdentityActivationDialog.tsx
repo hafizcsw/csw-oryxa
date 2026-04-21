@@ -201,7 +201,7 @@ export function IdentityActivationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "max-w-xl sm:max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl",
+          "!max-w-[min(1400px,96vw)] w-[96vw]",
           "p-0 overflow-hidden gap-0",
           "bg-gradient-to-br from-background via-background to-muted/30",
           "border-border/60 shadow-2xl rounded-2xl",
