@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Renderer, Program, Mesh, Triangle, Vec2 } from 'ogl';
+import { Renderer, Program, Mesh, Triangle, Vec2, Vec3 } from 'ogl';
 import { vertex, fragment } from './atmosphericFieldShader';
 
 // === CONFIG ===
@@ -13,10 +13,10 @@ const PRESETS: Record<HeroFieldVariant, {
   mouseRadius: number;
   depthBoost: number;
 }> = {
-  // A — quieter: barely-there ambient breathing
-  quieter:  { intensity: 0.10, noiseScale: 1.2, speed: 0.06, mouseRadius: 0.22, depthBoost: 0.35 },
-  // B — slightly more reactive: a touch more motion + mouse presence
-  reactive: { intensity: 0.16, noiseScale: 1.6, speed: 0.10, mouseRadius: 0.30, depthBoost: 0.50 },
+  // A — quieter: ambient, present but soft
+  quieter:  { intensity: 0.55, noiseScale: 1.2, speed: 0.06, mouseRadius: 0.22, depthBoost: 0.35 },
+  // B — slightly more reactive: stronger motion + mouse presence
+  reactive: { intensity: 0.75, noiseScale: 1.6, speed: 0.10, mouseRadius: 0.30, depthBoost: 0.50 },
 };
 
 const MOBILE_INTENSITY_SCALE = 0.7; // lower on small screens
@@ -85,6 +85,7 @@ export function HeroAtmosphericField({ variant = 'quieter', className }: Props) 
         uSpeed:         { value: reduceMotion ? 0 : cfg.speed },
         uMouseRadius:   { value: cfg.mouseRadius },
         uDepthBoost:    { value: cfg.depthBoost },
+        uTint:          { value: new Vec3(0, 0, 0) }, // updated each frame from theme
       },
     });
 
@@ -142,6 +143,14 @@ export function HeroAtmosphericField({ variant = 'quieter', className }: Props) 
       const ms = program.uniforms.uMouseStrength;
       ms.value += (mouseTarget.strength - ms.value) * MOUSE_LERP;
 
+      // Tint follows theme: black ink on light bg, white ink on dark bg
+      const isDark = document.documentElement.classList.contains('dark');
+      const tint = program.uniforms.uTint.value as Vec3;
+      const target = isDark ? 1 : 0;
+      tint.x += (target - tint.x) * 0.1;
+      tint.y = tint.x;
+      tint.z = tint.x;
+
       program.uniforms.uTime.value = elapsed;
       renderer.render({ scene: mesh });
       raf = requestAnimationFrame(loop);
@@ -190,7 +199,7 @@ export function HeroAtmosphericField({ variant = 'quieter', className }: Props) 
         height: '100%',
         pointerEvents: 'none',
         zIndex: 1,
-        mixBlendMode: 'difference',
+        mixBlendMode: 'normal',
       }}
     />
   );

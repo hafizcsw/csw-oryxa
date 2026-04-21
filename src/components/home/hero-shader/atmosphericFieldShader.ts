@@ -33,6 +33,7 @@ export const fragment = /* glsl */ `
   uniform float uSpeed;          // base time speed
   uniform float uMouseRadius;    // 0..1 in normalized space
   uniform float uDepthBoost;     // 0..1 depth layer contribution
+  uniform vec3  uTint;           // ink color (black on light bg, white on dark bg)
 
   // ---- 3D simplex noise (Ashima / Stefan Gustavson) ----
   vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
@@ -119,6 +120,6 @@ export const fragment = /* glsl */ `
     // Final intensity, clamped
     float a = clamp(mask * uIntensity, 0.0, 1.0);
 
-    gl_FragColor = vec4(1.0, 1.0, 1.0, a);
+    gl_FragColor = vec4(uTint, a);
   }
 `;
