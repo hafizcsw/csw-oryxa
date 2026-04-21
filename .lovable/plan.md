@@ -2,178 +2,144 @@
 
 ## الهدف
 
-إعادة تصميم الـ Floating Support Panel ليطابق إحساس Binance في الـ screenshot، مع الحفاظ على honesty الوظيفية المتفق عليها (لا chat حي، لا fake threads).
+إعادة هيكلة محتوى الـ Floating Support Panel ليطابق grid أزرار Binance (الذي اتفقنا عليه سابقاً)، مع ربط كل زر بسلوك حقيقي محدد بدقة:
 
-## مرجع Binance (من الصورة)
+## خريطة الأزرار (7 خانات في الـ grid)
+
+| # | الزر | الأيقونة | السلوك |
+|---|---|---|---|
+| 1 | **الإعدادات** | `Settings` | navigate `/account?tab=settings` ويغلق Panel |
+| 2 | **الهوية** | `ShieldCheck` (أخضر إذا موثق) | navigate `/account?tab=overview#identity` — يفتح قسم توثيق الهوية في الحساب الشخصي |
+| 3 | **Oryxa AI** | `Sparkles` (gradient) | يبدّل التاب الداخلي إلى Oryxa (يفتح الشات داخل الـ Panel — لا navigate) |
+| 4 | **احصل على الدعم** | `LifeBuoy` | يفتح **شاشة "احكِ لنا مشكلتك" داخل نفس Panel** (view جديد، ليس dialog) — نص افتتاحي + 4 prompts مقترحة + textarea. عند الإرسال → يُمرَّر النص لـ Oryxa عبر `addMessage` فيُجاب في تاب Oryxa (نفس backbone) |
+| 5 | **الرسائل** | `MessageCircle` + badge unread | يبدّل التاب الداخلي إلى Messages (Messenger-style داخل Panel + رابط "افتح صندوق البريد كاملاً" → `/messages`) |
+| 6 | **التقديم** | `FileText` | navigate `/account?tab=applications` ويغلق Panel |
+| 7 | **الخدمات** | `Briefcase` (بدل CreditCard) | navigate `/services` ويغلق Panel |
+
+## الـ Layout الجديد للـ Panel
 
 ```text
 ┌─────────────────────────────────┐
-│  🌐  ↗                          │  ← top bar minimal (lang + expand)
-│                                 │
-│  Hi {name}              🟡     │  ← greeting كبير + mascot/avatar
-│  Welcome To {brand} Support     │
-│                                 │
-│  ┌───────────────────────────┐  │
-│  │  ⚡   🛡   💳   👥        │  │  ← Quick categories grid 4×2
-│  │  ID   Acc  Pay  Fiat       │  │     icons فوق + label تحت
-│  │  📈   👜   💼   ▦         │  │
-│  │  Trade Wal  Fin  More      │  │
-│  └───────────────────────────┘  │
-│                                 │
-│  ┌───────────────────────────┐  │
-│  │ KYC Verification        > │  │  ← status card مع carousel dots
-│  │ ▓▓░░ 1/3                  │  │
-│  │ Basic Verification       │  │
-│  │ Unsuccessful   [Reason]  │  │
-│  │     • • •                 │  │
-│  └───────────────────────────┘  │
-│                                 │
-│  You May Want To Ask            │  ← FAQ list مرقّمة
-│  1  ........................    │
-│  2  ........................    │
-│  ...                            │
-│  View more ⌄                   │
-│                                 │
+│  EN  ⤢  ✕                        │ TopBar (موجود)
 ├─────────────────────────────────┤
-│  [ 🎧  Get Support ]            │  ← CTA full-width sticky
+│  Hi {firstName}    🛡 موثّق      │ Greeting + green shield شرطي
+├─────────────────────────────────┤
+│  [الإعداد][الهوية][Oryxa][الدعم]│
+│  [الرسائل][التقديم][الخدمات]     │ Categories grid (7 خانات)
+├─────────────────────────────────┤
+│                                 │
+│  محتوى ديناميكي حسب الحالة:     │
+│  • Default (none)               │
+│    → نص ترحيب + Recent تذاكر    │
+│  • activeTab=oryxa              │
+│    → OryxaTab (موجود)           │
+│  • activeTab=messages           │
+│    → MessagesTab (موجود)        │
+│  • activeView=getSupport        │
+│    → GetSupportView (جديد)      │
+│                                 │
 └─────────────────────────────────┘
 ```
 
-## التغييرات الحاكمة عن النسخة الحالية
+الـ grid يبقى ظاهراً دائماً أعلى المحتوى (حتى لو فُتح Oryxa أو Messages). للرجوع للـ default view، الضغط على الزر النشط مرة أخرى.
 
-| الجانب | الحالي | الجديد (Binance-like) |
-|---|---|---|
-| Top bar | Header كبير + title + close + expand | Minimal: language hint icon + expand + close فقط، بدون title |
-| Greeting | section صغيرة | Hero block: `text-3xl font-bold` + subtitle + decorative mascot circle |
-| Categories | 4 chips أفقية بـ grid 2×2 | **Grid 4×2 = 8 عناصر**, icon فوق + label تحت، layout بطاقة واحدة بيضاء |
-| Identity card | rounded card مع border accent جانبي | Card مسطّحة + progress bar صغير + chip "Reason" يميناً + carousel dots سفلية |
-| FAQ | غير موجود | **قسم جديد** "You May Want To Ask" بترقيم ملوّن + "View more" |
-| Recent tickets | list dots + relative time | يُنقَل تحت FAQ بشكل أكثر هدوءًا، أو يُدمَج كـ tab toggle |
-| Footer CTA | زر primary | يبقى لكن مع icon headset كبير + label "Get Support" قوي |
+## الـ Get Support View (شاشة "احكِ لنا مشكلتك")
+
+```text
+┌──────────────────────────┐
+│ ← رجوع                    │
+│                          │
+│ احكِ لنا ما هي مشكلتك      │
+│ سيتولى فريقنا حلها فوراً    │
+│                          │
+│ [قد ترغب في السؤال:]       │
+│  • كيف أوثّق هويتي؟          │
+│  • مشكلة في الدفع           │
+│  • سؤال عن جامعة            │
+│  • تعديل بيانات الحساب       │
+│                          │
+│ [textarea: اكتب هنا...]   │
+│                          │
+│  [إرسال →]                │
+└──────────────────────────┘
+```
+
+عند الإرسال:
+1. يُحفَظ النص كرسالة user في `MalakChatContext` عبر `addMessage`
+2. يتبدّل `activeTab` لـ `oryxa` تلقائياً
+3. Oryxa ترد في نفس الشات (وأيضاً ستظهر في الشات الرئيسي `/about-oryxa` لأن الـ context مشترك — كما طلبت)
+
+## الـ Identity Shield الأخضر
+
+- يظهر بجوار الاسم في الـ Greeting **فقط إذا `status.identity_status === 'approved'`**
+- أيقونة `ShieldCheck` بـ `text-success` (semantic token)
+- أيقونة زر "الهوية" في الـ grid أيضاً تتلوّن أخضر إذا موثق
 
 ## هيكل الملفات
 
 **جديد:**
-- `src/components/portal/support/panel/PanelHero.tsx` — greeting + mascot + welcome
-- `src/components/portal/support/panel/PanelTopBar.tsx` — يحلّ محل PanelHeader (minimal)
-- `src/components/portal/support/panel/QuickCategoriesGrid.tsx` — 8-cell grid يحلّ محل SupportQuickCategories
-- `src/components/portal/support/panel/IdentityProgressCard.tsx` — variant جديد بـ progress + reason chip + dots
-- `src/components/portal/support/panel/FAQSuggestionsList.tsx` — قائمة مرقّمة + view more
-- `src/components/portal/support/panel/PanelStickyFooter.tsx` — Get Support CTA
+- `src/components/portal/support/panel/PanelCategoriesGrid.tsx` — 7 أزرار بالـ mapping أعلاه (يستبدل QuickCategoriesGrid بالكامل في العرض)
+- `src/components/portal/support/panel/GetSupportView.tsx` — شاشة "احكِ لنا مشكلتك" مع 4 prompts + textarea + إرسال
 
 **معدّل:**
-- `src/components/portal/support/FloatingSupportPanel.tsx` — ترتيب الأقسام الجديد + إزالة sections القديمة
-- `src/components/portal/support/SupportSubmitDialog.tsx` — يقبل defaultMessage إذا اخترنا FAQ → prefill
+- `FloatingSupportPanel.tsx`:
+  - حذف `<PanelTabs>` (التابات تُختار من الـ grid، لا tabs منفصلة)
+  - إضافة state `activeView: 'default' | 'oryxa' | 'messages' | 'getSupport'`
+  - عرض `<PanelCategoriesGrid>` دائماً + view الحالي تحته
+  - إضافة green shield بجوار الاسم إذا `identityApproved`
+- `PanelTabs.tsx` — يُحذَف من الاستخدام (الكود يبقى للأرشفة)
 
-**يُحذف من العرض (لكن يبقى الكود لإعادة استخدام لاحق):**
-- `PanelGreeting.tsx` (يحلّ محله PanelHero)
-- `PanelHeader.tsx` (يحلّ محله PanelTopBar)
-- `PanelLinksRow.tsx` (Messages/Oryxa يُدمَجان كـ 2 cells في QuickCategoriesGrid)
-
-## القواعد الحاكمة المحفوظة
-
-1. **No live chat illusion** — لا dots خضراء، لا "online", لا "typing"، لا agent avatar
-2. **Recent tickets honesty** — لا chevrons، لا hover افتح
-3. **Identity reason** — يبقى locale-mapped، لا raw codes
-4. **FAQ items** — كل واحد click → يفتح SupportSubmitDialog مع subject prefilled (ليست articles مزيفة)
-5. **12-language** — كل مفتاح جديد يُضاف لكل 12 ملف locale
-6. **No hex colors** — `--primary`, `--warning`, `--success`, `--destructive` فقط
-7. **Mascot circle** — decorative gradient blob (`bg-gradient-to-br from-primary/30 to-primary/10`) + headset icon — لا صور binary، لا mascot من Binance
-
-## QuickCategoriesGrid — 8 عناصر
-
-| # | Icon | Label key | Action |
-|---|---|---|---|
-| 1 | ShieldCheck | `categories.identity` | Submit dialog: identity |
-| 2 | Lock | `categories.account_security` | Submit dialog: account |
-| 3 | CreditCard | `categories.payment` | Submit dialog: payment |
-| 4 | FileText | `categories.application` | Submit dialog: application |
-| 5 | GraduationCap | `categories.programs` | Submit dialog: programs |
-| 6 | Wrench | `categories.technical` | Submit dialog: technical |
-| 7 | MessageSquare | `categories.messages` | Navigate `/messages` |
-| 8 | Sparkles | `categories.oryxa` | Navigate `/about-oryxa` |
-
-→ Messages و Oryxa يصبحان جزءًا من الشبكة بدلاً من صف منفصل (يطابق Binance "More Features").
-
-## IdentityProgressCard
-
-- Header: `KYC Verification` + chevron يميناً (decorative، لا navigation الآن)
-- Progress: شريط رفيع `h-1.5 rounded-full bg-muted` + filled portion بلون الحالة
-  - none: 0/3
-  - pending: 1/3
-  - reupload: 2/3
-  - approved: 3/3
-  - rejected: 1/3 (warning color)
-- Status text: title من variant config
-- Reason chip: يظهر فقط في rejected/reupload — `bg-warning/15 text-warning rounded-md px-2 py-1 text-xs font-medium` + click → opens IdentityActivationDialog
-- Carousel dots: 3 dots ثابتة سفلية (decorative، تطابق Binance — تشير للـ 3 خطوات)
-
-## FAQSuggestionsList
-
-- Header: `text-xs uppercase text-muted-foreground` "You May Want To Ask"
-- 6 items مرقّمة:
-  - Number badge: `text-primary text-sm font-semibold w-5`
-  - Label: من locale `faq.q1` … `faq.q6`
-  - Click → `SupportSubmitDialog` مع `defaultSubjectKey` + `defaultMessage` prefilled من FAQ key
-- Divider خفيف `border-b border-border/40` بين items
-- "View more ⌄" button أسفله (للمرحلة الحالية: يفتح dialog "general" — لا route حقيقي)
-
-## Motion plan
-
-- **Hero mascot:** breathing animation `scale: [1, 1.04, 1]` بـ duration 4s infinite (reduced-motion aware)
-- **Categories cells:** stagger entrance `delay: i * 0.03`
-- **Identity progress bar:** width animate من 0 → target بـ duration 0.6s
-- **Carousel dots:** static (decorative)
-- **FAQ items:** stagger fade-in
-- **No card hover scale** — فقط `bg` transition
-
-## Locale namespace جديد
-
+**locale keys جديدة (لكل 12 لغة):**
 ```
-portal.support.panel.welcomeTo: "Welcome to {{brand}} support"
-portal.support.panel.kycTitle: "KYC Verification"
-portal.support.panel.kycReasonChip: "Reason"
-portal.support.panel.kycStep: "{{current}}/{{total}}"
-portal.support.panel.faqTitle: "You may want to ask"
-portal.support.panel.faqViewMore: "View more"
-portal.support.panel.getSupport: "Get support"
-portal.support.categories.account_security: "Account security"
-portal.support.categories.programs: "Programs & fit"
-portal.support.categories.messages: "Messages"
-portal.support.categories.oryxa: "Oryxa AI"
-portal.support.faq.q1: "How do I verify my identity?"
-portal.support.faq.q2: "How do I update my passport?"
-portal.support.faq.q3: "How do I track my application?"
-portal.support.faq.q4: "How do I change my address?"
-portal.support.faq.q5: "What payment methods are supported?"
-portal.support.faq.q6: "How do I download my documents?"
+portal.support.panel.cats.settings: "الإعدادات"
+portal.support.panel.cats.identity: "الهوية"
+portal.support.panel.cats.oryxa: "Oryxa AI"
+portal.support.panel.cats.getSupport: "احصل على الدعم"
+portal.support.panel.cats.messages: "الرسائل"
+portal.support.panel.cats.applications: "التقديم"
+portal.support.panel.cats.services: "الخدمات"
+portal.support.panel.identityVerified: "موثّق"
+portal.support.panel.getSupport.title: "احكِ لنا ما هي مشكلتك"
+portal.support.panel.getSupport.subtitle: "سيتولى فريقنا حلّها فوراً"
+portal.support.panel.getSupport.suggestionsLabel: "قد ترغب في السؤال:"
+portal.support.panel.getSupport.s1: "كيف أوثّق هويتي؟"
+portal.support.panel.getSupport.s2: "مشكلة في الدفع"
+portal.support.panel.getSupport.s3: "سؤال عن جامعة"
+portal.support.panel.getSupport.s4: "تعديل بيانات الحساب"
+portal.support.panel.getSupport.placeholder: "اكتب مشكلتك هنا..."
+portal.support.panel.getSupport.send: "إرسال"
+portal.support.panel.back: "رجوع"
 ```
 
-→ يُضاف لكل ملفات الـ 12 لغة: `ar, bn, de, en, es, fr, hi, ja, ko, pt, ru, zh`
+## القواعد الحاكمة
 
-## Visual behavior
-
-- **Desktop width:** يبقى 400px (collapsed) / 520px (expanded) — Binance feel أكثر بـ 400
-- **Mobile:** نفس bottom-sheet 88vh
-- **Background sections:** كل قسم card أبيض `bg-card` على خلفية panel هادئة `bg-muted/20` — يطابق Binance المنفصل البصري بين الأقسام
-- **Border radius:** `rounded-2xl` للـ cards الداخلية، `rounded-3xl` للـ panel الخارجي
-- **Spacing:** `gap-3` بين cards، `p-4` داخل cards
+1. **لا fake threads** — Messages من Supabase حصراً (موجود)
+2. **Oryxa context مشترك** — رسالة "احصل على الدعم" تظهر في `/about-oryxa` أيضاً
+3. **Identity green shield** فقط إذا `approved`، لا badge للحالات الأخرى
+4. **زر الدفع → خدمات** — تغيير label + icon + route (`/services`)
+5. **زر التقديم → `/account?tab=applications`** (لا route مستقل)
+6. **زر الإعدادات → `/account?tab=settings`**
+7. **زر الهوية → `/account?tab=overview` + scroll لقسم الهوية** (anchor `#identity`)
+8. **12 لغة** لكل المفاتيح الجديدة
+9. **semantic tokens** فقط (no hex)
+10. **RTL** — الـ grid ينعكس طبيعياً عبر CSS direction
 
 ## ما لا يتغيّر
 
-- Launcher button نفسه (نفس badge logic)
+- Launcher (الزر العائم نفسه)
+- TopBar (lang chip + expand + close)
+- Greeting source (canonical-first من `useExtractedIdentity`)
+- OryxaTab + MessagesTab (نفس السلوك الحالي بالكامل)
 - IdentityActivationDialog
-- SupportSubmitDialog (نضيف فقط `defaultMessage` optional prop)
-- useSupportTickets / useIdentityStatus
-- PortalAuthFloater gating
-- Recent tickets data path (لكن العرض يصبح أبسط أو يُؤجَّل لـ tab)
+- مصدر unread count (`useCommUnreadCount`)
+- جميع routes الموجودة
 
 ## قرار يحتاج تأكيدك قبل التنفيذ
 
-**Recent tickets:** هل:
-- (أ) **يُحذَف من Panel** (Binance لا يعرضها هنا، يفتحها عبر "Get Support") — الأنظف
-- (ب) **يبقى تحت FAQ** كقسم هادئ بـ max 3 items
-- (ج) **tab toggle** أعلى Panel بين "Home" و "My tickets"
+**الـ Default view (قبل ضغط أي زر من الـ grid):**
+- (أ) **Oryxa AI** فوراً (الشات يفتح تلقائياً) — كما اتفقنا سابقاً
+- (ب) **شاشة hint فارغة** — "اختر من الأعلى للبدء"
+- (ج) **آخر view استخدمه العميل** (يُحفَظ في localStorage)
 
-موصى: **(أ)** — يطابق Binance + يقلّل cognitive load + الـ tickets موجودة في `/messages` route.
+موصى: **(أ)** — يطابق طلبك السابق "أول شي يظهر للعميل هوا شات اوريكسا".
 
