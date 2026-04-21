@@ -89,9 +89,22 @@ export function AccountVerificationSteps({
             <h3 className="text-lg font-bold text-foreground mb-2">
               {t('portal.steps.verifyAccount')}
             </h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-muted-foreground mb-3">
               {t('portal.steps.completeIdentity')}
             </p>
+
+            <div className={cn("mb-4", isRtl ? "text-right" : "text-left")}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setWhyOpen(true)}
+                className="h-auto px-2 py-1 text-xs text-primary hover:text-primary hover:bg-primary/5 gap-1.5"
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                {t('portal.steps.whyVerifyButton')}
+              </Button>
+            </div>
 
             <div className="flex justify-center my-6">
               <div className="relative">
