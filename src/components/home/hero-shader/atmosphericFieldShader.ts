@@ -84,6 +84,12 @@ export const fragment = /* glsl */ `
     return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
   }
 
+  // 2D rotation helper for layer offsets
+  vec2 rot(vec2 v, float a) {
+    float c = cos(a), s = sin(a);
+    return mat2(c, -s, s, c) * v;
+  }
+
   void main() {
     // Aspect-correct uv so noise cells stay roughly square
     vec2 uv = vUv;
@@ -92,33 +98,57 @@ export const fragment = /* glsl */ `
 
     float t = uTime * uSpeed;
 
-    // Layer A — primary micro-flicker
-    float n1 = snoise(vec3(p * uNoiseScale, t));
-    // Layer B — secondary, different freq + speed → non-synchronized
-    float n2 = snoise(vec3(p * uNoiseScale * 2.3 + 11.7, t * 1.7 + 3.1));
-    // Depth layer — very slow, low frequency
-    float nDepth = snoise(vec3(p * (uNoiseScale * 0.35), t * 0.25));
-
-    // Combine into a soft mask in 0..1
-    float field = 0.55 * n1 + 0.35 * n2;
-    field = field * 0.5 + 0.5;            // 0..1
-    float depth = nDepth * 0.5 + 0.5;     // 0..1
-
-    // Soft contrast curve, keeps it ambient (no hard hotspots)
-    field = smoothstep(0.45, 0.85, field);
-    depth = smoothstep(0.30, 0.95, depth);
-
-    float mask = field + depth * uDepthBoost;
-
-    // Mouse disturbance — soft Gaussian falloff
+    // ---- Mouse vector field (flow distortion, not just additive lift) ----
     vec2 mp = vec2(uMouse.x * aspect, uMouse.y);
-    float d = distance(p, mp);
+    vec2 toM = p - mp;
+    float dM = length(toM);
     float r = max(uMouseRadius, 0.0001);
-    float g = exp(-(d * d) / (2.0 * r * r));
-    mask += g * 0.45 * uMouseStrength;
+    float gauss = exp(-(dM * dM) / (2.0 * r * r));
+    // Swirl direction perpendicular to mouse-radial → curl flow
+    vec2 swirl = vec2(-toM.y, toM.x) / max(dM, 1e-4);
+    vec2 flow = swirl * gauss * 0.06 * uMouseStrength;
+    vec2 pf = p + flow; // distorted sample position for mid/far layers
+
+    // ---- Energy zones (very-low-frequency mask) ----
+    // Defines slow-moving "active" vs "calm" regions; not uniform field.
+    float zone = snoise(vec3(p * 0.6, t * 0.18 + 41.0));
+    zone = smoothstep(-0.25, 0.85, zone); // 0..1 weight
+
+    // ---- Far layer (depth, slow, large cells) ----
+    float nFar = snoise(vec3(rot(pf, 0.3) * (uNoiseScale * 0.35), t * 0.22));
+    float far  = smoothstep(0.20, 0.95, nFar * 0.5 + 0.5);
+
+    // ---- Mid layer (primary atmosphere) ----
+    float nMid = snoise(vec3(pf * uNoiseScale, t));
+    float mid  = smoothstep(0.40, 0.88, nMid * 0.5 + 0.5);
+
+    // ---- Near layer (faster, secondary, non-synchronized) ----
+    float nNear = snoise(vec3(rot(pf, -0.7) * (uNoiseScale * 2.1) + 11.7, t * 1.7 + 3.1));
+    float near  = smoothstep(0.45, 0.92, nNear * 0.5 + 0.5);
+
+    // ---- Micro-detail (high-frequency, very subtle texture) ----
+    float micro = snoise(vec3(p * (uNoiseScale * 6.5), t * 0.6 + 91.3));
+    micro = micro * 0.5 + 0.5;
+    float microContribution = (micro - 0.5) * 0.18; // can subtract slightly too
+
+    // ---- Compose with depth weighting ----
+    // Far is broad/soft, mid is the body, near adds bright peaks.
+    float field =
+        far  * (0.30 + uDepthBoost * 0.35)
+      + mid  * 0.55
+      + near * 0.40;
+
+    // Spatial variation: zones modulate amplitude (active vs calm regions)
+    field *= mix(0.55, 1.25, zone);
+
+    // Sprinkle micro texture
+    field += microContribution * mix(0.4, 1.0, zone);
+
+    // ---- Mouse: distortion already applied; add subtle local lift too ----
+    field += gauss * 0.30 * uMouseStrength;
 
     // Final intensity, clamped
-    float a = clamp(mask * uIntensity, 0.0, 1.0);
+    float a = clamp(field * uIntensity, 0.0, 1.0);
 
     gl_FragColor = vec4(uTint, a);
   }

@@ -13,10 +13,10 @@ const PRESETS: Record<HeroFieldVariant, {
   mouseRadius: number;
   depthBoost: number;
 }> = {
-  // A — quieter: ambient, present but soft
-  quieter:  { intensity: 0.55, noiseScale: 1.2, speed: 0.06, mouseRadius: 0.22, depthBoost: 0.35 },
-  // B — slightly more reactive: stronger motion + mouse presence
-  reactive: { intensity: 0.75, noiseScale: 1.6, speed: 0.10, mouseRadius: 0.30, depthBoost: 0.50 },
+  // A — quieter: layered depth, soft presence
+  quieter:  { intensity: 0.55, noiseScale: 1.4, speed: 0.07, mouseRadius: 0.24, depthBoost: 0.55 },
+  // B — more alive: faster, more reactive, deeper zones
+  reactive: { intensity: 0.80, noiseScale: 1.9, speed: 0.13, mouseRadius: 0.32, depthBoost: 0.80 },
 };
 
 const MOBILE_INTENSITY_SCALE = 0.7; // lower on small screens
