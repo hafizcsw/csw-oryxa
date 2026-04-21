@@ -96,8 +96,12 @@ export function GetSupportView({ onBack, onSubmitted }: GetSupportViewProps) {
         </div>
       </div>
 
-      <div className="p-3 border-t border-border/40 bg-card/40">
-        <div className="flex gap-2 items-end">
+      <div className="p-3 border-t border-border/40 bg-card/80 backdrop-blur-sm sticky bottom-0">
+        <div className={cn(
+          "relative flex items-end gap-1 rounded-2xl border border-border/60 bg-background",
+          "focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/20 transition-all",
+          "px-1 py-1"
+        )}>
           <Textarea
             ref={textareaRef}
             value={value}
@@ -106,14 +110,14 @@ export function GetSupportView({ onBack, onSubmitted }: GetSupportViewProps) {
             placeholder={t("portal.support.panel.getSupport.placeholder", {
               defaultValue: "Describe your problem here…",
             })}
-            className="min-h-[44px] max-h-32 resize-none text-sm"
+            className="min-h-[40px] max-h-32 resize-none text-sm border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none px-3 py-2 flex-1"
             rows={1}
           />
           <Button
             onClick={() => submit(value)}
             disabled={!value.trim()}
             size="icon"
-            className="h-11 w-11 flex-shrink-0"
+            className="h-9 w-9 flex-shrink-0 rounded-xl"
             aria-label={t("portal.support.panel.getSupport.send", { defaultValue: "Send" })}
           >
             <Send className="w-4 h-4" />
