@@ -87,12 +87,25 @@ export async function uploadIdentityFile(slot: "doc" | "selfie" | "video", file:
   const ext = (file.name.split(".").pop() || file.type.split("/")[1] || "bin").toLowerCase();
   const sign = await signIdentityUploadUrl(slot, ext);
   if (!sign.ok || !sign.data) return { ok: false as const, error: sign.error || "sign_failed" };
-  const { error: upErr } = await supabase.storage
-    .from(sign.data.bucket)
-    .uploadToSignedUrl(sign.data.path, (sign.data as any).token, file, {
-      contentType: file.type || "application/octet-stream",
+  // PUT directly to the CRM-issued signed URL. Do NOT use the portal supabase
+  // client here — it would attach the portal JWT and cause a signature
+  // verification failure against the CRM storage endpoint.
+  try {
+    const putRes = await fetch(sign.data.signed_url, {
+      method: "PUT",
+      headers: {
+        "content-type": file.type || "application/octet-stream",
+        "x-upsert": "true",
+      },
+      body: file,
     });
-  if (upErr) return { ok: false as const, error: `put_failed:${upErr.message}` };
+    if (!putRes.ok) {
+      const txt = await putRes.text().catch(() => "");
+      return { ok: false as const, error: `put_failed:http_${putRes.status}:${txt.slice(0, 120)}` };
+    }
+  } catch (e) {
+    return { ok: false as const, error: `put_failed:${e instanceof Error ? e.message : String(e)}` };
+  }
   const conf = await confirmIdentityUpload({
     slot,
     bucket: sign.data.bucket,
