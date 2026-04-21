@@ -92,22 +92,22 @@ export function useIdentityStatus() {
       userIdRef.current = uid;
       if (!uid) return;
 
-      channel = supabase
-        .channel(`identity-mirror-${uid}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'identity_status_mirror',
-            filter: `user_id=eq.${uid}`,
-          },
-          () => {
-            // CRM-driven change → bypass cache and refetch from CRM.
-            void refetch();
-          }
-        )
-        .subscribe();
+      const ch = supabase.channel(`identity-mirror-${uid}`);
+      ch.on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'identity_status_mirror',
+          filter: `user_id=eq.${uid}`,
+        },
+        () => {
+          // CRM-driven change → bypass cache and refetch from CRM.
+          void refetch();
+        }
+      );
+      ch.subscribe();
+      channel = ch;
     });
 
     ensureAuthListener(qc);
