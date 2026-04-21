@@ -185,7 +185,7 @@ export function HeroSection() {
           }}
         />
 
-        <div className="relative z-10 w-full h-full max-w-6xl mx-auto px-4 sm:px-8 py-8 flex items-center justify-center">
+        <div className="relative z-10 w-full h-full max-w-6xl mx-auto px-4 sm:px-8 py-8 flex items-end sm:items-center justify-center">
           {isDeepSearchMode ? (
             <div className="flex-1 min-h-0 max-h-[calc(100%-2rem)] w-full">
               <DeepSearchLayout
