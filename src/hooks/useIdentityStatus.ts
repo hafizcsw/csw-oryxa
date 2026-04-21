@@ -73,17 +73,44 @@ export function useIdentityStatus() {
   const qc = useQueryClient();
   const userIdRef = useRef<string | null>(null);
 
-  // Resolve current user id once (synchronous best-effort via getSession).
-  // We read it lazily in queryFn too, so this ref is only for cache reads.
+  // Resolve current user id + subscribe to CRM-driven mirror changes.
+  // The mirror table `identity_status_mirror` is the only source of truth
+  // for invalidation: when CRM pushes a new status (approve/reject/etc.),
+  // a row UPDATE/INSERT lands here and we refetch + rewrite the cache.
   useEffect(() => {
     let mounted = true;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
     supabase.auth.getUser().then(({ data }) => {
-      if (mounted) userIdRef.current = data.user?.id ?? null;
+      if (!mounted) return;
+      const uid = data.user?.id ?? null;
+      userIdRef.current = uid;
+      if (!uid) return;
+
+      channel = supabase
+        .channel(`identity-mirror-${uid}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'identity_status_mirror',
+            filter: `user_id=eq.${uid}`,
+          },
+          () => {
+            // CRM-driven change → bypass cache and refetch from CRM.
+            void refetch();
+          }
+        )
+        .subscribe();
     });
+
     ensureAuthListener(qc);
     return () => {
       mounted = false;
+      if (channel) supabase.removeChannel(channel);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [qc]);
 
   const q = useQuery({
