@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import { ShieldCheck } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useIdentityStatus } from "@/hooks/useIdentityStatus";
 import { useExtractedIdentity } from "@/hooks/useExtractedIdentity";
@@ -7,9 +8,10 @@ import { useCommUnreadCount } from "@/hooks/useCommApi";
 import { supabase } from "@/integrations/supabase/client";
 import { IdentityActivationDialog } from "@/components/portal/identity/IdentityActivationDialog";
 import { PanelTopBar } from "./panel/PanelTopBar";
-import { PanelTabs, type PanelTab } from "./panel/PanelTabs";
+import { PanelCategoriesGrid, type PanelView } from "./panel/PanelCategoriesGrid";
 import { OryxaTab } from "./panel/OryxaTab";
 import { MessagesTab } from "./panel/MessagesTab";
+import { GetSupportView } from "./panel/GetSupportView";
 import { cn } from "@/lib/utils";
 
 const SPRING = { type: "spring" as const, stiffness: 320, damping: 30, mass: 0.8 };
@@ -28,7 +30,7 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
 
   const [identityOpen, setIdentityOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [activeTab, setActiveTab] = useState<PanelTab>("oryxa");
+  const [activeView, setActiveView] = useState<PanelView>("oryxa");
   const [authed, setAuthed] = useState(false);
   const [fallbackName, setFallbackName] = useState<string | null>(null);
 
@@ -74,7 +76,9 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
   };
 
   const identityApproved = status?.identity_status === "approved";
-  const showMessagesTab = authed;
+
+  // Guests get Oryxa-only experience (no grid, no messages)
+  const showGrid = authed;
 
   return (
     <>
@@ -118,32 +122,49 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
         />
 
         {/* Greeting */}
-        <div className="px-4 pt-1 pb-2">
-          <p className="text-[15px] font-semibold text-foreground truncate">
+        <div className="px-4 pt-1 pb-2 flex items-center gap-1.5">
+          <p className="text-[15px] font-semibold text-foreground truncate flex-1">
             {firstName
               ? t("portal.support.panel.greeting", { name: firstName })
               : t("portal.support.panel.greeting.guest", {
-                  defaultValue: t("portal.support.panel.greetingFallback", {
-                    defaultValue: "Welcome",
-                  }),
+                  defaultValue: "Welcome",
                 })}
           </p>
+          {authed && identityApproved && (
+            <span
+              className="inline-flex items-center gap-1 text-success text-[11px] font-medium"
+              title={t("portal.support.panel.identityVerified", { defaultValue: "Verified" })}
+            >
+              <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.5} />
+              <span className="hidden sm:inline">
+                {t("portal.support.panel.identityVerified", { defaultValue: "Verified" })}
+              </span>
+            </span>
+          )}
         </div>
 
-        <PanelTabs
-          active={activeTab}
-          onChange={setActiveTab}
-          unreadCount={unreadCount}
-          showMessages={showMessagesTab}
-        />
+        {showGrid && (
+          <PanelCategoriesGrid
+            activeView={activeView}
+            identityApproved={identityApproved}
+            unreadCount={unreadCount}
+            onSwitchView={setActiveView}
+            onClose={onClose}
+          />
+        )}
 
         <div className="flex-1 min-h-0 overflow-hidden">
-          {activeTab === "oryxa" || !showMessagesTab ? (
+          {!showGrid || activeView === "oryxa" || activeView === "default" ? (
             <OryxaTab />
-          ) : (
+          ) : activeView === "messages" ? (
             <MessagesTab
               identityApproved={identityApproved}
               onOpenIdentity={() => setIdentityOpen(true)}
+            />
+          ) : (
+            <GetSupportView
+              onBack={() => setActiveView("oryxa")}
+              onSubmitted={() => setActiveView("oryxa")}
             />
           )}
         </div>
