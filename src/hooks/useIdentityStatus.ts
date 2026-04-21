@@ -125,11 +125,14 @@ export function useIdentityStatus() {
       const userId = userData.user?.id ?? null;
       userIdRef.current = userId;
 
-      // Cache-first: if we already have a cached status for this user,
-      // return it without hitting CRM. CRM-driven invalidation is the
-      // only path that should refresh this cache.
+      // Cache-first ONLY for terminal CRM decisions
+      // (approved / rejected / reupload_required).
+      // pending / none must always re-check CRM, because Supabase
+      // mirror is not guaranteed to be in sync and realtime won't fire.
       const cached = readCache(userId);
-      if (cached) return cached;
+      if (cached && TERMINAL_STATUSES.has(cached.identity_status)) {
+        return cached;
+      }
 
       const res = await getIdentityStatus();
       const status = res.ok && res.data ? res.data : DEFAULT;
