@@ -20,24 +20,11 @@ import oryxaAvatar from '@/assets/oryxa-avatar-regen.png';
 import { ChatMessage } from './ChatMessage';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-// ✅ WEB Command Pack v4.1 - History Sidebar with proper session separation
-import { ChatHistorySidebar } from './ChatHistorySidebar';
-import { 
-  loadThreadMessages, 
-  saveThreadMessages, 
-  upsertThread, 
-  deriveTitle, 
-  createNewThread, 
-  HistoryMessage,
-  updateThreadMetadata,
-  getThreadMetadata
-} from '@/lib/chat/history';
-import { 
-  getOrCreateThreadKey, 
-  createNewConversation, 
+// ✅ Chat history persistence disabled — keep only ephemeral in-memory chat
+import { clearAllHistory } from '@/lib/chat/history';
+import {
   getSessionIdentifiers,
   persistIdsFromResponse,
-  setActiveThreadKey
 } from '@/lib/chat/session';
 // ✅ T5 FIX: Import state machine to gate search
 import { shouldTriggerSearch, detectConsentPhase, ConsentState } from '@/lib/chat/state';
