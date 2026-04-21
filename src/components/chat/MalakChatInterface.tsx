@@ -47,6 +47,7 @@ import { BuildStamp, InlineBuildStamp } from './BuildStamp';
 import { ConsentBanner } from './ConsentBanner';
 
 import { AIIcon } from '@/components/icons/AIIcon';
+import { TypewriterPlaceholder } from './TypewriterPlaceholder';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 // Native scroll used instead of ScrollArea for better compatibility
@@ -137,10 +138,13 @@ function getSmartErrorMessage(err: any, t: (key: string) => string): SmartErrorR
 interface MalakChatInterfaceProps {
   variant?: 'standalone' | 'floating';
   isInDeepSearch?: boolean;
+  /** Compact landing mode: hides welcome orb + suggested prompts, shows rotating placeholder. */
+  compact?: boolean;
 }
 export function MalakChatInterface({
   variant = 'standalone',
-  isInDeepSearch = false
+  isInDeepSearch = false,
+  compact = false,
 }: MalakChatInterfaceProps) {
   const isFloating = variant === 'floating';
   const isMobile = useIsMobile();
