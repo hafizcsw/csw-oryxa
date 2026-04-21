@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Users, Filter, Building2, Loader2 } from "lucide-react";
+import { Users, Filter, Building2, Loader2, UserCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Layout } from "@/components/layout/Layout";
