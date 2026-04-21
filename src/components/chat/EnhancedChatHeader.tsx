@@ -103,11 +103,12 @@ export function EnhancedChatHeader({
           </motion.button>
         )}
 
-        {/* Size Control - hidden on mobile/fullscreen */}
-        {onCycleSize && !isMobile && !isFullscreen && (
+        {/* Size Control - keep visible on desktop even in fullscreen so user can restore */}
+        {onCycleSize && !isMobile && (
           <ChatSizeCycleButton 
             currentSize={sizeMode} 
             onCycle={onCycleSize}
+            className={isFullscreen ? "bg-muted text-foreground hover:bg-muted/80" : undefined}
           />
         )}
 

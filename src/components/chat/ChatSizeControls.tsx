@@ -13,14 +13,14 @@ const sizeIcons: Record<ChatSizeMode, React.ReactNode> = {
   compact: <Minimize2 className="w-3.5 h-3.5" />,
   standard: <Square className="w-3.5 h-3.5" />,
   wide: <RectangleHorizontal className="w-3.5 h-3.5" />,
-  full: <Maximize2 className="w-3.5 h-3.5" />,
+  full: <Minimize2 className="w-3.5 h-3.5" />,
 };
 
 const sizeLabels: Record<ChatSizeMode, string> = {
   compact: 'صغير',
   standard: 'عادي',
   wide: 'واسع',
-  full: 'ملء الشاشة',
+  full: 'استعادة الحجم',
 };
 
 export function ChatSizeControls({ currentSize, onSizeChange, className }: ChatSizeControlsProps) {
@@ -66,10 +66,10 @@ export function ChatSizeCycleButton({
       whileTap={{ scale: 0.9 }}
       className={cn(
         "p-1.5 rounded-lg transition-all duration-200",
-        "bg-white/10 hover:bg-white/20 text-white/80 hover:text-white",
+        "bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground",
         className
       )}
-      title={`الحجم: ${sizeLabels[currentSize]}`}
+      title={currentSize === 'full' ? 'استعادة الحجم' : `الحجم: ${sizeLabels[currentSize]}`}
     >
       {sizeIcons[currentSize]}
     </motion.button>
