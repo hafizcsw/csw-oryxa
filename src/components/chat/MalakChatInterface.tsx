@@ -1368,8 +1368,8 @@ export function MalakChatInterface({
         <div className={cn("flex-shrink-0 border-t border-border", isFloating ? "px-2 pb-1.5 pt-1 bg-background" : isCompactMobileStandalone ? "px-3 pb-3 pt-2 bg-muted/30" : "px-6 pb-6 pt-4 bg-muted/30")}
           style={isFloating ? { paddingBottom: 'max(6px, env(safe-area-inset-bottom, 6px))' } : undefined}
         >
-          {/* الاقتراحات - فقط في البداية */}
-          {messages.length === 0 && state !== 'awaiting_phone' && state !== 'awaiting_otp' && <div className={cn("animate-fade-in", isFloating ? "mb-2" : "mb-3")}>
+          {/* الاقتراحات - فقط في البداية وليس compact */}
+          {messages.length === 0 && !compact && state !== 'awaiting_phone' && state !== 'awaiting_otp' && <div className={cn("animate-fade-in", isFloating ? "mb-2" : "mb-3")}>
               <div className={cn("grid grid-cols-2 mx-auto", isFloating ? "gap-1.5 max-w-[320px]" : isCompactMobileStandalone ? "gap-2 max-w-[340px]" : "gap-2 max-w-2xl")}>
                 {SUGGESTED_PROMPTS.map((prompt, i) => <button key={i} onClick={() => handlePromptClick(prompt)} disabled={state === 'thinking'} className={cn("inline-flex items-center font-medium rounded-lg border border-border bg-muted/80 hover:bg-muted hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed", isFloating ? "gap-1 px-1.5 py-1 text-[9px]" : isCompactMobileStandalone ? "gap-1.5 px-2 py-1.5 text-[11px]" : "gap-1.5 px-3 py-2 text-xs")}>
                     <Sparkles className={cn("text-blue-600 dark:text-blue-400 flex-shrink-0", isFloating ? "w-2.5 h-2.5" : isCompactMobileStandalone ? "w-3 h-3" : "w-3.5 h-3.5")} />
