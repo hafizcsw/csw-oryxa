@@ -1213,25 +1213,23 @@ export function MalakChatInterface({
     };
   }, [debugInfo, nextPageToken]);
 
-  return (
-    <div className={cn("flex", isFloating ? "flex-col h-full" : "flex-row w-full h-full gap-4")}>
-      {/* History Sidebar removed */}
-      
-<div className={cn("flex-1 flex flex-col", (isFloating || isInDeepSearch) ? "h-full" : "")}>
-        <div data-tour-id="tour-chat-box" className={cn(
-          "flex flex-col overflow-hidden",
-          isFullscreen
-            ? "fixed inset-0 z-[9999] h-screen w-screen rounded-none bg-background border-0"
-            : isFloating
-              ? "h-full bg-card"
-              : isInDeepSearch
-                ? "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl h-full min-h-[400px]"
-                  : compact
-                    ? (messages.length === 0 && state === 'idle'
-                        ? "bg-[#1a1a1f]/90 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-                        : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[593px] h-[77vh] max-h-[773px]")
-                    : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[360px] h-[50vh] max-h-[520px]"
-        )}>
+  const chatBoxClassName = cn(
+    "flex flex-col overflow-hidden",
+    isFullscreen
+      ? "fixed inset-0 z-[9999] h-screen w-screen rounded-none bg-background border-0"
+      : isFloating
+        ? "h-full bg-card"
+        : isInDeepSearch
+          ? "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl h-full min-h-[400px]"
+            : compact
+              ? (messages.length === 0 && state === 'idle'
+                  ? "bg-[#1a1a1f]/90 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                  : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[593px] h-[77vh] max-h-[773px]")
+              : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[360px] h-[50vh] max-h-[520px]"
+  );
+
+  const chatBoxInner = (
+    <div data-tour-id="tour-chat-box" className={chatBoxClassName}>
            {/* Header - Only in standalone mode */}
            {!isFloating && (
              <div className={cn(
