@@ -1,73 +1,61 @@
 
 
-## الهدف
-إضافة تجربة حركة سلسة في الصفحة الرئيسية مستوحاة من **antigravity.google**:
-1. **خلفية إضاءة تفاعلية (Aurora Spotlight)** تتبع الماوس بسلاسة كموجة ضوئية متعددة الألوان (Google Rainbow).
-2. **حركة كشف نص هادئة** على عنوان الـ Hero (fade + slide + shimmer متدرج بألوان جوجل).
-3. الحفاظ على البنية الحالية للهيرو (`HeroSection`, `MalakChatInterface`) دون كسرها.
+## Facebook Messenger-style Redesign for Messages Tab
 
----
+Transform the floating panel's **Messages** section to mirror Facebook's Chats popup: a clean header, segmented filter pills (All / Unread / Support), Messenger-style conversation rows, and a small floating chat bubble that pops out when a conversation is selected — instead of replacing the panel.
 
-## ما سيُبنى
+### Visual Reference (Facebook Chats)
 
-### 1) مكوّن جديد: `src/components/home/AuroraBackground.tsx`
-خلفية ثابتة (`absolute inset-0`) تحتوي:
-- **طبقة Gradient Mesh** ساكنة بألوان الـ Brand + Google Rainbow (#4285F4, #EA4335, #FBBC04, #34A853) بـ `radial-gradient` ضبابية.
-- **Spotlight يتبع الماوس**: عنصر `div` يتحرك عبر CSS variables `--mx` / `--my` تُحدّث من `mousemove` مع `requestAnimationFrame` + lerp (interpolation 0.08) لخلق تأثير "الموجة" المتأخرة السلسة.
-- **Blob متعدد الطبقات** (3 blobs بأحجام مختلفة) يتحرك بسرعات مختلفة (parallax) لمحاكاة التموّج.
-- Blur قوي (`blur-3xl`) + `mix-blend-screen` لذوبان الألوان.
-- يعمل في الوضعين الفاتح والداكن.
-- يحترم `prefers-reduced-motion` (يعطّل التتبع ويُبقي الخلفية الساكنة).
+```text
+┌─────────────────────────────────┐
+│ Chats              ⋯  ⤢  ✎     │  ← Header (title + actions)
+│ 🔍 Search Messenger             │  ← Pill-shaped search
+│ [All] [Unread] [Support]        │  ← Segmented filter chips
+├─────────────────────────────────┤
+│ ◉  Ahmed Mohsen        2h       │
+│    أخذ ٢٠٠ دولار...             │  ← Row: avatar + name + preview + time
+│ ◉  CSW Support         1d  •    │  ← Unread dot
+│    Your ticket has been...       │
+│ ◉  Felix Cholec        6d       │
+│    Hello Hafez · Reply?          │
+└─────────────────────────────────┘
+        See all in Messenger →
+```
 
-### 2) مكوّن جديد: `src/components/home/HeroRevealText.tsx`
-- يستقبل `text` ويقسّمها حروفاً/كلمات.
-- كل كلمة تظهر بـ stagger animation: `opacity 0 → 1` + `translateY 20px → 0` بمنحنى `cubic-bezier(0.22, 1, 0.36, 1)`.
-- Cursor عمودي رفيع بتدرّج Google Rainbow يومض عند بداية النص (مثل antigravity تماماً).
-- Shimmer خفيف يمر مرة واحدة على النص بعد ظهوره.
+When a row is clicked → a **floating chat bubble window** (Messenger-style mini-chat) slides in from the bottom-right edge of the panel — exactly like the Facebook screenshot — with header [avatar + name + 📞 🎥 — ✕], scrollable messages, and a bottom input. The main list stays visible behind/beside it.
 
-### 3) تعديل `src/components/home/HeroSection.tsx`
-- استبدال الـ `bg-gradient` الحالي (`from-blue-500 via-purple-500 to-pink-500`) بمكوّن `<AuroraBackground />`.
-- لفّ النص الترحيبي (إن وُجد فوق الشات) بـ `<HeroRevealText />`.
-- الإبقاء على `MalakChatInterface` و `DeepSearchLayout` و News Ticker كما هي.
-- إخفاء الخلفية التفاعلية تلقائياً عند دخول `isDeepSearchMode` لتقليل التشتيت.
+### Sections
 
-### 4) ملف CSS: `src/styles/aurora.css`
-- `@keyframes aurora-drift` لحركة blobs البطيئة (20s+).
-- `@keyframes shimmer-sweep` لتأثير اللمعة على النص.
-- `@keyframes cursor-blink-rainbow` لمؤشر العنوان.
-- استيراد في `src/index.css`.
+1. **Header** — "Chats" title + ⋯ menu, ⤢ expand, ✎ new-message icons. Replaces the current uppercase "MESSAGES" label + ghost "New" button.
+2. **Search bar** — pill-shaped input filtering threads by name/subject/preview client-side.
+3. **Filter chips** — `All`, `Unread`, `Support` (matching Facebook's All/Unread/Groups/Communities). Active chip = filled primary pill; inactive = muted.
+4. **Conversation list** — Messenger row style: 36px circular avatar with first-letter gradient, bold name when unread, single-line preview, relative timestamp, blue unread dot at end. Hover = subtle muted bg, rounded.
+5. **Mini-chat popup** — When a thread is selected, render a `MiniChatWindow` overlay anchored bottom-end inside the panel (≈320×420). Header shows name + close (✕) + minimize. Body uses existing `CommThreadView`. Closing returns to list. Multiple selections replace the current popup (single-window mode for simplicity).
+6. **Footer** — "See all in Messenger →" link to `/messages` (replaces current quick-input box, since composing now happens inside the popup or via the ✎ icon → `SupportSubmitDialog`).
 
-### 5) i18n
-- مفاتيح ترجمة جديدة فقط إذا أُضيف نص ترحيبي جديد فوق الشات. وإلا — لا تغيير على ملفات اللغة (12-language readiness محفوظة).
+### Files to change
 
----
+- **`src/components/portal/support/panel/MessagesTab.tsx`** — full rewrite:
+  - Add header row (title + 3 icon buttons).
+  - Add search input + filter chip state (`'all' | 'unread' | 'support'`).
+  - Filter `sortedThreads` by chip + search query.
+  - Replace inline thread view with floating `MiniChatWindow` overlay.
+  - Remove bottom quick-compose box; replace with "See all in Messenger" link.
+  - Wire ✎ icon to existing `SupportSubmitDialog`.
+- **New `src/components/portal/support/panel/MiniChatWindow.tsx`** — Messenger-style popup:
+  - Absolute-positioned card (bottom-end, ≈320×420), shadow-2xl, rounded-2xl.
+  - Header: avatar + name + minimize/close icons.
+  - Body: wraps `CommThreadView` (already includes its own input).
+  - RTL-aware positioning (`end-3` works for both LTR/RTL via logical props).
+- **`src/components/portal/support/panel/PanelTabs.tsx`** — no change (panel-level tabs stay).
+- **i18n keys** — added with `defaultValue` fallbacks (no locale-file edits required for first pass; keys: `portal.support.panel.messages.filters.all|unread|support`, `searchPlaceholder`, `seeAll`).
 
-## الجوانب التقنية الدقيقة
+### Technical Notes
 
-| الجانب | القرار |
-|---|---|
-| Mouse tracking | `useEffect` + `requestAnimationFrame` loop داخل `AuroraBackground`، lerp بمعامل 0.08 لتحقيق تأخر "الموجة". |
-| الأداء | `will-change: transform`, `transform: translate3d`, `pointer-events: none` على كل طبقات الخلفية. |
-| RTL | الخلفية لا تتأثر؛ النص في `HeroRevealText` يعكس direction بحسب `dir`. |
-| Mobile | تعطيل التتبع تحت 768px (الإيماءة باللمس مكلفة)، الإبقاء على blobs المتحركة فقط. |
-| الوصولية | `prefers-reduced-motion: reduce` → خلفية ساكنة، نص يظهر فوراً بدون stagger. |
-| التوافق مع Theme | استخدام HSL tokens من `index.css` بجانب ألوان Google كـ accent overlays فقط. |
-
----
-
-## الملفات المتأثرة
-- ✏️ `src/components/home/HeroSection.tsx`
-- ➕ `src/components/home/AuroraBackground.tsx`
-- ➕ `src/components/home/HeroRevealText.tsx`
-- ➕ `src/styles/aurora.css`
-- ✏️ `src/index.css` (سطر import واحد)
-
-لا تغييرات على: routing, contexts, API, i18n architecture, Brain Visualizer, FloatingSupportLauncher.
-
----
-
-## خارج النطاق
-- لن يُلمس `MalakChatInterface` أو منطق الشات.
-- لن تُضاف مكتبات جديدة (لا GSAP/Three.js) — كل شيء بـ CSS + RAF خام.
-- لن يُعدَّل News Ticker أو Compare Drawer.
+- Filter logic: `unread` = `unread_count > 0`; `support` = `thread_type === 'support'`.
+- Search is case-insensitive across `display_name`, `subject`, `last_message_preview`.
+- `MiniChatWindow` uses `framer-motion` for slide-up entry (matches existing panel motion language).
+- Mobile (`<sm`): popup expands to full panel width/height (no floating bubble — better UX on small screens).
+- 12-language ready: all visible strings via `t()` with `defaultValue`.
+- No backend changes; uses existing `useCommThreads` and `CommThreadView`.
 

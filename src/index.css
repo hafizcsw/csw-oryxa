@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import './styles/aurora.css';
-
 /* Defensive paint background — prevents white flash if any code path
    still triggers a hard reload (OAuth callback, manual refresh, etc.). */
 html, body, #root {
