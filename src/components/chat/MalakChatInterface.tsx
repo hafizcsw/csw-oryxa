@@ -1250,7 +1250,8 @@ export function MalakChatInterface({
            )}
 
 
-        {/* Messages Area - Native scroll */}
+        {/* Messages Area - hidden in compact-empty state to keep box small */}
+        {!(compact && messages.length === 0 && state === 'idle') && (
         <div ref={scrollRef} onScroll={handleScroll} className={cn(
           "flex-1 overflow-y-auto min-h-0",
           isFloating
