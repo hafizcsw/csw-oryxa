@@ -13,7 +13,6 @@ import {
   ShieldAlert,
   MessageCircle,
   LifeBuoy,
-  Loader2,
   MoreHorizontal,
   Check,
 } from 'lucide-react';
