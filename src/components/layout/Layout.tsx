@@ -189,10 +189,6 @@ export function Layout({
             </div>
             )}
 
-            {/* 2. Messenger + Notifications (authenticated only) */}
-            {isAuthenticated && !hideStudentNav && (
-              <HeaderMessenger />
-            )}
 
             {/* 3. Shortlist Heart Button */}
             {!hideStudentNav && (
