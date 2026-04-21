@@ -1369,7 +1369,7 @@ export function MalakChatInterface({
         {/* Clarify filters UI removed — search is conversational via bot only */}
 
         {/* Input area */}
-        <div className={cn("flex-shrink-0 border-t border-border", isFloating ? "px-2 pb-1.5 pt-1 bg-background" : isCompactMobileStandalone ? "px-3 pb-3 pt-2 bg-muted/30" : "px-6 pb-6 pt-4 bg-muted/30")}
+        <div className={cn("flex-shrink-0", compact ? "px-3 pb-3 pt-3 bg-transparent border-0" : "border-t border-border", !compact && (isFloating ? "px-2 pb-1.5 pt-1 bg-background" : isCompactMobileStandalone ? "px-3 pb-3 pt-2 bg-muted/30" : "px-6 pb-6 pt-4 bg-muted/30"))}
           style={isFloating ? { paddingBottom: 'max(6px, env(safe-area-inset-bottom, 6px))' } : undefined}
         >
           {/* الاقتراحات - فقط في البداية وليس compact */}
