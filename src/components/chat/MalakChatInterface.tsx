@@ -1619,29 +1619,36 @@ export function MalakChatInterface({
           </div>
         </div>
       </div>
+  );
 
-      {nextPageToken && lastCardsQuery && (
-        <div className="px-3 py-2"> 
-          <Button
-            variant="outline"
-            onClick={async () => {
-              if (!nextPageToken) return;
-              sendPortalEvent(PORTAL_EVENTS.PAGINATION_LOAD_MORE, { timestamp: new Date().toISOString() });
-              const res = await fetchCards({ ...lastCardsQuery, page_token: nextPageToken });
-              if (res.programs.length === 0) {
+  return (
+    <div className={cn("flex", isFloating ? "flex-col h-full" : "flex-row w-full h-full gap-4")}>
+      <div className={cn("flex-1 flex flex-col", (isFloating || isInDeepSearch) ? "h-full" : "")}>
+        {isFullscreen ? createPortal(chatBoxInner, document.body) : chatBoxInner}
+
+        {nextPageToken && lastCardsQuery && (
+          <div className="px-3 py-2">
+            <Button
+              variant="outline"
+              onClick={async () => {
+                if (!nextPageToken) return;
+                sendPortalEvent(PORTAL_EVENTS.PAGINATION_LOAD_MORE, { timestamp: new Date().toISOString() });
+                const res = await fetchCards({ ...lastCardsQuery, page_token: nextPageToken });
+                if (res.programs.length === 0) {
+                  setNextPageToken(res.next_page_token ?? null);
+                  return;
+                }
+                if (res.programs.length > 0) {
+                  setUniversities([...(universities as any), ...(res.programs as any)], true, null, 'chat_cards');
+                }
                 setNextPageToken(res.next_page_token ?? null);
-                return;
-              }
-              if (res.programs.length > 0) {
-                setUniversities([...(universities as any), ...(res.programs as any)], true, null, 'chat_cards');
-              }
-              setNextPageToken(res.next_page_token ?? null);
-            }}
-          >
-            {t('portal.payments.more')}
-          </Button>
-        </div>
-      )}
+              }}
+            >
+              {t('portal.payments.more')}
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
