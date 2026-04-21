@@ -140,11 +140,14 @@ interface MalakChatInterfaceProps {
   isInDeepSearch?: boolean;
   /** Compact landing mode: hides welcome orb + suggested prompts, shows rotating placeholder. */
   compact?: boolean;
+  /** Called when message count changes; useful for parent layout adjustments. */
+  onMessagesCountChange?: (count: number) => void;
 }
 export function MalakChatInterface({
   variant = 'standalone',
   isInDeepSearch = false,
   compact = false,
+  onMessagesCountChange,
 }: MalakChatInterfaceProps) {
   const isFloating = variant === 'floating';
   const isMobile = useIsMobile();
@@ -219,6 +222,10 @@ export function MalakChatInterface({
 
   // Local state for new format
   const [messages, setMessages] = useState<(WebChatMessage & { isNew?: boolean })[]>([]);
+  // Notify parent when message count changes (used by Hero for layout)
+  useEffect(() => {
+    onMessagesCountChange?.(messages.length);
+  }, [messages.length, onMessagesCountChange]);
   const [state, setState] = useState<'idle' | 'thinking' | 'awaiting_phone' | 'awaiting_otp' | 'awaiting_name' | 'searching' | 'awaiting_consent'>('idle');
   const [inputValue, setInputValue] = useState('');
   const [error, setError] = useState<string | null>(null);
