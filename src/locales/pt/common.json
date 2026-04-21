@@ -10104,5 +10104,19 @@
   "portal.support.faq.q3": "Como acompanho minha candidatura?",
   "portal.support.faq.q4": "Como mudo meu endereço?",
   "portal.support.faq.q5": "Quais métodos de pagamento são suportados?",
-  "portal.support.faq.q6": "Como faço download dos meus documentos?"
+  "portal.support.faq.q6": "Como faço download dos meus documentos?",
+  "portal.support.panel.tabs.oryxa": "Oryxa IA",
+  "portal.support.panel.tabs.messages": "Mensagens",
+  "portal.support.panel.messages.empty.title": "Sem mensagens",
+  "portal.support.panel.messages.empty.cta": "Iniciar conversa",
+  "portal.support.panel.messages.newButton": "Novo",
+  "portal.support.panel.messages.openFullPage": "Abrir página de Mensagens",
+  "portal.support.panel.messages.viewFullThread": "Abrir completo",
+  "portal.support.panel.messages.replyPlaceholder": "Escrever resposta…",
+  "portal.support.panel.messages.send": "Enviar",
+  "portal.support.panel.messages.back": "Voltar",
+  "portal.support.panel.identityBanner": "Verifique sua identidade para ativar mensagens",
+  "portal.support.panel.oryxa.clear": "Limpar conversa",
+  "portal.support.panel.oryxa.placeholder": "Pergunte ao Oryxa…",
+  "portal.support.panel.greeting.guest": "Bem-vindo"
 }

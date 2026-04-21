@@ -10083,5 +10083,19 @@
   "portal.support.faq.q3": "Wie verfolge ich meine Bewerbung?",
   "portal.support.faq.q4": "Wie ändere ich meine Adresse?",
   "portal.support.faq.q5": "Welche Zahlungsmethoden werden unterstützt?",
-  "portal.support.faq.q6": "Wie lade ich meine Dokumente herunter?"
+  "portal.support.faq.q6": "Wie lade ich meine Dokumente herunter?",
+  "portal.support.panel.tabs.oryxa": "Oryxa KI",
+  "portal.support.panel.tabs.messages": "Nachrichten",
+  "portal.support.panel.messages.empty.title": "Keine Nachrichten",
+  "portal.support.panel.messages.empty.cta": "Gespräch beginnen",
+  "portal.support.panel.messages.newButton": "Neu",
+  "portal.support.panel.messages.openFullPage": "Nachrichten-Seite öffnen",
+  "portal.support.panel.messages.viewFullThread": "Vollständig öffnen",
+  "portal.support.panel.messages.replyPlaceholder": "Antwort schreiben…",
+  "portal.support.panel.messages.send": "Senden",
+  "portal.support.panel.messages.back": "Zurück",
+  "portal.support.panel.identityBanner": "Verifizieren Sie Ihre Identität, um Nachrichten freizuschalten",
+  "portal.support.panel.oryxa.clear": "Gespräch löschen",
+  "portal.support.panel.oryxa.placeholder": "Fragen Sie Oryxa…",
+  "portal.support.panel.greeting.guest": "Willkommen"
 }

@@ -10114,5 +10114,19 @@
   "portal.support.faq.q3": "मैं अपने आवेदन को कैसे ट्रैक करूं?",
   "portal.support.faq.q4": "मैं अपना पता कैसे बदलूं?",
   "portal.support.faq.q5": "कौन से भुगतान विधियां समर्थित हैं?",
-  "portal.support.faq.q6": "मैं अपने दस्तावेज़ कैसे डाउनलोड करूं?"
+  "portal.support.faq.q6": "मैं अपने दस्तावेज़ कैसे डाउनलोड करूं?",
+  "portal.support.panel.tabs.oryxa": "Oryxa AI",
+  "portal.support.panel.tabs.messages": "संदेश",
+  "portal.support.panel.messages.empty.title": "अभी तक कोई संदेश नहीं",
+  "portal.support.panel.messages.empty.cta": "बातचीत शुरू करें",
+  "portal.support.panel.messages.newButton": "नया",
+  "portal.support.panel.messages.openFullPage": "संदेश पृष्ठ खोलें",
+  "portal.support.panel.messages.viewFullThread": "पूरा खोलें",
+  "portal.support.panel.messages.replyPlaceholder": "उत्तर लिखें…",
+  "portal.support.panel.messages.send": "भेजें",
+  "portal.support.panel.messages.back": "वापस",
+  "portal.support.panel.identityBanner": "पूर्ण संदेश के लिए पहचान सत्यापित करें",
+  "portal.support.panel.oryxa.clear": "बातचीत साफ करें",
+  "portal.support.panel.oryxa.placeholder": "Oryxa से कुछ भी पूछें…",
+  "portal.support.panel.greeting.guest": "स्वागत है"
 }
