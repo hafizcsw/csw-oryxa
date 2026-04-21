@@ -154,7 +154,7 @@ export function MalakChatInterface({
   const isRTL = language === 'ar';
   const { role: staffRole } = useStaffAuthority();
   const isSuperAdmin = staffRole === 'super_admin';
-  const isChatPaused = !isSuperAdmin; // Chat paused for everyone except super_admin
+  const isChatPaused = false; // ✅ Chat enabled for everyone
   
   // Dynamic suggested prompts based on language
   const SUGGESTED_PROMPTS = useMemo(() => [
