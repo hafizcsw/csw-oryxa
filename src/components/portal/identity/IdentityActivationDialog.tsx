@@ -634,7 +634,7 @@ function SelfieStep({ onCaptured }: { onCaptured: (file: File) => void }) {
   }, [onCaptured]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 items-start max-w-3xl mx-auto">
+    <div className="max-w-md mx-auto w-full space-y-5">
       {/* Camera (reduced ~50%) */}
       <div className="lg:col-span-3 max-w-md mx-auto w-full">
         {err ? (
@@ -666,7 +666,7 @@ function SelfieStep({ onCaptured }: { onCaptured: (file: File) => void }) {
       </div>
 
       {/* Instructions + action */}
-      <div className="lg:col-span-2 flex-col gap-5 flex items-end justify-center">
+      <div className="w-full flex flex-col gap-4 items-end justify-center text-right">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
             <Camera className="w-5 h-5 text-primary" />
@@ -692,10 +692,10 @@ function SelfieStep({ onCaptured }: { onCaptured: (file: File) => void }) {
           ))}
         </div>
 
-        <div className="flex justify-center md:justify-start pt-2">
+        <div className="w-full pt-1">
           <Button
             size="lg"
-            className="w-full md:w-auto md:min-w-[200px] h-11"
+            className="w-full h-11"
             onClick={capture}
             disabled={!ready || busy || !!err}
           >
@@ -808,7 +808,7 @@ function VideoStep({ onCaptured, errorMessage }: { onCaptured: (file: File) => v
   const progress = recording ? ((5 - secondsLeft) / 5) * circumference : 0;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 items-start max-w-3xl mx-auto">
+    <div className="max-w-md mx-auto w-full space-y-5">
       {/* Camera (reduced ~50%) */}
       <div className="lg:col-span-3 max-w-md mx-auto w-full">
         {err ? (
@@ -883,7 +883,7 @@ function VideoStep({ onCaptured, errorMessage }: { onCaptured: (file: File) => v
       </div>
 
       {/* Instructions + action */}
-      <div className="lg:col-span-2 flex flex-col gap-5 justify-center">
+      <div className="w-full flex flex-col gap-4 items-end justify-center text-right">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
             <Video className="w-5 h-5 text-primary" />
@@ -909,16 +909,16 @@ function VideoStep({ onCaptured, errorMessage }: { onCaptured: (file: File) => v
           ))}
         </div>
 
-        <div className="flex justify-center md:justify-start pt-2">
+        <div className="w-full pt-1">
           {processing ? (
-            <div className="w-full md:w-auto md:min-w-[200px] h-11 px-4 flex items-center justify-center gap-2 rounded-md bg-muted/50 text-sm font-medium text-muted-foreground">
+            <div className="w-full h-11 px-4 flex items-center justify-center gap-2 rounded-md bg-muted/50 text-sm font-medium text-muted-foreground">
               <Loader2 className="w-5 h-5 animate-spin" />
               {t("portal.identity.submit.running")}
             </div>
           ) : (
             <Button
               size="lg"
-              className="w-full md:w-auto md:min-w-[200px] h-11"
+              className="w-full h-11"
               variant={recording ? "destructive" : "default"}
               onClick={start}
               disabled={!ready || recording || !!err}
