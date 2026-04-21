@@ -187,6 +187,9 @@ export function HeroSection() {
           }}
         />
 
+        {/* Antigravity-style subtle particle field — sits above gradient, below content */}
+        <HeroParticleField />
+
         <div className="relative z-10 w-full h-full max-w-6xl mx-auto px-4 sm:px-8 py-8 flex items-center justify-center">
           {isDeepSearchMode ? (
             <div className="flex-1 min-h-0 max-h-[calc(100%-2rem)] w-full">
