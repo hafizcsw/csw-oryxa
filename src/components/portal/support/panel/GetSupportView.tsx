@@ -96,7 +96,7 @@ export function GetSupportView({ onBack, onSubmitted }: GetSupportViewProps) {
         </div>
       </div>
 
-      <div className="border-t border-border/40 bg-card flex items-end gap-1 px-2 py-2">
+      <div className="mt-auto shrink-0 border-t border-border/40 bg-card flex items-end gap-2 px-3 py-3">
         <Textarea
           ref={textareaRef}
           value={value}
