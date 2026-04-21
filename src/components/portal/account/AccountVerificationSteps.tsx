@@ -42,6 +42,7 @@ export function AccountVerificationSteps({
   // Local-only waitlist flag (per-device). Keeps UI honest without backend coupling.
   const [waitlistJoined, setWaitlistJoined] = useState<boolean>(false);
   const [joining, setJoining] = useState(false);
+  const [whyOpen, setWhyOpen] = useState(false);
 
   useEffect(() => {
     try {
