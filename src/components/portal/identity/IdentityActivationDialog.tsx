@@ -666,7 +666,7 @@ function SelfieStep({ onCaptured }: { onCaptured: (file: File) => void }) {
       </div>
 
       {/* Instructions + action */}
-      <div className="lg:col-span-2 flex flex-col gap-5 justify-center">
+      <div className="lg:col-span-2 flex-col gap-5 flex items-end justify-center">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
             <Camera className="w-5 h-5 text-primary" />
