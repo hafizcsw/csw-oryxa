@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useIdentityStatus } from "@/hooks/useIdentityStatus";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
+import { useExtractedIdentity } from "@/hooks/useExtractedIdentity";
 import { supabase } from "@/integrations/supabase/client";
 import { SupportSubmitDialog } from "./SupportSubmitDialog";
 import { IdentityActivationDialog } from "@/components/portal/identity/IdentityActivationDialog";
@@ -24,6 +25,7 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
   const { t, language } = useLanguage();
   const { status, refetch: refetchIdentity } = useIdentityStatus();
   const { refetch: refetchTickets } = useSupportTickets();
+  const { fields: extracted } = useExtractedIdentity();
   const reduced = useReducedMotion();
   const isRtl = language === "ar";
   const [submitOpen, setSubmitOpen] = useState(false);
@@ -31,20 +33,36 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
   const [submitMessage, setSubmitMessage] = useState<string | undefined>();
   const [identityOpen, setIdentityOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null);
+  const [fallbackName, setFallbackName] = useState<string | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
 
+  // Build "First Last" from verified extracted identity (canonical source).
+  const buildShortName = (raw?: string | null): string | null => {
+    if (!raw) return null;
+    const parts = raw.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return null;
+    const cased = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    if (parts.length === 1) return cased(parts[0]);
+    return `${cased(parts[0])} ${cased(parts[parts.length - 1])}`;
+  };
+
+  // Fallback only if no verified identity yet — uses metadata, never email local-part.
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       const meta = data.user?.user_metadata as Record<string, unknown> | undefined;
-      const name =
+      const metaName =
         (meta?.full_name as string) ||
         (meta?.name as string) ||
-        (meta?.first_name as string) ||
-        (data.user?.email?.split("@")[0] ?? null);
-      setUserName(name ?? null);
+        [meta?.first_name as string, meta?.last_name as string].filter(Boolean).join(" ") ||
+        null;
+      setFallbackName(buildShortName(metaName));
     });
   }, []);
+
+  const userName =
+    buildShortName(extracted.full_name) ||
+    [extracted.first_name, extracted.last_name].filter(Boolean).join(" ").trim() ||
+    fallbackName;
 
   useEffect(() => {
     closeBtnRef.current?.focus();
