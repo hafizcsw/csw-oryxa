@@ -23,7 +23,7 @@ interface TickerSettings {
 
 export function HeroSection() {
   const { language, t } = useLanguage();
-  const { showSuggestedPrograms, universities } = useMalakChat();
+  const { showSuggestedPrograms, universities, messages } = useMalakChat();
   const isArabic = language === 'ar';
   const [isTickerVisible, setIsTickerVisible] = useState(true);
   const [compareDrawerOpen, setCompareDrawerOpen] = useState(false);
