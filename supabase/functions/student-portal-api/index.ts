@@ -8594,33 +8594,41 @@ Deno.serve(async (req) => {
         }
         let extractedFields: Record<string, { value: string | null; confidence: number; status: string }> = {};
         if (verdict === 'accepted_preliminarily') {
-          try {
-            const { data: laneRow } = await portalAdmin
-              .from('document_lane_facts')
-              .select('facts')
-              .eq('document_id', readerDocumentId)
-              .maybeSingle();
-            const rawFacts = (laneRow?.facts ?? {}) as Record<string, any>;
-            const ALLOWED = [
-              'full_name','passport_number','nationality','date_of_birth',
-              'expiry_date','issuing_country','gender','issue_date',
-            ];
-            for (const k of ALLOWED) {
-              const f = rawFacts[k];
-              if (!f) continue;
-              const status = String(f.status ?? '');
-              const value = f.value ?? null;
-              if (!value) continue;
-              if (status !== 'extracted' && status !== 'proposed') continue;
-              const outKey = k === 'passport_number' ? 'document_number' : k;
-              extractedFields[outKey] = {
-                value: String(value),
-                confidence: Number(f.confidence ?? 0),
-                status,
-              };
+          // Prefer inline facts from the pipeline response (no DB read dependency).
+          // Fallback to document_lane_facts table if the pipeline did not return them.
+          let rawFacts: Record<string, any> = {};
+          const inlineFacts = (readerPayload as any)?.facts;
+          if (inlineFacts && typeof inlineFacts === 'object') {
+            rawFacts = inlineFacts as Record<string, any>;
+          } else {
+            try {
+              const { data: laneRow } = await portalAdmin
+                .from('document_lane_facts')
+                .select('facts')
+                .eq('document_id', readerDocumentId)
+                .maybeSingle();
+              rawFacts = (laneRow?.facts ?? {}) as Record<string, any>;
+            } catch (e) {
+              console.warn('[identity_reader_run] facts readback failed', e);
             }
-          } catch (e) {
-            console.warn('[identity_reader_run] facts readback failed', e);
+          }
+          const ALLOWED = [
+            'full_name','passport_number','nationality','date_of_birth',
+            'expiry_date','issuing_country','gender','issue_date',
+          ];
+          for (const k of ALLOWED) {
+            const f = rawFacts[k];
+            if (!f) continue;
+            const status = String(f.status ?? '');
+            const value = f.value ?? null;
+            if (!value) continue;
+            if (status !== 'extracted' && status !== 'proposed') continue;
+            const outKey = k === 'passport_number' ? 'document_number' : k;
+            extractedFields[outKey] = {
+              value: String(value),
+              confidence: Number(f.confidence ?? 0),
+              status,
+            };
           }
         }
         return Response.json({

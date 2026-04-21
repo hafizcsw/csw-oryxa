@@ -462,6 +462,8 @@ Deno.serve(async (req) => {
       review_reason,
       ocr_pages: ocr.pages,
       processing_ms: Date.now() - t0,
+      // Inline facts so callers don't depend on document_lane_facts being readable.
+      facts: ext.facts,
     });
   } catch (e) {
     const msg = (e as Error).message ?? String(e);
