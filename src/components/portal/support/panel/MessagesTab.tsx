@@ -90,9 +90,9 @@ export function MessagesTab({ identityApproved, onOpenIdentity }: MessagesTabPro
         <button
           type="button"
           onClick={onOpenIdentity}
-          className="mx-3 mt-3 mb-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/15 transition-colors text-start"
+          className="mx-3 mt-3 mb-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/10 hover:bg-warning/15 transition-colors text-start"
         >
-          <ShieldCheck className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+          <ShieldCheck className="h-4 w-4 text-warning flex-shrink-0" />
           <span className="text-[12px] text-foreground/90 leading-tight flex-1">
             {t("portal.support.panel.identityBanner", {
               defaultValue: "Verify your identity to unlock full messaging",
