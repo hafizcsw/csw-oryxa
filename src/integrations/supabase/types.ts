@@ -1756,6 +1756,67 @@ export type Database = {
           },
         ]
       }
+      community_post_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          reaction: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          reaction: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          reaction?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_post_saves: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_post_saves_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_posts: {
         Row: {
           author_type: string
@@ -1767,6 +1828,8 @@ export type Database = {
           image_url: string | null
           is_pinned: boolean
           likes_count: number
+          reactions_count: number
+          shares_count: number
           tags: string[] | null
           university_id: string | null
           updated_at: string
@@ -1781,6 +1844,8 @@ export type Database = {
           image_url?: string | null
           is_pinned?: boolean
           likes_count?: number
+          reactions_count?: number
+          shares_count?: number
           tags?: string[] | null
           university_id?: string | null
           updated_at?: string
@@ -1795,6 +1860,8 @@ export type Database = {
           image_url?: string | null
           is_pinned?: boolean
           likes_count?: number
+          reactions_count?: number
+          shares_count?: number
           tags?: string[] | null
           university_id?: string | null
           updated_at?: string
