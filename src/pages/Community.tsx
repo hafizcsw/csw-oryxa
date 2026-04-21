@@ -1,98 +1,70 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useNavigate } from "react-router-dom";
-import { Users, MapPin, GraduationCap, Building2, ArrowRight, Heart, MessageCircle, Send, Image, X, Filter } from "lucide-react";
+import { Users, Filter, Building2, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/layout/Layout";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+import { CommunityComposer } from "@/components/community/CommunityComposer";
+import { CommunityPostCard, type FeedPost } from "@/components/community/CommunityPostCard";
+import type { ReactionKey } from "@/components/community/reactionConfig";
 
 type AuthorFilter = "all" | "student" | "university";
-
-interface CommunityPost {
-  id: string;
-  author_type: string;
-  author_user_id: string | null;
-  university_id: string | null;
-  content: string;
-  image_url: string | null;
-  tags: string[];
-  likes_count: number;
-  comments_count: number;
-  is_pinned: boolean;
-  created_at: string;
-  // joined
-  author_name?: string;
-  author_avatar?: string;
-  university_name?: string;
-  university_name_ar?: string;
-  university_logo?: string;
-  university_slug?: string;
-  liked_by_me?: boolean;
-}
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  visible: (i: number) => ({
-    opacity: 1, y: 0,
-    transition: { duration: 0.35, delay: i * 0.05, ease: "easeOut" as const },
-  }),
-};
+const PAGE_SIZE = 10;
 
 export default function Community() {
-  const { t, language } = useLanguage();
-  const navigate = useNavigate();
+  const { language } = useLanguage();
   const isAr = language === "ar";
-  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [filter, setFilter] = useState<AuthorFilter>("all");
   const [userId, setUserId] = useState<string | null>(null);
-  const [newPost, setNewPost] = useState("");
-  const [posting, setPosting] = useState(false);
-  const [showCompose, setShowCompose] = useState(false);
+  const [userName, setUserName] = useState<string>(isAr ? "أنت" : "You");
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const pageRef = useRef(0);
 
-  // Get current user
+  // Auth + profile
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+    supabase.auth.getUser().then(async ({ data }) => {
+      const uid = data.user?.id ?? null;
+      setUserId(uid);
+      if (uid) {
+        const { data: p } = await supabase.from("profiles").select("full_name").eq("user_id", uid).maybeSingle();
+        if (p?.full_name) setUserName(p.full_name);
+      }
+    });
   }, []);
 
-  const fetchPosts = useCallback(async () => {
-    setLoading(true);
+  const fetchPage = useCallback(async (page: number, replace: boolean) => {
+    if (page === 0) setLoading(true); else setLoadingMore(true);
+    const from = page * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
 
-    // Fetch community_posts
-    let communityQ = supabase
-      .from("community_posts")
+    let cQ = supabase.from("community_posts")
       .select("*")
       .order("is_pinned", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(50);
+      .range(from, to);
+    if (filter === "student") cQ = cQ.eq("author_type", "student");
 
-    if (filter === "student") {
-      communityQ = communityQ.eq("author_type", "student");
-    }
-
-    // Fetch university_posts (published only)
-    const uniPostsQ = supabase
-      .from("university_posts")
+    const uQ = supabase.from("university_posts")
       .select("id, university_id, post_type, title, body, status, pinned, published_at, attachments, created_at")
       .eq("status", "published")
       .order("pinned", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(50);
+      .range(from, to);
 
-    const [communityRes, uniPostsRes] = await Promise.all([
-      filter !== "university" ? communityQ : { data: [] },
-      filter !== "student" ? uniPostsQ : { data: [] },
+    const [cRes, uRes] = await Promise.all([
+      filter !== "university" ? cQ : Promise.resolve({ data: [] as any[] }),
+      filter !== "student" ? uQ : Promise.resolve({ data: [] as any[] }),
     ]);
 
-    const communityData = (communityRes.data || []) as any[];
-    const uniPostsData = (uniPostsRes.data || []) as any[];
+    const cData = (cRes.data || []) as any[];
+    const uData = (uRes.data || []) as any[];
 
-    // Normalize university_posts into the same shape
-    const normalizedUniPosts = uniPostsData.map(p => ({
+    const normUni = uData.map(p => ({
       id: p.id,
       author_type: "university" as const,
       author_user_id: null,
@@ -101,51 +73,72 @@ export default function Community() {
       image_url: (() => {
         try {
           const atts = p.attachments as any[];
-          const img = atts?.find((a: any) => a.type === "image");
-          return img?.url || null;
+          return atts?.find((a: any) => a.type === "image")?.url || null;
         } catch { return null; }
       })(),
       tags: [] as string[],
-      likes_count: 0,
       comments_count: 0,
+      shares_count: 0,
+      reactions_count: 0,
       is_pinned: p.pinned || false,
       created_at: p.published_at || p.created_at,
     }));
 
-    // Merge & deduplicate (university_posts id vs community_posts id)
-    const seenIds = new Set<string>();
-    const merged = [...communityData, ...normalizedUniPosts]
-      .filter(p => { if (seenIds.has(p.id)) return false; seenIds.add(p.id); return true; })
+    const seen = new Set<string>();
+    const merged = [...cData, ...normUni]
+      .filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; })
       .sort((a, b) => {
-        // pinned first, then by date
         if (a.is_pinned && !b.is_pinned) return -1;
         if (!a.is_pinned && b.is_pinned) return 1;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
 
-    // Enrich with author info
+    if (merged.length < PAGE_SIZE) setHasMore(false);
+
+    // Enrichment
     const userIds = merged.filter(p => p.author_user_id).map(p => p.author_user_id!);
     const uniIds = merged.filter(p => p.university_id).map(p => p.university_id!);
+    const postIds = merged.map(p => p.id);
 
-    const [profilesRes, unisRes, likesRes] = await Promise.all([
-      userIds.length > 0
+    const [profilesRes, unisRes, reactionsRes, myReactionsRes, savesRes] = await Promise.all([
+      userIds.length
         ? supabase.from("profiles").select("user_id, full_name, avatar_storage_path").in("user_id", userIds)
-        : { data: [] },
-      uniIds.length > 0
+        : Promise.resolve({ data: [] as any[] }),
+      uniIds.length
         ? supabase.from("universities").select("id, name, name_ar, logo_url, slug").in("id", uniIds)
-        : { data: [] },
-      userId
-        ? supabase.from("community_post_likes").select("post_id").eq("user_id", userId).in("post_id", merged.map(p => p.id))
-        : { data: [] },
+        : Promise.resolve({ data: [] as any[] }),
+      postIds.length
+        ? supabase.from("community_post_reactions").select("post_id, reaction").in("post_id", postIds)
+        : Promise.resolve({ data: [] as any[] }),
+      userId && postIds.length
+        ? supabase.from("community_post_reactions").select("post_id, reaction").eq("user_id", userId).in("post_id", postIds)
+        : Promise.resolve({ data: [] as any[] }),
+      userId && postIds.length
+        ? supabase.from("community_post_saves").select("post_id").eq("user_id", userId).in("post_id", postIds)
+        : Promise.resolve({ data: [] as any[] }),
     ]);
 
     const profileMap = new Map((profilesRes.data || []).map(p => [p.user_id, p]));
     const uniMap = new Map((unisRes.data || []).map(u => [u.id, u]));
-    const likedSet = new Set((likesRes.data || []).map(l => l.post_id));
 
-    const enriched: CommunityPost[] = merged.map(p => {
+    // Reactions summary per post
+    const reactionAgg = new Map<string, Map<ReactionKey, number>>();
+    let totalAgg = new Map<string, number>();
+    (reactionsRes.data || []).forEach(r => {
+      if (!reactionAgg.has(r.post_id)) reactionAgg.set(r.post_id, new Map());
+      const m = reactionAgg.get(r.post_id)!;
+      m.set(r.reaction as ReactionKey, (m.get(r.reaction as ReactionKey) || 0) + 1);
+      totalAgg.set(r.post_id, (totalAgg.get(r.post_id) || 0) + 1);
+    });
+    const myMap = new Map((myReactionsRes.data || []).map(r => [r.post_id, r.reaction as ReactionKey]));
+    const savedSet = new Set((savesRes.data || []).map(s => s.post_id));
+
+    const enriched: FeedPost[] = merged.map(p => {
       const profile = p.author_user_id ? profileMap.get(p.author_user_id) : null;
       const uni = p.university_id ? uniMap.get(p.university_id) : null;
+      const summary = Array.from((reactionAgg.get(p.id) || new Map()).entries()).map(
+        ([key, count]) => ({ key: key as ReactionKey, count: count as number })
+      );
       return {
         ...p,
         tags: p.tags || [],
@@ -155,47 +148,44 @@ export default function Community() {
         university_name_ar: uni?.name_ar,
         university_logo: uni?.logo_url,
         university_slug: uni?.slug,
-        liked_by_me: likedSet.has(p.id),
+        my_reaction: myMap.get(p.id) || null,
+        reactions_summary: summary,
+        total_reactions: totalAgg.get(p.id) || 0,
+        saved_by_me: savedSet.has(p.id),
       };
     });
 
-    setPosts(enriched);
+    setPosts(prev => replace ? enriched : [...prev, ...enriched]);
     setLoading(false);
+    setLoadingMore(false);
   }, [filter, userId, isAr]);
 
-  useEffect(() => { fetchPosts(); }, [fetchPosts]);
+  // Reset on filter change
+  useEffect(() => {
+    pageRef.current = 0;
+    setHasMore(true);
+    fetchPage(0, true);
+  }, [fetchPage]);
 
-  const handlePost = async () => {
-    if (!newPost.trim() || !userId) return;
-    setPosting(true);
-    const { error } = await supabase.from("community_posts").insert({
-      author_type: "student",
-      author_user_id: userId,
-      content: newPost.trim(),
-    });
-    if (error) {
-      toast.error(isAr ? "حدث خطأ" : "Something went wrong");
-    } else {
-      setNewPost("");
-      setShowCompose(false);
-      toast.success(isAr ? "تم النشر!" : "Posted!");
-      fetchPosts();
-    }
-    setPosting(false);
-  };
+  // Infinite scroll observer
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !hasMore || loading) return;
+    const obs = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && !loadingMore) {
+        pageRef.current += 1;
+        fetchPage(pageRef.current, false);
+      }
+    }, { rootMargin: "400px" });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [hasMore, loading, loadingMore, fetchPage]);
 
-  const handleLike = async (post: CommunityPost) => {
-    if (!userId) {
-      toast.info(isAr ? "سجّل دخولك أولاً" : "Please sign in first");
-      return;
-    }
-    if (post.liked_by_me) {
-      await supabase.from("community_post_likes").delete().eq("post_id", post.id).eq("user_id", userId);
-    } else {
-      await supabase.from("community_post_likes").insert({ post_id: post.id, user_id: userId });
-    }
-    fetchPosts();
-  };
+  const refresh = useCallback(() => {
+    pageRef.current = 0;
+    setHasMore(true);
+    fetchPage(0, true);
+  }, [fetchPage]);
 
   const filters: { key: AuthorFilter; label: string; icon: typeof Users }[] = [
     { key: "all", label: isAr ? "الكل" : "All", icon: Filter },
@@ -203,26 +193,15 @@ export default function Community() {
     { key: "student", label: isAr ? "الطلاب" : "Students", icon: Users },
   ];
 
-  const timeAgo = (date: string) => {
-    const diff = Date.now() - new Date(date).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return isAr ? "الآن" : "now";
-    if (mins < 60) return isAr ? `منذ ${mins} د` : `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return isAr ? `منذ ${hrs} س` : `${hrs}h ago`;
-    const days = Math.floor(hrs / 24);
-    return isAr ? `منذ ${days} ي` : `${days}d ago`;
-  };
-
   return (
     <Layout>
-      <section className="py-16 px-4 sm:px-6 bg-gradient-to-b from-muted/30 to-background min-h-[80vh]">
+      <section className="py-10 px-3 sm:px-6 bg-gradient-to-b from-muted/40 to-background min-h-[80vh]" dir={isAr ? "rtl" : "ltr"}>
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center space-y-3 mb-8"
+            className="text-center space-y-3 mb-6"
           >
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 px-3 py-1 rounded-full">
               <Users className="w-3.5 h-3.5" />
@@ -231,81 +210,41 @@ export default function Community() {
             <h1 className="text-3xl md:text-4xl font-bold text-foreground">
               {isAr ? "مجتمع الطلاب والجامعات" : "Student & University Community"}
             </h1>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              {isAr
-                ? "شارك تجربتك، اطرح أسئلتك، وتواصل مع الجامعات والطلاب"
-                : "Share your experience, ask questions, and connect with universities and students"}
-            </p>
           </motion.div>
 
-          {/* Filters */}
-          <div className="flex items-center justify-center gap-2 mb-6">
-            {filters.map(f => (
-              <button
-                key={f.key}
-                onClick={() => setFilter(f.key)}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all",
-                  filter === f.key
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
-                )}
-              >
-                <f.icon className="w-3.5 h-3.5" />
-                {f.label}
-              </button>
-            ))}
+          {/* Sticky filter bar */}
+          <div className="sticky top-16 z-20 -mx-3 sm:mx-0 px-3 sm:px-0 py-2 bg-gradient-to-b from-background/95 to-background/80 backdrop-blur-md mb-4">
+            <div className="flex items-center justify-center gap-2 overflow-x-auto">
+              {filters.map(f => (
+                <button
+                  key={f.key}
+                  onClick={() => setFilter(f.key)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap",
+                    filter === f.key
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                  )}
+                >
+                  <f.icon className="w-3.5 h-3.5" />
+                  {f.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Compose */}
-          {userId && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6"
-            >
-              {!showCompose ? (
-                <button
-                  onClick={() => setShowCompose(true)}
-                  className="w-full p-4 rounded-xl border border-border bg-card text-muted-foreground text-sm text-start hover:border-primary/30 transition-colors"
-                >
-                  {isAr ? "شارك شيئاً مع المجتمع..." : "Share something with the community..."}
-                </button>
-              ) : (
-                <div className="rounded-xl border border-primary/30 bg-card p-4 space-y-3">
-                  <Textarea
-                    value={newPost}
-                    onChange={e => setNewPost(e.target.value)}
-                    placeholder={isAr ? "اكتب منشورك هنا..." : "Write your post here..."}
-                    className="min-h-[100px] resize-none border-0 p-0 focus-visible:ring-0 text-sm"
-                    autoFocus
-                  />
-                  <div className="flex items-center justify-between">
-                    <button className="text-muted-foreground hover:text-primary transition-colors">
-                      <Image className="w-5 h-5" />
-                    </button>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => { setShowCompose(false); setNewPost(""); }}>
-                        {isAr ? "إلغاء" : "Cancel"}
-                      </Button>
-                      <Button size="sm" onClick={handlePost} disabled={!newPost.trim() || posting} className="gap-1.5">
-                        <Send className="w-3.5 h-3.5" />
-                        {isAr ? "نشر" : "Post"}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          )}
+          {/* Composer */}
+          <div className="mb-4">
+            <CommunityComposer userId={userId} userName={userName} isAr={isAr} onPosted={refresh} />
+          </div>
 
-          {/* Posts Feed */}
+          {/* Feed */}
           {loading ? (
             <div className="space-y-4">
               {[1, 2, 3].map(i => (
-                <div key={i} className="rounded-xl border border-border bg-card p-5 animate-pulse">
+                <div key={i} className="rounded-2xl bg-card border border-border p-5 animate-pulse">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-muted" />
+                    <div className="w-11 h-11 rounded-full bg-muted" />
                     <div className="space-y-1.5 flex-1">
                       <div className="h-3.5 w-32 bg-muted rounded" />
                       <div className="h-2.5 w-20 bg-muted rounded" />
@@ -336,106 +275,24 @@ export default function Community() {
             <div className="space-y-4">
               <AnimatePresence mode="popLayout">
                 {posts.map((post, i) => (
-                  <motion.div
+                  <CommunityPostCard
                     key={post.id}
-                    layout
-                    initial="hidden"
-                    animate="visible"
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    custom={i}
-                    variants={fadeUp}
-                    className={cn(
-                      "rounded-xl border bg-card p-5 transition-all",
-                      post.is_pinned ? "border-primary/30 bg-primary/[0.02]" : "border-border hover:border-border/80"
-                    )}
-                  >
-                    {/* Author row */}
-                    <div className="flex items-start gap-3">
-                      {post.author_type === "university" ? (
-                        <div
-                          className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden cursor-pointer flex-shrink-0 border border-border"
-                          onClick={() => post.university_slug && navigate(`/university/${post.university_slug}`)}
-                        >
-                          {post.university_logo ? (
-                            <img src={post.university_logo} alt="" className="w-full h-full object-contain p-1" />
-                          ) : (
-                            <Building2 className="w-5 h-5 text-muted-foreground" />
-                          )}
-                        </div>
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0">
-                          <Users className="w-5 h-5 text-primary" />
-                        </div>
-                      )}
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-sm text-foreground">
-                            {post.author_type === "university"
-                              ? (isAr ? post.university_name_ar || post.university_name : post.university_name) || (isAr ? "جامعة" : "University")
-                              : post.author_name}
-                          </span>
-                          <span className={cn(
-                            "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
-                            post.author_type === "university"
-                              ? "bg-blue-500/10 text-blue-600"
-                              : "bg-emerald-500/10 text-emerald-600"
-                          )}>
-                            {post.author_type === "university" ? (isAr ? "جامعة" : "University") : (isAr ? "طالب" : "Student")}
-                          </span>
-                          {post.is_pinned && (
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600">
-                              📌 {isAr ? "مثبت" : "Pinned"}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</span>
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <p className="mt-3 text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">
-                      {post.content}
-                    </p>
-
-                    {/* Image */}
-                    {post.image_url && (
-                      <div className="mt-3 rounded-lg overflow-hidden border border-border">
-                        <img src={post.image_url} alt="" className="w-full max-h-80 object-cover" loading="lazy" />
-                      </div>
-                    )}
-
-                    {/* Tags */}
-                    {post.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {post.tags.map(tag => (
-                          <span key={tag} className="text-[11px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-4 mt-4 pt-3 border-t border-border/50">
-                      <button
-                        onClick={() => handleLike(post)}
-                        className={cn(
-                          "flex items-center gap-1.5 text-xs font-medium transition-colors",
-                          post.liked_by_me ? "text-red-500" : "text-muted-foreground hover:text-red-500"
-                        )}
-                      >
-                        <Heart className={cn("w-4 h-4", post.liked_by_me && "fill-current")} />
-                        {post.likes_count > 0 && post.likes_count}
-                      </button>
-                      <button className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors">
-                        <MessageCircle className="w-4 h-4" />
-                        {post.comments_count > 0 && post.comments_count}
-                      </button>
-                    </div>
-                  </motion.div>
+                    post={post}
+                    isAr={isAr}
+                    userId={userId}
+                    onChange={refresh}
+                    index={i}
+                  />
                 ))}
               </AnimatePresence>
+
+              {/* Infinite-scroll sentinel */}
+              <div ref={sentinelRef} className="h-12 flex items-center justify-center">
+                {loadingMore && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
+                {!hasMore && posts.length > 5 && (
+                  <span className="text-xs text-muted-foreground">{isAr ? "وصلت للنهاية ✨" : "You're all caught up ✨"}</span>
+                )}
+              </div>
             </div>
           )}
         </div>
