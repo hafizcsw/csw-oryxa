@@ -1,4 +1,4 @@
-import { X, Maximize2, Minimize2, Globe } from "lucide-react";
+import { ChevronDown, Maximize2, Minimize2, Globe } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PanelTopBarProps {
@@ -39,10 +39,10 @@ export function PanelTopBar({ onClose, closeRef, expanded, onToggleExpand }: Pan
           ref={closeRef}
           type="button"
           onClick={onClose}
-          aria-label={t("portal.support.launcher.ariaClose")}
+          aria-label={t("portal.support.launcher.ariaMinimize", { defaultValue: "Minimize" })}
           className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <X className="h-4 w-4" strokeWidth={2.25} />
+          <ChevronDown className="h-4 w-4" strokeWidth={2.25} />
         </button>
       </div>
     </div>

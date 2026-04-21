@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Send, LifeBuoy } from "lucide-react";
+import { ArrowLeft, ArrowRight, Plus, LifeBuoy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -96,27 +96,27 @@ export function GetSupportView({ onBack, onSubmitted }: GetSupportViewProps) {
         </div>
       </div>
 
-      <div className="mt-auto shrink-0 border-t border-border/40 bg-card flex items-end gap-2 px-3 py-3">
+      <div className="mt-auto shrink-0 bg-card flex items-center gap-2 px-3 py-3">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 rounded-full bg-muted/60 hover:bg-muted text-muted-foreground flex-shrink-0"
+          aria-label={t("portal.support.panel.getSupport.attach", { defaultValue: "Attach" })}
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
         <Textarea
           ref={textareaRef}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder={t("portal.support.panel.getSupport.placeholder", {
-            defaultValue: "Describe your problem here…",
+            defaultValue: "Enter question here",
           })}
-          className="min-h-[44px] max-h-32 resize-none text-sm flex-1"
+          className="min-h-[40px] max-h-32 resize-none text-sm flex-1 bg-muted/40 border-0 rounded-full px-4 py-2 focus-visible:ring-1 focus-visible:ring-ring/40"
           rows={1}
         />
-        <Button
-          onClick={() => submit(value)}
-          disabled={!value.trim()}
-          size="icon"
-          className="h-11 w-11 flex-shrink-0 rounded-xl"
-          aria-label={t("portal.support.panel.getSupport.send", { defaultValue: "Send" })}
-        >
-          <Send className="w-4 h-4" />
-        </Button>
       </div>
     </div>
   );
