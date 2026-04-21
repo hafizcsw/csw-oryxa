@@ -6,6 +6,7 @@ import { SearchResultsPanel } from '@/components/chat/SearchResultsPanel';
 import { DebugOverlay } from '@/components/chat/DebugOverlay';
 import { CompareFloatingBar } from '@/components/compare/CompareFloatingBar';
 import { CompareDrawer } from '@/components/compare/CompareDrawer';
+import { AuroraBackground } from '@/components/home/AuroraBackground';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMalakChat } from '@/contexts/MalakChatContext';
 import { useQuery } from '@tanstack/react-query';
@@ -159,10 +160,10 @@ export function HeroSection() {
         </div>
       )}
       {/* Main Chat Section - Fixed Height */}
-      <div ref={containerRef} className="relative overflow-hidden h-[calc(100dvh-80px)] sm:h-[calc(100dvh-100px)]">
-        {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 opacity-90" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
+      <div ref={containerRef} className="relative overflow-hidden h-[calc(100dvh-80px)] sm:h-[calc(100dvh-100px)] bg-background">
+        {/* Interactive Aurora Background (Google-style) — hidden in deep search */}
+        {!isDeepSearchMode && <AuroraBackground />}
+        <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-background/10 pointer-events-none" />
         
         {/* Content Container - Perfect Centering */}
         <div className="relative z-10 w-full h-full max-w-6xl mx-auto px-4 sm:px-8 py-4 flex items-center justify-center">
