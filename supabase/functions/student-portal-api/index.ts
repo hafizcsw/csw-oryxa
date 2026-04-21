@@ -8848,8 +8848,6 @@ Deno.serve(async (req) => {
         }
         const d = j?.data ?? j?.request ?? j ?? {};
         const mappedStatus = mapCrmIdentityStatus(d.identity_status ?? d.status ?? j?.status);
-        else if (rawStatus === 'none' || rawStatus === '') mappedStatus = 'none';
-        else mappedStatus = 'pending'; // safe default while CRM holds an open activation
         const blocks = mappedStatus !== 'approved';
         return Response.json({
           ok: true,
