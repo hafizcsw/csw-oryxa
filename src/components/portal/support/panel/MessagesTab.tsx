@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, ArrowRight, Loader2, MessageSquare, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ArrowRight, ArrowLeft, Loader2, MessageSquare, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCommThreads, type CommThread } from "@/hooks/useCommApi";
@@ -87,6 +87,18 @@ export function MessagesTab({ identityApproved, onOpenIdentity, onBack }: Messag
   // ── List view ──
   return (
     <div className="flex flex-col h-full min-h-0">
+      {onBack && (
+        <div className="flex items-center px-3 py-2 border-b border-border/40 bg-card/40">
+          <button
+            type="button"
+            onClick={onBack}
+            className="h-8 px-2 inline-flex items-center gap-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors text-[12px]"
+          >
+            {isRtl ? <ArrowRight className="h-3.5 w-3.5" /> : <ArrowLeft className="h-3.5 w-3.5" />}
+            {t("portal.support.panel.back", { defaultValue: "Back" })}
+          </button>
+        </div>
+      )}
       {!identityApproved && (
         <button
           type="button"
