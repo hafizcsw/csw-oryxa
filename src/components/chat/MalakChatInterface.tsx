@@ -52,7 +52,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 // Native scroll used instead of ScrollArea for better compatibility
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Send, Trash2, AlertCircle, Sparkles, Search, Loader2, Mic, MicOff, Square, User, ChevronDown, Clock, X, Plus, Check, ArrowUp, History, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { Send, Trash2, AlertCircle, Sparkles, Search, Loader2, Mic, MicOff, Square, User, ChevronDown, Clock, X, Plus, Check, ArrowUp, History, PanelLeftClose, PanelLeft, Maximize2, Minimize2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -233,6 +233,7 @@ export function MalakChatInterface({
   const [ctaDismissed, setCtaDismissed] = useState(false);
   const [guestLimitReached, setGuestLimitReached] = useState(false);
   const [showStatusBar, setShowStatusBar] = useState(false); // 🆕 شريط الحالة مخفي افتراضياً
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [sessionFilters, setSessionFilters] = useState<ClarifyFilters>({});
   
   // ✅ 3-Phase Workflow: Consent state
