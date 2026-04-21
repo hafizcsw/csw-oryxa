@@ -1217,7 +1217,7 @@ export function MalakChatInterface({
             : isInDeepSearch
               ? "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl h-full min-h-[400px]"
               : compact
-                ? "bg-card/80 backdrop-blur-sm rounded-2xl border border-border/60 shadow-lg"
+                ? "bg-[#1a1a1f]/90 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
                 : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[550px] h-[70vh] max-h-[800px]"
         )}>
            {/* Header - Only in standalone mode */}
@@ -1369,7 +1369,7 @@ export function MalakChatInterface({
         {/* Clarify filters UI removed — search is conversational via bot only */}
 
         {/* Input area */}
-        <div className={cn("flex-shrink-0 border-t border-border", isFloating ? "px-2 pb-1.5 pt-1 bg-background" : isCompactMobileStandalone ? "px-3 pb-3 pt-2 bg-muted/30" : "px-6 pb-6 pt-4 bg-muted/30")}
+        <div className={cn("flex-shrink-0", compact ? "px-3 pb-3 pt-3 bg-transparent border-0" : "border-t border-border", !compact && (isFloating ? "px-2 pb-1.5 pt-1 bg-background" : isCompactMobileStandalone ? "px-3 pb-3 pt-2 bg-muted/30" : "px-6 pb-6 pt-4 bg-muted/30"))}
           style={isFloating ? { paddingBottom: 'max(6px, env(safe-area-inset-bottom, 6px))' } : undefined}
         >
           {/* الاقتراحات - فقط في البداية وليس compact */}
@@ -1464,7 +1464,10 @@ export function MalakChatInterface({
               } 
               disabled={isChatPaused}
               className={cn(
-                "resize-none rounded-3xl bg-white dark:bg-zinc-800 border border-border/50 shadow-sm focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 text-foreground placeholder:text-muted-foreground",
+                "resize-none rounded-3xl border shadow-sm focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 placeholder:text-muted-foreground",
+                compact
+                  ? "bg-transparent border-transparent text-white placeholder:text-white/40 shadow-none"
+                  : "bg-white dark:bg-zinc-800 border-border/50 text-foreground",
                 isFloating 
                   ? "min-h-[40px] text-sm py-2.5 px-3.5 pb-10" 
                   : isCompactMobileStandalone
