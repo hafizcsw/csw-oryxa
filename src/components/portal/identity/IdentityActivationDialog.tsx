@@ -1055,7 +1055,7 @@ function SummaryStep({
   };
 
   return (
-    <div className="space-y-5 max-w-4xl mx-auto">
+    <div className="space-y-5 max-w-2xl mx-auto">
       {/* Banner */}
       <div className="flex items-start gap-3 rounded-2xl bg-gradient-to-br from-success/10 via-success/5 to-transparent border border-success/30 p-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/15 shrink-0">
@@ -1115,12 +1115,12 @@ function SummaryStep({
         {t("portal.identity.summary.disclaimer")}
       </p>
 
-      <div className="flex flex-col sm:flex-row gap-3 pt-2">
-        <Button variant="outline" size="lg" onClick={onRetry} className="flex-1 h-12">
+      <div className="flex flex-col sm:flex-row gap-3 pt-2 max-w-md mx-auto w-full">
+        <Button variant="outline" onClick={onRetry} className="flex-1 h-11">
           <RotateCcw className="w-4 h-4 me-2" />
           {t("portal.identity.summary.retake")}
         </Button>
-        <Button size="lg" onClick={onConfirm} className="flex-1 h-12">
+        <Button onClick={onConfirm} className="flex-1 h-11">
           <CheckCircle2 className="w-4 h-4 me-2" />
           {t("portal.identity.summary.confirm")}
         </Button>
