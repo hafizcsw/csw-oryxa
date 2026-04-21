@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Renderer, Program, Mesh, Triangle, Vec2, Vec3 } from 'ogl';
+import { Renderer, Program, Mesh, Triangle, Vec2 } from 'ogl';
 import { vertex, fragment } from './atmosphericFieldShader';
 
 // === CONFIG ===
@@ -8,20 +8,22 @@ export type HeroFieldVariant = 'quieter' | 'reactive';
 
 const PRESETS: Record<HeroFieldVariant, {
   intensity: number;
-  noiseScale: number;
+  density: number;       // cells across short axis (more = more dashes)
   speed: number;
   mouseRadius: number;
-  depthBoost: number;
+  dashLength: number;    // in cell units
+  dashThickness: number; // in cell units
 }> = {
-  // A — quieter: layered depth, soft presence
-  quieter:  { intensity: 0.55, noiseScale: 1.4, speed: 0.07, mouseRadius: 0.24, depthBoost: 0.55 },
-  // B — more alive: faster, more reactive, deeper zones
-  reactive: { intensity: 0.80, noiseScale: 1.9, speed: 0.13, mouseRadius: 0.32, depthBoost: 0.80 },
+  // A — quieter: sparser, gentler twinkle
+  quieter:  { intensity: 0.85, density: 28, speed: 0.55, mouseRadius: 0.20, dashLength: 0.30, dashThickness: 0.075 },
+  // B — more alive: denser, faster twinkle, wider mouse
+  reactive: { intensity: 1.00, density: 36, speed: 0.85, mouseRadius: 0.28, dashLength: 0.32, dashThickness: 0.080 },
 };
 
-const MOBILE_INTENSITY_SCALE = 0.7; // lower on small screens
+const MOBILE_INTENSITY_SCALE = 0.85;
+const MOBILE_DENSITY_SCALE = 0.75;
 const DPR_CAP = 1.5;
-const MOUSE_LERP = 0.08;            // smoothing toward target strength
+const MOUSE_LERP = 0.08;
 // === /CONFIG ===
 
 interface Props {
@@ -45,7 +47,7 @@ export function HeroAtmosphericField({ variant = 'quieter', className }: Props) 
     const gl = (probe.getContext('webgl2') ||
                 probe.getContext('webgl') ||
                 probe.getContext('experimental-webgl')) as WebGLRenderingContext | null;
-    if (!gl) return; // graceful no-op fallback
+    if (!gl) return;
 
     let renderer: Renderer;
     try {
@@ -81,11 +83,12 @@ export function HeroAtmosphericField({ variant = 'quieter', className }: Props) 
         uMouse:         { value: new Vec2(0.5, 0.5) },
         uMouseStrength: { value: 0 },
         uIntensity:     { value: cfg.intensity * (isMobile ? MOBILE_INTENSITY_SCALE : 1) },
-        uNoiseScale:    { value: cfg.noiseScale },
+        uDensity:       { value: cfg.density   * (isMobile ? MOBILE_DENSITY_SCALE   : 1) },
         uSpeed:         { value: reduceMotion ? 0 : cfg.speed },
         uMouseRadius:   { value: cfg.mouseRadius },
-        uDepthBoost:    { value: cfg.depthBoost },
-        uTint:          { value: new Vec3(0, 0, 0) }, // updated each frame from theme
+        uDashLength:    { value: cfg.dashLength },
+        uDashThickness: { value: cfg.dashThickness },
+        uIsDark:        { value: 0 }, // updated each frame
       },
     });
 
@@ -113,7 +116,6 @@ export function HeroAtmosphericField({ variant = 'quieter', className }: Props) 
         e.clientY < rect.top  || e.clientY > rect.bottom
       ) return;
       mouseTarget.x = (e.clientX - rect.left) / rect.width;
-      // y flipped so vUv.y matches (vUv origin is bottom-left after position*0.5+0.5)
       mouseTarget.y = 1 - (e.clientY - rect.top) / rect.height;
       mouseTarget.strength = 1;
     };
@@ -136,20 +138,15 @@ export function HeroAtmosphericField({ variant = 'quieter', className }: Props) 
       last = now;
       elapsed += dt;
 
-      // smooth mouse strength
       const mu = program.uniforms.uMouse.value as Vec2;
       mu.x += (mouseTarget.x - mu.x) * MOUSE_LERP;
       mu.y += (mouseTarget.y - mu.y) * MOUSE_LERP;
       const ms = program.uniforms.uMouseStrength;
       ms.value += (mouseTarget.strength - ms.value) * MOUSE_LERP;
 
-      // Tint follows theme: black ink on light bg, white ink on dark bg
+      // Theme awareness: dark vs light
       const isDark = document.documentElement.classList.contains('dark');
-      const tint = program.uniforms.uTint.value as Vec3;
-      const target = isDark ? 1 : 0;
-      tint.x += (target - tint.x) * 0.1;
-      tint.y = tint.x;
-      tint.z = tint.x;
+      program.uniforms.uIsDark.value = isDark ? 1 : 0;
 
       program.uniforms.uTime.value = elapsed;
       renderer.render({ scene: mesh });
