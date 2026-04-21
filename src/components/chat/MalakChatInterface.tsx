@@ -1231,7 +1231,7 @@ export function MalakChatInterface({
   const chatBoxInner = (
     <div data-tour-id="tour-chat-box" className={chatBoxClassName}>
            {/* Header - Only in standalone mode */}
-           {!isFloating && (
+           {!isFloating && !(compact && messages.length === 0 && state === 'idle' && !isFullscreen) && (
              <div className={cn(
                "flex items-center justify-between border-b border-border bg-muted/30",
                isCompactMobileStandalone ? "px-3 py-2" : "px-6 py-3"
