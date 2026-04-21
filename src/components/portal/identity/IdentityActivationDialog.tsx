@@ -38,9 +38,9 @@ interface IdentityActivationDialogProps {
 }
 
 const VIDEO_MAX_MS = 5_000;
-// Aligned with CRM `student-docs` bucket file_size_limit (10 MB).
-// Do NOT raise above 10 MB without first raising the CRM bucket limit.
-const VIDEO_MAX_BYTES = 10 * 1024 * 1024;
+// Aligned with CRM `student-docs` bucket file_size_limit (20 MB).
+// Do NOT raise above 20 MB without first raising the CRM bucket limit.
+const VIDEO_MAX_BYTES = 20 * 1024 * 1024;
 
 // Maps an internal Step to the visible 3-stage stepper position.
 // 0 = doc, 1 = selfie, 2 = video. Returns -1 to hide the stepper.
