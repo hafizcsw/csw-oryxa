@@ -10136,5 +10136,12 @@
   "portal.support.panel.getSupport.s4": "계정 정보 업데이트",
   "portal.support.panel.getSupport.placeholder": "여기에 문제를 적어주세요…",
   "portal.support.panel.getSupport.send": "보내기",
-  "portal.support.panel.back": "뒤로"
+  "portal.support.panel.back": "뒤로",
+  "portal.support.panel.suggestions.title": "이런 질문은 어떠세요",
+  "portal.support.panel.suggestions.s1": "신원을 어떻게 인증하나요?",
+  "portal.support.panel.suggestions.s2": "대학에 어떻게 지원하나요?",
+  "portal.support.panel.suggestions.s3": "어떤 결제 방법이 가능한가요?",
+  "portal.support.panel.suggestions.s4": "지원 현황을 어떻게 확인하나요?",
+  "portal.support.panel.suggestions.s5": "이용 가능한 장학금",
+  "portal.support.panel.suggestions.s6": "계정 정보 업데이트"
 }

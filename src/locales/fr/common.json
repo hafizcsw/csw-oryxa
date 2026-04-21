@@ -11139,5 +11139,12 @@
   "portal.support.panel.getSupport.s4": "Mettre à jour mon compte",
   "portal.support.panel.getSupport.placeholder": "Décrivez votre problème ici…",
   "portal.support.panel.getSupport.send": "Envoyer",
-  "portal.support.panel.back": "Retour"
+  "portal.support.panel.back": "Retour",
+  "portal.support.panel.suggestions.title": "Vous pourriez demander",
+  "portal.support.panel.suggestions.s1": "Comment vérifier mon identité ?",
+  "portal.support.panel.suggestions.s2": "Comment postuler à une université ?",
+  "portal.support.panel.suggestions.s3": "Quels modes de paiement sont acceptés ?",
+  "portal.support.panel.suggestions.s4": "Comment suivre ma candidature ?",
+  "portal.support.panel.suggestions.s5": "Bourses disponibles",
+  "portal.support.panel.suggestions.s6": "Mettre à jour mon compte"
 }

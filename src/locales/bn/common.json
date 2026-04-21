@@ -10136,5 +10136,12 @@
   "portal.support.panel.getSupport.s4": "অ্যাকাউন্টের তথ্য আপডেট করুন",
   "portal.support.panel.getSupport.placeholder": "এখানে আপনার সমস্যা লিখুন…",
   "portal.support.panel.getSupport.send": "পাঠান",
-  "portal.support.panel.back": "ফিরে যান"
+  "portal.support.panel.back": "ফিরে যান",
+  "portal.support.panel.suggestions.title": "আপনি জিজ্ঞাসা করতে পারেন",
+  "portal.support.panel.suggestions.s1": "আমি কীভাবে পরিচয় যাচাই করব?",
+  "portal.support.panel.suggestions.s2": "বিশ্ববিদ্যালয়ে কীভাবে আবেদন করব?",
+  "portal.support.panel.suggestions.s3": "কোন পেমেন্ট পদ্ধতি গ্রহণযোগ্য?",
+  "portal.support.panel.suggestions.s4": "আবেদন কীভাবে ট্র্যাক করব?",
+  "portal.support.panel.suggestions.s5": "উপলব্ধ বৃত্তি",
+  "portal.support.panel.suggestions.s6": "অ্যাকাউন্ট তথ্য আপডেট করুন"
 }

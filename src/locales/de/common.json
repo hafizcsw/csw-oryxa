@@ -10115,5 +10115,12 @@
   "portal.support.panel.getSupport.s4": "Kontoinformationen aktualisieren",
   "portal.support.panel.getSupport.placeholder": "Beschreiben Sie hier Ihr Problem…",
   "portal.support.panel.getSupport.send": "Senden",
-  "portal.support.panel.back": "Zurück"
+  "portal.support.panel.back": "Zurück",
+  "portal.support.panel.suggestions.title": "Vielleicht möchten Sie fragen",
+  "portal.support.panel.suggestions.s1": "Wie verifiziere ich meine Identität?",
+  "portal.support.panel.suggestions.s2": "Wie bewerbe ich mich an einer Universität?",
+  "portal.support.panel.suggestions.s3": "Welche Zahlungsmethoden werden akzeptiert?",
+  "portal.support.panel.suggestions.s4": "Wie verfolge ich meine Bewerbung?",
+  "portal.support.panel.suggestions.s5": "Verfügbare Stipendien",
+  "portal.support.panel.suggestions.s6": "Kontoinformationen aktualisieren"
 }

@@ -4,7 +4,6 @@ import {
   Settings,
   ShieldCheck,
   Sparkles,
-  LifeBuoy,
   MessageCircle,
   FileText,
   Briefcase,
@@ -62,13 +61,6 @@ const CELLS: Cell[] = [
     icon: Sparkles,
     labelKey: "portal.support.panel.cats.oryxa",
     defaultLabel: "Oryxa AI",
-  },
-  {
-    kind: "view",
-    view: "getSupport",
-    icon: LifeBuoy,
-    labelKey: "portal.support.panel.cats.getSupport",
-    defaultLabel: "Get Support",
   },
   {
     kind: "view",

@@ -8,7 +8,8 @@ import { useCommUnreadCount } from "@/hooks/useCommApi";
 import { supabase } from "@/integrations/supabase/client";
 import { IdentityActivationDialog } from "@/components/portal/identity/IdentityActivationDialog";
 import { PanelTopBar } from "./panel/PanelTopBar";
-import { PanelCategoriesGrid, type PanelView } from "./panel/PanelCategoriesGrid";
+import { type PanelView } from "./panel/PanelCategoriesGrid";
+import { DefaultHomeView } from "./panel/DefaultHomeView";
 import { OryxaTab } from "./panel/OryxaTab";
 import { MessagesTab } from "./panel/MessagesTab";
 import { GetSupportView } from "./panel/GetSupportView";
@@ -143,19 +144,19 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
           )}
         </div>
 
-        {showGrid && activeView === "default" && (
-          <PanelCategoriesGrid
-            activeView={activeView}
-            identityApproved={identityApproved}
-            unreadCount={unreadCount}
-            onSwitchView={setActiveView}
-            onClose={onClose}
-          />
-        )}
-
         <div className="flex-1 min-h-0 overflow-hidden">
-          {!showGrid || activeView === "oryxa" ? (
-            <OryxaTab onBack={showGrid ? () => setActiveView("default") : undefined} />
+          {!showGrid ? (
+            <OryxaTab />
+          ) : activeView === "default" ? (
+            <DefaultHomeView
+              identityApproved={identityApproved}
+              unreadCount={unreadCount}
+              onSwitchView={setActiveView}
+              onClose={onClose}
+              onOpenGetSupport={() => setActiveView("getSupport")}
+            />
+          ) : activeView === "oryxa" ? (
+            <OryxaTab onBack={() => setActiveView("default")} />
           ) : activeView === "messages" ? (
             <MessagesTab
               identityApproved={identityApproved}

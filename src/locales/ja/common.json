@@ -10136,5 +10136,12 @@
   "portal.support.panel.getSupport.s4": "アカウント情報の更新",
   "portal.support.panel.getSupport.placeholder": "ここに問題を入力してください…",
   "portal.support.panel.getSupport.send": "送信",
-  "portal.support.panel.back": "戻る"
+  "portal.support.panel.back": "戻る",
+  "portal.support.panel.suggestions.title": "こんな質問はいかがですか",
+  "portal.support.panel.suggestions.s1": "本人確認の方法は？",
+  "portal.support.panel.suggestions.s2": "大学への応募方法は？",
+  "portal.support.panel.suggestions.s3": "利用可能な支払い方法は？",
+  "portal.support.panel.suggestions.s4": "申請状況の確認方法は？",
+  "portal.support.panel.suggestions.s5": "利用可能な奨学金",
+  "portal.support.panel.suggestions.s6": "アカウント情報の更新"
 }

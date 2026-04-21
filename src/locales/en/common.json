@@ -13952,5 +13952,12 @@
   "portal.support.panel.getSupport.s4": "Update my account info",
   "portal.support.panel.getSupport.placeholder": "Describe your problem here…",
   "portal.support.panel.getSupport.send": "Send",
-  "portal.support.panel.back": "Back"
+  "portal.support.panel.back": "Back",
+  "portal.support.panel.suggestions.title": "You may want to ask",
+  "portal.support.panel.suggestions.s1": "How do I verify my identity?",
+  "portal.support.panel.suggestions.s2": "How to apply to a university?",
+  "portal.support.panel.suggestions.s3": "What payment methods are accepted?",
+  "portal.support.panel.suggestions.s4": "How to track my application?",
+  "portal.support.panel.suggestions.s5": "Available scholarships",
+  "portal.support.panel.suggestions.s6": "Update my account info"
 }
