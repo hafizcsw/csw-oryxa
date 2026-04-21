@@ -140,11 +140,14 @@ interface MalakChatInterfaceProps {
   isInDeepSearch?: boolean;
   /** Compact landing mode: hides welcome orb + suggested prompts, shows rotating placeholder. */
   compact?: boolean;
+  /** Called when message count changes; useful for parent layout adjustments. */
+  onMessagesCountChange?: (count: number) => void;
 }
 export function MalakChatInterface({
   variant = 'standalone',
   isInDeepSearch = false,
   compact = false,
+  onMessagesCountChange,
 }: MalakChatInterfaceProps) {
   const isFloating = variant === 'floating';
   const isMobile = useIsMobile();
