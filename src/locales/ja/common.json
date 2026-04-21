@@ -10104,5 +10104,19 @@
   "portal.support.faq.q3": "申請状況を確認するには?",
   "portal.support.faq.q4": "住所を変更するには?",
   "portal.support.faq.q5": "対応している支払い方法は?",
-  "portal.support.faq.q6": "書類をダウンロードするには?"
+  "portal.support.faq.q6": "書類をダウンロードするには?",
+  "portal.support.panel.tabs.oryxa": "Oryxa AI",
+  "portal.support.panel.tabs.messages": "メッセージ",
+  "portal.support.panel.messages.empty.title": "メッセージはありません",
+  "portal.support.panel.messages.empty.cta": "会話を始める",
+  "portal.support.panel.messages.newButton": "新規",
+  "portal.support.panel.messages.openFullPage": "メッセージページを開く",
+  "portal.support.panel.messages.viewFullThread": "全体を開く",
+  "portal.support.panel.messages.replyPlaceholder": "返信を入力…",
+  "portal.support.panel.messages.send": "送信",
+  "portal.support.panel.messages.back": "戻る",
+  "portal.support.panel.identityBanner": "本人確認を完了してメッセージを有効化",
+  "portal.support.panel.oryxa.clear": "会話をクリア",
+  "portal.support.panel.oryxa.placeholder": "Oryxaに質問…",
+  "portal.support.panel.greeting.guest": "ようこそ"
 }

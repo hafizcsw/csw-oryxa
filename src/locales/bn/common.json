@@ -10104,5 +10104,19 @@
   "portal.support.faq.q3": "কীভাবে আমার আবেদন ট্র্যাক করব?",
   "portal.support.faq.q4": "কীভাবে আমার ঠিকানা পরিবর্তন করব?",
   "portal.support.faq.q5": "কোন পেমেন্ট পদ্ধতি সমর্থিত?",
-  "portal.support.faq.q6": "কীভাবে আমার নথি ডাউনলোড করব?"
+  "portal.support.faq.q6": "কীভাবে আমার নথি ডাউনলোড করব?",
+  "portal.support.panel.tabs.oryxa": "Oryxa AI",
+  "portal.support.panel.tabs.messages": "বার্তা",
+  "portal.support.panel.messages.empty.title": "এখনও কোনো বার্তা নেই",
+  "portal.support.panel.messages.empty.cta": "কথোপকথন শুরু করুন",
+  "portal.support.panel.messages.newButton": "নতুন",
+  "portal.support.panel.messages.openFullPage": "বার্তা পৃষ্ঠা খুলুন",
+  "portal.support.panel.messages.viewFullThread": "সম্পূর্ণ খুলুন",
+  "portal.support.panel.messages.replyPlaceholder": "উত্তর লিখুন…",
+  "portal.support.panel.messages.send": "পাঠান",
+  "portal.support.panel.messages.back": "ফিরে যান",
+  "portal.support.panel.identityBanner": "সম্পূর্ণ বার্তা সক্রিয় করতে পরিচয় যাচাই করুন",
+  "portal.support.panel.oryxa.clear": "কথোপকথন সাফ করুন",
+  "portal.support.panel.oryxa.placeholder": "Oryxa-কে যেকোনো কিছু জিজ্ঞাসা করুন…",
+  "portal.support.panel.greeting.guest": "স্বাগতম"
 }

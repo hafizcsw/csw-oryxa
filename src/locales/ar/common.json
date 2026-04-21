@@ -13965,5 +13965,19 @@
   "portal.support.faq.q3": "كيف أتابع طلبي؟",
   "portal.support.faq.q4": "كيف أغير عنواني؟",
   "portal.support.faq.q5": "ما طرق الدفع المدعومة؟",
-  "portal.support.faq.q6": "كيف أحمّل مستنداتي؟"
+  "portal.support.faq.q6": "كيف أحمّل مستنداتي؟",
+  "portal.support.panel.tabs.oryxa": "أوريكسا AI",
+  "portal.support.panel.tabs.messages": "الرسائل",
+  "portal.support.panel.messages.empty.title": "لا توجد رسائل بعد",
+  "portal.support.panel.messages.empty.cta": "ابدأ محادثة",
+  "portal.support.panel.messages.newButton": "جديد",
+  "portal.support.panel.messages.openFullPage": "فتح صفحة الرسائل",
+  "portal.support.panel.messages.viewFullThread": "عرض المحادثة الكاملة",
+  "portal.support.panel.messages.replyPlaceholder": "اكتب ردًا…",
+  "portal.support.panel.messages.send": "إرسال",
+  "portal.support.panel.messages.back": "رجوع",
+  "portal.support.panel.identityBanner": "وثّق هويتك لتفعيل المراسلة الكاملة",
+  "portal.support.panel.oryxa.clear": "مسح المحادثة",
+  "portal.support.panel.oryxa.placeholder": "اسأل أوريكسا أي شيء…",
+  "portal.support.panel.greeting.guest": "أهلًا بك"
 }
