@@ -5,6 +5,8 @@ import { deleteFile } from "@/api/crmStorage";
 import { FileQualityCard } from "@/components/file-quality/FileQualityCard";
 import { CanonicalFileSummary } from "@/components/student-file/CanonicalFileSummary";
 import { CentralUploadHub } from "@/components/documents/CentralUploadHub";
+import { UploadGuidanceCard } from "@/components/documents/UploadGuidanceCard";
+import { PostUploadSteps } from "@/components/documents/PostUploadSteps";
 import { LiveProfileAssembly } from "@/components/documents/LiveProfileAssembly";
 import { SaveDocumentsBar } from "@/components/documents/SaveDocumentsBar";
 import { DocumentAnalysisPanel } from "@/components/documents/DocumentAnalysisPanel";
@@ -602,8 +604,8 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       />
 
       {/* ═══ Door 2: Central Upload Hub ═══ */}
-      <section>
-        <h2 className="text-base font-semibold text-foreground mb-3">{t('portal.uploadHub.title')}</h2>
+      <section className="space-y-4">
+        <UploadGuidanceCard />
         <CentralUploadHub
           records={registry.records}
           isUploading={registry.isUploading}
@@ -615,6 +617,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           onPreviewsReady={handlePreviewsReady}
           issuesByDocId={issuesByDocId}
         />
+        <PostUploadSteps />
       </section>
 
       {/* ═══ Live engine activity — what is the engine doing right now ═══ */}

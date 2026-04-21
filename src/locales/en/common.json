@@ -1470,7 +1470,32 @@
       "status_confirming": "Confirming…",
       "status_registered": "Registered",
       "status_upload_failed": "Failed",
-      "status_cancelled": "Cancelled"
+      "status_cancelled": "Cancelled",
+      "guidance": {
+        "subtitle": "Upload your academic and personal documents to auto-build your smart profile",
+        "secure_badge": "Verified & Encrypted",
+        "what_to_upload": "What you can upload",
+        "examples": {
+          "passport": "Passport / National ID",
+          "transcripts": "Certificates & transcripts",
+          "language": "Language tests (IELTS, TOEFL...)",
+          "cv": "CV / recommendation letters"
+        },
+        "formats_label": "Supported formats",
+        "formats_value": "PDF · JPG · PNG · DOCX",
+        "size_label": "Max size",
+        "size_value": "20MB per file",
+        "tip": "Tip: upload an original PDF instead of a scanned image for more accurate extraction"
+      },
+      "after_upload": {
+        "title": "What happens after upload?",
+        "step1_title": "We read the document",
+        "step1_desc": "Smart OCR understands any format",
+        "step2_title": "We extract your data",
+        "step2_desc": "Name, dates, grades, major",
+        "step3_title": "We build your file",
+        "step3_desc": "A unified profile sent to universities"
+      }
     },
     "saveDocs": {
       "region_label": "Unsaved documents",
