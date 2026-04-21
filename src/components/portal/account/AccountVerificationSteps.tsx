@@ -121,6 +121,61 @@ export function AccountVerificationSteps({
           )}
         </div>
 
+        {/* Card 2: Wallet — locked until verification is complete */}
+        <div className={cn(
+          "rounded-2xl p-6 min-h-[280px] flex flex-col transition-all duration-300 relative overflow-hidden",
+          isVerified
+            ? "bg-primary/5 border-2 border-primary/30"
+            : "bg-muted/40 border border-border"
+        )}>
+          <div className={cn("flex-1", isRtl ? "text-right" : "text-left")}>
+            <h3 className="text-lg font-bold text-foreground mb-2">
+              {t('portal.steps.fundWallet')}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              {t('portal.steps.addBalance')}
+            </p>
+
+            <div className="flex justify-center my-6">
+              <div className="relative">
+                <div className={cn(
+                  "w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all",
+                  isVerified ? "bg-primary" : "bg-muted"
+                )}>
+                  <CreditCard className={cn(
+                    "w-10 h-10",
+                    isVerified ? "text-primary-foreground" : "text-muted-foreground"
+                  )} />
+                </div>
+                {!isVerified && (
+                  <div className={cn(
+                    "absolute -bottom-1 bg-warning/20 rounded-lg p-1.5 shadow-md",
+                    isRtl ? "-right-1" : "-left-1"
+                  )}>
+                    <ArrowLeftRight className="w-4 h-4 text-warning" />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {isVerified ? (
+            <Button
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base py-3"
+            >
+              {t('portal.steps.fundNow')}
+            </Button>
+          ) : (
+            <Button
+              disabled
+              className="w-full bg-muted text-muted-foreground font-bold text-base py-3 cursor-not-allowed"
+            >
+              <ShieldAlert className="w-4 h-4 me-2" />
+              {t('portal.steps.verifyAccount')}
+            </Button>
+          )}
+        </div>
+
       </div>
 
     </div>
