@@ -10097,5 +10097,22 @@
   "portal.support.quick.application": "आवेदन",
   "portal.support.quick.technical": "तकनीकी",
   "portal.support.quick.other": "अन्य",
-  "portal.support.ticket.relativeJustNow": "अभी अभी"
+  "portal.support.ticket.relativeJustNow": "अभी अभी",
+  "portal.support.panel.welcomeTo": "{{brand}} सहायता में आपका स्वागत है",
+  "portal.support.panel.kycTitle": "KYC सत्यापन",
+  "portal.support.panel.kycReasonChip": "कारण",
+  "portal.support.panel.kycStep": "{{current}}/{{total}}",
+  "portal.support.panel.faqTitle": "आप पूछना चाह सकते हैं",
+  "portal.support.panel.faqViewMore": "और देखें",
+  "portal.support.panel.getSupport": "सहायता प्राप्त करें",
+  "portal.support.categories.account_security": "खाता सुरक्षा",
+  "portal.support.categories.programs": "कार्यक्रम और उपयुक्तता",
+  "portal.support.categories.messages": "संदेश",
+  "portal.support.categories.oryxa": "Oryxa AI",
+  "portal.support.faq.q1": "मैं अपनी पहचान कैसे सत्यापित करूं?",
+  "portal.support.faq.q2": "मैं अपना पासपोर्ट कैसे अपडेट करूं?",
+  "portal.support.faq.q3": "मैं अपने आवेदन को कैसे ट्रैक करूं?",
+  "portal.support.faq.q4": "मैं अपना पता कैसे बदलूं?",
+  "portal.support.faq.q5": "कौन से भुगतान विधियां समर्थित हैं?",
+  "portal.support.faq.q6": "मैं अपने दस्तावेज़ कैसे डाउनलोड करूं?"
 }

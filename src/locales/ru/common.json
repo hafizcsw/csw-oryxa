@@ -11131,5 +11131,22 @@
   "portal.support.quick.application": "Заявка",
   "portal.support.quick.technical": "Техническое",
   "portal.support.quick.other": "Другое",
-  "portal.support.ticket.relativeJustNow": "Только что"
+  "portal.support.ticket.relativeJustNow": "Только что",
+  "portal.support.panel.welcomeTo": "Добро пожаловать в поддержку {{brand}}",
+  "portal.support.panel.kycTitle": "KYC-верификация",
+  "portal.support.panel.kycReasonChip": "Причина",
+  "portal.support.panel.kycStep": "{{current}}/{{total}}",
+  "portal.support.panel.faqTitle": "Возможно, вы хотите спросить",
+  "portal.support.panel.faqViewMore": "Показать больше",
+  "portal.support.panel.getSupport": "Получить поддержку",
+  "portal.support.categories.account_security": "Безопасность аккаунта",
+  "portal.support.categories.programs": "Программы и соответствие",
+  "portal.support.categories.messages": "Сообщения",
+  "portal.support.categories.oryxa": "Oryxa AI",
+  "portal.support.faq.q1": "Как подтвердить мою личность?",
+  "portal.support.faq.q2": "Как обновить мой паспорт?",
+  "portal.support.faq.q3": "Как отследить мою заявку?",
+  "portal.support.faq.q4": "Как изменить мой адрес?",
+  "portal.support.faq.q5": "Какие способы оплаты поддерживаются?",
+  "portal.support.faq.q6": "Как скачать мои документы?"
 }

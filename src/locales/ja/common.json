@@ -10087,5 +10087,22 @@
   "portal.support.quick.application": "出願",
   "portal.support.quick.technical": "技術",
   "portal.support.quick.other": "その他",
-  "portal.support.ticket.relativeJustNow": "たった今"
+  "portal.support.ticket.relativeJustNow": "たった今",
+  "portal.support.panel.welcomeTo": "{{brand}}サポートへようこそ",
+  "portal.support.panel.kycTitle": "本人確認",
+  "portal.support.panel.kycReasonChip": "理由",
+  "portal.support.panel.kycStep": "{{current}}/{{total}}",
+  "portal.support.panel.faqTitle": "よくある質問",
+  "portal.support.panel.faqViewMore": "もっと見る",
+  "portal.support.panel.getSupport": "サポートを受ける",
+  "portal.support.categories.account_security": "アカウントセキュリティ",
+  "portal.support.categories.programs": "プログラムと適合性",
+  "portal.support.categories.messages": "メッセージ",
+  "portal.support.categories.oryxa": "Oryxa AI",
+  "portal.support.faq.q1": "本人確認はどうすればいいですか?",
+  "portal.support.faq.q2": "パスポートはどう更新しますか?",
+  "portal.support.faq.q3": "申請状況を確認するには?",
+  "portal.support.faq.q4": "住所を変更するには?",
+  "portal.support.faq.q5": "対応している支払い方法は?",
+  "portal.support.faq.q6": "書類をダウンロードするには?"
 }

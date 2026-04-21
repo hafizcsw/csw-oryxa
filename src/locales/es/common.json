@@ -10458,5 +10458,22 @@
   "portal.support.quick.application": "Aplicación",
   "portal.support.quick.technical": "Técnico",
   "portal.support.quick.other": "Otro",
-  "portal.support.ticket.relativeJustNow": "Justo ahora"
+  "portal.support.ticket.relativeJustNow": "Justo ahora",
+  "portal.support.panel.welcomeTo": "Bienvenido al soporte de {{brand}}",
+  "portal.support.panel.kycTitle": "Verificación KYC",
+  "portal.support.panel.kycReasonChip": "Motivo",
+  "portal.support.panel.kycStep": "{{current}}/{{total}}",
+  "portal.support.panel.faqTitle": "Tal vez quieras preguntar",
+  "portal.support.panel.faqViewMore": "Ver más",
+  "portal.support.panel.getSupport": "Obtener soporte",
+  "portal.support.categories.account_security": "Seguridad de la cuenta",
+  "portal.support.categories.programs": "Programas y ajuste",
+  "portal.support.categories.messages": "Mensajes",
+  "portal.support.categories.oryxa": "Oryxa AI",
+  "portal.support.faq.q1": "¿Cómo verifico mi identidad?",
+  "portal.support.faq.q2": "¿Cómo actualizo mi pasaporte?",
+  "portal.support.faq.q3": "¿Cómo hago seguimiento de mi solicitud?",
+  "portal.support.faq.q4": "¿Cómo cambio mi dirección?",
+  "portal.support.faq.q5": "¿Qué métodos de pago se admiten?",
+  "portal.support.faq.q6": "¿Cómo descargo mis documentos?"
 }

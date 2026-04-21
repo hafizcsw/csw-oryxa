@@ -13948,5 +13948,22 @@
   "portal.support.quick.application": "التقديم",
   "portal.support.quick.technical": "تقني",
   "portal.support.quick.other": "أخرى",
-  "portal.support.ticket.relativeJustNow": "الآن"
+  "portal.support.ticket.relativeJustNow": "الآن",
+  "portal.support.panel.welcomeTo": "أهلاً بك في دعم {{brand}}",
+  "portal.support.panel.kycTitle": "توثيق الهوية",
+  "portal.support.panel.kycReasonChip": "السبب",
+  "portal.support.panel.kycStep": "{{current}}/{{total}}",
+  "portal.support.panel.faqTitle": "قد ترغب في السؤال",
+  "portal.support.panel.faqViewMore": "عرض المزيد",
+  "portal.support.panel.getSupport": "احصل على الدعم",
+  "portal.support.categories.account_security": "أمان الحساب",
+  "portal.support.categories.programs": "البرامج والملاءمة",
+  "portal.support.categories.messages": "الرسائل",
+  "portal.support.categories.oryxa": "أوريكسا AI",
+  "portal.support.faq.q1": "كيف يمكنني توثيق هويتي؟",
+  "portal.support.faq.q2": "كيف أحدّث جواز سفري؟",
+  "portal.support.faq.q3": "كيف أتابع طلبي؟",
+  "portal.support.faq.q4": "كيف أغير عنواني؟",
+  "portal.support.faq.q5": "ما طرق الدفع المدعومة؟",
+  "portal.support.faq.q6": "كيف أحمّل مستنداتي؟"
 }
