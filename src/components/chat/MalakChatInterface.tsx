@@ -222,6 +222,10 @@ export function MalakChatInterface({
 
   // Local state for new format
   const [messages, setMessages] = useState<(WebChatMessage & { isNew?: boolean })[]>([]);
+  // Notify parent when message count changes (used by Hero for layout)
+  useEffect(() => {
+    onMessagesCountChange?.(messages.length);
+  }, [messages.length, onMessagesCountChange]);
   const [state, setState] = useState<'idle' | 'thinking' | 'awaiting_phone' | 'awaiting_otp' | 'awaiting_name' | 'searching' | 'awaiting_consent'>('idle');
   const [inputValue, setInputValue] = useState('');
   const [error, setError] = useState<string | null>(null);
