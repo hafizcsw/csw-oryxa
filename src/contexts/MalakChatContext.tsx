@@ -301,18 +301,8 @@ export function MalakChatProvider({ children }: { children: ReactNode }) {
   }, [sessionType]);
 
 
-  // Save to localStorage when messages or universities change (limit to last 50 messages)
-  useEffect(() => {
-    if (messages.length > 0 || universities.length > 0) {
-      // ✅ نحصر التخزين في آخر 50 رسالة فقط لتجنب امتلاء localStorage
-      const compactMessages = messages.slice(-50);
-      
-      localStorage.setItem('malak_chat_history', JSON.stringify({
-        messages: compactMessages,
-        universities,
-      }));
-    }
-  }, [messages, universities]);
+  // ✅ لا نحفظ الرسائل في localStorage - الجلسة مؤقتة في الذاكرة فقط
+  // عند إعادة تحميل الصفحة، يبدأ المستخدم محادثة جديدة نظيفة
 
   const addMessage = (message: Omit<ChatMessage, 'id' | 'timestamp'>) => {
     const newMessage: ChatMessage = {
