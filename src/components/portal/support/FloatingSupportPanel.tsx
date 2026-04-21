@@ -31,6 +31,7 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
   const [submitOpen, setSubmitOpen] = useState(false);
   const [submitSubject, setSubmitSubject] = useState<string | undefined>();
   const [identityOpen, setIdentityOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
 
@@ -104,15 +105,22 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
         className={cn(
           // Mobile: bottom sheet
           "fixed inset-x-0 bottom-0 z-[58] w-full h-[88vh] rounded-t-3xl rounded-b-none",
-          // Desktop: floating panel
-          "sm:inset-x-auto sm:bottom-24 sm:end-6 sm:w-[400px] sm:h-auto sm:max-h-[calc(100vh-8rem)] sm:rounded-3xl",
+          // Desktop: floating panel — width depends on expanded state
+          "sm:inset-x-auto sm:bottom-24 sm:end-6 sm:h-auto sm:max-h-[calc(100vh-8rem)] sm:rounded-3xl",
+          expanded ? "sm:w-[520px]" : "sm:w-[400px]",
           "bg-card/95 backdrop-blur-xl",
           "border border-border/50",
           "shadow-2xl",
           "flex flex-col overflow-hidden",
+          "transition-[width] duration-300 ease-out",
         )}
       >
-        <PanelHeader onClose={onClose} closeRef={closeBtnRef} />
+        <PanelHeader
+          onClose={onClose}
+          closeRef={closeBtnRef}
+          expanded={expanded}
+          onToggleExpand={() => setExpanded((v) => !v)}
+        />
 
         <motion.div
           variants={containerVariants}
