@@ -118,12 +118,27 @@ export function DashboardOverview({
 
   const fields = [...baseFields, ...extraFields];
 
+  // Build a short "First Last" display name from the verified extracted full name.
+  // Falls back to whatever fullName resolves to if extraction is incomplete.
+  const buildShortName = (raw?: string | null): string | null => {
+    if (!raw) return null;
+    const parts = raw.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return null;
+    if (parts.length === 1) return parts[0];
+    const first = parts[0];
+    const last = parts[parts.length - 1];
+    const cased = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    return `${cased(first)} ${cased(last)}`;
+  };
+  const verifiedShortName = buildShortName(extracted.full_name) || buildShortName(fullName);
+
   return (
     <div className="space-y-8">
       {/* Header with Avatar + Name */}
       <AccountContentHeader
         profile={profile}
         crmProfile={crmProfile}
+        canonicalIdentity={verifiedShortName ? { full_name: verifiedShortName } : null}
         onEditProfile={onEditProfile}
         onAvatarUpdate={onAvatarUpdate}
       />
