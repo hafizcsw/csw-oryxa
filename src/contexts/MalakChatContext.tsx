@@ -155,16 +155,8 @@ export function MalakChatProvider({ children }: { children: ReactNode }) {
 
   // Load from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem('malak_chat_history');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setMessages(parsed.messages || []);
-        // لا نحمّل universities من localStorage - تظهر فقط ديناميكياً من الشات
-      } catch (e) {
-        console.warn('Failed to parse stored chat history');
-      }
-    }
+    // ✅ لا نحتفظ بسجل رسائل بين الجلسات - نمسح أي بقايا قديمة
+    localStorage.removeItem('malak_chat_history');
 
     const storedUserId = localStorage.getItem('web_user_id');
     if (storedUserId) setWebUserId(storedUserId);
@@ -309,18 +301,8 @@ export function MalakChatProvider({ children }: { children: ReactNode }) {
   }, [sessionType]);
 
 
-  // Save to localStorage when messages or universities change (limit to last 50 messages)
-  useEffect(() => {
-    if (messages.length > 0 || universities.length > 0) {
-      // ✅ نحصر التخزين في آخر 50 رسالة فقط لتجنب امتلاء localStorage
-      const compactMessages = messages.slice(-50);
-      
-      localStorage.setItem('malak_chat_history', JSON.stringify({
-        messages: compactMessages,
-        universities,
-      }));
-    }
-  }, [messages, universities]);
+  // ✅ لا نحفظ الرسائل في localStorage - الجلسة مؤقتة في الذاكرة فقط
+  // عند إعادة تحميل الصفحة، يبدأ المستخدم محادثة جديدة نظيفة
 
   const addMessage = (message: Omit<ChatMessage, 'id' | 'timestamp'>) => {
     const newMessage: ChatMessage = {
