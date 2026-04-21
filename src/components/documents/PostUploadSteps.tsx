@@ -34,7 +34,7 @@ export function PostUploadSteps() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.1 }}
-      className="rounded-xl border border-border bg-card text-card-foreground shadow-sm p-4"
+      className="p-4"
     >
       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
         {t("portal.uploadHub.after_upload.title", { defaultValue: "What happens after upload?" })}
