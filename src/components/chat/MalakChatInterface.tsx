@@ -1216,7 +1216,7 @@ export function MalakChatInterface({
   const chatBoxClassName = cn(
     "flex flex-col overflow-hidden",
     isFullscreen
-      ? "fixed inset-0 z-[9999] h-screen w-screen rounded-none bg-background border-0"
+      ? "fixed inset-0 z-[9999] h-[100dvh] w-screen rounded-none bg-background border-0"
       : isFloating
         ? "h-full bg-card"
         : isInDeepSearch
