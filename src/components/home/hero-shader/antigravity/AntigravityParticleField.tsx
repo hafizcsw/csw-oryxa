@@ -185,6 +185,7 @@ export function AntigravityParticleField({ className }: Props) {
       running = false;
       cancelAnimationFrame(raf);
       ro.disconnect();
+      themeObserver.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('mousemove', onMouseMove);
       geometry.dispose();
