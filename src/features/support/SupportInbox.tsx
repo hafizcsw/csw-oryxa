@@ -74,7 +74,7 @@ export function SupportInbox() {
   return (
     <div className="space-y-2">
       {cases.map((c) => {
-        const unread = (c.unread_for_customer ?? 0) > 0;
+        const unread = !!c.unread_for_customer;
         return (
           <button
             key={c.case_id}
