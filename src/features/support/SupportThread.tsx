@@ -37,7 +37,8 @@ export function SupportThread({ caseId }: SupportThreadProps) {
     }
   };
 
-  const supportCase = caseQuery.data?.data;
+  const supportCase = caseQuery.data?.data?.case;
+  const identityLink = caseQuery.data?.data?.identity_link;
   const isClosed = supportCase?.status === 'closed';
 
   const handleClose = async () => {
@@ -100,7 +101,7 @@ export function SupportThread({ caseId }: SupportThreadProps) {
           messages.map((m) => {
             const own = m.sender_type === 'customer';
             return (
-              <div key={m.message_id} className={cn('flex', own ? 'justify-end' : 'justify-start')}>
+              <div key={m.id} className={cn('flex', own ? 'justify-end' : 'justify-start')}>
                 <div
                   className={cn(
                     'max-w-[75%] rounded-2xl px-3.5 py-2 text-sm',
