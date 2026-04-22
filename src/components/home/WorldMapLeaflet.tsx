@@ -367,6 +367,93 @@ function resolveViewportCountryCode(
   return null;
 }
 
+/**
+ * Normalize Palestine: many GeoJSON sources (e.g. datasets/geo-countries)
+ * either omit Palestine entirely or label the whole Israel+Palestine area
+ * as "Israel". We collapse both into a single Palestine feature so PS
+ * shows up colored on the map. Idempotent.
+ */
+function normalizePalestineFeature(
+  collection: GeoJSON.FeatureCollection,
+): GeoJSON.FeatureCollection {
+  // Already normalized? (first feature is our synthesized PS)
+  const first = collection.features[0];
+  if (
+    first &&
+    (first.properties as Record<string, unknown> | null)?.ISO_A2 === "PS" &&
+    (first.properties as Record<string, unknown> | null)?.__palestineNormalized === true
+  ) {
+    return collection;
+  }
+
+  const palestineSourceFeatures = collection.features.filter((feature) => {
+    const p = feature.properties as Record<string, unknown> | null | undefined;
+    const a2 = `${p?.ISO_A2 ?? p?.iso_a2 ?? p?.["ISO3166-1-Alpha-2"] ?? ""}`.toUpperCase();
+    const a3 = `${p?.ISO_A3 ?? p?.iso_a3 ?? p?.["ISO3166-1-Alpha-3"] ?? ""}`.toUpperCase();
+    const adm3 = `${p?.ADM0_A3 ?? p?.adm0_a3 ?? ""}`.toUpperCase();
+    const name = `${p?.name ?? p?.NAME ?? p?.ADMIN ?? ""}`.trim().toLowerCase();
+
+    return (
+      a2 === "IL" ||
+      a2 === "PS" ||
+      a3 === "ISR" ||
+      a3 === "PSE" ||
+      adm3 === "ISR" ||
+      adm3 === "PSE" ||
+      adm3 === "PSX" ||
+      name === "israel" ||
+      name === "palestine"
+    );
+  });
+
+  if (palestineSourceFeatures.length === 0) return collection;
+
+  const allPolygons: number[][][] = [];
+  for (const feature of palestineSourceFeatures) {
+    const geom = feature.geometry;
+    if (!geom) continue;
+    if (geom.type === "Polygon") {
+      allPolygons.push(geom.coordinates as unknown as number[][]);
+    } else if (geom.type === "MultiPolygon") {
+      for (const poly of geom.coordinates) {
+        allPolygons.push(poly as unknown as number[][]);
+      }
+    }
+  }
+
+  if (allPolygons.length === 0) return collection;
+
+  const normalizedPalestineFeature: GeoJSON.Feature = {
+    type: "Feature",
+    geometry: {
+      type: "MultiPolygon",
+      coordinates: allPolygons as unknown as GeoJSON.Position[][][],
+    } as GeoJSON.MultiPolygon,
+    properties: {
+      name: "Palestine",
+      NAME: "Palestine",
+      ADMIN: "Palestine",
+      NAME_LONG: "Palestine",
+      FORMAL_EN: "State of Palestine",
+      SOVEREIGNT: "Palestine",
+      ISO_A2: "PS",
+      ISO_A3: "PSE",
+      ADM0_A3: "PSE",
+      "ISO3166-1-Alpha-2": "PS",
+      "ISO3166-1-Alpha-3": "PSE",
+      __palestineNormalized: true,
+    },
+  };
+
+  return {
+    ...collection,
+    features: [
+      normalizedPalestineFeature,
+      ...collection.features.filter((feature) => !palestineSourceFeatures.includes(feature)),
+    ],
+  };
+}
+
 async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
   if (geoJsonCache && Array.isArray(geoJsonCache.features) && geoJsonCache.features.length > 0) {
     logWorldGeoEvent("info", "[Map] World GeoJSON ready", {
@@ -378,7 +465,8 @@ async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
 
   const cached = await getCachedWorldGeo();
   if (cached.data) {
-    geoJsonCache = cached.data;
+    // Apply normalization to cached data too — older caches may predate the fix.
+    geoJsonCache = normalizePalestineFeature(cached.data);
     logWorldGeoEvent("info", "[Map] World GeoJSON ready", {
       source: cached.source,
       featureCount: geoJsonCache.features.length,
@@ -421,69 +509,7 @@ async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
     throw new Error("[Map] Invalid geodata payload shape");
   }
 
-  const palestineSourceFeatures = geoJsonCache.features.filter((feature) => {
-    const p = feature.properties as Record<string, unknown> | null | undefined;
-    const a2 = `${p?.ISO_A2 ?? p?.iso_a2 ?? p?.["ISO3166-1-Alpha-2"] ?? ""}`.toUpperCase();
-    const a3 = `${p?.ISO_A3 ?? p?.iso_a3 ?? p?.["ISO3166-1-Alpha-3"] ?? ""}`.toUpperCase();
-    const adm3 = `${p?.ADM0_A3 ?? p?.adm0_a3 ?? ""}`.toUpperCase();
-    const name = `${p?.name ?? p?.NAME ?? p?.ADMIN ?? ""}`.trim().toLowerCase();
-
-    return (
-      a2 === "IL" ||
-      a2 === "PS" ||
-      a3 === "ISR" ||
-      a3 === "PSE" ||
-      adm3 === "ISR" ||
-      adm3 === "PSE" ||
-      adm3 === "PSX" ||
-      name === "israel" ||
-      name === "palestine"
-    );
-  });
-
-  if (palestineSourceFeatures.length > 0) {
-    const allPolygons: number[][][] = [];
-    for (const feature of palestineSourceFeatures) {
-      const geom = feature.geometry;
-      if (!geom) continue;
-      if (geom.type === "Polygon") {
-        allPolygons.push(geom.coordinates as unknown as number[][]);
-      } else if (geom.type === "MultiPolygon") {
-        for (const poly of geom.coordinates) {
-          allPolygons.push(poly as unknown as number[][]);
-        }
-      }
-    }
-
-    const normalizedPalestineFeature: GeoJSON.Feature = {
-      type: "Feature",
-      geometry: {
-        type: "MultiPolygon",
-        coordinates: allPolygons as unknown as GeoJSON.Position[][][],
-      } as GeoJSON.MultiPolygon,
-      properties: {
-        name: "Palestine",
-        NAME: "Palestine",
-        ADMIN: "Palestine",
-        NAME_LONG: "Palestine",
-        FORMAL_EN: "State of Palestine",
-        SOVEREIGNT: "Palestine",
-        ISO_A2: "PS",
-        ISO_A3: "PSE",
-        ADM0_A3: "PSE",
-        "ISO3166-1-Alpha-2": "PS",
-        "ISO3166-1-Alpha-3": "PSE",
-      },
-    };
-
-    geoJsonCache = {
-      ...geoJsonCache,
-      features: [
-        normalizedPalestineFeature,
-        ...geoJsonCache.features.filter((feature) => !palestineSourceFeatures.includes(feature)),
-      ],
-    };
-  }
+  geoJsonCache = normalizePalestineFeature(geoJsonCache);
 
   if (!geoJsonCache.features.length) {
     const reason = "[Map] Invalid geodata payload: zero features";
