@@ -1,11 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { MalakChatInterface } from '@/components/chat/MalakChatInterface';
-import { HeroParticleGPGPU, type HeroFieldVariant } from '@/components/home/hero-shader/HeroParticleGPGPU';
+import { AntigravityParticleField } from '@/components/home/hero-shader/antigravity/AntigravityParticleField';
 import oryxaMark from '@/assets/orxya-mark.png';
-
-// Switch between 'quieter' (A) and 'reactive' (B) presets here.
-const HERO_FIELD_VARIANT: HeroFieldVariant = 'reactive';
 import { DeepSearchLayout } from '@/components/chat/DeepSearchLayout';
 import { SearchResultsPanel } from '@/components/chat/SearchResultsPanel';
 import { DebugOverlay } from '@/components/chat/DebugOverlay';
@@ -173,8 +170,8 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-white dark:bg-black" />
 
 
-        {/* GPGPU particle field — sim-pass + render-pass, mouse displacement + click pulse */}
-        <HeroParticleGPGPU variant={HERO_FIELD_VARIANT} />
+        {/* Antigravity-style ring particle field (GPGPU sim + dash render) */}
+        <AntigravityParticleField />
 
         <div className="relative z-10 w-full h-full max-w-6xl mx-auto px-4 sm:px-8 py-8 flex items-center justify-center">
           {isDeepSearchMode ? (
