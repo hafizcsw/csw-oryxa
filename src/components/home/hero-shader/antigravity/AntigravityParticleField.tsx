@@ -50,7 +50,9 @@ const VERT = /* glsl */ `
 const FRAG = /* glsl */ `
   precision highp float;
 
-  uniform vec3 uColor;
+  uniform vec3  uColor;
+  uniform float uAlphaBoost;
+  uniform float uSizeScale;
   varying float vAlpha;
 
   void main() {
@@ -58,7 +60,7 @@ const FRAG = /* glsl */ `
     if (dist > 0.5) discard;
 
     float alpha = smoothstep(0.5, 0.0, dist) * vAlpha;
-    gl_FragColor = vec4(uColor, alpha * 0.6);
+    gl_FragColor = vec4(uColor, alpha * 0.6 * uAlphaBoost);
   }
 `;
 
