@@ -67,6 +67,9 @@ export function NotificationsPopover() {
 
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<NotifTab>('all');
+  const [expanded, setExpanded] = useState(false);
+
+  const INITIAL_COUNT = 5;
 
   const { threads, refresh: refreshThreads } = useCommThreads();
   const { status: identity } = useIdentityStatus();
@@ -253,42 +256,58 @@ export function NotificationsPopover() {
                   </div>
                 ) : (
                   <div className="px-1">
-                    {tab === 'all' && unreadCount > 0 && (
-                      <SectionLabel label={t('notifications.section.new', { defaultValue: 'New' })} />
-                    )}
+                    {(() => {
+                      const unreadItems = visible.filter((i) => (tab === 'unread' ? true : i.unread));
+                      const earlierItems = tab === 'all' ? items.filter((i) => !i.unread) : [];
+                      const combined = tab === 'all' ? [...unreadItems, ...earlierItems] : unreadItems;
+                      const limited = expanded ? combined : combined.slice(0, INITIAL_COUNT);
 
-                    {visible
-                      .filter((i) => (tab === 'unread' ? true : i.unread))
-                      .map((item) => (
-                        <NotifRow key={item.id} item={item} locale={locale} />
-                      ))}
+                      const limitedUnread = limited.filter((i) => i.unread);
+                      const limitedEarlier = limited.filter((i) => !i.unread);
 
-                    {tab === 'all' && items.some((i) => !i.unread) && (
-                      <>
-                        <SectionLabel label={t('notifications.section.earlier', { defaultValue: 'Earlier' })} />
-                        {items
-                          .filter((i) => !i.unread)
-                          .map((item) => (
+                      return (
+                        <>
+                          {tab === 'all' && limitedUnread.length > 0 && (
+                            <SectionLabel label={t('notifications.section.new', { defaultValue: 'New' })} />
+                          )}
+                          {(tab === 'unread' ? limited : limitedUnread).map((item) => (
                             <NotifRow key={item.id} item={item} locale={locale} />
                           ))}
-                      </>
-                    )}
+
+                          {tab === 'all' && limitedEarlier.length > 0 && (
+                            <>
+                              <SectionLabel label={t('notifications.section.earlier', { defaultValue: 'Earlier' })} />
+                              {limitedEarlier.map((item) => (
+                                <NotifRow key={item.id} item={item} locale={locale} />
+                              ))}
+                            </>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
 
-              <div className="border-t border-border px-3 py-2 bg-card/40">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    navigate('/portal');
-                  }}
-                  className="w-full text-center text-[12.5px] font-semibold text-primary hover:underline py-1"
-                >
-                  {t('notifications.seeAll', { defaultValue: 'See all notifications' })}
-                </button>
-              </div>
+              {(() => {
+                const totalForTab = tab === 'unread'
+                  ? visible.length
+                  : visible.filter((i) => i.unread).length + items.filter((i) => !i.unread).length;
+                if (totalForTab <= INITIAL_COUNT) return null;
+                return (
+                  <div className="border-t border-border px-3 py-2 bg-card/40">
+                    <button
+                      type="button"
+                      onClick={() => setExpanded((v) => !v)}
+                      className="w-full text-center text-[12.5px] font-semibold text-primary hover:underline py-1"
+                    >
+                      {expanded
+                        ? t('notifications.showLess', { defaultValue: 'Show less' })
+                        : t('notifications.seeAll', { defaultValue: 'See all notifications' })}
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
           </motion.div>
         )}
