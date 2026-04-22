@@ -78,7 +78,7 @@ export interface SupportCase {
   status?: string | null;
   last_message_at?: string | null;
   last_message_preview?: string | null;
-  unread_for_customer?: number;
+  unread_for_customer?: boolean;
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -88,7 +88,33 @@ export interface SupportMessage {
   case_id?: string;
   body: string;
   sender_type: 'customer' | 'staff' | 'system' | string;
+  author_display?: string | null;
+  message_kind?: string | null;
+  visible_to_customer?: boolean;
   created_at: string;
+}
+
+export interface SupportMessageSendData {
+  ok: true;
+  message: {
+    id: string;
+    sender_type: 'customer';
+    created_at: string;
+  };
+}
+
+export interface SupportMarkReadData {
+  ok: true;
+  case_id: string;
+  read_at: string;
+  unread_for_customer: false;
+}
+
+export interface SupportCaseCloseData {
+  ok: true;
+  case_id: string;
+  status: 'closed';
+  closed_at: string;
 }
 
 export interface IdentityAttempt {
@@ -135,8 +161,8 @@ export const crm = {
   listSupportMessages: (case_id: string) =>
     crmInvoke<SupportMessagesListData>('support_messages_list', { case_id }),
   sendSupportMessage: (case_id: string, body: string) =>
-    crmInvoke<SupportMessage>('support_message_send', { case_id, body }),
-  markSupportRead: (case_id: string) => crmInvoke<{ ok: true }>('support_mark_read', { case_id }),
-  closeSupportCase: (case_id: string) => crmInvoke<SupportCase>('support_case_close', { case_id }),
+    crmInvoke<SupportMessageSendData>('support_message_send', { case_id, body }),
+  markSupportRead: (case_id: string) => crmInvoke<SupportMarkReadData>('support_mark_read', { case_id }),
+  closeSupportCase: (case_id: string) => crmInvoke<SupportCaseCloseData>('support_case_close', { case_id }),
   getIdentityCase: () => crmInvoke<IdentityCase>('identity_case_get'),
 };
