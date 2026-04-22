@@ -120,17 +120,19 @@ export function AntigravityParticleField({ className, theme }: Props) {
     // Theme: explicit prop wins; otherwise read <html class="dark"> + observe.
     const isDark = () =>
       theme ? theme === 'dark' : document.documentElement.classList.contains('dark');
-    // Light mode keeps AdditiveBlending → use a light-blue (#80CCFF ≈ vec3(0.5,0.8,1.0))
-    // so particles stay visible on white background. Dark mode = white on black.
+    // Light mode = heavy blue dots (#1E88E5 ≈ vec3(0.12,0.53,0.90)), small + clamped.
+    // Dark mode = white, original size, original alpha.
     const colorFor = () =>
-      isDark() ? new THREE.Color(1, 1, 1) : new THREE.Color(0.5, 0.8, 1.0);
+      isDark() ? new THREE.Color(1, 1, 1) : new THREE.Color(0.12, 0.53, 0.90);
 
     const uniforms = {
       uTime:       { value: 0 },
       uMousePos:   { value: new THREE.Vector2(0, 0) },
       uPixelRatio: { value: pixelRatio },
       uColor:      { value: colorFor() },
-      uAlphaBoost: { value: isDark() ? 1.0 : 1.5 },
+      uAlphaBoost: { value: isDark() ? 1.0 : 3.0 },
+      uSizeScale:  { value: isDark() ? 1.0 : 0.55 },
+      uSizeClamp:  { value: isDark() ? 9999.0 : 4.0 * pixelRatio },
     };
 
     // RawShaderMaterial: matches source intent (no THREE-injected prelude).
@@ -148,7 +150,9 @@ export function AntigravityParticleField({ className, theme }: Props) {
     const themeObserver = !theme
       ? new MutationObserver(() => {
           uniforms.uColor.value = colorFor();
-          uniforms.uAlphaBoost.value = isDark() ? 1.0 : 1.5;
+          uniforms.uAlphaBoost.value = isDark() ? 1.0 : 3.0;
+          uniforms.uSizeScale.value = isDark() ? 1.0 : 0.55;
+          uniforms.uSizeClamp.value = isDark() ? 9999.0 : 4.0 * pixelRatio;
         })
       : null;
     themeObserver?.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
