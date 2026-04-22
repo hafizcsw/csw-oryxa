@@ -64,6 +64,8 @@ const CompareUniversities = lazy(() => import("./pages/CompareUniversities"));
 const ServiceDetails = lazy(() => import("./pages/ServiceDetails"));
 const Scholarships = lazy(() => import("./pages/Scholarships"));
 const StudentPortal = lazy(() => import("./pages/StudentPortal"));
+const SupportPage = lazy(() => import("./pages/SupportPage"));
+const SupportCasePage = lazy(() => import("./pages/SupportCasePage"));
 const PortalToken = lazy(() => import("./pages/PortalToken"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AcceptInviteLazy = lazy(() => import("./pages/AcceptInvitePage"));
@@ -734,6 +736,8 @@ function AppContent() {
           <Route path="/program/:id" element={<ProgramDetails />} />
           <Route path="/apply" element={<Apply />} />
           <Route path="/portal" element={<StudentPortal />} />
+          <Route path="/portal/support" element={<SupportPage />} />
+          <Route path="/portal/support/:caseId" element={<SupportCasePage />} />
           <Route path="/portal/dashboard" element={<Navigate to="/account" replace />} />
           <Route path="/apply-now" element={<ApplyPage />} />
           <Route path="/status/:id" element={<Status />} />
