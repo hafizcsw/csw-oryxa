@@ -37,6 +37,7 @@ import { PageLoader } from "@/components/ui/PageLoader";
 // ===== SYNC IMPORTS (Critical pages loaded immediately) =====
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import ProbePage from "./pages/__probe";
 
 // ===== LAZY IMPORTS (Loaded on demand) =====
 
@@ -717,6 +718,7 @@ function AppContent() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Sync Routes (Critical) */}
+          <Route path="/__probe" element={<ProbePage />} />
           <Route path="/" element={<Index />} />
           {/* Dedicated Auth Page */}
           <Route path="/auth" element={<AuthPageLazy />} />
