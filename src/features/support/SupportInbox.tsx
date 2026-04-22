@@ -51,7 +51,7 @@ export function SupportInbox() {
     );
   }
 
-  const cases = data.data ?? [];
+  const cases = data.data?.cases ?? [];
 
   if (cases.length === 0) {
     return (
@@ -74,12 +74,12 @@ export function SupportInbox() {
   return (
     <div className="space-y-2">
       {cases.map((c) => {
-        const unread = (c.unread_count ?? 0) > 0;
+        const unread = (c.unread_for_customer ?? 0) > 0;
         return (
           <button
-            key={c.id}
+            key={c.case_id}
             type="button"
-            onClick={() => navigate(`/portal/support/${c.id}`)}
+            onClick={() => navigate(`/portal/support/${c.case_id}`)}
             className={cn(
               'w-full text-start rounded-xl border border-border bg-card hover:bg-muted/50 transition-colors p-4',
               unread && 'ring-1 ring-primary/20',
