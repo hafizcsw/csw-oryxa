@@ -84,10 +84,10 @@ export interface SupportCase {
 }
 
 export interface SupportMessage {
-  message_id: string;
-  case_id: string;
+  id: string;
+  case_id?: string;
   body: string;
-  sender_type: 'customer' | 'agent' | 'system' | string;
+  sender_type: 'customer' | 'staff' | 'system' | string;
   created_at: string;
 }
 
@@ -96,7 +96,7 @@ export interface IdentityAttempt {
   student_visible_note?: string | null;
   reviewed_at?: string | null;
   submitted_at?: string | null;
-  attempt_number?: number;
+  attempt_no?: number;
 }
 
 export interface IdentityCase {
@@ -104,6 +104,19 @@ export interface IdentityCase {
     current_attempt: IdentityAttempt | null;
     previous_attempts: IdentityAttempt[];
   };
+}
+
+export interface IdentityLink {
+  status?: string | null;
+  attempt_no?: number | null;
+  reviewed_at?: string | null;
+  student_visible_note?: string | null;
+  [k: string]: unknown;
+}
+
+export interface SupportCaseEnvelope {
+  case: SupportCase;
+  identity_link?: IdentityLink | null;
 }
 
 export interface SupportCaseListData {
@@ -118,7 +131,7 @@ export interface SupportMessagesListData {
 
 export const crm = {
   listSupportCases: () => crmInvoke<SupportCaseListData>('support_case_list'),
-  getSupportCase: (case_id: string) => crmInvoke<SupportCase>('support_case_get', { case_id }),
+  getSupportCase: (case_id: string) => crmInvoke<SupportCaseEnvelope>('support_case_get', { case_id }),
   listSupportMessages: (case_id: string) =>
     crmInvoke<SupportMessagesListData>('support_messages_list', { case_id }),
   sendSupportMessage: (case_id: string, body: string) =>

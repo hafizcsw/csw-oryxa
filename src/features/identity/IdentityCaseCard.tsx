@@ -85,12 +85,12 @@ export function IdentityCaseCard() {
               </span>
               <Badge variant={variant} className="capitalize">{status}</Badge>
             </div>
-            {typeof current.attempt_number === 'number' && (
+            {typeof current.attempt_no === 'number' && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   {t('identity.case.attempt', { defaultValue: 'Attempt' })}
                 </span>
-                <span className="text-sm text-foreground">#{current.attempt_number}</span>
+                <span className="text-sm text-foreground">#{current.attempt_no}</span>
               </div>
             )}
             <div className="flex items-center justify-between">
@@ -124,14 +124,14 @@ export function IdentityCaseCard() {
             <ul className="space-y-2">
               {previous.map((p, idx) => (
                 <li
-                  key={`${p.attempt_number ?? idx}-${p.reviewed_at ?? p.submitted_at ?? idx}`}
+                  key={`${p.attempt_no ?? idx}-${p.reviewed_at ?? p.submitted_at ?? idx}`}
                   className="flex items-start justify-between gap-3 text-sm"
                 >
                   <div className="min-w-0">
                     <p className="text-foreground capitalize">
                       {p.status}
-                      {typeof p.attempt_number === 'number' && (
-                        <span className="text-muted-foreground"> · #{p.attempt_number}</span>
+                      {typeof p.attempt_no === 'number' && (
+                        <span className="text-muted-foreground"> · #{p.attempt_no}</span>
                       )}
                     </p>
                     {p.student_visible_note && (
