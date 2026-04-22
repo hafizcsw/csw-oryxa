@@ -9171,6 +9171,42 @@ export type Database = {
           },
         ]
       }
+      portal_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          link_path: string | null
+          preview: string | null
+          read_at: string | null
+          source_key: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          link_path?: string | null
+          preview?: string | null
+          read_at?: string | null
+          source_key?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          link_path?: string | null
+          preview?: string | null
+          read_at?: string | null
+          source_key?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       portal_payments_v1: {
         Row: {
           amount_required: number
