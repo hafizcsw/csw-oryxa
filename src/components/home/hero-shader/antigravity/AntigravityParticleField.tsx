@@ -113,7 +113,9 @@ export function AntigravityParticleField({ className, theme }: Props) {
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('aOffset', new THREE.BufferAttribute(offsets, 1));
 
-    const isDark = () => document.documentElement.classList.contains('dark');
+    // Theme: explicit prop wins; otherwise read <html class="dark"> + observe.
+    const isDark = () =>
+      theme ? theme === 'dark' : document.documentElement.classList.contains('dark');
     const colorFor = () => (isDark() ? new THREE.Color(1, 1, 1) : new THREE.Color(0, 0, 0));
 
     const uniforms = {
@@ -123,21 +125,22 @@ export function AntigravityParticleField({ className, theme }: Props) {
       uColor:      { value: colorFor() },
     };
 
-    const material = new THREE.ShaderMaterial({
+    // RawShaderMaterial: matches source intent (no THREE-injected prelude).
+    const material = new THREE.RawShaderMaterial({
       uniforms,
       vertexShader: VERT,
       fragmentShader: FRAG,
       transparent: true,
       depthTest: false,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.AdditiveBlending, // implementation choice — not source-proven
     });
 
-    // React to theme toggle
-    const themeObserver = new MutationObserver(() => {
-      uniforms.uColor.value = colorFor();
-    });
-    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    // Fallback observer only when no explicit theme prop is provided.
+    const themeObserver = !theme
+      ? new MutationObserver(() => { uniforms.uColor.value = colorFor(); })
+      : null;
+    themeObserver?.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
     const points = new THREE.Points(geometry, material);
     points.frustumCulled = false;
