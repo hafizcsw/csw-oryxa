@@ -1,14 +1,10 @@
 /**
  * NotificationsPopover — Facebook-style notifications panel.
- * Aggregates: identity verification updates, unread support/messages threads,
- * and any system notices coming through the comm backbone.
+ * Source of truth = public.portal_notifications (persistent, capped at 50).
+ * Live signals (identity status, comm threads) are upserted into the table
+ * by usePortalNotifications, so notifications survive sessions and reads.
  */
-/**
- * NotificationsPopover — Facebook-style notifications panel.
- * Aggregates: identity verification updates, unread support/messages threads,
- * and any system notices coming through the comm backbone.
- */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,35 +19,12 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useCommThreads, commMarkRead, type CommThread } from '@/hooks/useCommApi';
-import { useIdentityStatus } from '@/hooks/useIdentityStatus';
+import { usePortalNotifications, type PortalNotification } from '@/hooks/usePortalNotifications';
+import { relativeTime } from '@/lib/notifTime';
 
 type NotifTab = 'all' | 'unread';
 
-interface NotifItem {
-  id: string;
-  kind: 'identity' | 'support' | 'message' | 'system';
-  title: string;
-  preview?: string;
-  time: string;
-  unread: boolean;
-  onClick: () => void;
-}
-
-function relativeTime(iso: string, locale: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.round(diff / 60000);
-  if (m < 1) return locale.startsWith('ar') ? 'الآن' : 'now';
-  if (m < 60) return `${m}m`;
-  const h = Math.round(m / 60);
-  if (h < 24) return `${h}h`;
-  const d = Math.round(h / 24);
-  if (d < 7) return `${d}d`;
-  const w = Math.round(d / 7);
-  return `${w}w`;
-}
-
-const KIND_STYLES: Record<NotifItem['kind'], { bg: string; icon: React.ComponentType<{ className?: string }> }> = {
+const KIND_STYLES: Record<PortalNotification['kind'], { bg: string; icon: React.ComponentType<{ className?: string }> }> = {
   identity: { bg: 'bg-amber-500', icon: ShieldCheck },
   support: { bg: 'bg-blue-500', icon: LifeBuoy },
   message: { bg: 'bg-emerald-500', icon: MessageCircle },
@@ -71,8 +44,7 @@ export function NotificationsPopover() {
 
   const INITIAL_COUNT = 5;
 
-  const { threads, refresh: refreshThreads } = useCommThreads();
-  const { status: identity } = useIdentityStatus();
+  const { items, unreadCount, markRead, markAllRead } = usePortalNotifications();
 
   useEffect(() => {
     if (!open) return;
@@ -95,74 +67,12 @@ export function NotificationsPopover() {
     };
   }, [open]);
 
-  const items = useMemo<NotifItem[]>(() => {
-    const list: NotifItem[] = [];
+  const visible = tab === 'unread' ? items.filter((i) => !i.read_at) : items;
 
-    if (identity?.identity_status && identity.identity_status !== 'none') {
-      const s = identity.identity_status;
-      const decidedAt = identity.decided_at || new Date().toISOString();
-      let title = '';
-
-      if (s === 'approved') {
-        title = t('notifications.identity.approved', { defaultValue: 'Your identity has been verified' });
-      } else if (s === 'rejected') {
-        title = t('notifications.identity.rejected', { defaultValue: 'Identity verification needs your attention' });
-      } else if (s === 'pending') {
-        title = t('notifications.identity.pending', { defaultValue: 'Your identity is under review' });
-      } else {
-        title = t('notifications.identity.update', { defaultValue: 'Identity status update' });
-      }
-
-      list.push({
-        id: `identity-${s}-${decidedAt}`,
-        kind: 'identity',
-        title,
-        time: decidedAt,
-        unread: s !== 'approved',
-        onClick: () => {
-          setOpen(false);
-          navigate('/portal/identity');
-        },
-      });
-    }
-
-    threads.forEach((th: CommThread) => {
-      if ((th.unread_count ?? 0) <= 0) return;
-      const isSupport = th.thread_type === 'support' || th.thread_type === 'system_notice' || th.thread_type === 'security_notice';
-
-      list.push({
-        id: `thread-${th.id}`,
-        kind: isSupport ? 'support' : 'message',
-        title: th.display_name || th.subject || (isSupport
-          ? t('notifications.support.title', { defaultValue: 'New message from Support' })
-          : t('notifications.message.title', { defaultValue: 'New message' })),
-        preview: th.last_message_preview || undefined,
-        time: th.last_message_at || th.updated_at || th.created_at,
-        unread: true,
-        onClick: async () => {
-          setOpen(false);
-          try {
-            await commMarkRead(th.id);
-          } catch {
-            // ignore
-          }
-          await refreshThreads();
-          navigate('/messages');
-        },
-      });
-    });
-
-    list.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-    return list;
-  }, [threads, identity, t, navigate, refreshThreads]);
-
-  const visible = tab === 'unread' ? items.filter((i) => i.unread) : items;
-  const unreadCount = items.filter((i) => i.unread).length;
-
-  const markAll = async () => {
-    const unreadThreads = threads.filter((th) => (th.unread_count ?? 0) > 0);
-    await Promise.all(unreadThreads.map((th) => commMarkRead(th.id).catch(() => {})));
-    refreshThreads();
+  const handleClick = async (n: PortalNotification) => {
+    setOpen(false);
+    if (!n.read_at) await markRead(n.id);
+    if (n.link_path) navigate(n.link_path);
   };
 
   return (
@@ -205,7 +115,7 @@ export function NotificationsPopover() {
                 </h3>
                 <button
                   type="button"
-                  onClick={markAll}
+                  onClick={markAllRead}
                   disabled={unreadCount === 0}
                   className="h-8 w-8 rounded-full flex items-center justify-center text-foreground/70 hover:bg-muted disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
                   aria-label={t('notifications.markAllRead', { defaultValue: 'Mark all as read' })}
@@ -257,13 +167,13 @@ export function NotificationsPopover() {
                 ) : (
                   <div className="px-1">
                     {(() => {
-                      const unreadItems = visible.filter((i) => (tab === 'unread' ? true : i.unread));
-                      const earlierItems = tab === 'all' ? items.filter((i) => !i.unread) : [];
+                      const unreadItems = visible.filter((i) => !i.read_at);
+                      const earlierItems = tab === 'all' ? items.filter((i) => i.read_at) : [];
                       const combined = tab === 'all' ? [...unreadItems, ...earlierItems] : unreadItems;
                       const limited = expanded ? combined : combined.slice(0, INITIAL_COUNT);
 
-                      const limitedUnread = limited.filter((i) => i.unread);
-                      const limitedEarlier = limited.filter((i) => !i.unread);
+                      const limitedUnread = limited.filter((i) => !i.read_at);
+                      const limitedEarlier = limited.filter((i) => i.read_at);
 
                       return (
                         <>
@@ -271,14 +181,14 @@ export function NotificationsPopover() {
                             <SectionLabel label={t('notifications.section.new', { defaultValue: 'New' })} />
                           )}
                           {(tab === 'unread' ? limited : limitedUnread).map((item) => (
-                            <NotifRow key={item.id} item={item} locale={locale} />
+                            <NotifRow key={item.id} item={item} locale={locale} onClick={handleClick} />
                           ))}
 
                           {tab === 'all' && limitedEarlier.length > 0 && (
                             <>
                               <SectionLabel label={t('notifications.section.earlier', { defaultValue: 'Earlier' })} />
                               {limitedEarlier.map((item) => (
-                                <NotifRow key={item.id} item={item} locale={locale} />
+                                <NotifRow key={item.id} item={item} locale={locale} onClick={handleClick} />
                               ))}
                             </>
                           )}
@@ -290,10 +200,8 @@ export function NotificationsPopover() {
               </div>
 
               {(() => {
-                const totalForTab = tab === 'unread'
-                  ? visible.length
-                  : visible.filter((i) => i.unread).length + items.filter((i) => !i.unread).length;
-                if (totalForTab <= INITIAL_COUNT) return null;
+                const total = tab === 'unread' ? visible.length : items.length;
+                if (total <= INITIAL_COUNT) return null;
                 return (
                   <div className="border-t border-border px-3 py-2 bg-card/40">
                     <button
@@ -324,12 +232,21 @@ function SectionLabel({ label }: { label: string }) {
   );
 }
 
-function NotifRow({ item, locale }: { item: NotifItem; locale: string }) {
+function NotifRow({
+  item,
+  locale,
+  onClick,
+}: {
+  item: PortalNotification;
+  locale: string;
+  onClick: (n: PortalNotification) => void;
+}) {
   const { bg, icon: Icon } = KIND_STYLES[item.kind];
+  const unread = !item.read_at;
   return (
     <button
       type="button"
-      onClick={item.onClick}
+      onClick={() => onClick(item)}
       className={cn(
         'w-full flex items-start gap-3 px-2.5 py-2.5 rounded-xl text-start transition-colors',
         'hover:bg-muted/60',
@@ -341,7 +258,7 @@ function NotifRow({ item, locale }: { item: NotifItem; locale: string }) {
         </div>
         {item.kind === 'identity' && (
           <span className="absolute -bottom-0.5 -end-0.5 h-5 w-5 rounded-full bg-card border border-border flex items-center justify-center">
-            {item.unread ? <ShieldAlert className="h-3 w-3 text-amber-500" /> : <Check className="h-3 w-3 text-emerald-500" />}
+            {unread ? <ShieldAlert className="h-3 w-3 text-amber-500" /> : <Check className="h-3 w-3 text-emerald-500" />}
           </span>
         )}
       </div>
@@ -349,18 +266,17 @@ function NotifRow({ item, locale }: { item: NotifItem; locale: string }) {
         <p
           className={cn(
             'text-[13.5px] leading-snug',
-            item.unread ? 'font-semibold text-foreground' : 'font-normal text-foreground/85',
+            unread ? 'font-semibold text-foreground' : 'font-normal text-foreground/85',
           )}
         >
           {item.title}
         </p>
         {item.preview && <p className="text-[12px] text-muted-foreground truncate mt-0.5">{item.preview}</p>}
-        <p className={cn('text-[11.5px] mt-0.5', item.unread ? 'text-primary font-semibold' : 'text-muted-foreground')}>
-          {relativeTime(item.time, locale)}
+        <p className={cn('text-[11.5px] mt-0.5', unread ? 'text-primary font-semibold' : 'text-muted-foreground')}>
+          {relativeTime(item.created_at, locale)}
         </p>
       </div>
-      {item.unread && <span className="mt-2 h-2.5 w-2.5 rounded-full bg-primary flex-shrink-0" aria-label="unread" />}
+      {unread && <span className="mt-2 h-2.5 w-2.5 rounded-full bg-primary flex-shrink-0" aria-label="unread" />}
     </button>
   );
 }
-
