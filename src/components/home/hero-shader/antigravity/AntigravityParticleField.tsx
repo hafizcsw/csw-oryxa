@@ -14,46 +14,39 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-const PARTICLE_COUNT = 50_000;
+const PARTICLE_COUNT = 1500;
 
 const VERT = /* glsl */ `
   uniform float uTime;
   uniform vec2  uMousePos;
   uniform float uPixelRatio;
   attribute float aOffset;
-  varying float vAlpha;
 
   void main() {
     vec3 pos = position;
 
-    float time = uTime * 0.2 + aOffset * 10.0;
-    pos.x += sin(time) * 0.5;
-    pos.y += cos(time * 0.8) * 0.5;
-    pos.z += sin(time * 1.2) * 0.5;
+    pos.y += sin(uTime * 0.3 + aOffset * 15.0) * 0.4;
+    pos.x += cos(uTime * 0.2 + aOffset * 15.0) * 0.4;
 
-    float dist = distance(pos.xy, uMousePos * 5.0);
-    float force = 1.0 - smoothstep(0.0, 3.0, dist);
-    pos.xy += normalize(pos.xy - uMousePos * 5.0) * force * 1.5;
+    float dist = distance(uMousePos, pos.xy * 0.3);
+    pos.z += smoothstep(1.5, 0.0, dist) * 1.5;
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    gl_PointSize = (15.0 * uPixelRatio) * (1.0 / -mvPosition.z);
+    gl_PointSize = (4.0 * uPixelRatio) * (1.0 / -mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
-
-    vAlpha = smoothstep(0.0, 1.0, force * 0.5 + 0.2);
   }
 `;
 
 const FRAG = /* glsl */ `
   precision highp float;
-  varying float vAlpha;
+  uniform vec3 uColor;
 
   void main() {
     float dist = distance(gl_PointCoord, vec2(0.5));
     if (dist > 0.5) discard;
 
-    float strength = 1.0 - smoothstep(0.0, 0.5, dist);
-    vec3 color = vec3(0.5, 0.8, 1.0);
-    gl_FragColor = vec4(color, strength * vAlpha * 0.6);
+    float alpha = 1.0 - smoothstep(0.0, 0.5, dist);
+    gl_FragColor = vec4(uColor, alpha * 0.6);
   }
 `;
 
@@ -106,10 +99,14 @@ export function AntigravityParticleField({ className }: Props) {
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('aOffset', new THREE.BufferAttribute(offsets, 1));
 
+    const isDark = () => document.documentElement.classList.contains('dark');
+    const colorFor = () => (isDark() ? new THREE.Color(1, 1, 1) : new THREE.Color(0, 0, 0));
+
     const uniforms = {
       uTime:       { value: 0 },
       uMousePos:   { value: new THREE.Vector2(0, 0) },
       uPixelRatio: { value: pixelRatio },
+      uColor:      { value: colorFor() },
     };
 
     const material = new THREE.ShaderMaterial({
@@ -117,9 +114,16 @@ export function AntigravityParticleField({ className }: Props) {
       vertexShader: VERT,
       fragmentShader: FRAG,
       transparent: true,
+      depthTest: false,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
     });
+
+    // React to theme toggle
+    const themeObserver = new MutationObserver(() => {
+      uniforms.uColor.value = colorFor();
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
     const points = new THREE.Points(geometry, material);
     points.frustumCulled = false;
@@ -181,6 +185,7 @@ export function AntigravityParticleField({ className }: Props) {
       running = false;
       cancelAnimationFrame(raf);
       ro.disconnect();
+      themeObserver.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('mousemove', onMouseMove);
       geometry.dispose();
