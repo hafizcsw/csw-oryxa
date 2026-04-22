@@ -53,7 +53,7 @@ const FRAG = /* glsl */ `
 
     float strength = 1.0 - smoothstep(0.0, 0.5, dist);
     vec3 color = vec3(0.5, 0.8, 1.0);
-    gl_FragColor = vec4(color, strength * vAlpha * 0.9);
+    gl_FragColor = vec4(color, strength * vAlpha * 0.6);
   }
 `;
 
