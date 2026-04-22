@@ -123,14 +123,14 @@ export function AntigravityParticleField({ className, theme }: Props) {
     // Light mode = heavy blue dots (#1E88E5 ≈ vec3(0.12,0.53,0.90)), small + clamped.
     // Dark mode = white, original size, original alpha.
     const colorFor = () =>
-      isDark() ? new THREE.Color(1, 1, 1) : new THREE.Color(0.12, 0.53, 0.90);
+      isDark() ? new THREE.Color(1, 1, 1) : new THREE.Color(0.05, 0.32, 0.75);
 
     const uniforms = {
       uTime:       { value: 0 },
       uMousePos:   { value: new THREE.Vector2(0, 0) },
       uPixelRatio: { value: pixelRatio },
       uColor:      { value: colorFor() },
-      uAlphaBoost: { value: isDark() ? 1.0 : 3.0 },
+      uAlphaBoost: { value: isDark() ? 1.0 : 5.0 },
       uSizeScale:  { value: isDark() ? 1.0 : 0.55 },
       uSizeClamp:  { value: isDark() ? 9999.0 : 4.0 * pixelRatio },
     };
@@ -150,7 +150,7 @@ export function AntigravityParticleField({ className, theme }: Props) {
     const themeObserver = !theme
       ? new MutationObserver(() => {
           uniforms.uColor.value = colorFor();
-          uniforms.uAlphaBoost.value = isDark() ? 1.0 : 3.0;
+          uniforms.uAlphaBoost.value = isDark() ? 1.0 : 5.0;
           uniforms.uSizeScale.value = isDark() ? 1.0 : 0.55;
           uniforms.uSizeClamp.value = isDark() ? 9999.0 : 4.0 * pixelRatio;
         })
