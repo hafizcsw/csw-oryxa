@@ -66,14 +66,26 @@ export function createParticles(
   const TEX = isMobile ? ANTIGRAV_MOBILE_TEX : ANTIGRAV_CONFIG.textureSize;
   const PARTICLE_COUNT = TEX * TEX;
 
-  // ---- Init: scatter particles around the ring ----
+  // ---- Init: scatter particles across the WHOLE hero, with a soft quiet
+  //       zone around the centered text/card. Rejection-sample so the quiet
+  //       region has lower (not zero) density.
   const initData = new Float32Array(PARTICLE_COUNT * 4);
+  const qR = ANTIGRAV_CONFIG.quietCenterRadius;
+  const qS = ANTIGRAV_CONFIG.quietSoftness;
   for (let i = 0; i < PARTICLE_COUNT; i++) {
-    const ang = Math.random() * Math.PI * 2;
-    const band = (Math.random() - 0.5) * (ANTIGRAV_CONFIG.ringWidth + ANTIGRAV_CONFIG.ringWidth2);
-    const r = ANTIGRAV_CONFIG.ringRadius + band;
-    initData[i * 4 + 0] = Math.cos(ang) * r * aspect;
-    initData[i * 4 + 1] = Math.sin(ang) * r;
+    let x = 0, y = 0;
+    // Up to 4 tries; otherwise accept anyway (keeps count exact)
+    for (let t = 0; t < 4; t++) {
+      x = (Math.random() * 2 - 1) * aspect;
+      y = Math.random() * 2 - 1;
+      // Distance to center in NDC.y units (aspect-normalized x)
+      const d = Math.hypot(x / aspect, y);
+      // Probability of keeping increases with distance from center
+      const keep = Math.min(1, Math.max(0.05, (d - qR) / qS + 0.5));
+      if (Math.random() < keep) break;
+    }
+    initData[i * 4 + 0] = x;
+    initData[i * 4 + 1] = y;
     initData[i * 4 + 2] = 0;
     initData[i * 4 + 3] = 0;
   }

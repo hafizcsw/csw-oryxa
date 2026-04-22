@@ -84,30 +84,17 @@ void main(){
 
   // Stable per-particle id from texel coord
   float id = vUv.x * 131.7 + vUv.y * 311.3 + uSeed;
+  float jitter = hash11(id * 1.91);
 
-  // ---- Home point: distributed on the ring of radius uRingRadius ----
-  // Each particle has a fixed angle + a fixed offset within the ring band.
-  float ang = hash11(id * 1.13) * 6.2831853;
-  float bandOffset = (hash11(id * 2.71) - 0.5) * uRingWidth;        // wider band
-  float bandOffset2 = (hash11(id * 4.07) - 0.5) * uRingWidth2;       // thin band
-  float r0 = uRingRadius + bandOffset + bandOffset2;
+  // ---- Light noise-driven drift (calm, not busy) ----
+  // Per-particle phase so they don't move in lockstep.
+  vec2 nP = pos * 0.9 + vec2(uTime * 0.18, -uTime * 0.13) + jitter * 7.0;
+  vec2 flow = curl2(nP) * uRingDisplacement * 0.18;
+  vec2 acc = flow;
 
-  // Noise-driven radial displacement (ringDisplacement amplitude)
-  float n = vnoise(vec2(cos(ang), sin(ang)) * 2.0 + vec2(uTime * 0.6, -uTime * 0.4));
-  float radial = (n - 0.5) * 2.0 * uRingDisplacement;
-
-  float r = r0 + radial;
-  vec2 home = vec2(cos(ang) * r * uAspect, sin(ang) * r);
-
-  // ---- Tangential drift (organic motion along the ring) ----
-  vec2 tangent = vec2(-sin(ang), cos(ang));
-  vec2 drift = tangent * (0.05 + 0.08 * vnoise(vec2(id, uTime * 0.3)));
-
-  // ---- Curl flow as small perturbation ----
-  vec2 flow = curl2(pos * 1.4 + vec2(uTime * 0.3, -uTime * 0.2)) * 0.04;
-
-  // ---- Spring toward home + drift + flow ----
-  vec2 acc = (home - pos) * 1.6 + drift + flow;
+  // ---- Subtle lifetime jitter (tiny breathing) ----
+  float life = sin(uTime * (0.4 + jitter * 0.6) + jitter * 6.28) * 0.015;
+  acc += vec2(cos(jitter * 11.0), sin(jitter * 7.0)) * life;
 
   // ---- Mouse repulsion (radius normalized in NDC space) ----
   vec2 toMouse = pos - uMousePos;
@@ -123,11 +110,16 @@ void main(){
     float ringBand = 0.18;
     float ring = exp(-pow((od - ringR) / ringBand, 2.0));
     float decay = 1.0 - uPulseProgress;
-    acc += (toOrigin / od) * ring * decay * 1.4;
+    acc += (toOrigin / od) * ring * decay * 1.2;
   }
 
-  // Integrate (critically damped)
-  vel = vel * 0.86 + acc * uDelta;
+  // ---- Soft bounds: gentle pull-back when leaving the hero rect ----
+  vec2 bounds = vec2(uAspect, 1.0);
+  vec2 over = max(abs(pos) - bounds, 0.0);
+  acc -= sign(pos) * over * 1.2;
+
+  // Integrate (heavier damping for calmer motion)
+  vel = vel * 0.92 + acc * uDelta;
   pos = pos + vel * uDelta;
 
   gl_FragColor = vec4(pos, vel);
