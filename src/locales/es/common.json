@@ -1250,7 +1250,15 @@
       "underReview": "En revisión",
       "reupload": "Volver a subir",
       "underReviewHint": "Su archivo está siendo revisado. La revisión suele tardar entre 15 minutos y 1 día laborable. Si tarda más, contacte con soporte.",
-      "contactSupport": "Contactar soporte"
+      "contactSupport": "Contactar soporte",
+      "walletWaitlistTitle": "Activar billetera",
+      "walletWaitlistDesc": "Únete a la lista de espera y te avisaremos en cuanto tu billetera esté activa.",
+      "walletJoinWaitlist": "Unirse a la lista de espera",
+      "walletWaitlistJoined": "Estás en la lista de espera",
+      "walletWaitlistJoinedHint": "Tu billetera aún no está activa. Estás en la lista de espera y te contactaremos cuando se active.",
+      "walletApprovedTitle": "Billetera aprobada",
+      "walletApprovedDesc": "Tu billetera ya está activa. Puedes depositar y transferir.",
+      "walletApprovedBadge": "Activa"
     },
     "markets": {
       "title": "Tasas de cambio",

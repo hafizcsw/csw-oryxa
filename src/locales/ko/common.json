@@ -1250,7 +1250,15 @@
       "underReview": "검토 중",
       "reupload": "다시 업로드",
       "underReviewHint": "파일이 검토 중입니다. 검토는 보통 15분에서 1영업일이 소요됩니다. 지연되는 경우 지원팀에 문의하세요.",
-      "contactSupport": "지원팀에 문의"
+      "contactSupport": "지원팀에 문의",
+      "walletWaitlistTitle": "지갑 활성화",
+      "walletWaitlistDesc": "대기자 명단에 등록하시면 지갑이 활성화되는 즉시 알려드립니다.",
+      "walletJoinWaitlist": "대기자 명단에 등록",
+      "walletWaitlistJoined": "대기자 명단에 등록됨",
+      "walletWaitlistJoinedHint": "지갑이 아직 활성화되지 않았습니다. 대기자 명단에 등록되었으며 활성화 즉시 연락드립니다.",
+      "walletApprovedTitle": "지갑 승인됨",
+      "walletApprovedDesc": "지갑이 활성화되었습니다. 입금 및 송금이 가능합니다.",
+      "walletApprovedBadge": "활성화됨"
     },
     "markets": {
       "title": "환율",

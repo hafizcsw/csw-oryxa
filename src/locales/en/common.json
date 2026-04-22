@@ -1627,7 +1627,15 @@
       "whyVerifyPoint2Body": "Your verified profile is shown to partner universities, so they reach out with offers to join their programs and scholarships instead of you chasing them.",
       "whyVerifyPoint3Title": "Publish in the verified-students community",
       "whyVerifyPoint3Body": "You'll be able to post inside the CSW community we're building to support student projects — including launching investment campaigns for your own project.",
-      "whyVerifyClose": "Got it, thanks"
+      "whyVerifyClose": "Got it, thanks",
+      "walletWaitlistTitle": "Activate Wallet",
+      "walletWaitlistDesc": "Join the waitlist and we will message you the moment your wallet is activated.",
+      "walletJoinWaitlist": "Join the waitlist",
+      "walletWaitlistJoined": "You're on the waitlist",
+      "walletWaitlistJoinedHint": "Your wallet is not active yet. You have joined the waitlist and we will contact you as soon as it is activated.",
+      "walletApprovedTitle": "Wallet Approved",
+      "walletApprovedDesc": "Your wallet is now active. You can deposit and transfer funds.",
+      "walletApprovedBadge": "Active"
     },
     "markets": {
       "title": "Markets",

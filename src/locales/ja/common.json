@@ -1250,7 +1250,15 @@
       "underReview": "審査中",
       "reupload": "再アップロード",
       "underReviewHint": "ファイルは現在審査中です。審査は通常15分から1営業日かかります。遅れる場合はサポートにご連絡ください。",
-      "contactSupport": "サポートに連絡"
+      "contactSupport": "サポートに連絡",
+      "walletWaitlistTitle": "ウォレットを有効化",
+      "walletWaitlistDesc": "ウェイトリストに参加すると、ウォレットが有効になり次第お知らせします。",
+      "walletJoinWaitlist": "ウェイトリストに参加",
+      "walletWaitlistJoined": "ウェイトリストに登録済み",
+      "walletWaitlistJoinedHint": "ウォレットはまだ有効ではありません。ウェイトリストに登録済みで、有効化され次第ご連絡します。",
+      "walletApprovedTitle": "ウォレットが承認されました",
+      "walletApprovedDesc": "ウォレットが有効になりました。入金と送金が可能です。",
+      "walletApprovedBadge": "有効"
     },
     "markets": {
       "title": "為替レート",
