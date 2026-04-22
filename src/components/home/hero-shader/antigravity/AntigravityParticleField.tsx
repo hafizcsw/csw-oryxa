@@ -24,6 +24,8 @@ const VERT = /* glsl */ `
   uniform float uTime;
   uniform vec2  uMousePos;
   uniform float uPixelRatio;
+  uniform float uSizeScale;
+  uniform float uSizeClamp;
 
   attribute vec3  position;
   attribute float aOffset;
