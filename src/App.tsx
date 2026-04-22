@@ -37,6 +37,7 @@ import { PageLoader } from "@/components/ui/PageLoader";
 // ===== SYNC IMPORTS (Critical pages loaded immediately) =====
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import ProbePage from "./pages/__probe";
 
 // ===== LAZY IMPORTS (Loaded on demand) =====
 
