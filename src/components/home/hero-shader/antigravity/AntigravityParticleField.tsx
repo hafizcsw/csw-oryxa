@@ -36,10 +36,10 @@ const VERT = /* glsl */ `
     pos.xy += normalize(pos.xy - uMousePos * 5.0) * force * 1.5;
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    gl_PointSize = (18.0 * uPixelRatio) * (1.0 / -mvPosition.z);
+    gl_PointSize = (15.0 * uPixelRatio) * (1.0 / -mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
 
-    vAlpha = smoothstep(0.0, 1.0, force * 0.45 + 0.28);
+    vAlpha = smoothstep(0.0, 1.0, force * 0.5 + 0.2);
   }
 `;
 
@@ -47,18 +47,13 @@ const FRAG = /* glsl */ `
   precision highp float;
   varying float vAlpha;
 
-  float sdRoundBox(vec2 p, vec2 b, float r) {
-    vec2 q = abs(p) - b + r;
-    return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
-  }
-
   void main() {
-    vec2 uv = gl_PointCoord - 0.5;
-    float capsule = 1.0 - smoothstep(0.0, 0.08, sdRoundBox(uv, vec2(0.22, 0.045), 0.045));
-    if (capsule <= 0.01) discard;
+    float dist = distance(gl_PointCoord, vec2(0.5));
+    if (dist > 0.5) discard;
 
+    float strength = 1.0 - smoothstep(0.0, 0.5, dist);
     vec3 color = vec3(0.5, 0.8, 1.0);
-    gl_FragColor = vec4(color, capsule * vAlpha * 0.72);
+    gl_FragColor = vec4(color, strength * vAlpha * 0.6);
   }
 `;
 
