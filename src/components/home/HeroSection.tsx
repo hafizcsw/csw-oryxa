@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { MalakChatInterface } from '@/components/chat/MalakChatInterface';
 import { HeroParticleGPGPU, type HeroFieldVariant } from '@/components/home/hero-shader/HeroParticleGPGPU';
+import oryxaLogo from '@/assets/oryxa-logo-transparent.png';
 
 // Switch between 'quieter' (A) and 'reactive' (B) presets here.
 const HERO_FIELD_VARIANT: HeroFieldVariant = 'reactive';
@@ -196,9 +197,23 @@ export function HeroSection() {
               }`}
             >
               {chatMessageCount === 0 && (
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-center text-foreground drop-shadow-sm">
-                  {t('home.hero.title')}
-                </h1>
+                <div className="flex flex-col items-center gap-5">
+                  {/* Brand lockup above hero title (Antigravity-style) */}
+                  <div className="flex items-center gap-2.5">
+                    <img
+                      src={oryxaLogo}
+                      alt="ORXYA"
+                      className="h-7 sm:h-8 w-auto select-none"
+                      draggable={false}
+                    />
+                    <span className="text-base sm:text-lg font-medium tracking-tight text-foreground/80">
+                      ORXYA
+                    </span>
+                  </div>
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-center text-foreground drop-shadow-sm">
+                    {t('home.hero.title')}
+                  </h1>
+                </div>
               )}
               <div className="w-full">
                 <MalakChatInterface isInDeepSearch={false} compact onMessagesCountChange={setChatMessageCount} />
