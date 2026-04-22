@@ -68,7 +68,7 @@ interface Props {
   theme?: 'dark' | 'light';
 }
 
-export function AntigravityParticleField({ className }: Props) {
+export function AntigravityParticleField({ className, theme }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
