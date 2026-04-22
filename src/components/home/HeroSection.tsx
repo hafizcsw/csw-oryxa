@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { MalakChatInterface } from '@/components/chat/MalakChatInterface';
 import { HeroParticleGPGPU, type HeroFieldVariant } from '@/components/home/hero-shader/HeroParticleGPGPU';
+import oryxaLogo from '@/assets/oryxa-logo-transparent.png';
 
 // Switch between 'quieter' (A) and 'reactive' (B) presets here.
 const HERO_FIELD_VARIANT: HeroFieldVariant = 'reactive';
@@ -200,7 +201,7 @@ export function HeroSection() {
                   {/* Brand lockup above hero title (Antigravity-style) */}
                   <div className="flex items-center gap-2.5">
                     <img
-                      src="/src/assets/oryxa-logo-transparent.png"
+                      src={oryxaLogo}
                       alt="ORXYA"
                       className="h-7 sm:h-8 w-auto select-none"
                       draggable={false}
