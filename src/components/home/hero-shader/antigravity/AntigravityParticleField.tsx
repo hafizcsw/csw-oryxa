@@ -149,11 +149,20 @@ export function AntigravityParticleField({ className }: Props) {
 
       const isDark = document.documentElement.classList.contains('dark');
 
-      // Sim pass: read rtRead, write rtWrite
+      // Source-faithful per-frame ring radius animation
+      const ringRadius = 0.175 + Math.sin(elapsed * 1.0) * 0.03 + Math.cos(elapsed * 3.0) * 0.02;
+      // Source-faithful particleScale derived from canvas backing width
+      const dpr = renderer.dpr || 1;
+      const cssWidth = (gl.canvas.width as number) / dpr;
+      const particleScale = (cssWidth / 2000) * ANTIGRAV_CONFIG.particlesScale;
+
+      // Sim pass
       particles.step({
         dt,
         time: elapsed,
-        mouse: { x: mx, y: my },
+        ringRadius,
+        // Source: uMousePos = intersectionPoint * 0.175
+        mouse: { x: mx * ANTIGRAV_CONFIG.mouseScale, y: my * ANTIGRAV_CONFIG.mouseScale },
         hover: hv,
         isDark,
         pulse: pulse.active ? { progress: pulse.progress, origin: pulse.origin } : undefined,
@@ -161,8 +170,8 @@ export function AntigravityParticleField({ className }: Props) {
       renderer.render({ scene: particles.simMesh, target: particles.rt.write });
       particles.rt.swap();
 
-      // Render pass to screen
-      particles.syncRender(elapsed, isDark);
+      // Render pass
+      particles.syncRender(elapsed, isDark, particleScale);
       renderer.render({ scene: particles.pointMesh });
 
       raf = requestAnimationFrame(loop);

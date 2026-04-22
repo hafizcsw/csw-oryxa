@@ -1,9 +1,18 @@
 /**
  * Local equivalent of antigravity.google `landing-main-particles-component`.
  *
- * Values below are extracted verbatim from the reference and used as the
- * starting point. Do NOT retune blindly — these are the source-of-truth
- * defaults the rest of the implementation is calibrated against.
+ * Top-level uniforms verbatim from source:
+ *   density=200, particlesScale=0.75, ringWidth=0.15, ringWidth2=0.05,
+ *   ringDisplacement=0.15
+ *
+ * NOTE on ringRadius: source animates it inside the update loop:
+ *   uRingRadius = 0.175 + sin(t*1)*0.03 + cos(t*3)*0.02
+ * so it is NOT a static config value — computed per-frame in the loop.
+ *
+ * NOTE on mousePos: source feeds intersectionPoint * 0.175 (not raw NDC).
+ *
+ * NOTE on particleScale: source = canvas.width / pixelRatio / 2000 * particlesScale
+ * — computed at runtime, not baked here.
  */
 export const ANTIGRAV_CONFIG = {
   // ---- Reference uniforms (verbatim) ----
@@ -14,30 +23,30 @@ export const ANTIGRAV_CONFIG = {
   ringDisplacement: 0.15,
 
   // ---- Sim/init ----
-  // Effective particle count = textureSize^2. Reference visual is sparse,
-  // so we keep this LOW and rely on density/scale for visible coverage.
-  textureSize: 96,         // -> 96*96 = 9,216 particles (was 256² = 65,536)
-  ringRadius: 0.2,         // legacy (unused for distribution now)
+  // Effective particle count = textureSize^2. Reference visual is sparse —
+  // 64² = 4,096 desktop / 48² = 2,304 mobile matches the on-screen density.
+  textureSize: 64,
   timeScale: 0.5,          // sim uses uTime * 0.5
 
-  // ---- Distribution ----
-  // Particles fill the whole hero container, with a soft quiet zone around
-  // the centered text/card area.
-  quietCenterRadius: 0.55, // NDC.y units around (0,0) where density drops
-  quietSoftness: 0.25,     // softness of the quiet falloff
+  // ---- Distribution (full hero coverage with soft quiet zone) ----
+  quietCenterRadius: 0.5,
+  quietSoftness: 0.3,
 
   // ---- Mouse interaction ----
+  // Source: uMousePos = intersectionPoint * 0.175
+  mouseScale: 0.175,
   mouseRadius: 0.15,       // normalized
   mouseForce: 0.5,
 
-  // ---- Pulse (kept architecturally, disabled by default) ----
+  // ---- Pulse (architectural; disabled by default) ----
   pulseEnabled: false,
   pulseRadius: 1.6,
   pulseDuration: 0.7,
 
   // ---- Render ----
-  pointSize: 3.2,          // base px @ dpr=1, scaled by particlesScale
+  // Base alpha for the dash sprite (multiplied by smoothstep of vScale).
   intensity: 1.0,
+  alpha: 0.9,
 } as const;
 
 export const ANTIGRAV_DPR_CAP = 1.5;
@@ -45,5 +54,5 @@ export const ANTIGRAV_MOUSE_LERP = 0.12;
 export const ANTIGRAV_HOVER_LERP = 0.08;
 
 // Mobile downscale
-export const ANTIGRAV_MOBILE_TEX = 64;  // 4,096 particles on mobile
+export const ANTIGRAV_MOBILE_TEX = 48;
 export const ANTIGRAV_MOBILE_INTENSITY = 0.9;
