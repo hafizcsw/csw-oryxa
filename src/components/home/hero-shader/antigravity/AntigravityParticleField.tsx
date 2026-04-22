@@ -52,7 +52,6 @@ const FRAG = /* glsl */ `
 
   uniform vec3  uColor;
   uniform float uAlphaBoost;
-  uniform float uSizeScale;
   varying float vAlpha;
 
   void main() {
