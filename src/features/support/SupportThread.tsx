@@ -23,7 +23,7 @@ export function SupportThread({ caseId }: SupportThreadProps) {
   const { messagesQuery, sendMessage, sending, closeCase, closing } = useSupportMessages(caseId);
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const messages = messagesQuery.data?.data ?? [];
+  const messages = messagesQuery.data?.data?.messages ?? [];
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -98,9 +98,9 @@ export function SupportThread({ caseId }: SupportThreadProps) {
           </p>
         ) : (
           messages.map((m) => {
-            const own = m.author_role === 'student';
+            const own = m.sender_type === 'customer';
             return (
-              <div key={m.id} className={cn('flex', own ? 'justify-end' : 'justify-start')}>
+              <div key={m.message_id} className={cn('flex', own ? 'justify-end' : 'justify-start')}>
                 <div
                   className={cn(
                     'max-w-[75%] rounded-2xl px-3.5 py-2 text-sm',

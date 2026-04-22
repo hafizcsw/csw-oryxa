@@ -1,16 +1,18 @@
 import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { crm, type SupportMessage, type CrmEnvelope } from '@/lib/crmBridge';
+import { crm, type SupportMessagesListData, type CrmEnvelope } from '@/lib/crmBridge';
 
 export function useSupportMessages(caseId: string | undefined) {
   const qc = useQueryClient();
 
-  const messagesQuery = useQuery<CrmEnvelope<SupportMessage[]>>({
+  const messagesQuery = useQuery<CrmEnvelope<SupportMessagesListData>>({
     queryKey: ['support', 'messages', caseId],
     queryFn: () => crm.listSupportMessages(caseId as string),
     enabled: !!caseId,
     refetchInterval: 15_000,
   });
+
+  const messagesCount = messagesQuery.data?.data?.messages?.length ?? 0;
 
   // Mark as read on mount and whenever message list changes (and we have a case id)
   useEffect(() => {
@@ -18,7 +20,7 @@ export function useSupportMessages(caseId: string | undefined) {
     crm.markSupportRead(caseId).then(() => {
       qc.invalidateQueries({ queryKey: ['support', 'cases'] });
     });
-  }, [caseId, messagesQuery.data?.data?.length, qc]);
+  }, [caseId, messagesCount, qc]);
 
   const sendMutation = useMutation({
     mutationFn: (body: string) => crm.sendSupportMessage(caseId as string, body),

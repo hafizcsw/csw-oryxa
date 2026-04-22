@@ -13,6 +13,8 @@
  *   - DO NOT use any comm_* table, hook, or function.
  *   - DO NOT route to /messages.
  *   - Only the 7 endpoints declared in CrmAction below are allowed.
+ *
+ * Field names mirror the CRM bridge contract exactly. No invented fields.
  */
 import { supabase } from '@/integrations/supabase/client';
 
@@ -68,41 +70,57 @@ export async function crmInvoke<T = unknown>(
   };
 }
 
-// --- Typed thin wrappers (one per allowed action) ---
+// --- Bridge contract types ---
 
 export interface SupportCase {
-  id: string;
+  case_id: string;
   subject?: string | null;
   status?: string | null;
   last_message_at?: string | null;
   last_message_preview?: string | null;
-  unread_count?: number;
+  unread_for_customer?: number;
   created_at?: string | null;
   updated_at?: string | null;
 }
 
 export interface SupportMessage {
-  id: string;
+  message_id: string;
   case_id: string;
   body: string;
-  author_role: 'student' | 'counselor' | 'system' | string;
+  sender_type: 'customer' | 'agent' | 'system' | string;
   created_at: string;
 }
 
-export interface IdentityCase {
-  id?: string | null;
-  status?: string | null;
-  decided_at?: string | null;
-  reviewer_note?: string | null;
-  updated_at?: string | null;
-  documents?: Array<{ id: string; type: string; status: string; uploaded_at?: string }>;
+export interface IdentityAttempt {
+  status: string;
+  student_visible_note?: string | null;
+  reviewed_at?: string | null;
+  submitted_at?: string | null;
+  attempt_number?: number;
 }
 
+export interface IdentityCase {
+  case: {
+    current_attempt: IdentityAttempt | null;
+    previous_attempts: IdentityAttempt[];
+  };
+}
+
+export interface SupportCaseListData {
+  cases: SupportCase[];
+}
+
+export interface SupportMessagesListData {
+  messages: SupportMessage[];
+}
+
+// --- Typed thin wrappers (one per allowed action) ---
+
 export const crm = {
-  listSupportCases: () => crmInvoke<SupportCase[]>('support_case_list'),
+  listSupportCases: () => crmInvoke<SupportCaseListData>('support_case_list'),
   getSupportCase: (case_id: string) => crmInvoke<SupportCase>('support_case_get', { case_id }),
   listSupportMessages: (case_id: string) =>
-    crmInvoke<SupportMessage[]>('support_messages_list', { case_id }),
+    crmInvoke<SupportMessagesListData>('support_messages_list', { case_id }),
   sendSupportMessage: (case_id: string, body: string) =>
     crmInvoke<SupportMessage>('support_message_send', { case_id, body }),
   markSupportRead: (case_id: string) => crmInvoke<{ ok: true }>('support_mark_read', { case_id }),
