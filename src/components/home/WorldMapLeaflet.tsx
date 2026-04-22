@@ -949,6 +949,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     type ScreenRect = { x: number; y: number; width: number; height: number };
 
     interface FeatureLabelInfo {
+      iso: string;
       name: string;
       lat: number;
       lng: number;
@@ -1005,9 +1006,8 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
     const featureLabels: FeatureLabelInfo[] = [];
     worldGeo.features.forEach((feature) => {
       const p = feature.properties;
-      const iso = getCountryCode(feature) || p?.ISO_A2 || p?.iso_a2 || "";
+      const iso = `${getCountryCode(feature) || p?.ISO_A2 || p?.iso_a2 || ""}`.toUpperCase();
       const geoName = p?.NAME || p?.name || p?.ADMIN || "";
-      // Use Intl.DisplayNames for the active language, fallback to GeoJSON name
       const name = iso
         ? getLocalizedCountryName(iso, language, geoName, geoName)
         : geoName;
@@ -1018,13 +1018,11 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         const bounds = layer.getBounds();
         if (!bounds.isValid()) return;
 
-        // Find largest ring for sizing (not the full bounding box)
         const rings = getOuterRings(feature.geometry);
         const largest = rings
           .map(r => ({ ring: r, area: ringArea(r) }))
           .sort((a,b) => b.area - a.area)[0];
 
-        // Compute bounds from largest ring only (avoids Alaska inflating US bbox)
         let labelBounds = bounds;
         if (largest?.ring && largest.ring.length > 2) {
           const lats = largest.ring.map(c => c[1]);
@@ -1036,9 +1034,11 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
           if (rb.isValid()) labelBounds = rb;
         }
 
-        // Use CC coordinates when available, else geometric centroid
         let lat: number, lng: number;
-        if (iso && CC[iso]) {
+        if (iso === "PS") {
+          lat = 31.78;
+          lng = 35.22;
+        } else if (iso && CC[iso]) {
           [lat, lng] = CC[iso];
         } else {
           lat = labelBounds.getCenter().lat;
@@ -1052,12 +1052,14 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
           }
         }
 
-        featureLabels.push({ name, lat, lng, bounds, labelBounds });
+        featureLabels.push({ iso, name, lat, lng, bounds, labelBounds });
       } catch { /* skip */ }
     });
 
-    // Sort by geographic area (larger first for priority)
+    // Put Palestine first so nearby larger labels don't suppress it.
     featureLabels.sort((a, b) => {
+      if (a.iso === "PS" && b.iso !== "PS") return -1;
+      if (b.iso === "PS" && a.iso !== "PS") return 1;
       const areaA = (a.bounds.getNorth()-a.bounds.getSouth()) * (a.bounds.getEast()-a.bounds.getWest());
       const areaB = (b.bounds.getNorth()-b.bounds.getSouth()) * (b.bounds.getEast()-b.bounds.getWest());
       return areaB - areaA;
@@ -1081,38 +1083,33 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
       featureLabels.forEach((info) => {
         if (!viewBounds.contains([info.lat, info.lng])) return;
 
-        // Use labelBounds (largest ring) for sizing, not full feature bounds
         const lb = info.labelBounds;
         const sw = map.project(lb.getSouthWest(), zoom);
         const ne = map.project(lb.getNorthEast(), zoom);
         const screenW = Math.abs(ne.x - sw.x);
         const screenH = Math.abs(sw.y - ne.y);
+        const isPalestine = info.iso === "PS";
 
-        // Skip countries too small on screen
-        if (screenW < 14 || screenH < 8) return;
+        if (screenW < (isPalestine ? 7 : 14) || screenH < (isPalestine ? 5 : 8)) return;
 
-        // Calculate font size to fit within country bounds
-        const targetLabelW = screenW * 0.6;
+        const targetLabelW = screenW * (isPalestine ? 1.15 : 0.6);
         const charWidth = 0.68;
         const maxFontFromWidth = Math.floor(targetLabelW / Math.max(info.name.length * charWidth, 2));
-        const maxFontFromHeight = Math.floor(screenH * 0.3);
+        const maxFontFromHeight = Math.floor(screenH * (isPalestine ? 0.7 : 0.3));
         let fontSize = Math.min(maxFontFromWidth, maxFontFromHeight);
-        // Scale max font with zoom: at z≤4 cap at 14, grows up to 32 at z≥10
         const maxFont = zoom <= 4 ? 14 : Math.min(14 + (zoom - 4) * 4, 48);
-        fontSize = Math.max(7, Math.min(fontSize, maxFont));
+        fontSize = Math.max(isPalestine ? 9 : 7, Math.min(fontSize, maxFont));
 
-        const letterSpacing = fontSize >= 20 ? 4 : fontSize >= 13 ? 2 : fontSize >= 10 ? 1 : 0;
+        const letterSpacing = isPalestine ? 1 : fontSize >= 20 ? 4 : fontSize >= 13 ? 2 : fontSize >= 10 ? 1 : 0;
         let labelWidth = Math.round(info.name.length * fontSize * charWidth + (info.name.length - 1) * letterSpacing + 8);
 
-        // Clamp: label must never exceed 85% of country screen width
-        if (labelWidth > screenW * 0.85) {
-          fontSize = Math.floor((screenW * 0.85) / Math.max(info.name.length * charWidth, 2));
-          if (fontSize < 7) return; // too small even at min
+        if (labelWidth > screenW * (isPalestine ? 1.35 : 0.85)) {
+          fontSize = Math.floor((screenW * (isPalestine ? 1.35 : 0.85)) / Math.max(info.name.length * charWidth, 2));
+          if (fontSize < (isPalestine ? 8 : 7)) return;
           labelWidth = Math.round(info.name.length * fontSize * charWidth + (info.name.length - 1) * letterSpacing + 8);
         }
 
         const labelHeight = Math.round(fontSize * 1.6);
-
         const point = map.project([info.lat, info.lng], zoom);
         const rect: ScreenRect = {
           x: point.x - labelWidth / 2,
@@ -1121,7 +1118,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
           height: labelHeight,
         };
 
-        if (placedRects.some((existing) => overlaps(existing, rect))) return;
+        if (!isPalestine && placedRects.some((existing) => overlaps(existing, rect))) return;
         placedRects.push(rect);
 
         const label = L.marker([info.lat, info.lng], {
