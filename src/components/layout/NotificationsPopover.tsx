@@ -67,6 +67,9 @@ export function NotificationsPopover() {
 
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<NotifTab>('all');
+  const [expanded, setExpanded] = useState(false);
+
+  const INITIAL_COUNT = 5;
 
   const { threads, refresh: refreshThreads } = useCommThreads();
   const { status: identity } = useIdentityStatus();
