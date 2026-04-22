@@ -45,6 +45,7 @@ const VERT = /* glsl */ `
 
 const FRAG = /* glsl */ `
   precision highp float;
+  uniform vec3 uColor;
   varying float vAlpha;
 
   void main() {
@@ -52,8 +53,7 @@ const FRAG = /* glsl */ `
     if (dist > 0.5) discard;
 
     float strength = 1.0 - smoothstep(0.0, 0.5, dist);
-    vec3 color = vec3(0.5, 0.8, 1.0);
-    gl_FragColor = vec4(color, strength * vAlpha * 0.6);
+    gl_FragColor = vec4(uColor, strength * vAlpha * 0.6);
   }
 `;
 
@@ -106,10 +106,16 @@ export function AntigravityParticleField({ className }: Props) {
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('aOffset', new THREE.BufferAttribute(offsets, 1));
 
+    // Resolve color from CSS var --primary (HSL)
+    const cs = getComputedStyle(document.documentElement);
+    const hsl = cs.getPropertyValue('--primary').trim() || '210 80% 60%';
+    const color = new THREE.Color(`hsl(${hsl.replace(/\s+/g, ', ')})`);
+
     const uniforms = {
       uTime:       { value: 0 },
       uMousePos:   { value: new THREE.Vector2(0, 0) },
       uPixelRatio: { value: pixelRatio },
+      uColor:      { value: color },
     };
 
     const material = new THREE.ShaderMaterial({
