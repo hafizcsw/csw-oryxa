@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { MalakChatInterface } from '@/components/chat/MalakChatInterface';
-import { HeroAtmosphericField, type HeroFieldVariant } from '@/components/home/hero-shader/HeroAtmosphericField';
+import { HeroParticleGPGPU, type HeroFieldVariant } from '@/components/home/hero-shader/HeroParticleGPGPU';
 
 // Switch between 'quieter' (A) and 'reactive' (B) presets here.
-const HERO_FIELD_VARIANT: HeroFieldVariant = 'quieter';
+const HERO_FIELD_VARIANT: HeroFieldVariant = 'reactive';
 import { DeepSearchLayout } from '@/components/chat/DeepSearchLayout';
 import { SearchResultsPanel } from '@/components/chat/SearchResultsPanel';
 import { DebugOverlay } from '@/components/chat/DebugOverlay';
@@ -172,8 +172,8 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-white dark:bg-black" />
 
 
-        {/* WebGL atmospheric field — noise-driven, mouse-reactive, blends via screen */}
-        <HeroAtmosphericField variant={HERO_FIELD_VARIANT} />
+        {/* GPGPU particle field — sim-pass + render-pass, mouse displacement + click pulse */}
+        <HeroParticleGPGPU variant={HERO_FIELD_VARIANT} />
 
         <div className="relative z-10 w-full h-full max-w-6xl mx-auto px-4 sm:px-8 py-8 flex items-center justify-center">
           {isDeepSearchMode ? (
