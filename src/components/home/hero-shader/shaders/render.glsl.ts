@@ -79,8 +79,9 @@ void main(){
   float len = 0.85;
   float thick = 0.32;
   float sdf = sdRoundBox(ruv, vec2(len, thick), thick);
-  float aa = fwidth(sdf) * 1.2;
-  float shape = 1.0 - smoothstep(0.0, aa, sdf);
+  // Soft edge without fwidth (works on WebGL1/2 without extensions)
+  float aa = 0.08;
+  float shape = 1.0 - smoothstep(-aa, aa, sdf);
   if (shape <= 0.001) discard;
 
   // Async micro-flicker
