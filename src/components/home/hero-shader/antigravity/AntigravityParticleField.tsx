@@ -50,7 +50,8 @@ const VERT = /* glsl */ `
 const FRAG = /* glsl */ `
   precision highp float;
 
-  uniform vec3 uColor;
+  uniform vec3  uColor;
+  uniform float uAlphaBoost;
   varying float vAlpha;
 
   void main() {
@@ -58,7 +59,7 @@ const FRAG = /* glsl */ `
     if (dist > 0.5) discard;
 
     float alpha = smoothstep(0.5, 0.0, dist) * vAlpha;
-    gl_FragColor = vec4(uColor, alpha * 0.6);
+    gl_FragColor = vec4(uColor, alpha * 0.6 * uAlphaBoost);
   }
 `;
 
@@ -123,6 +124,7 @@ export function AntigravityParticleField({ className, theme }: Props) {
       uMousePos:   { value: new THREE.Vector2(0, 0) },
       uPixelRatio: { value: pixelRatio },
       uColor:      { value: colorFor() },
+      uAlphaBoost: { value: isDark() ? 1.0 : 1.5 },
     };
 
     // RawShaderMaterial: matches source intent (no THREE-injected prelude).
@@ -138,7 +140,10 @@ export function AntigravityParticleField({ className, theme }: Props) {
 
     // Fallback observer only when no explicit theme prop is provided.
     const themeObserver = !theme
-      ? new MutationObserver(() => { uniforms.uColor.value = colorFor(); })
+      ? new MutationObserver(() => {
+          uniforms.uColor.value = colorFor();
+          uniforms.uAlphaBoost.value = isDark() ? 1.0 : 1.5;
+        })
       : null;
     themeObserver?.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
