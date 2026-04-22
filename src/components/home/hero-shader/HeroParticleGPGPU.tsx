@@ -62,8 +62,9 @@ export function HeroParticleGPGPU({ variant = 'reactive', className }: Props) {
       }
     }
 
-    const gl = renderer.gl as WebGL2RenderingContext & { renderer: Renderer };
-    const isWebGL2 = (gl as any).renderer.isWebgl2 === true;
+    const gl = renderer.gl;
+    const gl2 = gl as unknown as WebGL2RenderingContext;
+    const isWebGL2 = (gl as any).renderer?.isWebgl2 === true;
 
     // Enable float color buffer
     if (isWebGL2) {
@@ -108,7 +109,7 @@ export function HeroParticleGPGPU({ variant = 'reactive', className }: Props) {
       height: TEX,
       type: gl.FLOAT,
       format: gl.RGBA,
-      internalFormat: isWebGL2 ? (gl as WebGL2RenderingContext).RGBA32F : gl.RGBA,
+      internalFormat: isWebGL2 ? gl2.RGBA32F : gl.RGBA,
       wrapS: gl.CLAMP_TO_EDGE,
       wrapT: gl.CLAMP_TO_EDGE,
       minFilter: gl.NEAREST,
@@ -123,7 +124,7 @@ export function HeroParticleGPGPU({ variant = 'reactive', className }: Props) {
       height: TEX,
       type: gl.FLOAT,
       format: gl.RGBA,
-      internalFormat: isWebGL2 ? (gl as WebGL2RenderingContext).RGBA32F : gl.RGBA,
+      internalFormat: isWebGL2 ? gl2.RGBA32F : gl.RGBA,
       wrapS: gl.CLAMP_TO_EDGE,
       wrapT: gl.CLAMP_TO_EDGE,
       minFilter: gl.NEAREST,
