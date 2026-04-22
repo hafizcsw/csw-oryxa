@@ -1,19 +1,76 @@
 /**
- * AntigravityParticleField — faithful port of antigravity.google
- * `landing-main-particles-component`.
+ * AntigravityParticleField — clean rebuild.
  *
- * Architecture (1:1 with source):
- *   - Three.js + PerspectiveCamera + Raycaster
- *   - One Points object, vertex shader samples uPosTex + uPosNearestTex
- *   - PointSize = uPointScale * (300 / -mvPosition.z)  ← perspective-aware
- *   - Mouse → raycaster.intersectObject(interactionPlane) → vec3 world-space
- *   - uRingRadius animated per-frame: 0.175 + sin(t)*0.03 + cos(3t)*0.02
- *   - PoissonDiskSampling for pointsBase, image-driven nearestPoints
+ * Spec:
+ *  - 50,000 particles, random positions in 20x20x10 space
+ *  - sin/cos motion in vertex shader
+ *  - mouse repulsion (radius ≈ 3, strength ≈ 1.5)
+ *  - perspective gl_PointSize with depth scaling
+ *  - circular fragment with soft alpha
+ *  - additive blending
+ *
+ * No textures, no nearestPoints, no GPGPU.
  */
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { createParticleSystem } from './particles';
-import { ANTIGRAV_CONFIG, ANTIGRAV_DPR_CAP, ANTIGRAV_HOVER_LERP } from './config';
+
+const PARTICLE_COUNT = 50_000;
+const SPACE = { x: 20, y: 20, z: 10 };
+const REPULSION_RADIUS = 3.0;
+const REPULSION_STRENGTH = 1.5;
+
+const VERT = /* glsl */ `
+  uniform float uTime;
+  uniform vec3  uMouse;
+  uniform float uMouseActive;
+  uniform float uPointScale;
+  uniform float uRepulsionRadius;
+  uniform float uRepulsionStrength;
+
+  attribute float aSeed;
+
+  varying float vDepth;
+
+  void main() {
+    vec3 pos = position;
+
+    // sin/cos drift driven by per-particle seed
+    float t = uTime * 0.5;
+    pos.x += sin(t + aSeed * 6.2831) * 0.35;
+    pos.y += cos(t * 1.1 + aSeed * 12.566) * 0.35;
+    pos.z += sin(t * 0.7 + aSeed * 9.42) * 0.25;
+
+    // mouse repulsion (radial falloff)
+    vec3 toP = pos - uMouse;
+    float d  = length(toP);
+    float falloff = 1.0 - smoothstep(0.0, uRepulsionRadius, d);
+    pos += normalize(toP + vec3(1e-5)) * falloff * uRepulsionStrength * uMouseActive;
+
+    vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+    gl_Position = projectionMatrix * mv;
+
+    vDepth = -mv.z;
+    gl_PointSize = uPointScale * (300.0 / -mv.z);
+  }
+`;
+
+const FRAG = /* glsl */ `
+  precision highp float;
+  uniform vec3  uColor;
+  uniform float uAlpha;
+  varying float vDepth;
+
+  void main() {
+    vec2 pc = gl_PointCoord - 0.5;
+    float d = length(pc);
+    if (d > 0.5) discard;
+
+    float soft = smoothstep(0.5, 0.0, d);
+    float depthFade = clamp(1.0 - (vDepth - 5.0) / 30.0, 0.2, 1.0);
+
+    gl_FragColor = vec4(uColor, soft * uAlpha * depthFade);
+  }
+`;
 
 interface Props {
   className?: string;
@@ -30,16 +87,12 @@ export function AntigravityParticleField({ className }: Props) {
 
     let renderer: THREE.WebGLRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({
-        alpha: true,
-        antialias: false,
-        premultipliedAlpha: true,
-      });
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false, premultipliedAlpha: false });
     } catch (e) {
-      console.error('[AntigravityParticleField] init failed', e);
+      console.error('[AntigravityParticleField] WebGL init failed', e);
       return;
     }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, ANTIGRAV_DPR_CAP));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
     renderer.setClearColor(0x000000, 0);
 
     const canvas = renderer.domElement;
@@ -51,28 +104,62 @@ export function AntigravityParticleField({ className }: Props) {
     container.appendChild(canvas);
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(ANTIGRAV_CONFIG.cameraFov, 1, 0.1, 100);
-    camera.position.set(0, 0, ANTIGRAV_CONFIG.cameraZ);
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 200);
+    camera.position.set(0, 0, 18);
 
-    // Resolve color from CSS var --primary (HSL) → THREE.Color
+    // Resolve color from --primary
     const cs = getComputedStyle(document.documentElement);
     const hsl = cs.getPropertyValue('--primary').trim() || '210 80% 60%';
     const color = new THREE.Color(`hsl(${hsl.replace(/\s+/g, ', ')})`);
 
-    const sys = createParticleSystem({ color });
-    scene.add(sys.points);
+    // ---- Geometry: random positions in 20x20x10 ----
+    const positions = new Float32Array(PARTICLE_COUNT * 3);
+    const seeds = new Float32Array(PARTICLE_COUNT);
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      positions[i * 3]     = (Math.random() - 0.5) * SPACE.x;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * SPACE.y;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * SPACE.z;
+      seeds[i] = Math.random();
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1));
 
-    // Invisible interaction plane at z=0
-    const planeSize = ANTIGRAV_CONFIG.worldHalfExtent * 4;
+    const uniforms = {
+      uTime:              { value: 0 },
+      uMouse:             { value: new THREE.Vector3(999, 999, 999) },
+      uMouseActive:       { value: 0 },
+      uPointScale:        { value: 0.9 },
+      uRepulsionRadius:   { value: REPULSION_RADIUS },
+      uRepulsionStrength: { value: REPULSION_STRENGTH },
+      uColor:             { value: color },
+      uAlpha:             { value: 0.85 },
+    };
+
+    const material = new THREE.ShaderMaterial({
+      vertexShader: VERT,
+      fragmentShader: FRAG,
+      uniforms,
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+      blending: THREE.AdditiveBlending,
+    });
+
+    const points = new THREE.Points(geometry, material);
+    points.frustumCulled = false;
+    scene.add(points);
+
+    // Invisible plane at z=0 for raycasting mouse → world space
     const interactionPlane = new THREE.Mesh(
-      new THREE.PlaneGeometry(planeSize, planeSize),
+      new THREE.PlaneGeometry(SPACE.x * 2, SPACE.y * 2),
       new THREE.MeshBasicMaterial({ visible: false }),
     );
     scene.add(interactionPlane);
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2(999, 999);
-    let hoverTarget = 0;
+    let mouseTarget = 0;
 
     // ---- Resize ----
     const resize = () => {
@@ -93,13 +180,13 @@ export function AntigravityParticleField({ className }: Props) {
       return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
     };
     const onMove = (e: PointerEvent) => {
-      if (!inside(e)) { hoverTarget = 0; return; }
+      if (!inside(e)) { mouseTarget = 0; return; }
       const r = container.getBoundingClientRect();
-      pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1;
-      pointer.y = -(((e.clientY - r.top) / r.height) * 2 - 1);
-      hoverTarget = ANTIGRAV_CONFIG.hoverEnabled ? 1 : 0;
+      pointer.x =  ((e.clientX - r.left) / r.width)  * 2 - 1;
+      pointer.y = -((e.clientY - r.top)  / r.height) * 2 + 1;
+      mouseTarget = 1;
     };
-    const onLeave = () => { hoverTarget = 0; };
+    const onLeave = () => { mouseTarget = 0; };
 
     const interactive = !reduceMotion;
     if (interactive) {
@@ -119,21 +206,16 @@ export function AntigravityParticleField({ className }: Props) {
       last = now;
       elapsed += dt;
 
-      // Source-faithful ring radius animation
-      const ringRadius = 0.175 + Math.sin(elapsed) * 0.03 + Math.cos(elapsed * 3) * 0.02;
-      sys.uniforms.uRingRadius.value = ringRadius;
-      sys.uniforms.uTime.value = elapsed;
-      sys.uniforms.uDeltaTime.value = dt;
+      uniforms.uTime.value = elapsed;
 
-      // Smooth hover toggle
-      const cur = sys.uniforms.uIsHovering.value as number;
-      sys.uniforms.uIsHovering.value = cur + (hoverTarget - cur) * ANTIGRAV_HOVER_LERP;
+      // Smooth mouse activation
+      const cur = uniforms.uMouseActive.value as number;
+      uniforms.uMouseActive.value = cur + (mouseTarget - cur) * 0.1;
 
-      // Raycast pointer → world-space mouse position
       raycaster.setFromCamera(pointer, camera);
       const hits = raycaster.intersectObject(interactionPlane);
       if (hits.length > 0) {
-        (sys.uniforms.uMousePos.value as THREE.Vector3).copy(hits[0].point);
+        (uniforms.uMouse.value as THREE.Vector3).copy(hits[0].point);
       }
 
       renderer.render(scene, camera);
@@ -163,7 +245,8 @@ export function AntigravityParticleField({ className }: Props) {
         window.removeEventListener('pointermove', onMove);
         window.removeEventListener('pointerleave', onLeave);
       }
-      sys.dispose();
+      geometry.dispose();
+      material.dispose();
       interactionPlane.geometry.dispose();
       (interactionPlane.material as THREE.Material).dispose();
       renderer.dispose();
