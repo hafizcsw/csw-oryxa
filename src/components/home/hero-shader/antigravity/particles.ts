@@ -1,244 +1,186 @@
 /**
- * Particles unit — owns the GPGPU sim+render programs and ping-pong FBOs.
- * Built clean from the antigravity `landing-main-particles-component` reference.
+ * Particles builder — faithful to antigravity.google source.
  *
- * Source-of-truth values live in ./config.ts (ANTIGRAV_CONFIG).
- *
- * Public API:
- *   const particles = createParticles(gl, { aspect, isMobile, reduceMotion });
- *   particles.resize(aspect);
- *   particles.step({ dt, time, mouse, hover, isDark });
- *   particles.dispose();
+ * Pipeline:
+ *  1. PoissonDiskSampling generates `pointsBase` across [worldExtent*2]^2.
+ *  2. Pad/truncate to size*size into `pointsData` (vec3, z=0).
+ *  3. `nearestPointsData` is image-driven: render abstract sine-wave grid
+ *     into Canvas2D, extract bright pixels as targets, for each base point
+ *     find nearest target → hover destination.
+ *  4. createDataTexturePosition() packs into size×size RGBA Float texture
+ *     (verbatim from source).
  */
-import { Program, Mesh, Triangle, Geometry, RenderTarget, Vec2, Texture, type OGLRenderingContext } from 'ogl';
-import { SIM_VERTEX, SIM_FRAGMENT, RENDER_VERTEX, RENDER_FRAGMENT } from './shaders';
-import {
-  ANTIGRAV_CONFIG,
-  ANTIGRAV_DPR_CAP,
-  ANTIGRAV_MOBILE_TEX,
-  ANTIGRAV_MOBILE_INTENSITY,
-} from './config';
+import * as THREE from 'three';
+import PoissonDiskSampling from 'poisson-disk-sampling';
+import { PARTICLE_VERTEX, PARTICLE_FRAGMENT } from './shaders';
+import { ANTIGRAV_CONFIG } from './config';
 
-interface CreateOpts {
-  aspect: number;
-  isMobile: boolean;
-  reduceMotion: boolean;
+type Vec3 = [number, number, number];
+
+function createDataTexturePosition(points: (Vec3 | null)[], size: number): THREE.DataTexture {
+  const e = size * size;
+  const t = new Float32Array(e * 4);
+  for (let i = 0; i < e; i++) {
+    const r = points[i];
+    if (r) {
+      t[i * 4]     = r[0];
+      t[i * 4 + 1] = r[1];
+      t[i * 4 + 2] = r[2] || 0;
+    } else {
+      t[i * 4]     = 0;
+      t[i * 4 + 1] = 0;
+      t[i * 4 + 2] = -1e4;
+    }
+    t[i * 4 + 3] = 1;
+  }
+  const tex = new THREE.DataTexture(t, size, size, THREE.RGBAFormat, THREE.FloatType);
+  tex.needsUpdate = true;
+  return tex;
 }
 
-interface StepOpts {
-  dt: number;
-  time: number;          // seconds since start (will be * timeScale internally)
-  ringRadius: number;    // animated per-frame: 0.175 + sin(t)*0.03 + cos(3t)*0.02
-  mouse: { x: number; y: number };  // already scaled by mouseScale (0.175)
-  hover: number;
-  isDark: boolean;
-  pulse?: { progress: number; origin: [number, number] };
+function generatePointsBase(density: number, worldExtent: number): Vec3[] {
+  const shape = [worldExtent * 2, worldExtent * 2];
+  // Pick minDistance so sample count ≈ density.
+  const minDistance = Math.sqrt((shape[0] * shape[1]) / (density * 0.7));
+  const pds = new PoissonDiskSampling({
+    shape,
+    minDistance,
+    maxDistance: minDistance * 1.6,
+    tries: 20,
+  });
+  const raw = pds.fill() as number[][];
+  return raw.map(([x, y]) => [x - worldExtent, y - worldExtent, 0] as Vec3);
 }
 
-export interface ParticlesUnit {
-  simMesh: Mesh;
-  pointMesh: Mesh;
-  rt: { read: RenderTarget; write: RenderTarget; swap: () => void };
-  resize: (aspect: number) => void;
-  step: (opts: StepOpts) => void;
-  /** Bind the latest position texture + per-frame particleScale before drawing. */
-  syncRender: (time: number, isDark: boolean, particleScale: number) => void;
+function generateNearestPoints(pointsBase: Vec3[], worldExtent: number): Vec3[] {
+  const W = 256;
+  const H = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1.5;
+  for (let row = 0; row < 8; row++) {
+    const y0 = (row + 0.5) * (H / 8);
+    ctx.beginPath();
+    for (let x = 0; x <= W; x += 2) {
+      const y = y0 + Math.sin((x / W) * Math.PI * 4 + row * 0.6) * 8;
+      if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  for (let col = 0; col < 8; col++) {
+    const x0 = (col + 0.5) * (W / 8);
+    ctx.beginPath();
+    for (let y = 0; y <= H; y += 2) {
+      const x = x0 + Math.sin((y / H) * Math.PI * 4 + col * 0.6) * 8;
+      if (y === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  const img = ctx.getImageData(0, 0, W, H).data;
+  const targets: Vec3[] = [];
+  for (let y = 0; y < H; y += 3) {
+    for (let x = 0; x < W; x += 3) {
+      const i = (y * W + x) * 4;
+      if (img[i] > 128) {
+        const wx = (x / W) * 2 * worldExtent - worldExtent;
+        const wy = -((y / H) * 2 * worldExtent - worldExtent);
+        targets.push([wx, wy, 0]);
+      }
+    }
+  }
+  if (targets.length === 0) return pointsBase.slice();
+
+  return pointsBase.map(([bx, by]) => {
+    let best = targets[0];
+    let bestD = Infinity;
+    for (let i = 0; i < targets.length; i++) {
+      const dx = targets[i][0] - bx;
+      const dy = targets[i][1] - by;
+      const d = dx * dx + dy * dy;
+      if (d < bestD) { bestD = d; best = targets[i]; }
+    }
+    return best;
+  });
+}
+
+export interface ParticleSystem {
+  points: THREE.Points;
+  material: THREE.ShaderMaterial;
+  uniforms: Record<string, { value: unknown }>;
   dispose: () => void;
 }
 
-export function createParticles(
-  gl: OGLRenderingContext,
-  { aspect, isMobile, reduceMotion }: CreateOpts,
-): ParticlesUnit | null {
-  const gl2 = gl as unknown as WebGL2RenderingContext;
-  const isWebGL2 = (gl as unknown as { renderer?: { isWebgl2?: boolean } }).renderer?.isWebgl2 === true;
+export function createParticleSystem(opts: { color: THREE.Color }): ParticleSystem {
+  const { size, density, particlesScale, ringWidth, ringWidth2, ringDisplacement, worldHalfExtent } = ANTIGRAV_CONFIG;
 
-  if (!isWebGL2) {
-    console.warn('[antigravity/particles] WebGL2 required');
-    return null;
+  const base = generatePointsBase(density, worldHalfExtent);
+  const total = size * size;
+  const pointsData: (Vec3 | null)[] = new Array(total).fill(null);
+  for (let i = 0; i < total; i++) pointsData[i] = base[i % base.length] ?? null;
+
+  const baseFilled = pointsData.filter(Boolean) as Vec3[];
+  const nearestRaw = generateNearestPoints(baseFilled, worldHalfExtent);
+  const nearestData: (Vec3 | null)[] = new Array(total).fill(null);
+  for (let i = 0; i < total; i++) nearestData[i] = nearestRaw[i % nearestRaw.length] ?? null;
+
+  const posTex = createDataTexturePosition(pointsData, size);
+  const posNearestTex = createDataTexturePosition(nearestData, size);
+
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(total * 3);
+  const references = new Float32Array(total * 2);
+  for (let i = 0; i < total; i++) {
+    references[i * 2]     = (i % size) / size + 0.5 / size;
+    references[i * 2 + 1] = Math.floor(i / size) / size + 0.5 / size;
   }
-  if (!gl.getExtension('EXT_color_buffer_float')) {
-    console.warn('[antigravity/particles] EXT_color_buffer_float not supported');
-    return null;
-  }
-  gl.getExtension('OES_texture_float_linear');
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('reference', new THREE.BufferAttribute(references, 2));
 
-  // ---- Particle resolution ----
-  const TEX = isMobile ? ANTIGRAV_MOBILE_TEX : ANTIGRAV_CONFIG.textureSize;
-  const PARTICLE_COUNT = TEX * TEX;
-
-  // ---- Init: scatter particles across the WHOLE hero, with a soft quiet
-  //       zone around the centered text/card. Rejection-sample so the quiet
-  //       region has lower (not zero) density.
-  const initData = new Float32Array(PARTICLE_COUNT * 4);
-  const qR = ANTIGRAV_CONFIG.quietCenterRadius;
-  const qS = ANTIGRAV_CONFIG.quietSoftness;
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    let x = 0, y = 0;
-    // Up to 4 tries; otherwise accept anyway (keeps count exact)
-    for (let t = 0; t < 4; t++) {
-      x = (Math.random() * 2 - 1) * aspect;
-      y = Math.random() * 2 - 1;
-      // Distance to center in NDC.y units (aspect-normalized x)
-      const d = Math.hypot(x / aspect, y);
-      // Probability of keeping increases with distance from center
-      const keep = Math.min(1, Math.max(0.05, (d - qR) / qS + 0.5));
-      if (Math.random() < keep) break;
-    }
-    initData[i * 4 + 0] = x;
-    initData[i * 4 + 1] = y;
-    initData[i * 4 + 2] = 0;
-    initData[i * 4 + 3] = 0;
-  }
-
-  const initTex = new Texture(gl, {
-    image: initData,
-    width: TEX,
-    height: TEX,
-    type: gl.FLOAT,
-    format: gl.RGBA,
-    internalFormat: gl2.RGBA32F,
-    wrapS: gl.CLAMP_TO_EDGE,
-    wrapT: gl.CLAMP_TO_EDGE,
-    minFilter: gl.NEAREST,
-    magFilter: gl.NEAREST,
-    flipY: false,
-    generateMipmaps: false,
-  });
-
-  const rtOpts = {
-    width: TEX,
-    height: TEX,
-    type: gl.FLOAT,
-    format: gl.RGBA,
-    internalFormat: gl2.RGBA32F,
-    wrapS: gl.CLAMP_TO_EDGE,
-    wrapT: gl.CLAMP_TO_EDGE,
-    minFilter: gl.NEAREST,
-    magFilter: gl.NEAREST,
-    depth: false,
-    stencil: false,
+  const uniforms = {
+    uTime:             { value: 0 },
+    uDeltaTime:        { value: 0 },
+    uMousePos:         { value: new THREE.Vector3(999, 999, 0) },
+    uIsHovering:       { value: 0 },
+    uPosTex:           { value: posTex },
+    uPosNearestTex:    { value: posNearestTex },
+    uRingRadius:       { value: 0.175 },
+    uRingWidth:        { value: ringWidth },
+    uRingWidth2:       { value: ringWidth2 },
+    uRingDisplacement: { value: ringDisplacement },
+    uPointScale:       { value: particlesScale },
+    uRingOpacity:      { value: 1.0 },
+    uColor:            { value: opts.color },
   };
-  let rtRead = new RenderTarget(gl, rtOpts);
-  let rtWrite = new RenderTarget(gl, rtOpts);
 
-  // Seed rtRead with initData
-  const seedProgram = new Program(gl, {
-    vertex: SIM_VERTEX,
-    fragment: /* glsl */ `
-      precision highp float;
-      varying vec2 vUv;
-      uniform sampler2D uSrc;
-      void main(){ gl_FragColor = texture2D(uSrc, vUv); }
-    `,
-    uniforms: { uSrc: { value: initTex } },
-  });
-  const seedMesh = new Mesh(gl, { geometry: new Triangle(gl), program: seedProgram });
-
-  // ---- Sim program ----
-  const simProgram = new Program(gl, {
-    vertex: SIM_VERTEX,
-    fragment: SIM_FRAGMENT,
-    uniforms: {
-      uPrevPos:          { value: rtRead.texture },
-      uTime:             { value: 0 },
-      uDelta:            { value: 1 / 60 },
-      uMousePos:         { value: new Vec2(0, 0) },
-      uIsHovering:       { value: 0 },
-      uMouseRadius:      { value: ANTIGRAV_CONFIG.mouseRadius },
-      uMouseForce:       { value: ANTIGRAV_CONFIG.mouseForce },
-      uPulseProgress:    { value: 0 },
-      uPulseOrigin:      { value: new Vec2(0, 0) },
-      uPulseRadius:      { value: ANTIGRAV_CONFIG.pulseRadius },
-      uRingRadius:       { value: 0.175 },
-      uRingWidth:        { value: ANTIGRAV_CONFIG.ringWidth },
-      uRingWidth2:       { value: ANTIGRAV_CONFIG.ringWidth2 },
-      uRingDisplacement: { value: ANTIGRAV_CONFIG.ringDisplacement },
-      uAspect:           { value: aspect },
-      uSeed:             { value: Math.random() * 100 },
-    },
-  });
-  const simMesh = new Mesh(gl, { geometry: new Triangle(gl), program: simProgram });
-
-  // ---- Render program ----
-  const refs = new Float32Array(PARTICLE_COUNT * 2);
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    refs[i * 2 + 0] = (i % TEX) / TEX + 0.5 / TEX;
-    refs[i * 2 + 1] = Math.floor(i / TEX) / TEX + 0.5 / TEX;
-  }
-  const pointGeo = new Geometry(gl, { aRef: { size: 2, data: refs } });
-
-  const intensity = ANTIGRAV_CONFIG.intensity * (isMobile ? ANTIGRAV_MOBILE_INTENSITY : 1);
-  const renderProgram = new Program(gl, {
-    vertex: RENDER_VERTEX,
-    fragment: RENDER_FRAGMENT,
+  const material = new THREE.ShaderMaterial({
+    vertexShader: PARTICLE_VERTEX,
+    fragmentShader: PARTICLE_FRAGMENT,
+    uniforms,
     transparent: true,
-    depthTest: false,
     depthWrite: false,
-    uniforms: {
-      uPositionTex:   { value: rtRead.texture },
-      uParticleScale: { value: 0.1 },
-      uDpr:           { value: Math.min(window.devicePixelRatio || 1, ANTIGRAV_DPR_CAP) },
-      uAspect:        { value: aspect },
-      uTime:          { value: 0 },
-      uIntensity:     { value: intensity },
-      uAlpha:         { value: ANTIGRAV_CONFIG.alpha },
-      uIsDark:        { value: 0 },
-      uColor1:        { value: [0.20, 0.40, 0.95] },
-      uColor2:        { value: [0.55, 0.30, 0.90] },
-      uColor3:        { value: [0.98, 0.58, 0.22] },
-    },
+    depthTest: false,
+    blending: THREE.NormalBlending,
   });
-  const pointMesh = new Mesh(gl, { geometry: pointGeo, program: renderProgram, mode: gl.POINTS });
 
-  // Sanity: check link succeeded
-  for (const [name, p] of [
-    ['seedProgram', seedProgram],
-    ['simProgram', simProgram],
-    ['renderProgram', renderProgram],
-  ] as const) {
-    if (!(p as unknown as { uniformLocations?: unknown }).uniformLocations) {
-      console.error(`[antigravity/particles] ${name} failed to link`);
-      return null;
-    }
-  }
-
-  const rt = {
-    get read() { return rtRead; },
-    get write() { return rtWrite; },
-    swap: () => { const t = rtRead; rtRead = rtWrite; rtWrite = t; },
-  };
-
-  const speedScale = reduceMotion ? 0 : 1;
+  const points = new THREE.Points(geometry, material);
+  points.frustumCulled = false;
 
   return {
-    simMesh,
-    pointMesh,
-    rt: rt as unknown as ParticlesUnit['rt'],
-    seedMesh,
-    seedProgram,
-    resize: (a: number) => {
-      simProgram.uniforms.uAspect.value = a;
-      renderProgram.uniforms.uAspect.value = a;
-    },
-    step: ({ dt, time, ringRadius, mouse, hover, pulse }) => {
-      simProgram.uniforms.uPrevPos.value = rtRead.texture;
-      simProgram.uniforms.uTime.value = time * ANTIGRAV_CONFIG.timeScale * speedScale;
-      simProgram.uniforms.uDelta.value = dt * speedScale || 1e-4;
-      simProgram.uniforms.uRingRadius.value = ringRadius;
-      (simProgram.uniforms.uMousePos.value as Vec2).set(mouse.x, mouse.y);
-      simProgram.uniforms.uIsHovering.value = hover;
-      simProgram.uniforms.uPulseProgress.value = pulse?.progress ?? 0;
-      if (pulse) (simProgram.uniforms.uPulseOrigin.value as Vec2).set(pulse.origin[0], pulse.origin[1]);
-    },
-    syncRender: (time, isDark, particleScale) => {
-      renderProgram.uniforms.uPositionTex.value = rtRead.texture;
-      renderProgram.uniforms.uTime.value = time;
-      renderProgram.uniforms.uIsDark.value = isDark ? 1 : 0;
-      renderProgram.uniforms.uParticleScale.value = particleScale;
-    },
+    points,
+    material,
+    uniforms,
     dispose: () => {
-      // OGL RenderTargets don't expose explicit dispose; GC + context loss handles it.
+      geometry.dispose();
+      material.dispose();
+      posTex.dispose();
+      posNearestTex.dispose();
     },
-  } as ParticlesUnit & { seedMesh: Mesh; seedProgram: Program };
+  };
 }
