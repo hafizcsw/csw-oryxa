@@ -1223,7 +1223,7 @@ export function MalakChatInterface({
           ? "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl h-full min-h-[400px]"
             : compact
               ? (messages.length === 0 && state === 'idle'
-                  ? "bg-[#1a1a1f]/90 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                  ? "bg-white/85 dark:bg-[#1a1a1f]/90 backdrop-blur-xl rounded-3xl border border-border/40 dark:border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.10)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
                   : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[593px] h-[77vh] max-h-[773px]")
               : "bg-gradient-to-b from-background/95 to-muted/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl min-h-[360px] h-[50vh] max-h-[520px]"
   );
@@ -1485,7 +1485,7 @@ export function MalakChatInterface({
               className={cn(
                 "resize-none rounded-3xl border shadow-sm outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground",
                 compact && messages.length === 0 && state === 'idle'
-                  ? "bg-transparent border-transparent text-white placeholder:text-white/40 shadow-none focus:border-transparent focus-visible:border-transparent"
+                  ? "bg-transparent border-transparent text-foreground placeholder:text-muted-foreground dark:text-white dark:placeholder:text-white/40 shadow-none focus:border-transparent focus-visible:border-transparent"
                   : "bg-white dark:bg-zinc-800 border-border/50 text-foreground focus:border-border/50 focus-visible:border-border/50",
                 isFloating 
                   ? "min-h-[40px] text-sm py-2.5 px-3.5 pb-10" 

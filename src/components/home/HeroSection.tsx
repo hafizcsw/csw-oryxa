@@ -196,7 +196,7 @@ export function HeroSection() {
               }`}
             >
               {chatMessageCount === 0 && (
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-center text-white drop-shadow-lg">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-center text-foreground drop-shadow-sm">
                   {t('home.hero.title')}
                 </h1>
               )}
