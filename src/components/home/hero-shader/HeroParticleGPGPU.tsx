@@ -48,31 +48,24 @@ export function HeroParticleGPGPU({ variant = 'reactive', className }: Props) {
         premultipliedAlpha: true,
         webgl: 2,
       });
-    } catch {
-      try {
-        renderer = new Renderer({
-          dpr: Math.min(window.devicePixelRatio || 1, DPR_CAP),
-          alpha: true,
-          antialias: false,
-          premultipliedAlpha: true,
-          webgl: 1,
-        });
-      } catch {
-        return;
-      }
+    } catch (e) {
+      console.error('[HeroParticleGPGPU] Renderer init failed', e);
+      return;
     }
 
     const gl = renderer.gl;
     const gl2 = gl as unknown as WebGL2RenderingContext;
     const isWebGL2 = (gl as any).renderer?.isWebgl2 === true;
 
-    // Enable float color buffer
-    if (isWebGL2) {
-      gl.getExtension('EXT_color_buffer_float');
-    } else {
-      gl.getExtension('OES_texture_float');
-      const cbf = gl.getExtension('WEBGL_color_buffer_float') || gl.getExtension('EXT_color_buffer_half_float');
-      if (!cbf) return; // can't FBO float on this device
+    if (!isWebGL2) {
+      console.warn('[HeroParticleGPGPU] WebGL2 not available, aborting GPGPU field');
+      return;
+    }
+
+    // Float color attachment support
+    if (!gl.getExtension('EXT_color_buffer_float')) {
+      console.warn('[HeroParticleGPGPU] EXT_color_buffer_float not supported, aborting');
+      return;
     }
     gl.getExtension('OES_texture_float_linear');
 
@@ -202,6 +195,20 @@ export function HeroParticleGPGPU({ variant = 'reactive', className }: Props) {
       },
     });
     const pointMesh = new Mesh(gl, { geometry: pointGeo, program: renderProgram, mode: gl.POINTS });
+
+    // Sanity-check that all programs linked successfully.
+    // If not, OGL leaves uniformLocations undefined and Mesh.draw will crash.
+    for (const [name, p] of [
+      ['seedProgram', seedProgram],
+      ['simProgram', simProgram],
+      ['renderProgram', renderProgram],
+    ] as const) {
+      if (!(p as any).uniformLocations) {
+        console.error(`[HeroParticleGPGPU] ${name} failed to link. Aborting.`);
+        if (canvas.parentNode === container) container.removeChild(canvas);
+        return;
+      }
+    }
 
     // --- Resize handling ---
     const resize = () => {
