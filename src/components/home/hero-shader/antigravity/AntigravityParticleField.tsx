@@ -14,46 +14,39 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-const PARTICLE_COUNT = 50_000;
+const PARTICLE_COUNT = 1500;
 
 const VERT = /* glsl */ `
   uniform float uTime;
   uniform vec2  uMousePos;
   uniform float uPixelRatio;
   attribute float aOffset;
-  varying float vAlpha;
 
   void main() {
     vec3 pos = position;
 
-    float time = uTime * 0.2 + aOffset * 10.0;
-    pos.x += sin(time) * 0.5;
-    pos.y += cos(time * 0.8) * 0.5;
-    pos.z += sin(time * 1.2) * 0.5;
+    pos.y += sin(uTime * 0.3 + aOffset * 15.0) * 0.4;
+    pos.x += cos(uTime * 0.2 + aOffset * 15.0) * 0.4;
 
-    float dist = distance(pos.xy, uMousePos * 5.0);
-    float force = 1.0 - smoothstep(0.0, 3.0, dist);
-    pos.xy += normalize(pos.xy - uMousePos * 5.0) * force * 1.5;
+    float dist = distance(uMousePos, pos.xy * 0.3);
+    pos.z += smoothstep(1.5, 0.0, dist) * 1.5;
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    gl_PointSize = (15.0 * uPixelRatio) * (1.0 / -mvPosition.z);
+    gl_PointSize = (4.0 * uPixelRatio) * (1.0 / -mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
-
-    vAlpha = smoothstep(0.0, 1.0, force * 0.5 + 0.2);
   }
 `;
 
 const FRAG = /* glsl */ `
   precision highp float;
-  varying float vAlpha;
+  uniform vec3 uColor;
 
   void main() {
     float dist = distance(gl_PointCoord, vec2(0.5));
     if (dist > 0.5) discard;
 
-    float strength = 1.0 - smoothstep(0.0, 0.5, dist);
-    vec3 color = vec3(0.5, 0.8, 1.0);
-    gl_FragColor = vec4(color, strength * vAlpha * 0.6);
+    float alpha = 1.0 - smoothstep(0.0, 0.5, dist);
+    gl_FragColor = vec4(uColor, alpha * 0.6);
   }
 `;
 
