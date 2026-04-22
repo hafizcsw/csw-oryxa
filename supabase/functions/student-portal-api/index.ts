@@ -230,7 +230,15 @@ type Action =
   | 'identity_activation_submit'
   | 'identity_status_get'
   | 'support_ticket_create'
-  | 'support_ticket_list';
+  | 'support_ticket_list'
+  // ✅ CRM Bridge v2 (case-based identity + support inbox/thread)
+  | 'identity_case_get'
+  | 'support_case_list'
+  | 'support_case_get'
+  | 'support_messages_list'
+  | 'support_message_send'
+  | 'support_mark_read'
+  | 'support_case_close';
 
 // ============= CRM-only staff authority helper =============
 // FINAL CUTOVER: No Portal is_admin fallback. CRM is the ONLY authority source.
@@ -8916,6 +8924,112 @@ Deno.serve(async (req) => {
             })),
           },
         }, { headers: corsHeaders });
+      }
+
+      // ============= CRM Bridge v2 — case-based identity + support =============
+      // 1:1 mapping to CRM web-* endpoints. student-portal-api only:
+      //   (a) resolves customer_id from auth_user_id
+      //   (b) forwards payload as-is
+      //   (c) attaches x-api-key + x-client-trace-id
+      //   (d) returns CRM response with minimal normalization
+      // No portal-local writes. No invented contracts. No fallbacks to legacy tables.
+      case 'identity_case_get':
+      case 'support_case_list':
+      case 'support_case_get':
+      case 'support_messages_list':
+      case 'support_message_send':
+      case 'support_mark_read':
+      case 'support_case_close': {
+        const ENDPOINT_MAP: Record<string, string> = {
+          identity_case_get:      'web-get-identity-case',
+          support_case_list:      'web-list-support-cases',
+          support_case_get:       'web-get-support-case',
+          support_messages_list:  'web-list-support-messages',
+          support_message_send:   'web-send-support-message',
+          support_mark_read:      'web-mark-support-read',
+          support_case_close:     'web-close-support-case',
+        };
+        const endpoint = ENDPOINT_MAP[action];
+        const traceId = (req.headers.get('x-client-trace-id')
+          || (typeof body?.client_trace_id === 'string' ? body.client_trace_id : null)
+          || requestId);
+
+        const { crmCustomerId: resolvedCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
+        if (!resolvedCustomerId) {
+          return Response.json(
+            { ok: false, error: 'no_crm_customer_link' },
+            { status: 409, headers: corsHeaders },
+          );
+        }
+
+        // Forward client-supplied fields per contract; customer_id is server-resolved.
+        const forwardBody: Record<string, unknown> = { customer_id: resolvedCustomerId };
+        switch (action) {
+          case 'support_case_list': {
+            if (Array.isArray(body?.status_in)) forwardBody.status_in = body.status_in;
+            if (typeof body?.limit === 'number') forwardBody.limit = body.limit;
+            if (typeof body?.offset === 'number') forwardBody.offset = body.offset;
+            break;
+          }
+          case 'support_case_get':
+          case 'support_mark_read':
+          case 'support_case_close': {
+            if (typeof body?.case_id === 'string') forwardBody.case_id = body.case_id;
+            break;
+          }
+          case 'support_messages_list': {
+            if (typeof body?.case_id === 'string') forwardBody.case_id = body.case_id;
+            if (typeof body?.after === 'string' || body?.after === null) forwardBody.after = body.after ?? null;
+            if (typeof body?.limit === 'number') forwardBody.limit = body.limit;
+            break;
+          }
+          case 'support_message_send': {
+            if (typeof body?.case_id === 'string') forwardBody.case_id = body.case_id;
+            if (typeof body?.body === 'string') forwardBody.body = body.body;
+            break;
+          }
+          // identity_case_get: customer_id only
+        }
+
+        if (!CRM_FUNCTIONS_URL || !CRM_WEB_API_KEY) {
+          return Response.json(
+            { ok: false, error: 'crm_bridge_misconfigured' },
+            { status: 500, headers: corsHeaders },
+          );
+        }
+
+        let r: Response;
+        try {
+          r = await fetch(`${CRM_FUNCTIONS_URL}/${endpoint}`, {
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              'x-api-key': CRM_WEB_API_KEY,
+              'x-client-trace-id': traceId,
+            },
+            body: JSON.stringify(forwardBody),
+          });
+        } catch (fetchErr) {
+          console.error(`[${action}] CRM bridge network error`, fetchErr);
+          return Response.json(
+            { ok: false, error: 'crm_bridge_network_error', details: String(fetchErr) },
+            { status: 502, headers: corsHeaders },
+          );
+        }
+
+        const j = await r.json().catch(() => ({} as any));
+        if (!r.ok || j?.ok === false) {
+          const errCode = (typeof j?.error === 'string' && j.error) || `http_${r.status}`;
+          console.error(`[${action}] CRM bridge failed`, r.status, j);
+          return Response.json(
+            { ok: false, error: errCode, details: j?.details ?? null, http_status: r.status },
+            { status: 200, headers: corsHeaders },
+          );
+        }
+
+        // Minimal normalization only: return CRM data payload as-is under data.
+        const data = (j && typeof j === 'object' && 'data' in j) ? j.data : j;
+        return Response.json({ ok: true, data }, { headers: corsHeaders });
       }
 
       default:
