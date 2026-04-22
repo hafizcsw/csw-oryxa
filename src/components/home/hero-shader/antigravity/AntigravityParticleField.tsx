@@ -2,39 +2,28 @@
  * AntigravityParticleField — 1:1 port of `nI` class from
  * antigravity.google main-5LR4F4TY.js (morphing particles).
  *
- * Verbatim from source:
- *  - particleCount = density * 200   (density default = 100 → 20,000)
- *  - position = (0,0,0); target = (rand-0.5)*10 per axis
- *  - color assigned by thirds (color1/2/3)
- *  - size = random * particlesScale; type = floor(random * textures.length)
- *  - PerspectiveCamera(45, .., .1, 1000), z = cameraZoom (default 3.5)
- *  - vertex: pos = mix(position, target, uProgress);
- *            pos.x += sin(uTime*0.5 + position.z)*0.1
- *            pos.y += cos(uTime*0.5 + position.x)*0.1
- *            gl_PointSize = uSize * size * uPixelRatio * (500.0 / -mvPosition.z)
- *            vAlpha = smoothstep(-10.0, -2.0, mvPosition.z)
- *  - fragment: sdRoundBox(uv, vec2(0.4), vec4(0.1)); discard if dist > 0
- *              gl_FragColor = vec4(vColor, vAlpha * uAlpha * texColor.a)
- *              if (gl_FragColor.a < 0.01) discard
- *  - theme: dark  → uAlpha=1.0, AdditiveBlending,  clearColor=0x000000
- *           light → uAlpha=0.8, NormalBlending,    clearColor=0xffffff
- *  - RawShaderMaterial, transparent, depthTest=false, depthWrite=false
- *
- * Note: source starts uProgress=0 (all at origin) and animates externally.
- * We initialize uProgress=1 so particles are visible at mount.
+ * + Orca whale flyby: a glowing whale dives across the scene ONCE per
+ *   session (re-triggered on page refresh). While crossing it pushes
+ *   nearby particles outward, mimicking the mouse-repulsion behavior.
  */
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 // --- Locked defaults (source-confirmed) ---
-const DEFAULT_DENSITY = 100;          // → particleCount = 20,000
+const DEFAULT_DENSITY = 100;
 const DEFAULT_PARTICLES_SCALE = 1;
 const DEFAULT_CAMERA_ZOOM = 3.5;
 const DEFAULT_THEME: 'dark' | 'light' = 'dark';
 
-// --- Palettes (3-color) ---
+// --- Whale flyby ---
+const WHALE_SESSION_KEY = 'oryxa-whale-shown';
+const WHALE_DURATION = 9.0;        // seconds for full crossing
+const WHALE_START_DELAY = 0.8;     // seconds after mount before it appears
+const WHALE_PUSH_RADIUS = 1.2;     // world units of influence
+const WHALE_PUSH_STRENGTH = 0.6;   // how hard particles are shoved aside
+
 const DARK_PALETTE = {
-  color1: '#80CCFF', // vec3(0.5, 0.8, 1.0)
+  color1: '#80CCFF',
   color2: '#7388FF',
   color3: '#B3E5FF',
 };
@@ -57,6 +46,9 @@ const VERT = /* glsl */ `
   uniform float uProgress;
   uniform float uSize;
   uniform float uPixelRatio;
+  uniform vec3  uWhalePos;
+  uniform float uWhaleStrength;
+  uniform float uWhaleRadius;
   varying vec3 vColor;
   varying float vType;
   varying float vAlpha;
@@ -66,6 +58,19 @@ const VERT = /* glsl */ `
     vec3 pos = mix(position, target, uProgress);
     pos.x += sin(uTime * 0.5 + position.z) * 0.1;
     pos.y += cos(uTime * 0.5 + position.x) * 0.1;
+
+    // ---- Whale repulsion (same shape as mouse repulsion) ----
+    if (uWhaleStrength > 0.0) {
+      vec3 diff = pos - uWhalePos;
+      float d = length(diff);
+      if (d < uWhaleRadius) {
+        float falloff = 1.0 - (d / uWhaleRadius);
+        // smoother falloff
+        falloff = falloff * falloff;
+        pos += normalize(diff + vec3(0.0001)) * falloff * uWhaleStrength;
+      }
+    }
+
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
     gl_PointSize = uSize * size * uPixelRatio * (500.0 / -mvPosition.z);
     vAlpha = smoothstep(-10.0, -2.0, mvPosition.z);
@@ -96,7 +101,6 @@ const FRAG = /* glsl */ `
   }
 `;
 
-// Procedural soft sprite (alpha mask)
 function makeSpriteTexture(): THREE.Texture {
   const size = 64;
   const c = document.createElement('canvas');
@@ -111,6 +115,70 @@ function makeSpriteTexture(): THREE.Texture {
   const tex = new THREE.CanvasTexture(c);
   tex.needsUpdate = true;
   return tex;
+}
+
+/**
+ * Build a stylized luminous orca: an elongated ellipsoid body + dorsal fin
+ * + tail flukes, all using additive emissive material so it reads as
+ * "light" rather than a solid creature.
+ */
+function buildWhale(color: THREE.Color): THREE.Group {
+  const group = new THREE.Group();
+
+  const bodyMat = new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity: 0.85,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    depthTest: false,
+  });
+
+  // Body — elongated along X (swim direction)
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.25, 32, 16), bodyMat);
+  body.scale.set(2.6, 0.7, 0.9);
+  group.add(body);
+
+  // Head bulge
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.18, 24, 12), bodyMat);
+  head.position.set(0.55, 0.0, 0);
+  head.scale.set(1.0, 0.85, 0.95);
+  group.add(head);
+
+  // Dorsal fin
+  const fin = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.3, 16), bodyMat);
+  fin.position.set(-0.05, 0.18, 0);
+  fin.rotation.z = Math.PI; // point up
+  fin.scale.set(0.6, 1.0, 0.25);
+  group.add(fin);
+
+  // Tail stalk
+  const tail = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 12), bodyMat);
+  tail.position.set(-0.7, 0, 0);
+  tail.scale.set(1.5, 0.45, 0.5);
+  group.add(tail);
+
+  // Tail fluke (flat horizontal)
+  const fluke = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.35, 16), bodyMat);
+  fluke.position.set(-0.95, 0, 0);
+  fluke.rotation.z = Math.PI / 2; // point along -X
+  fluke.scale.set(1.0, 1.0, 0.18);
+  group.add(fluke);
+
+  // Soft glow halo (a billboard-ish big sphere)
+  const haloMat = new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity: 0.18,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    depthTest: false,
+  });
+  const halo = new THREE.Mesh(new THREE.SphereGeometry(0.55, 24, 16), haloMat);
+  halo.scale.set(2.8, 1.1, 1.4);
+  group.add(halo);
+
+  return group;
 }
 
 interface Props {
@@ -168,12 +236,11 @@ export function AntigravityParticleField({
     container.appendChild(canvas);
 
     const scene = new THREE.Scene();
-    // Source: PerspectiveCamera(45, ..)
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
     camera.position.z = cameraZoom;
 
-    // ---- Attributes (verbatim from source) ----
-    const positions = new Float32Array(particleCount * 3); // all zeros
+    // ---- Particle attributes ----
+    const positions = new Float32Array(particleCount * 3);
     const targets   = new Float32Array(particleCount * 3);
     const colors    = new Float32Array(particleCount * 3);
     const sizes     = new Float32Array(particleCount);
@@ -185,7 +252,6 @@ export function AntigravityParticleField({
 
     for (let i = 0; i < particleCount; i++) {
       const f = i / particleCount;
-      // position stays (0,0,0)
       targets[i * 3]     = (Math.random() - 0.5) * 10;
       targets[i * 3 + 1] = (Math.random() - 0.5) * 10;
       targets[i * 3 + 2] = (Math.random() - 0.5) * 10;
@@ -196,7 +262,7 @@ export function AntigravityParticleField({
       colors[i * 3 + 2] = c.b;
 
       sizes[i] = Math.random() * particlesScale;
-      types[i] = 0; // single sprite texture
+      types[i] = 0;
     }
 
     const geometry = new THREE.BufferGeometry();
@@ -209,12 +275,15 @@ export function AntigravityParticleField({
     const sprite = makeSpriteTexture();
 
     const uniforms = {
-      uTime:       { value: 0 },
-      uProgress:   { value: 1.0 }, // start at target so particles are visible
-      uSize:       { value: particlesScale },
-      uPixelRatio: { value: pixelRatio },
-      uAlpha:      { value: isDark ? 1.0 : 0.8 },
-      uTexture:    { value: sprite },
+      uTime:          { value: 0 },
+      uProgress:      { value: 1.0 },
+      uSize:          { value: particlesScale },
+      uPixelRatio:    { value: pixelRatio },
+      uAlpha:         { value: isDark ? 1.0 : 0.8 },
+      uTexture:       { value: sprite },
+      uWhalePos:      { value: new THREE.Vector3(0, 0, -1000) },
+      uWhaleStrength: { value: 0.0 },
+      uWhaleRadius:   { value: WHALE_PUSH_RADIUS },
     };
 
     const material = new THREE.RawShaderMaterial({
@@ -230,6 +299,23 @@ export function AntigravityParticleField({
     const points = new THREE.Points(geometry, material);
     points.frustumCulled = false;
     scene.add(points);
+
+    // ---- Whale (only if not yet shown this session) ----
+    let whale: THREE.Group | null = null;
+    let whaleStart = -1; // seconds; -1 = not started, -2 = already finished
+    const alreadyShown = (() => {
+      try { return sessionStorage.getItem(WHALE_SESSION_KEY) === '1'; }
+      catch { return false; }
+    })();
+
+    if (!alreadyShown) {
+      const whaleColor = new THREE.Color(c3); // brightest of the three
+      whale = buildWhale(whaleColor);
+      whale.visible = false;
+      scene.add(whale);
+    } else {
+      whaleStart = -2;
+    }
 
     // ---- Resize ----
     const resize = () => {
@@ -251,7 +337,68 @@ export function AntigravityParticleField({
 
     const animate = () => {
       if (!running) return;
-      uniforms.uTime.value = clock.getElapsedTime();
+      const t = clock.getElapsedTime();
+      uniforms.uTime.value = t;
+
+      // Whale lifecycle
+      if (whale && whaleStart === -1 && t >= WHALE_START_DELAY) {
+        whaleStart = t;
+        whale.visible = true;
+      }
+
+      if (whale && whaleStart > 0) {
+        const elapsed = t - whaleStart;
+        const k = elapsed / WHALE_DURATION; // 0..1
+
+        if (k >= 1) {
+          // Done — remove and free memory
+          scene.remove(whale);
+          whale.traverse((obj) => {
+            const m = obj as THREE.Mesh;
+            if (m.geometry) m.geometry.dispose();
+            const mat = m.material as THREE.Material | THREE.Material[] | undefined;
+            if (Array.isArray(mat)) mat.forEach((mm) => mm.dispose());
+            else if (mat) mat.dispose();
+          });
+          whale = null;
+          whaleStart = -2;
+          uniforms.uWhaleStrength.value = 0;
+          try { sessionStorage.setItem(WHALE_SESSION_KEY, '1'); } catch {}
+        } else {
+          // Diving arc: enters from upper-right, exits lower-left, crossing through
+          const x =  4.5 - 9.0 * k;                   // +4.5 → -4.5
+          const y =  1.6 * Math.cos(k * Math.PI);     // gentle dive (top → bottom-ish)
+          const z = -0.6 + Math.sin(k * Math.PI) * 0.8; // arcs slightly toward camera mid-flight
+          whale.position.set(x, y, z);
+
+          // Face direction of motion (always traveling -X, slight pitch from dy)
+          const dyApprox = -1.6 * Math.sin(k * Math.PI) * Math.PI / WHALE_DURATION;
+          whale.rotation.z = Math.atan2(dyApprox, -1) * 0.25;
+          whale.rotation.y = Math.PI; // facing -X
+          // Subtle tail wag
+          whale.rotation.x = Math.sin(t * 6.0) * 0.08;
+
+          // Fade in/out at the edges of the crossing
+          const edgeFade = Math.min(1, k / 0.12) * Math.min(1, (1 - k) / 0.15);
+
+          // Drive the particle repulsion uniforms
+          uniforms.uWhalePos.value.set(x, y, z);
+          uniforms.uWhaleStrength.value = WHALE_PUSH_STRENGTH * edgeFade;
+
+          // Apply opacity to whale meshes
+          whale.traverse((obj) => {
+            const m = obj as THREE.Mesh;
+            const mat = m.material as THREE.MeshBasicMaterial | undefined;
+            if (mat && 'opacity' in mat) {
+              // Preserve per-mesh base opacity ratio: body ~0.85, halo ~0.18
+              const base = (mat.userData.baseOpacity as number | undefined);
+              if (base === undefined) mat.userData.baseOpacity = mat.opacity;
+              mat.opacity = (mat.userData.baseOpacity as number) * edgeFade;
+            }
+          });
+        }
+      }
+
       renderer.render(scene, camera);
       raf = requestAnimationFrame(animate);
     };
@@ -277,6 +424,15 @@ export function AntigravityParticleField({
       geometry.dispose();
       material.dispose();
       sprite.dispose();
+      if (whale) {
+        whale.traverse((obj) => {
+          const m = obj as THREE.Mesh;
+          if (m.geometry) m.geometry.dispose();
+          const mat = m.material as THREE.Material | THREE.Material[] | undefined;
+          if (Array.isArray(mat)) mat.forEach((mm) => mm.dispose());
+          else if (mat) mat.dispose();
+        });
+      }
       renderer.dispose();
       if (canvas.parentNode === container) container.removeChild(canvas);
     };
