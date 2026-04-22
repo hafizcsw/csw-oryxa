@@ -202,7 +202,7 @@ export function AntigravityParticleField({ className, theme }: Props) {
       running = false;
       cancelAnimationFrame(raf);
       ro.disconnect();
-      themeObserver.disconnect();
+      themeObserver?.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('mousemove', onMouseMove);
       geometry.dispose();
@@ -210,7 +210,7 @@ export function AntigravityParticleField({ className, theme }: Props) {
       renderer.dispose();
       if (canvas.parentNode === container) container.removeChild(canvas);
     };
-  }, []);
+  }, [theme]);
 
   return (
     <div
