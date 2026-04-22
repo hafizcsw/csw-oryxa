@@ -1,5 +1,5 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Helmet } from 'react-helmet-async';
 import { Layout } from '@/components/layout/Layout';
 import { SupportInbox } from '@/features/support/SupportInbox';
 import { IdentityCaseCard } from '@/features/identity/IdentityCaseCard';
@@ -7,12 +7,10 @@ import { IdentityCaseCard } from '@/features/identity/IdentityCaseCard';
 export default function SupportPage() {
   const { t } = useTranslation();
   const title = t('support.page.title', { defaultValue: 'Support' });
+  useEffect(() => { document.title = title; }, [title]);
 
   return (
     <Layout>
-      <Helmet>
-        <title>{title}</title>
-      </Helmet>
       <div className="container max-w-3xl mx-auto px-4 py-6 space-y-6">
         <header>
           <h1 className="text-2xl font-bold text-foreground">{title}</h1>
