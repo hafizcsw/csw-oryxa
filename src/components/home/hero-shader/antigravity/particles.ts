@@ -28,8 +28,9 @@ interface CreateOpts {
 interface StepOpts {
   dt: number;
   time: number;          // seconds since start (will be * timeScale internally)
-  mouse: { x: number; y: number };
-  hover: number;         // 0..1
+  ringRadius: number;    // animated per-frame: 0.175 + sin(t)*0.03 + cos(3t)*0.02
+  mouse: { x: number; y: number };  // already scaled by mouseScale (0.175)
+  hover: number;
   isDark: boolean;
   pulse?: { progress: number; origin: [number, number] };
 }
@@ -40,8 +41,8 @@ export interface ParticlesUnit {
   rt: { read: RenderTarget; write: RenderTarget; swap: () => void };
   resize: (aspect: number) => void;
   step: (opts: StepOpts) => void;
-  /** Bind the latest position texture to the render program before drawing. */
-  syncRender: (time: number, isDark: boolean) => void;
+  /** Bind the latest position texture + per-frame particleScale before drawing. */
+  syncRender: (time: number, isDark: boolean, particleScale: number) => void;
   dispose: () => void;
 }
 
@@ -149,7 +150,7 @@ export function createParticles(
       uPulseProgress:    { value: 0 },
       uPulseOrigin:      { value: new Vec2(0, 0) },
       uPulseRadius:      { value: ANTIGRAV_CONFIG.pulseRadius },
-      uRingRadius:       { value: ANTIGRAV_CONFIG.ringRadius },
+      uRingRadius:       { value: 0.175 },
       uRingWidth:        { value: ANTIGRAV_CONFIG.ringWidth },
       uRingWidth2:       { value: ANTIGRAV_CONFIG.ringWidth2 },
       uRingDisplacement: { value: ANTIGRAV_CONFIG.ringDisplacement },
@@ -175,14 +176,17 @@ export function createParticles(
     depthTest: false,
     depthWrite: false,
     uniforms: {
-      uPositionTex:    { value: rtRead.texture },
-      uPointSize:      { value: ANTIGRAV_CONFIG.pointSize },
-      uParticlesScale: { value: ANTIGRAV_CONFIG.particlesScale },
-      uDpr:            { value: Math.min(window.devicePixelRatio || 1, ANTIGRAV_DPR_CAP) },
-      uAspect:         { value: aspect },
-      uTime:           { value: 0 },
-      uIntensity:      { value: intensity },
-      uIsDark:         { value: 0 },
+      uPositionTex:   { value: rtRead.texture },
+      uParticleScale: { value: 0.1 },
+      uDpr:           { value: Math.min(window.devicePixelRatio || 1, ANTIGRAV_DPR_CAP) },
+      uAspect:        { value: aspect },
+      uTime:          { value: 0 },
+      uIntensity:     { value: intensity },
+      uAlpha:         { value: ANTIGRAV_CONFIG.alpha },
+      uIsDark:        { value: 0 },
+      uColor1:        { value: [0.20, 0.40, 0.95] },
+      uColor2:        { value: [0.55, 0.30, 0.90] },
+      uColor3:        { value: [0.98, 0.58, 0.22] },
     },
   });
   const pointMesh = new Mesh(gl, { geometry: pointGeo, program: renderProgram, mode: gl.POINTS });
@@ -217,19 +221,21 @@ export function createParticles(
       simProgram.uniforms.uAspect.value = a;
       renderProgram.uniforms.uAspect.value = a;
     },
-    step: ({ dt, time, mouse, hover, pulse }) => {
+    step: ({ dt, time, ringRadius, mouse, hover, pulse }) => {
       simProgram.uniforms.uPrevPos.value = rtRead.texture;
       simProgram.uniforms.uTime.value = time * ANTIGRAV_CONFIG.timeScale * speedScale;
       simProgram.uniforms.uDelta.value = dt * speedScale || 1e-4;
+      simProgram.uniforms.uRingRadius.value = ringRadius;
       (simProgram.uniforms.uMousePos.value as Vec2).set(mouse.x, mouse.y);
       simProgram.uniforms.uIsHovering.value = hover;
       simProgram.uniforms.uPulseProgress.value = pulse?.progress ?? 0;
       if (pulse) (simProgram.uniforms.uPulseOrigin.value as Vec2).set(pulse.origin[0], pulse.origin[1]);
     },
-    syncRender: (time, isDark) => {
+    syncRender: (time, isDark, particleScale) => {
       renderProgram.uniforms.uPositionTex.value = rtRead.texture;
       renderProgram.uniforms.uTime.value = time;
       renderProgram.uniforms.uIsDark.value = isDark ? 1 : 0;
+      renderProgram.uniforms.uParticleScale.value = particleScale;
     },
     dispose: () => {
       // OGL RenderTargets don't expose explicit dispose; GC + context loss handles it.
