@@ -130,7 +130,7 @@ export function AntigravityParticleField({ className, theme }: Props) {
       uMousePos:   { value: new THREE.Vector2(0, 0) },
       uPixelRatio: { value: pixelRatio },
       uColor:      { value: colorFor() },
-      uAlphaBoost: { value: isDark() ? 1.0 : 3.0 },
+      uAlphaBoost: { value: isDark() ? 1.0 : 5.0 },
       uSizeScale:  { value: isDark() ? 1.0 : 0.55 },
       uSizeClamp:  { value: isDark() ? 9999.0 : 4.0 * pixelRatio },
     };
