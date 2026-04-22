@@ -1250,7 +1250,15 @@
       "underReview": "समीक्षाधीन",
       "reupload": "पुनः अपलोड",
       "underReviewHint": "आपकी फ़ाइल की समीक्षा की जा रही है। समीक्षा में आमतौर पर 15 मिनट से 1 कार्य दिवस लगता है। देरी होने पर सहायता से संपर्क करें।",
-      "contactSupport": "सहायता से संपर्क करें"
+      "contactSupport": "सहायता से संपर्क करें",
+      "walletWaitlistTitle": "वॉलेट सक्रिय करें",
+      "walletWaitlistDesc": "वेटलिस्ट में शामिल हों, वॉलेट सक्रिय होते ही हम आपको सूचित करेंगे।",
+      "walletJoinWaitlist": "वेटलिस्ट में शामिल हों",
+      "walletWaitlistJoined": "आप वेटलिस्ट में हैं",
+      "walletWaitlistJoinedHint": "आपका वॉलेट अभी सक्रिय नहीं है। आप वेटलिस्ट में हैं और सक्रिय होते ही हम संपर्क करेंगे।",
+      "walletApprovedTitle": "वॉलेट स्वीकृत",
+      "walletApprovedDesc": "आपका वॉलेट अब सक्रिय है। आप जमा और ट्रांसफर कर सकते हैं।",
+      "walletApprovedBadge": "सक्रिय"
     },
     "markets": {
       "title": "मुद्रा दरें",

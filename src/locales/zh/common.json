@@ -1251,7 +1251,15 @@
       "underReview": "审核中",
       "reupload": "重新上传",
       "underReviewHint": "您的文件正在审核中。审核通常需要15分钟到1个工作日。如有延迟，请联系客服。",
-      "contactSupport": "联系客服"
+      "contactSupport": "联系客服",
+      "walletWaitlistTitle": "激活钱包",
+      "walletWaitlistDesc": "加入候补名单，钱包激活后我们将立即通知您。",
+      "walletJoinWaitlist": "加入候补名单",
+      "walletWaitlistJoined": "您已在候补名单中",
+      "walletWaitlistJoinedHint": "您的钱包尚未激活。您已加入候补名单,激活后我们将立即联系您。",
+      "walletApprovedTitle": "钱包已批准",
+      "walletApprovedDesc": "您的钱包已激活。您可以充值和转账。",
+      "walletApprovedBadge": "已激活"
     },
     "markets": {
       "title": "汇率",

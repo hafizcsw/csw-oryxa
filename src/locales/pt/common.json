@@ -1250,7 +1250,15 @@
       "underReview": "Em análise",
       "reupload": "Reenviar",
       "underReviewHint": "Seu arquivo está em análise. A análise geralmente leva entre 15 minutos e 1 dia útil. Se demorar mais, entre em contato com o suporte.",
-      "contactSupport": "Contatar suporte"
+      "contactSupport": "Contatar suporte",
+      "walletWaitlistTitle": "Ativar carteira",
+      "walletWaitlistDesc": "Entre na lista de espera e avisaremos assim que sua carteira for ativada.",
+      "walletJoinWaitlist": "Entrar na lista de espera",
+      "walletWaitlistJoined": "Você está na lista de espera",
+      "walletWaitlistJoinedHint": "Sua carteira ainda não está ativa. Você está na lista de espera e entraremos em contato assim que for ativada.",
+      "walletApprovedTitle": "Carteira aprovada",
+      "walletApprovedDesc": "Sua carteira está ativa. Você pode depositar e transferir.",
+      "walletApprovedBadge": "Ativa"
     },
     "markets": {
       "title": "Taxas de Câmbio",

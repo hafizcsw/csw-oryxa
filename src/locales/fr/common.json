@@ -1247,7 +1247,15 @@
       "underReview": "En cours d'examen",
       "reupload": "Renvoyer",
       "underReviewHint": "Votre dossier est en cours d'examen. L'examen prend généralement entre 15 minutes et 1 jour ouvrable. En cas de retard, contactez le support.",
-      "contactSupport": "Contacter le support"
+      "contactSupport": "Contacter le support",
+      "walletWaitlistTitle": "Activer le portefeuille",
+      "walletWaitlistDesc": "Inscris-toi sur la liste d'attente et nous te préviendrons dès l'activation de ton portefeuille.",
+      "walletJoinWaitlist": "Rejoindre la liste d'attente",
+      "walletWaitlistJoined": "Tu es sur la liste d'attente",
+      "walletWaitlistJoinedHint": "Ton portefeuille n'est pas encore actif. Tu es sur la liste d'attente et nous te contacterons dès l'activation.",
+      "walletApprovedTitle": "Portefeuille approuvé",
+      "walletApprovedDesc": "Ton portefeuille est désormais actif. Tu peux déposer et transférer.",
+      "walletApprovedBadge": "Actif"
     },
     "markets": {
       "title": "Markets",

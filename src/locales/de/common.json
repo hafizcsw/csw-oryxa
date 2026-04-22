@@ -1250,7 +1250,15 @@
       "underReview": "In Prüfung",
       "reupload": "Erneut hochladen",
       "underReviewHint": "Ihre Datei wird derzeit überprüft. Die Prüfung dauert in der Regel zwischen 15 Minuten und einem Werktag. Bei Verzögerungen kontaktieren Sie bitte den Support.",
-      "contactSupport": "Support kontaktieren"
+      "contactSupport": "Support kontaktieren",
+      "walletWaitlistTitle": "Wallet aktivieren",
+      "walletWaitlistDesc": "Tritt der Warteliste bei und wir benachrichtigen dich, sobald dein Wallet aktiviert ist.",
+      "walletJoinWaitlist": "Der Warteliste beitreten",
+      "walletWaitlistJoined": "Du bist auf der Warteliste",
+      "walletWaitlistJoinedHint": "Dein Wallet ist noch nicht aktiv. Du stehst auf der Warteliste und wir kontaktieren dich, sobald es aktiviert wird.",
+      "walletApprovedTitle": "Wallet genehmigt",
+      "walletApprovedDesc": "Dein Wallet ist jetzt aktiv. Du kannst einzahlen und überweisen.",
+      "walletApprovedBadge": "Aktiv"
     },
     "markets": {
       "title": "Wechselkurse",
