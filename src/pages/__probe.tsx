@@ -12,17 +12,23 @@ const ACTIONS: Array<[string, Record<string, unknown>]> = [
 ];
 
 export default function Probe() {
-  const [logs, setLogs] = useState<string[]>([]);
+  const [logs, setLogs] = useState<string[]>(["[probe] starting..."]);
 
   useEffect(() => {
+    let mounted = true;
+
+    const push = (line: string) => {
+      console.log(line);
+      if (mounted) {
+        setLogs((prev) => [...prev, line]);
+      }
+    };
+
     (async () => {
-      const out: string[] = [];
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id;
       const tokenPresent = !!session?.access_token;
-      const line0 = `[probe] USER=${userId} TOKEN_PRESENT=${tokenPresent}`;
-      console.log(line0);
-      out.push(line0);
+      push(`[probe] USER=${userId} TOKEN_PRESENT=${tokenPresent}`);
 
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/student-portal-api`;
       const apikey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -34,30 +40,49 @@ export default function Probe() {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${session?.access_token}`,
+              Authorization: session?.access_token ? `Bearer ${session.access_token}` : "",
               apikey,
               "x-client-trace-id": trace,
             },
             body: JSON.stringify({ action, ...payload }),
           });
           const text = await res.text();
-          const line = `[probe] action=${action} trace=${trace} status=${res.status} body=${text}`;
-          console.log(line);
-          out.push(line);
+          push(`[probe] action=${action} trace=${trace} status=${res.status} body=${text}`);
         } catch (e) {
-          const line = `[probe] action=${action} trace=${trace} ERROR=${(e as Error).message}`;
-          console.log(line);
-          out.push(line);
+          push(`[probe] action=${action} trace=${trace} ERROR=${(e as Error).message}`);
         }
-        setLogs([...out]);
       }
-      console.log("[probe] DONE");
+
+      push("[probe] DONE");
     })();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return (
-    <pre style={{ padding: 16, fontSize: 12, whiteSpace: "pre-wrap" }}>
-      {logs.join("\n")}
-    </pre>
+    <main style={{ minHeight: "100vh", background: "#ffffff", color: "#111111", padding: 24 }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <h1 style={{ fontSize: 20, marginBottom: 16, fontFamily: "monospace" }}>/__probe</h1>
+        <pre
+          style={{
+            margin: 0,
+            padding: 16,
+            border: "1px solid #d4d4d8",
+            background: "#f8fafc",
+            color: "#111111",
+            fontSize: 12,
+            lineHeight: 1.6,
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+            minHeight: 320,
+            fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+          }}
+        >
+          {logs.join("\n")}
+        </pre>
+      </div>
+    </main>
   );
 }
