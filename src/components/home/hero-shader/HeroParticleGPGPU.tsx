@@ -196,6 +196,20 @@ export function HeroParticleGPGPU({ variant = 'reactive', className }: Props) {
     });
     const pointMesh = new Mesh(gl, { geometry: pointGeo, program: renderProgram, mode: gl.POINTS });
 
+    // Sanity-check that all programs linked successfully.
+    // If not, OGL leaves uniformLocations undefined and Mesh.draw will crash.
+    for (const [name, p] of [
+      ['seedProgram', seedProgram],
+      ['simProgram', simProgram],
+      ['renderProgram', renderProgram],
+    ] as const) {
+      if (!(p as any).uniformLocations) {
+        console.error(`[HeroParticleGPGPU] ${name} failed to link. Aborting.`);
+        if (canvas.parentNode === container) container.removeChild(canvas);
+        return;
+      }
+    }
+
     // --- Resize handling ---
     const resize = () => {
       const rect = container.getBoundingClientRect();
