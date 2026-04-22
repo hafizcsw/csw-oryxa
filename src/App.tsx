@@ -717,6 +717,7 @@ function AppContent() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Sync Routes (Critical) */}
+          <Route path="/__probe" element={<ProbePage />} />
           <Route path="/" element={<Index />} />
           {/* Dedicated Auth Page */}
           <Route path="/auth" element={<AuthPageLazy />} />
