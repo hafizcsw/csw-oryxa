@@ -1230,41 +1230,17 @@ export function MalakChatInterface({
 
   const chatBoxInner = (
     <div data-tour-id="tour-chat-box" className={chatBoxClassName}>
-           {/* Header - Only in standalone mode */}
+           {/* Header removed per request — fullscreen toggle relocated as floating button */}
            {!isFloating && !(compact && messages.length === 0 && state === 'idle' && !isFullscreen) && (
-             <div className={cn(
-               "flex items-center justify-between border-b border-border bg-muted/30",
-               isCompactMobileStandalone ? "px-3 py-2" : "px-6 py-3"
-             )}>
-                <div className="flex items-center gap-2">
-                   <div className={cn(
-                      "flex items-center justify-center rounded-full flex-shrink-0 overflow-hidden bg-transparent",
-                      isCompactMobileStandalone ? "w-8 h-8" : "w-10 h-10"
-                    )}>
-                      <img src={oryxaAvatar} alt="ORYXA" className="w-full h-full object-contain" />
-                   </div>
-                 <div>
-                   <div className="flex items-center gap-2">
-                     <h3 className={cn("font-semibold text-foreground", isCompactMobileStandalone ? "text-xs" : "text-sm")}>ORYXA</h3>
-                   </div>
-                   {customerId && stage === 'authenticated' && (
-                     <span className={cn("font-medium text-green-600 dark:text-green-400", isCompactMobileStandalone ? "text-[9px]" : "text-[10px]")}>
-                       {t('botUi.verified')}
-                     </span>
-                   )}
-                 </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setIsFullscreen(v => !v)}
-                  className="ml-auto h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-                  aria-label={isFullscreen ? t('common.exitFullscreen', { defaultValue: 'Exit fullscreen' }) : t('common.fullscreen', { defaultValue: 'Fullscreen' })}
-                  title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-                >
-                  {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                </button>
-             </div>
+             <button
+               type="button"
+               onClick={() => setIsFullscreen(v => !v)}
+               className="absolute top-2 right-2 z-10 h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+               aria-label={isFullscreen ? t('common.exitFullscreen', { defaultValue: 'Exit fullscreen' }) : t('common.fullscreen', { defaultValue: 'Fullscreen' })}
+               title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+             >
+               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+             </button>
            )}
 
 
