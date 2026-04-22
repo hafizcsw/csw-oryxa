@@ -99,10 +99,14 @@ export function AntigravityParticleField({ className }: Props) {
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('aOffset', new THREE.BufferAttribute(offsets, 1));
 
+    const isDark = () => document.documentElement.classList.contains('dark');
+    const colorFor = () => (isDark() ? new THREE.Color(1, 1, 1) : new THREE.Color(0, 0, 0));
+
     const uniforms = {
       uTime:       { value: 0 },
       uMousePos:   { value: new THREE.Vector2(0, 0) },
       uPixelRatio: { value: pixelRatio },
+      uColor:      { value: colorFor() },
     };
 
     const material = new THREE.ShaderMaterial({
@@ -110,9 +114,16 @@ export function AntigravityParticleField({ className }: Props) {
       vertexShader: VERT,
       fragmentShader: FRAG,
       transparent: true,
+      depthTest: false,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
     });
+
+    // React to theme toggle
+    const themeObserver = new MutationObserver(() => {
+      uniforms.uColor.value = colorFor();
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
     const points = new THREE.Points(geometry, material);
     points.frustumCulled = false;
