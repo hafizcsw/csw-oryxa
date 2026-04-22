@@ -11,7 +11,6 @@
  *     (verbatim from source).
  */
 import * as THREE from 'three';
-// @ts-expect-error - no types
 import PoissonDiskSampling from 'poisson-disk-sampling';
 import { PARTICLE_VERTEX, PARTICLE_FRAGMENT } from './shaders';
 import { ANTIGRAV_CONFIG } from './config';
