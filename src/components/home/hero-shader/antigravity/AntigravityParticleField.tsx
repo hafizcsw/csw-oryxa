@@ -124,6 +124,7 @@ export function AntigravityParticleField({ className, theme }: Props) {
       uMousePos:   { value: new THREE.Vector2(0, 0) },
       uPixelRatio: { value: pixelRatio },
       uColor:      { value: colorFor() },
+      uAlphaBoost: { value: isDark() ? 1.0 : 1.5 },
     };
 
     // RawShaderMaterial: matches source intent (no THREE-injected prelude).
