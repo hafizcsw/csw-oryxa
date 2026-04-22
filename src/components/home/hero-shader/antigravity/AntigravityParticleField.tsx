@@ -17,10 +17,18 @@ import * as THREE from 'three';
 const PARTICLE_COUNT = 1500;
 
 const VERT = /* glsl */ `
+  precision highp float;
+
+  uniform mat4  modelViewMatrix;
+  uniform mat4  projectionMatrix;
   uniform float uTime;
   uniform vec2  uMousePos;
   uniform float uPixelRatio;
+
+  attribute vec3  position;
   attribute float aOffset;
+
+  varying float vAlpha;
 
   void main() {
     vec3 pos = position;
@@ -33,25 +41,31 @@ const VERT = /* glsl */ `
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
     gl_PointSize = (4.0 * uPixelRatio) * (1.0 / -mvPosition.z);
-    gl_Position = projectionMatrix * mvPosition;
+    gl_Position  = projectionMatrix * mvPosition;
+
+    vAlpha = smoothstep(0.0, 1.0, 1.0 - length(pos) / 12.0);
   }
 `;
 
 const FRAG = /* glsl */ `
   precision highp float;
+
   uniform vec3 uColor;
+  varying float vAlpha;
 
   void main() {
     float dist = distance(gl_PointCoord, vec2(0.5));
     if (dist > 0.5) discard;
 
-    float alpha = 1.0 - smoothstep(0.0, 0.5, dist);
+    float alpha = smoothstep(0.5, 0.0, dist) * vAlpha;
     gl_FragColor = vec4(uColor, alpha * 0.6);
   }
 `;
 
 interface Props {
   className?: string;
+  /** Optional theme override. If omitted, falls back to <html class="dark"> observer. */
+  theme?: 'dark' | 'light';
 }
 
 export function AntigravityParticleField({ className }: Props) {
