@@ -117,7 +117,10 @@ export function AntigravityParticleField({ className, theme }: Props) {
     // Theme: explicit prop wins; otherwise read <html class="dark"> + observe.
     const isDark = () =>
       theme ? theme === 'dark' : document.documentElement.classList.contains('dark');
-    const colorFor = () => (isDark() ? new THREE.Color(1, 1, 1) : new THREE.Color(0, 0, 0));
+    // Light mode keeps AdditiveBlending → use a light-blue (#80CCFF ≈ vec3(0.5,0.8,1.0))
+    // so particles stay visible on white background. Dark mode = white on black.
+    const colorFor = () =>
+      isDark() ? new THREE.Color(1, 1, 1) : new THREE.Color(0.5, 0.8, 1.0);
 
     const uniforms = {
       uTime:       { value: 0 },
