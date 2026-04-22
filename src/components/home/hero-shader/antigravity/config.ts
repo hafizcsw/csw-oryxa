@@ -13,14 +13,22 @@ export const ANTIGRAV_CONFIG = {
   ringWidth2: 0.05,
   ringDisplacement: 0.15,
 
-  // ---- Sim/init (verbatim) ----
-  textureSize: 256,        // -> 256*256 = 65,536 particles
-  ringRadius: 0.2,
+  // ---- Sim/init ----
+  // Effective particle count = textureSize^2. Reference visual is sparse,
+  // so we keep this LOW and rely on density/scale for visible coverage.
+  textureSize: 96,         // -> 96*96 = 9,216 particles (was 256² = 65,536)
+  ringRadius: 0.2,         // legacy (unused for distribution now)
   timeScale: 0.5,          // sim uses uTime * 0.5
+
+  // ---- Distribution ----
+  // Particles fill the whole hero container, with a soft quiet zone around
+  // the centered text/card area.
+  quietCenterRadius: 0.55, // NDC.y units around (0,0) where density drops
+  quietSoftness: 0.25,     // softness of the quiet falloff
 
   // ---- Mouse interaction ----
   mouseRadius: 0.15,       // normalized
-  mouseForce: 0.6,
+  mouseForce: 0.5,
 
   // ---- Pulse (kept architecturally, disabled by default) ----
   pulseEnabled: false,
@@ -36,6 +44,6 @@ export const ANTIGRAV_DPR_CAP = 1.5;
 export const ANTIGRAV_MOUSE_LERP = 0.12;
 export const ANTIGRAV_HOVER_LERP = 0.08;
 
-// Mobile downscale (the source runs lighter on phones)
-export const ANTIGRAV_MOBILE_TEX = 160; // 25,600 particles on mobile
+// Mobile downscale
+export const ANTIGRAV_MOBILE_TEX = 64;  // 4,096 particles on mobile
 export const ANTIGRAV_MOBILE_INTENSITY = 0.9;
