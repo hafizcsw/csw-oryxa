@@ -197,3 +197,231 @@ export async function createSupportTicket(input: {
 export async function listSupportTickets() {
   return portalInvoke<{ tickets: SupportTicketRow[] }>("support_ticket_list");
 }
+
+// ============================================================================
+// CRM Bridge v2 — case-based identity + support inbox/thread
+// ----------------------------------------------------------------------------
+// All 7 functions below are 1:1 wrappers over student-portal-api actions, which
+// in turn proxy to CRM web-* endpoints. portalInvoke already converts both
+// transport errors AND { ok:false } payloads into { ok:false, error } — callers
+// MUST NOT assume HTTP success implies business success.
+//
+// Mapping (locked):
+//   getIdentityCase()       → identity_case_get       → web-get-identity-case
+//   listSupportCases()      → support_case_list       → web-list-support-cases
+//   getSupportCase()        → support_case_get        → web-get-support-case
+//   listSupportMessages()   → support_messages_list   → web-list-support-messages
+//   sendSupportMessage()    → support_message_send    → web-send-support-message
+//   markSupportRead()       → support_mark_read       → web-mark-support-read
+//   closeSupportCase()      → support_case_close      → web-close-support-case
+// ============================================================================
+
+// ─── Shared enums (CRM contract) ─────────────────────────────────────────────
+export type IdentityAttemptStatus =
+  | "submitted"
+  | "approved"
+  | "rejected"
+  | "reupload_required";
+
+export type IdentityDocTypeV2 =
+  | "national_id"
+  | "passport"
+  | "driver_license"
+  | "residency"
+  | "other";
+
+export type SupportCaseStatus = "open" | "in_progress" | "resolved" | "closed";
+
+export type SupportMessageSenderType = "customer" | "staff" | "system";
+
+export type SupportMessageKind =
+  | "text"
+  | "system_event"
+  | "file_ref"
+  | "identity_decision"
+  | "identity_revoked"
+  | "case_resolved"
+  | "case_closed";
+
+// ─── Identity case ───────────────────────────────────────────────────────────
+export interface IdentityCurrentAttempt {
+  request_id: string;
+  attempt_no: number;
+  status: IdentityAttemptStatus;
+  id_doc_type: IdentityDocTypeV2;
+  decision_reason_codes: string[];
+  student_visible_note: string | null;
+  reviewed_at: string | null;
+  resolved_at: string | null;
+}
+
+export interface IdentityPreviousAttempt {
+  request_id: string;
+  attempt_no: number;
+  status: IdentityAttemptStatus;
+  submitted_at: string;
+  reviewed_at: string | null;
+  student_visible_note: string | null;
+}
+
+export interface IdentityCase {
+  case_id: string;
+  current_attempt: IdentityCurrentAttempt;
+  previous_attempts: IdentityPreviousAttempt[];
+}
+
+export interface IdentityCaseResponse {
+  case: IdentityCase;
+}
+
+// ─── Support cases ───────────────────────────────────────────────────────────
+export interface SupportCaseListItem {
+  case_id: string;
+  case_type: string | null;
+  subject: string | null;
+  status: SupportCaseStatus;
+  unread_for_customer: boolean;
+  last_message_at: string | null;
+  last_message_preview: string | null;
+  linked_identity_request_id: string | null;
+  assignee_display: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SupportCaseListResponse {
+  cases: SupportCaseListItem[];
+}
+
+export interface SupportCaseDetail {
+  case_id: string;
+  case_type: string | null;
+  subject: string | null;
+  body: string | null;
+  status: SupportCaseStatus;
+  category: string | null;
+  priority: string | null;
+  linked_identity_request_id: string | null;
+  assignee_display: string | null;
+  created_at: string;
+  updated_at: string;
+  resolved_at: string | null;
+  closed_at: string | null;
+}
+
+export interface SupportCaseIdentityLink {
+  request_id: string;
+  status: IdentityAttemptStatus;
+  attempt_no: number;
+  student_visible_note: string | null;
+}
+
+export interface SupportCaseGetResponse {
+  case: SupportCaseDetail;
+  identity_link: SupportCaseIdentityLink | null;
+}
+
+// ─── Support messages ────────────────────────────────────────────────────────
+export interface SupportMessage {
+  id: string;
+  sender_type: SupportMessageSenderType;
+  author_display: string | null;
+  body: string;
+  message_kind: SupportMessageKind;
+  visible_to_customer: boolean;
+  created_at: string;
+}
+
+export interface SupportMessagesListResponse {
+  messages: SupportMessage[];
+}
+
+export interface SupportMessageSendResponse {
+  ok: true;
+  message: {
+    id: string;
+    sender_type: "customer";
+    created_at: string;
+  };
+}
+
+export interface SupportMarkReadResponse {
+  ok: true;
+  case_id: string;
+  read_at: string;
+  unread_for_customer: false;
+}
+
+export interface SupportCaseCloseResponse {
+  ok: true;
+  case_id: string;
+  status: "closed";
+  closed_at: string;
+}
+
+// ─── Wrappers ────────────────────────────────────────────────────────────────
+// Each wrapper forwards the documented input fields only — customer_id is
+// resolved server-side inside student-portal-api from the auth session.
+
+/** Fetch the current/latest identity case for the signed-in customer. */
+export async function getIdentityCase() {
+  return portalInvoke<IdentityCaseResponse>("identity_case_get");
+}
+
+export interface ListSupportCasesInput {
+  status_in?: SupportCaseStatus[];
+  limit?: number;
+  offset?: number;
+}
+
+/** List support cases for the signed-in customer (optionally filtered). */
+export async function listSupportCases(input: ListSupportCasesInput = {}) {
+  const payload: Record<string, unknown> = {};
+  if (input.status_in) payload.status_in = input.status_in;
+  if (typeof input.limit === "number") payload.limit = input.limit;
+  if (typeof input.offset === "number") payload.offset = input.offset;
+  return portalInvoke<SupportCaseListResponse>("support_case_list", payload);
+}
+
+/** Get full detail of one support case (with optional identity link). */
+export async function getSupportCase(input: { case_id: string }) {
+  return portalInvoke<SupportCaseGetResponse>("support_case_get", {
+    case_id: input.case_id,
+  });
+}
+
+export interface ListSupportMessagesInput {
+  case_id: string;
+  after?: string | null;
+  limit?: number;
+}
+
+/** List messages of one support case (paginated by `after`). */
+export async function listSupportMessages(input: ListSupportMessagesInput) {
+  const payload: Record<string, unknown> = { case_id: input.case_id };
+  if (input.after !== undefined) payload.after = input.after;
+  if (typeof input.limit === "number") payload.limit = input.limit;
+  return portalInvoke<SupportMessagesListResponse>("support_messages_list", payload);
+}
+
+/** Append a customer-authored message to a support case. */
+export async function sendSupportMessage(input: { case_id: string; body: string }) {
+  return portalInvoke<SupportMessageSendResponse>("support_message_send", {
+    case_id: input.case_id,
+    body: input.body,
+  });
+}
+
+/** Mark a support case as read by the customer. */
+export async function markSupportRead(input: { case_id: string }) {
+  return portalInvoke<SupportMarkReadResponse>("support_mark_read", {
+    case_id: input.case_id,
+  });
+}
+
+/** Customer-initiated close of a support case. */
+export async function closeSupportCase(input: { case_id: string }) {
+  return portalInvoke<SupportCaseCloseResponse>("support_case_close", {
+    case_id: input.case_id,
+  });
+}
