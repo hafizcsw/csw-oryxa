@@ -14,7 +14,7 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-const PARTICLE_COUNT = 1500;
+const PARTICLE_COUNT = 50000;
 
 const VERT = /* glsl */ `
   precision highp float;
