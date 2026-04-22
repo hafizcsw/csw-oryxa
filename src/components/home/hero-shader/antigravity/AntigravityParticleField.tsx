@@ -150,7 +150,7 @@ export function AntigravityParticleField({ className, theme }: Props) {
     const themeObserver = !theme
       ? new MutationObserver(() => {
           uniforms.uColor.value = colorFor();
-          uniforms.uAlphaBoost.value = isDark() ? 1.0 : 3.0;
+          uniforms.uAlphaBoost.value = isDark() ? 1.0 : 5.0;
           uniforms.uSizeScale.value = isDark() ? 1.0 : 0.55;
           uniforms.uSizeClamp.value = isDark() ? 9999.0 : 4.0 * pixelRatio;
         })
