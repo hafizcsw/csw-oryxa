@@ -17,10 +17,18 @@ import * as THREE from 'three';
 const PARTICLE_COUNT = 1500;
 
 const VERT = /* glsl */ `
+  precision highp float;
+
+  uniform mat4  modelViewMatrix;
+  uniform mat4  projectionMatrix;
   uniform float uTime;
   uniform vec2  uMousePos;
   uniform float uPixelRatio;
+
+  attribute vec3  position;
   attribute float aOffset;
+
+  varying float vAlpha;
 
   void main() {
     vec3 pos = position;
@@ -33,28 +41,34 @@ const VERT = /* glsl */ `
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
     gl_PointSize = (4.0 * uPixelRatio) * (1.0 / -mvPosition.z);
-    gl_Position = projectionMatrix * mvPosition;
+    gl_Position  = projectionMatrix * mvPosition;
+
+    vAlpha = smoothstep(0.0, 1.0, 1.0 - length(pos) / 12.0);
   }
 `;
 
 const FRAG = /* glsl */ `
   precision highp float;
+
   uniform vec3 uColor;
+  varying float vAlpha;
 
   void main() {
     float dist = distance(gl_PointCoord, vec2(0.5));
     if (dist > 0.5) discard;
 
-    float alpha = 1.0 - smoothstep(0.0, 0.5, dist);
+    float alpha = smoothstep(0.5, 0.0, dist) * vAlpha;
     gl_FragColor = vec4(uColor, alpha * 0.6);
   }
 `;
 
 interface Props {
   className?: string;
+  /** Optional theme override. If omitted, falls back to <html class="dark"> observer. */
+  theme?: 'dark' | 'light';
 }
 
-export function AntigravityParticleField({ className }: Props) {
+export function AntigravityParticleField({ className, theme }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -99,7 +113,9 @@ export function AntigravityParticleField({ className }: Props) {
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('aOffset', new THREE.BufferAttribute(offsets, 1));
 
-    const isDark = () => document.documentElement.classList.contains('dark');
+    // Theme: explicit prop wins; otherwise read <html class="dark"> + observe.
+    const isDark = () =>
+      theme ? theme === 'dark' : document.documentElement.classList.contains('dark');
     const colorFor = () => (isDark() ? new THREE.Color(1, 1, 1) : new THREE.Color(0, 0, 0));
 
     const uniforms = {
@@ -109,21 +125,22 @@ export function AntigravityParticleField({ className }: Props) {
       uColor:      { value: colorFor() },
     };
 
-    const material = new THREE.ShaderMaterial({
+    // RawShaderMaterial: matches source intent (no THREE-injected prelude).
+    const material = new THREE.RawShaderMaterial({
       uniforms,
       vertexShader: VERT,
       fragmentShader: FRAG,
       transparent: true,
       depthTest: false,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.AdditiveBlending, // implementation choice — not source-proven
     });
 
-    // React to theme toggle
-    const themeObserver = new MutationObserver(() => {
-      uniforms.uColor.value = colorFor();
-    });
-    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    // Fallback observer only when no explicit theme prop is provided.
+    const themeObserver = !theme
+      ? new MutationObserver(() => { uniforms.uColor.value = colorFor(); })
+      : null;
+    themeObserver?.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
     const points = new THREE.Points(geometry, material);
     points.frustumCulled = false;
@@ -185,7 +202,7 @@ export function AntigravityParticleField({ className }: Props) {
       running = false;
       cancelAnimationFrame(raf);
       ro.disconnect();
-      themeObserver.disconnect();
+      themeObserver?.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('mousemove', onMouseMove);
       geometry.dispose();
@@ -193,7 +210,7 @@ export function AntigravityParticleField({ className }: Props) {
       renderer.dispose();
       if (canvas.parentNode === container) container.removeChild(canvas);
     };
-  }, []);
+  }, [theme]);
 
   return (
     <div
