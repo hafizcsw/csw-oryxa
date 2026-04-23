@@ -24,17 +24,18 @@ export function AGDisplayAnchor({
       data-ag-reveal
       className={cn(
         "ag-display-anchor relative w-full overflow-hidden",
-        // Inherits parent bg/text — works in both themes via AG tokens
         "bg-[var(--ag-bg)] text-[var(--ag-fg)]",
-        "pt-12 pb-0",
+        // Flush to bottom — no padding below, generous space above
+        "pt-[clamp(80px,12vw,180px)] pb-0 -mb-[0.18em]",
         className
       )}
     >
       <div
         className={cn(
-          "ag-fade-up text-center font-semibold tracking-[-0.04em] leading-[0.85]",
-          "text-[clamp(96px,22vw,320px)]",
-          "select-none"
+          "ag-fade-up text-center font-semibold tracking-[-0.04em]",
+          // Antigravity-style: oversized, bleeds to edges, sits on baseline
+          "text-[clamp(120px,28vw,420px)] leading-[0.78]",
+          "select-none whitespace-nowrap px-2"
         )}
         style={{ ["--ag-word-delay" as string]: "200ms" }}
       >
