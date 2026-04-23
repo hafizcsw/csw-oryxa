@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
   Settings,
   ShieldCheck,
+  ShieldAlert,
+  ShieldQuestion,
   Sparkles,
   MessageCircle,
   FileText,
@@ -11,12 +13,13 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
+import type { IdentityStatus } from "@/api/identitySupportInvoke";
 
 export type PanelView = "default" | "oryxa" | "messages" | "getSupport";
 
 interface PanelCategoriesGridProps {
   activeView: PanelView;
-  identityApproved: boolean;
+  identityStatus: IdentityStatus | null;
   unreadCount: number;
   onSwitchView: (view: PanelView) => void;
   onClose: () => void;
