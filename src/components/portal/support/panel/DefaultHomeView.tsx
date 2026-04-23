@@ -4,9 +4,10 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useMalakChat } from "@/contexts/MalakChatContext";
 import { PanelCategoriesGrid } from "./PanelCategoriesGrid";
 import type { PanelView } from "./PanelCategoriesGrid";
+import type { IdentityStatus } from "@/api/identitySupportInvoke";
 
 interface DefaultHomeViewProps {
-  identityApproved: boolean;
+  identityStatus: IdentityStatus | null;
   unreadCount: number;
   onSwitchView: (view: PanelView) => void;
   onClose: () => void;
@@ -14,7 +15,7 @@ interface DefaultHomeViewProps {
 }
 
 export function DefaultHomeView({
-  identityApproved,
+  identityStatus,
   unreadCount,
   onSwitchView,
   onClose,
