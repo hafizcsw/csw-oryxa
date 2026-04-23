@@ -439,7 +439,17 @@ const Index = () => {
                 />
               </AGSection>
 
-              {/* 2. Student journey triptych */}
+              {/* 2. University & Student Community */}
+              <div className="border-t border-[var(--ag-border)]">
+                <UniversityCommunitySection />
+              </div>
+
+              {/* 3. About Oryxa — AnomalyOrb (our identity) */}
+              <div className="border-t border-[var(--ag-border)]">
+                <AboutOryxaSection />
+              </div>
+
+              {/* 4. Student journey triptych */}
               <AGSection
                 eyebrow={t("home.ag.eyebrow.journey")}
                 className="border-t border-[var(--ag-border)]"
@@ -458,7 +468,12 @@ const Index = () => {
                 </AGTriptych>
               </AGSection>
 
-              {/* 3. World map — wrapped only, internals untouched */}
+              {/* 5. Why choose us — services grid */}
+              <div className="border-t border-[var(--ag-border)]">
+                <WhyChooseUsSection />
+              </div>
+
+              {/* 6. World map — wrapped only, internals untouched */}
               <AGSection
                 eyebrow={t("home.ag.eyebrow.global")}
                 innerClassName="!max-w-[1400px]"
@@ -467,7 +482,7 @@ const Index = () => {
                 <LazyMount minHeight={400}><WorldMapSection /></LazyMount>
               </AGSection>
 
-              {/* 4. Built-for global students statement */}
+              {/* 7. Built-for global students statement */}
               <AGSection className="border-t border-[var(--ag-border)]">
                 <AGStatement
                   headline={t("home.ag.statement2.headline")}
@@ -475,7 +490,22 @@ const Index = () => {
                 />
               </AGSection>
 
-              {/* 5. Use-case triptych */}
+              {/* 8. Institutions — partner with us */}
+              <div className="border-t border-[var(--ag-border)]">
+                <InstitutionsSection />
+              </div>
+
+              {/* 9. ORX RANK */}
+              <div className="border-t border-[var(--ag-border)]">
+                <OrxRankSection />
+              </div>
+
+              {/* 10. Partners marquee */}
+              <div className="border-t border-[var(--ag-border)]">
+                <PartnersMarquee />
+              </div>
+
+              {/* 11. Use-case triptych */}
               <AGSection
                 eyebrow={t("home.ag.eyebrow.platform")}
                 className="border-t border-[var(--ag-border)]"
@@ -494,7 +524,7 @@ const Index = () => {
                 </AGTriptych>
               </AGSection>
 
-              {/* 6. Dark anchor band with particles (auto-inverted) */}
+              {/* 12. Dark anchor band with particles (auto-inverted) */}
               <AGAnchorBand
                 headline={t("home.ag.anchor.headline")}
                 primaryCta={{
