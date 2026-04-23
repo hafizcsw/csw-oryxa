@@ -10,10 +10,12 @@
 // ═══════════════════════════════════════════════════════════════
 
 export type CountryCode =
-  | 'CN' | 'RU' | 'US' | 'CA' | 'DE' | 'GB' | 'ES' | 'FI' | 'IT' | 'CH';
+  | 'CN' | 'RU' | 'US' | 'CA' | 'DE' | 'GB' | 'ES' | 'FI' | 'IT' | 'CH'
+  | 'TR'; // Door 3 extensibility proof — added data-only
 
 export const TARGET_COUNTRIES: CountryCode[] = [
   'CN', 'RU', 'US', 'CA', 'DE', 'GB', 'ES', 'FI', 'IT', 'CH',
+  'TR',
 ];
 
 // ── Entry pathways (after-secondary only) ────────────────────
