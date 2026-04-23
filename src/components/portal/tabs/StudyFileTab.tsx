@@ -34,6 +34,9 @@ import type { DocumentTypeFilter } from "./DocumentsTab";
 import { guessSlotFromFileName } from "@/features/documents/document-registry-model";
 import { useDocumentLaneFacts } from "@/hooks/useDocumentLaneFacts";
 import { LaneFactsCard } from "@/components/student-file/LaneFactsCard";
+import { useStudentEvaluation } from "@/hooks/useStudentEvaluation";
+import { analysesToEvalInputs } from "@/features/evaluation-snapshot/adapter";
+import { StudentEvaluationWorkspace } from "@/components/evaluation/StudentEvaluationWorkspace";
 
 const ProfileTab = lazy(() => import("@/components/portal/tabs/ProfileTab").then(m => ({ default: m.ProfileTab })));
 const ReadinessTab = lazy(() => import("@/components/readiness/ReadinessTab").then(m => ({ default: m.ReadinessTab })));
@@ -556,6 +559,28 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     return map;
   }, [analysisHook.analyses, docMimeById, t]);
 
+  // ═══ Phase A: Student Evaluation Workspace (persisted) ═══
+  const evalDocs = useMemo(
+    () => analysesToEvalInputs(analysisHook.analyses, {
+      citizenshipCountry: canonicalFile?.identity?.citizenship ?? null,
+    }),
+    [analysisHook.analyses, canonicalFile?.identity?.citizenship],
+  );
+
+  const evaluation = useStudentEvaluation({
+    userId: profile?.user_id ?? null,
+    docs: evalDocs,
+    enabled: !!profile?.user_id,
+  });
+
+  const documentNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const d of documents || []) {
+      if (d?.id) map[d.id] = d.file_name ?? d.id.slice(0, 8);
+    }
+    return map;
+  }, [documents]);
+
   // ✅ CANONICAL LOCK: render gate UI instead of academic file when identity not approved.
   if (!identityLoading && identityStatus.blocks_academic_file) {
     return (
@@ -648,6 +673,21 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         onEditField={analysisHook.editFieldValue}
       />
 
+      {/* ═══ Phase A: Student Evaluation Workspace (persisted under extracted info) ═══ */}
+      <StudentEvaluationWorkspace
+        loading={evaluation.loading}
+        computing={evaluation.computing}
+        saved={evaluation.saved}
+        credentialsByDocId={evaluation.credentialsByDocId}
+        snapshot={evaluation.snapshot}
+        snapshotResult={evaluation.snapshotResult}
+        lastComputedAt={evaluation.lastComputedAt}
+        recomputeReason={evaluation.recomputeReason}
+        documentNames={documentNames}
+        onRecompute={evaluation.recompute}
+      />
+
     </div>
   );
 }
+

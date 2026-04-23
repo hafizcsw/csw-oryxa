@@ -17215,6 +17215,48 @@ export type Database = {
           },
         ]
       }
+      student_evaluation_snapshots: {
+        Row: {
+          created_at: string
+          document_ids: Json
+          id: string
+          input_hash: string
+          last_computed_at: string
+          needs_manual_review: boolean
+          recompute_reason: string | null
+          result: Json
+          rules_version: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_ids?: Json
+          id?: string
+          input_hash: string
+          last_computed_at?: string
+          needs_manual_review?: boolean
+          recompute_reason?: string | null
+          result: Json
+          rules_version: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          document_ids?: Json
+          id?: string
+          input_hash?: string
+          last_computed_at?: string
+          needs_manual_review?: boolean
+          recompute_reason?: string | null
+          result?: Json
+          rules_version?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       student_friendships: {
         Row: {
           course_key: string | null
@@ -17290,6 +17332,66 @@ export type Database = {
           student_user_id?: string
           teacher_notes?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      student_normalized_credentials: {
+        Row: {
+          award_year: number | null
+          content_hash: string | null
+          created_at: string
+          decisions: Json
+          document_id: string
+          id: string
+          matched_rule_ids: Json
+          needs_manual_review: boolean
+          normalized_credential_kind: string | null
+          normalized_credential_subtype: string | null
+          normalized_grade_pct: number | null
+          raw_input: Json | null
+          raw_output: Json | null
+          rules_version: string
+          source_country: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          award_year?: number | null
+          content_hash?: string | null
+          created_at?: string
+          decisions?: Json
+          document_id: string
+          id?: string
+          matched_rule_ids?: Json
+          needs_manual_review?: boolean
+          normalized_credential_kind?: string | null
+          normalized_credential_subtype?: string | null
+          normalized_grade_pct?: number | null
+          raw_input?: Json | null
+          raw_output?: Json | null
+          rules_version: string
+          source_country?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          award_year?: number | null
+          content_hash?: string | null
+          created_at?: string
+          decisions?: Json
+          document_id?: string
+          id?: string
+          matched_rule_ids?: Json
+          needs_manual_review?: boolean
+          normalized_credential_kind?: string | null
+          normalized_credential_subtype?: string | null
+          normalized_grade_pct?: number | null
+          raw_input?: Json | null
+          raw_output?: Json | null
+          rules_version?: string
+          source_country?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
