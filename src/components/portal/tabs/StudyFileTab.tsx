@@ -559,6 +559,28 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     return map;
   }, [analysisHook.analyses, docMimeById, t]);
 
+  // ═══ Phase A: Student Evaluation Workspace (persisted) ═══
+  const evalDocs = useMemo(
+    () => analysesToEvalInputs(analysisHook.analyses, {
+      citizenshipCountry: canonicalFile?.identity?.citizenship_country_code ?? null,
+    }),
+    [analysisHook.analyses, canonicalFile?.identity?.citizenship_country_code],
+  );
+
+  const evaluation = useStudentEvaluation({
+    userId: profile?.user_id ?? null,
+    docs: evalDocs,
+    enabled: !!profile?.user_id,
+  });
+
+  const documentNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const d of documents || []) {
+      if (d?.id) map[d.id] = d.file_name ?? d.id.slice(0, 8);
+    }
+    return map;
+  }, [documents]);
+
   // ✅ CANONICAL LOCK: render gate UI instead of academic file when identity not approved.
   if (!identityLoading && identityStatus.blocks_academic_file) {
     return (
