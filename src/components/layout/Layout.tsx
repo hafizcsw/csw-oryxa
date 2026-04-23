@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, lazy, Suspense } from "react";
 import { NavHintBadges } from "./NavHintBadges";
 import { useUniversityShortlistHook } from "@/hooks/useUniversityShortlist";
 import { HeaderAuth } from "./HeaderAuth";
@@ -15,15 +15,17 @@ import logo from "@/assets/logo-connect-study-world.png";
 import { useMalakChat } from "@/contexts/MalakChatContext";
 import { usePortalShortlist } from "@/hooks/usePortalShortlist";
 import { useGuestAwareShortlist } from "@/hooks/useGuestShortlist";
-import { ShortlistDrawer } from "@/components/shortlist/ShortlistDrawer";
-import { AuthStartModal } from "@/components/auth/AuthStartModal";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useStaffAuthority } from "@/hooks/useStaffAuthority";
 import { useTeacherPermissions } from "@/lib/teacherPermissions";
-import { HeaderMessenger } from "./HeaderMessenger";
+
+// Lazy-loaded heavy overlays — not needed for first paint
+const ShortlistDrawer = lazy(() => import("@/components/shortlist/ShortlistDrawer").then(m => ({ default: m.ShortlistDrawer })));
+const AuthStartModal = lazy(() => import("@/components/auth/AuthStartModal").then(m => ({ default: m.AuthStartModal })));
+const HeaderMessenger = lazy(() => import("./HeaderMessenger").then(m => ({ default: m.HeaderMessenger })));
 
 interface LayoutProps {
   children: ReactNode;
@@ -214,7 +216,7 @@ export function Layout({
 
             {/* Notifications (authenticated only) — placed right next to avatar */}
             {isAuthenticated && !hideStudentNav && (
-              <HeaderMessenger />
+              <Suspense fallback={null}><HeaderMessenger /></Suspense>
             )}
 
             {/* 5. Account/Auth */}
@@ -230,10 +232,10 @@ export function Layout({
       
       <CompareFloatingButton />
       
-      {/* Auth Start Modal */}
-      <AuthStartModal open={showAuthModal} onOpenChange={closeAuthModal} />
-      
-      {/* #7.3 Shortlist Drawer */}
-      <ShortlistDrawer open={showShortlistDrawer} onOpenChange={setShowShortlistDrawer} />
+      {/* Lazy overlays — invisible until triggered */}
+      <Suspense fallback={null}>
+        <AuthStartModal open={showAuthModal} onOpenChange={closeAuthModal} />
+        <ShortlistDrawer open={showShortlistDrawer} onOpenChange={setShowShortlistDrawer} />
+      </Suspense>
     </div>;
 }
