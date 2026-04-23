@@ -107,10 +107,10 @@ export function FloatingSupportPanel({ onClose, initialView = "default" }: Float
         transition={reduced ? { duration: 0.15 } : SPRING}
         style={{ transformOrigin: isRtl ? "bottom left" : "bottom right" }}
         className={cn(
-          "fixed inset-x-0 top-0 bottom-0 z-[58] w-full h-screen rounded-none",
+          "fixed inset-x-0 top-16 bottom-0 z-[58] w-full h-auto rounded-t-3xl rounded-b-none",
           bottomDockedView
-            ? "sm:inset-x-auto sm:inset-y-0 sm:end-0 sm:h-screen sm:max-h-screen sm:rounded-none"
-            : "sm:inset-x-auto sm:inset-y-0 sm:end-0 sm:h-screen sm:max-h-screen sm:rounded-none",
+            ? "sm:inset-x-auto sm:top-16 sm:bottom-0 sm:end-0 sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-none"
+            : "sm:inset-x-auto sm:top-16 sm:bottom-0 sm:end-0 sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-none",
           expanded ? "sm:w-[520px]" : "sm:w-[400px]",
           "bg-card/95 backdrop-blur-xl",
           "border border-border/50",
