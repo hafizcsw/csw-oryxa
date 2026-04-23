@@ -5437,41 +5437,59 @@ Deno.serve(async (req) => {
               return Response.json({ ok: true, file_url: publicUrl }, { headers: corsHeaders });
             }
 
-            // Customer flow: update by customer_id DIRECTLY.
-            // The RPC `rpc_portal_set_customer_avatar_v1` matches by p_auth_user_id, which can
-            // silently no-op when the customer's stored auth_user_id does not match the current
-            // session's auth user (multi-link / re-auth scenarios). Updating by `customers.id`
-            // (resolved via fetchCrmProfileByAuthUserId) is authoritative.
-            if (!customerId) {
-              return Response.json({ ok: false, error: 'NO_CUSTOMER_ID', http_status: 400 }, { status: 200, headers: corsHeaders });
+            // Customer flow: SSOT = canonical CRM RPC.
+            // Per CRM contract, `rpc_portal_set_customer_avatar_v1` performs all atomic steps:
+            //   - supersede prior customer_files avatar rows
+            //   - insert new customer_files row (file_kind='avatar')
+            //   - update customers.avatar_url + customers.avatar_storage_path together
+            //   - insert activity_feed row (action_type='avatar_set')
+            // Any direct UPDATE on customers is forbidden (causes column drift + view staleness).
+            if (!authUserId) {
+              return Response.json({ ok: false, error: 'NO_AUTH_USER', http_status: 401 }, { status: 200, headers: corsHeaders });
             }
 
-            const { data: updatedRow, error: updateErr } = await crmStorageClient
-              .from('customers')
-              .update({ avatar_url: publicUrl })
-              .eq('id', customerId)
-              .select('id, avatar_url')
-              .maybeSingle();
-
-            if (updateErr) {
-              console.error('[crm_storage] ❌ Avatar update failed:', updateErr);
-              return Response.json({ ok: false, error: `set_avatar: ${updateErr.message}`, http_status: 400 }, { status: 200, headers: corsHeaders });
-            }
-
-            console.log('[crm_storage] ✅ set_avatar via direct customer update:', updatedRow);
-
-            // Best-effort: also notify the legacy RPC (for any downstream listeners), but ignore errors.
-            try {
-              await crmStorageClient.rpc('rpc_portal_set_customer_avatar_v1', {
+            const { data: rpcResult, error: rpcErr } = await crmStorageClient.rpc(
+              'rpc_portal_set_customer_avatar_v1',
+              {
                 p_auth_user_id: authUserId,
+                p_storage_bucket: 'avatars',
                 p_storage_path: path,
                 p_public_url: publicUrl,
-              });
-            } catch (rpcErr) {
-              console.warn('[crm_storage] RPC notify (non-fatal):', rpcErr);
+              }
+            );
+
+            if (rpcErr) {
+              console.error('[crm_storage] ❌ set_avatar RPC error:', rpcErr);
+              return Response.json(
+                { ok: false, error: `set_avatar_rpc: ${rpcErr.message}`, http_status: 500 },
+                { status: 200, headers: corsHeaders }
+              );
             }
 
-            return Response.json({ ok: true, file_url: publicUrl }, { headers: corsHeaders });
+            const rpcOk = (rpcResult as any)?.ok === true;
+            if (!rpcOk) {
+              console.error('[crm_storage] ❌ set_avatar RPC returned not-ok:', rpcResult);
+              return Response.json(
+                {
+                  ok: false,
+                  error: (rpcResult as any)?.error || 'avatar_rpc_failed',
+                  details: rpcResult,
+                  http_status: 400,
+                },
+                { status: 200, headers: corsHeaders }
+              );
+            }
+
+            console.log('[crm_storage] ✅ set_avatar via canonical RPC:', rpcResult);
+
+            return Response.json(
+              {
+                ok: true,
+                file_url: (rpcResult as any)?.file_url || publicUrl,
+                file_id: (rpcResult as any)?.file_id,
+              },
+              { headers: corsHeaders }
+            );
           }
           
           // ============= DELETE FILE =============
