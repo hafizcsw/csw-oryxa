@@ -1,6 +1,11 @@
 import { useState, useMemo, useCallback, memo, useEffect, useRef, lazy, Suspense } from "react";
 import { MapResultsRail } from "./MapResultsRail";
-import { WorldMapLeaflet, type LeafletMapHandle, type MapViewport } from "./WorldMapLeaflet";
+// Type-only import keeps leaflet/the map module out of the initial bundle.
+import type { LeafletMapHandle, MapViewport } from "./WorldMapLeaflet";
+// Lazy: pulls leaflet (~150KB) — load only when the map section renders.
+const WorldMapLeaflet = lazy(() =>
+  import("./WorldMapLeaflet").then(m => ({ default: m.WorldMapLeaflet }))
+);
 const Globe3DView = lazy(() => import("./Globe3D").then(m => ({ default: m.Globe3DView })));
 import { MapUniversitySearch } from "./MapUniversitySearch";
 import { useNavigate } from "react-router-dom";
