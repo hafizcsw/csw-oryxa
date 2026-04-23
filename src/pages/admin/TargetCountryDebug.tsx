@@ -388,10 +388,14 @@ export default function TargetCountryDebug() {
         <TabsContent value="target" className="mt-4 space-y-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Target student input</CardTitle>
+              <CardTitle className="text-base">
+                Engine input forwarder — NOT a live target-student loader
+              </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Paste the canonical applicant truth JSON for a real target student. This page
-                does not derive truth from the current admin actor.
+                Paste an <code>ApplicantTruth</code> JSON to drive the engine. There is no
+                admin-side CRM proxy yet that fetches a real target student's canonical truth
+                by <code>target_user_id</code>, so this surface cannot prove Door 2 runtime
+                closure. Use the Fixture tab for deterministic proof.
               </p>
             </CardHeader>
             <CardContent className="space-y-3">
