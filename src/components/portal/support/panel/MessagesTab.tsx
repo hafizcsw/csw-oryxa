@@ -67,6 +67,7 @@ export function MessagesTab({ identityApproved, onOpenIdentity, onBack }: Messag
   const { items, loading, refresh, openSupportCase } = useUnifiedInbox();
   const [selected, setSelected] = useState<UnifiedInboxItem | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [pendingNewSupport, setPendingNewSupport] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
 
@@ -79,6 +80,12 @@ export function MessagesTab({ identityApproved, onOpenIdentity, onBack }: Messag
       return `${it.title} ${it.preview}`.toLowerCase().includes(q);
     });
   }, [items, search, filter]);
+
+  // After create, auto-open the new open support case as soon as it appears in the inbox.
+  if (pendingNewSupport && openSupportCase) {
+    setPendingNewSupport(false);
+    setSelected(openSupportCase);
+  }
 
   const filterTabs: { key: FilterKey; label: string }[] = [
     { key: "all",         label: t("portal.support.panel.messages.filters.all",         { defaultValue: "All" }) },
@@ -107,6 +114,7 @@ export function MessagesTab({ identityApproved, onOpenIdentity, onBack }: Messag
         onBack={() => setCreateOpen(false)}
         onSubmitted={() => {
           setCreateOpen(false);
+          setPendingNewSupport(true);
           refresh();
         }}
       />
