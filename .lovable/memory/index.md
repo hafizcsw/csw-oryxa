@@ -8,6 +8,7 @@ Program Intelligence lane is FROZEN — no expansion unless it blocks Student Fi
 Door 1 (Canonical Student File) is CLOSED — do not re-expand.
 Door 2 (Document Registry + Upload Hub) is NEAR-CLOSE — do not reopen.
 Door 3 (Document Understanding + Proposals) is OPEN — internal parsers, extraction, proposal lifecycle, truth promotion.
+Target-country lane: Door 1 CLOSED, Door 2 PARTIAL, Door 3 PARTIAL — see truth status memory; do NOT call TR a "data-only proof".
 
 ## Memories
 - [Canonical foundation](mem://constraints/canonical-foundation) — Allowed repo/backend model and forbidden parallel paths
@@ -15,3 +16,4 @@ Door 3 (Document Understanding + Proposals) is OPEN — internal parsers, extrac
 - [Canonical Student File](mem://features/canonical-student-file) — Door 1 CLOSED. Runtime hook + visible consumer + AccountContentHeader canonical-first name. Phone NOT canonical-first.
 - [Door 3 analysis](mem://features/door3-document-analysis) — Internal document understanding: PDF text + MRZ + regex. Proposal lifecycle with auto-accept/pending/reject. No external LLM.
 - [Door 4 transcript lane](mem://features/door4-transcript-lane) — Order 2: structured partial transcript parser, intermediate non-canonical rows, multi-signal disambiguation, HONESTY GATE 3 (review-first only)
+- [Target-country truth status](mem://constraints/target-country-truth-status) — Target-country lane Door 1 CLOSED, Door 2 PARTIAL (no live target-student loader), Door 3 PARTIAL (cannot close before Door 2), TR not data-only
