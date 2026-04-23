@@ -57,6 +57,7 @@ export function AccountContentHeader({
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [localAvatarOverride, setLocalAvatarOverride] = useState<string | null>(null);
+  const [localAvatarTs, setLocalAvatarTs] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Door 1: canonical identity is primary read source, fallback to CRM → profile
@@ -66,7 +67,9 @@ export function AccountContentHeader({
   // ✅ Resolve both full URLs and storage paths safely
   const rawAvatarValue = localAvatarOverride || crmProfile?.avatar_url || profile?.avatar_storage_path || undefined;
   const avatarBaseUrl = buildAvatarDisplayUrl(rawAvatarValue);
-  const cacheBuster = crmProfile?.avatar_updated_at || crmProfile?.updated_at || Date.now();
+  // Local override takes precedence — it carries the freshest timestamp from the upload itself,
+  // independent of any CRM/get_profile read-back lag.
+  const cacheBuster = localAvatarTs || crmProfile?.avatar_updated_at || crmProfile?.updated_at || Date.now();
   const avatarUrl = avatarBaseUrl ? `${avatarBaseUrl}${avatarBaseUrl.includes('?') ? '&' : '?'}v=${cacheBuster}` : undefined;
 
   const handleCopyId = async () => {
@@ -148,10 +151,13 @@ export function AccountContentHeader({
         }
       }
 
-      // ✅ Immediately show the new avatar (live update)
-      const liveAvatar = buildAvatarDisplayUrl(result.file_url || result.file_id || null);
-      if (liveAvatar) {
-        setLocalAvatarOverride(liveAvatar);
+      // ✅ Immediately show the new avatar (live update) — use the raw value (URL or path),
+      // buildAvatarDisplayUrl will be applied in the render path. Bump the local timestamp
+      // so the cache-buster is fresh and we don't rely on stale crmProfile.avatar_updated_at.
+      const liveRaw = result.file_url || result.file_id || null;
+      if (liveRaw) {
+        setLocalAvatarOverride(liveRaw);
+        setLocalAvatarTs(Date.now());
       }
 
       toast({ title: t('portal.header.updated'), description: t('portal.header.photoUpdated') });
