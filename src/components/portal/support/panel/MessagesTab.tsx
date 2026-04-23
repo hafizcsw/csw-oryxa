@@ -3,7 +3,7 @@
  * Aggregates CRM support_cases + comm_threads with explicit source tags.
  * Opens each item in its native thread surface (no fake shells, no duplication).
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import {
