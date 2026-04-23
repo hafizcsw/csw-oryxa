@@ -40,6 +40,7 @@ export function MiniChatWindow({ item, onClose, onMinimize }: MiniChatWindowProp
       className="fixed bottom-0 z-[59] w-[340px] h-[480px] max-w-[calc(100vw-2rem)] flex flex-col rounded-t-2xl bg-card border border-border shadow-2xl overflow-hidden max-sm:inset-x-2 max-sm:bottom-2 max-sm:w-auto max-sm:h-[60vh]"
       role="dialog"
       aria-label={title}
+      data-mini-chat-window="true"
     >
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-card">
