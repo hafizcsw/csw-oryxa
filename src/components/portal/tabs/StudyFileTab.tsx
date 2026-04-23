@@ -691,6 +691,3 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   );
 }
 
-    </div>
-  );
-}
