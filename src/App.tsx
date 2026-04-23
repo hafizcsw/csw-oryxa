@@ -719,7 +719,7 @@ function AppContent() {
       <ScrollToTop />
       <RoutePrefetcher />
       {/* Route-level welcome transition — survives client-side navigation */}
-      <WelcomeTransition />
+      <Suspense fallback={null}><WelcomeTransition /></Suspense>
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Sync Routes (Critical) */}
