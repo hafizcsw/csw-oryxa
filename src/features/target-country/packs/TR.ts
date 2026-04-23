@@ -1,15 +1,18 @@
 // ═══════════════════════════════════════════════════════════════
 // Country-11 — Türkiye (TR)
 // ═══════════════════════════════════════════════════════════════
-// Door 3 extensibility proof: added DATA-ONLY.
-// No schema changes. No application code changes.
-// No rule-engine logic changes. Only a new pack object + 1 entry
-// in COUNTRY_PACKS map + CountryCode union literal.
+// Extensibility note (corrected — NOT a "data-only proof"):
+//   Adding TR required THREE edits:
+//     1) this pack file (data)
+//     2) CountryCode union literal in ../types.ts (code)
+//     3) COUNTRY_PACKS registry entry in ./index.ts (code)
+//   Therefore this is "low-friction extensibility", not data-only.
+//   See src/features/target-country/TRUTH_STATUS.md.
 // ═══════════════════════════════════════════════════════════════
 import { makeProfile, makePathway, makeLangRule, makeDocRule, makeEvidence } from '../pack-helpers';
 
 export const TR_PACK = makeProfile({
-  country_code: 'TR' as any, // proof: type union extended in types.ts only
+  country_code: 'TR' as any, // union extended in types.ts (code change, not data-only)
   country_name_en: 'Türkiye',
   primary_local_language: 'tr',
   english_taught_widely_available: true,

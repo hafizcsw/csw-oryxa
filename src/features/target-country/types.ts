@@ -11,7 +11,7 @@
 
 export type CountryCode =
   | 'CN' | 'RU' | 'US' | 'CA' | 'DE' | 'GB' | 'ES' | 'FI' | 'IT' | 'CH'
-  | 'TR'; // Door 3 extensibility proof — added data-only
+  | 'TR'; // added with TR pack — NOT data-only (this union literal is a code change)
 
 export const TARGET_COUNTRIES: CountryCode[] = [
   'CN', 'RU', 'US', 'CA', 'DE', 'GB', 'ES', 'FI', 'IT', 'CH',
