@@ -7,6 +7,7 @@
  * No data unification, no fake thread shells — opens the real backend thread.
  */
 import { motion } from "framer-motion";
+import { createPortal } from "react-dom";
 import { X, Minus } from "lucide-react";
 import { CommThreadView } from "@/components/comm/CommThreadView";
 import { SupportThread } from "@/features/support/SupportThread";
