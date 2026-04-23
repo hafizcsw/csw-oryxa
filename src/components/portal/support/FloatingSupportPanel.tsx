@@ -47,8 +47,12 @@ export function FloatingSupportPanel({ onClose, initialView = "default", initial
       if (!target) return;
       if (panelRef.current?.contains(target)) return;
       // Ignore clicks on the floating launcher itself (it manages its own toggle).
-      const launcher = (target as HTMLElement).closest?.('[data-floating-launcher]');
-      if (launcher) return;
+      const el = target as HTMLElement;
+      if (el.closest?.('[data-floating-launcher]')) return;
+      // Ignore clicks inside the mini chat popup (rendered in a portal, outside panelRef).
+      if (el.closest?.('[data-mini-chat-window="true"]')) return;
+      // Ignore clicks inside any Radix portal (dropdowns, dialogs, popovers, toasts).
+      if (el.closest?.('[data-radix-popper-content-wrapper],[role="dialog"],[role="menu"],[role="listbox"],[data-sonner-toaster]')) return;
       onClose();
     };
     document.addEventListener("pointerdown", handler, true);
