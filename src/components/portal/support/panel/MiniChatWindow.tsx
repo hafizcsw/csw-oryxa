@@ -37,7 +37,7 @@ export function MiniChatWindow({ item, onClose, onMinimize }: MiniChatWindowProp
       style={{
         ...(isRtl ? { left: "440px" } : { right: "440px" }),
       }}
-      className="fixed bottom-6 z-[59] w-[340px] h-[480px] max-w-[calc(100vw-2rem)] flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden max-sm:inset-x-2 max-sm:bottom-2 max-sm:w-auto max-sm:h-[60vh]"
+      className="fixed bottom-0 z-[59] w-[340px] h-[480px] max-w-[calc(100vw-2rem)] flex flex-col rounded-t-2xl bg-card border border-border shadow-2xl overflow-hidden max-sm:inset-x-2 max-sm:bottom-2 max-sm:w-auto max-sm:h-[60vh]"
       role="dialog"
       aria-label={title}
     >
