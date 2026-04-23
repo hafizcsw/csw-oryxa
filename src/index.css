@@ -1109,3 +1109,95 @@ All colors MUST be HSL.
     opacity: 1;
   }
 }
+
+/* =========================================================
+   Antigravity-style design tokens & motion
+   ========================================================= */
+:root {
+  --ag-bg: #FFFFFF;
+  --ag-fg: #0F0F0F;
+  --ag-border: #E5E5E5;
+  --ag-muted: #6B6B6B;
+  --ag-radius: 24px;
+  --ag-radius-pill: 999px;
+  --ag-ease: cubic-bezier(.2,.8,.2,1);
+  --ag-dur: 700ms;
+}
+
+/* Section-level enter: fade + rise once data-in flips true */
+[data-ag-reveal] {
+  opacity: 0;
+  transform: translateY(40px);
+  transition:
+    opacity var(--ag-dur) var(--ag-ease),
+    transform var(--ag-dur) var(--ag-ease);
+  will-change: opacity, transform;
+}
+[data-ag-reveal][data-in="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Word-by-word reveal inside AGRevealText */
+.ag-reveal-text .ag-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  line-height: 1.05;
+}
+.ag-reveal-text .ag-word-inner {
+  display: inline-block;
+  transform: translateY(105%);
+  opacity: 0;
+  transition:
+    transform 750ms var(--ag-ease),
+    opacity 600ms var(--ag-ease);
+  transition-delay: var(--ag-word-delay, 0ms);
+  will-change: transform, opacity;
+}
+[data-ag-reveal][data-in="true"] .ag-reveal-text .ag-word-inner {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Generic fade-up for paragraphs / CTAs inside an AG section */
+.ag-fade-up {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 700ms var(--ag-ease),
+    transform 700ms var(--ag-ease);
+  transition-delay: var(--ag-word-delay, 0ms);
+}
+[data-ag-reveal][data-in="true"] .ag-fade-up {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Card stagger: each AGCard exposes --i, gets staggered rise */
+.ag-card {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 700ms var(--ag-ease),
+    transform 700ms var(--ag-ease),
+    box-shadow 500ms var(--ag-ease);
+  transition-delay: calc(var(--i, 0) * 80ms + 120ms);
+}
+[data-ag-reveal][data-in="true"] .ag-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Reduced motion: instant reveal, keep hover transitions intact */
+@media (prefers-reduced-motion: reduce) {
+  [data-ag-reveal],
+  [data-ag-reveal][data-in="true"],
+  .ag-reveal-text .ag-word-inner,
+  .ag-fade-up,
+  .ag-card {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
