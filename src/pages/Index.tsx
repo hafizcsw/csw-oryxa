@@ -10,7 +10,7 @@ import { CarouselIndicators } from "@/components/ui/carousel-indicators";
 import UniversitiesHero from "@/sections/UniversitiesHero";
 // HeroSection stays static (above-the-fold).
 import { HeroSection } from "@/components/home/HeroSection";
-import { HeroRevealStage } from "@/components/home/HeroRevealStage";
+
 import { LazyMount } from "@/components/perf/LazyMount";
 // Below-the-fold: lazy-load to keep initial bundle small.
 const WorldMapSection = lazy(() => import("@/components/home/WorldMapSection").then(m => ({ default: m.WorldMapSection })));
