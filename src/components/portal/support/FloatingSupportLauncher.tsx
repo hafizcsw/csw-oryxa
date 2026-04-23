@@ -132,7 +132,7 @@ export function FloatingSupportLauncher() {
               exit={reduced ? { opacity: 0 } : { scale: 0, opacity: 0 }}
               transition={SPRING}
               className={cn(
-                "absolute -top-1 -end-1",
+                "absolute -top-1 -start-1",
                 "min-w-[20px] h-5 px-1.5 rounded-full",
                 "bg-destructive text-destructive-foreground",
                 "text-[11px] font-semibold leading-none",
