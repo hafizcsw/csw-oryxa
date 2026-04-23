@@ -78,38 +78,30 @@ export function FloatingSupportLauncher() {
         whileTap={reduced ? undefined : { scale: 0.94 }}
         className={cn(
           "fixed bottom-4 start-4 sm:bottom-6 sm:start-6 z-[60]",
-          "h-14 w-14 rounded-full",
-          "bg-background/40 backdrop-blur-md",
-          "shadow-[0_8px_32px_-4px_hsl(var(--primary)/0.45)]",
-          "ring-1 ring-border/40",
+          "h-12 w-12 rounded-full",
+          "bg-transparent",
+          "shadow-[0_10px_30px_-8px_hsl(270_85%_60%/0.5),0_4px_12px_-2px_hsl(220_90%_60%/0.35)]",
           "flex items-center justify-center cursor-grab active:cursor-grabbing",
           "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         )}
       >
         {/* Animated gradient orb (Gemini-style) */}
-        <span className="relative flex items-center justify-center h-10 w-10">
+        <span className="relative flex items-center justify-center h-12 w-12">
           <motion.span
             aria-hidden="true"
-            animate={
-              reduced
-                ? undefined
-                : { rotate: 360 }
-            }
+            animate={reduced ? undefined : { rotate: 360 }}
             transition={
-              reduced
-                ? undefined
-                : { duration: 14, repeat: Infinity, ease: "linear" }
+              reduced ? undefined : { duration: 14, repeat: Infinity, ease: "linear" }
             }
             className="absolute inset-0 rounded-full"
             style={{
               background:
                 "conic-gradient(from 0deg, hsl(220 90% 60%), hsl(270 85% 65%), hsl(330 85% 62%), hsl(30 95% 58%), hsl(220 90% 60%))",
-              filter: "blur(2px)",
             }}
           />
           <span
             aria-hidden="true"
-            className="absolute inset-[3px] rounded-full bg-background/85 backdrop-blur-sm"
+            className="absolute inset-[1.5px] rounded-full bg-background"
           />
           <svg
             width="22"
