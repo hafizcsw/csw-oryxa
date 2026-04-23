@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
+import { useNewMessageNotifier } from "@/hooks/useNewMessageNotifier";
 import { FloatingSupportPanel } from "./FloatingSupportPanel";
 import { cn } from "@/lib/utils";
 
@@ -15,8 +16,13 @@ export function FloatingSupportLauncher() {
   const reduced = useReducedMotion();
   const fabRef = useRef<HTMLButtonElement>(null);
 
+  const { hasNew, lastNativeId, lastSource, clearNew } = useNewMessageNotifier(!open);
+  const [pendingThreadId, setPendingThreadId] = useState<string | null>(null);
+
   const openItems = tickets.filter((t) => t.ui_state !== "resolved").length;
-  const badgeText = openItems > 99 ? "99+" : String(openItems);
+  const totalBadge = openItems + (hasNew && lastSource !== "support" ? 1 : 0);
+  const badgeText = totalBadge > 99 ? "99+" : String(totalBadge);
+  const showBadge = totalBadge > 0 || hasNew;
 
   // ESC closes panel
   useEffect(() => {
@@ -57,6 +63,10 @@ export function FloatingSupportLauncher() {
         onDragEnd={() => setTimeout(() => setIsDragging(false), 100)}
         onClick={() => {
           if (isDragging) return;
+          if (hasNew && lastNativeId) {
+            setPendingThreadId(lastNativeId);
+            clearNew();
+          }
           setOpen((v) => !v);
         }}
         initial={reduced ? { opacity: 1 } : { scale: 0, opacity: 0 }}
@@ -124,13 +134,23 @@ export function FloatingSupportLauncher() {
         </span>
 
         <AnimatePresence>
-          {!open && openItems > 0 && (
+          {!open && showBadge && (
             <motion.span
               key="badge"
               initial={reduced ? { opacity: 0 } : { scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+              animate={
+                reduced
+                  ? { opacity: 1 }
+                  : hasNew
+                    ? { scale: [1, 1.18, 1], opacity: 1 }
+                    : { scale: 1, opacity: 1 }
+              }
               exit={reduced ? { opacity: 0 } : { scale: 0, opacity: 0 }}
-              transition={SPRING}
+              transition={
+                hasNew && !reduced
+                  ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" }
+                  : SPRING
+              }
               className={cn(
                 "absolute -top-1 -start-1",
                 "min-w-[20px] h-5 px-1.5 rounded-full",
@@ -145,12 +165,31 @@ export function FloatingSupportLauncher() {
             </motion.span>
           )}
         </AnimatePresence>
+
+        {!open && hasNew && !reduced && (
+          <motion.span
+            aria-hidden="true"
+            className="absolute inset-0 rounded-full ring-2 ring-destructive pointer-events-none"
+            initial={{ opacity: 0.6, scale: 1 }}
+            animate={{ opacity: 0, scale: 1.5 }}
+            transition={{ duration: 1.4, repeat: Infinity, ease: "easeOut" }}
+          />
+        )}
       </motion.button>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
-        {open && <FloatingSupportPanel onClose={() => setOpen(false)} initialView="messages" />}
+        {open && (
+          <FloatingSupportPanel
+            onClose={() => {
+              setOpen(false);
+              setPendingThreadId(null);
+            }}
+            initialView="messages"
+            initialThreadId={pendingThreadId}
+          />
+        )}
       </AnimatePresence>
     </>
   );
