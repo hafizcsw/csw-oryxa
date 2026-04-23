@@ -26,7 +26,9 @@ export function MiniChatWindow({ item, onClose, onMinimize }: MiniChatWindowProp
   const initial = (item.title || "?").charAt(0).toUpperCase();
   const title = item.title || t("portal.support.panel.title");
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <motion.div
       initial={{ opacity: 0, y: 24, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -71,7 +73,6 @@ export function MiniChatWindow({ item, onClose, onMinimize }: MiniChatWindowProp
         </button>
       </div>
 
-      {/* Body — routes to the real native surface */}
       <div className="flex-1 min-h-0 overflow-hidden bg-background">
         {item.raw.kind === "support" ? (
           <SupportThread caseId={item.nativeId} embedded />
@@ -84,6 +85,7 @@ export function MiniChatWindow({ item, onClose, onMinimize }: MiniChatWindowProp
           />
         )}
       </div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   );
 }
