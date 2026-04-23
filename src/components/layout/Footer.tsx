@@ -219,15 +219,6 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Antigravity-style giant brand word — sits between links and copyright */}
-        <div
-          aria-hidden="true"
-          className="select-none text-center font-display font-semibold tracking-[-0.04em] text-foreground leading-[0.85] my-12 px-2 whitespace-nowrap"
-          style={{ fontSize: "clamp(80px, 18vw, 260px)" }}
-        >
-          ORYXA
-        </div>
-
         {/* Copyright & Legal */}
         <div className="text-center space-y-2">
           <div className="flex justify-center gap-4">
