@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════
 // Runs the country eligibility engine on:
 //   1) FIXTURE_APPLICANT (deterministic proof)
-//   2) Live canonical truth of the signed-in user (DB smoke)
+//   2) Live DB profile of the signed-in user (smoke test)
 // Renders a 10-country matrix with reasons, gaps, evidence.
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useState } from 'react';
@@ -13,7 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  buildApplicantTruth,
   computeCountryMatrix,
   COUNTRY_PACKS,
   FIXTURE_APPLICANT,
@@ -22,9 +21,6 @@ import {
   type CountryMatrix,
   type CountryStatus,
 } from '@/features/target-country';
-import { useStudentProfile } from '@/hooks/useStudentProfile';
-import { useStudentDocuments } from '@/hooks/useStudentDocuments';
-import { useCanonicalStudentFile } from '@/hooks/useCanonicalStudentFile';
 
 const STATUS_VARIANT: Record<CountryStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   eligible: 'default',
@@ -80,7 +76,7 @@ function CountryCard({ result }: { result: CountryEligibility }) {
             <ul className="space-y-1">
               {result.blocking_gaps.map((r, i) => (
                 <li key={i} className="text-xs">
-                  <code className="text-amber-600">{r.reason_code}</code>
+                  <code className="text-warning">{r.reason_code}</code>
                   <span className="text-muted-foreground"> · rule={r.matched_rule_id}</span>
                   {Object.keys(r.params).length > 0 && (
                     <pre className="text-[10px] bg-muted/40 p-1 rounded mt-0.5">
@@ -156,27 +152,62 @@ function MatrixView({ matrix, label }: { matrix: CountryMatrix; label: string })
   );
 }
 
+/**
+ * Build a minimal ApplicantTruth from `profiles` row only.
+ * This is intentionally narrow — proves the engine works on
+ * real DB data without coupling to Door 1 internal hooks.
+ */
+function buildLiveTruthFromProfile(row: Record<string, any> | null, userId: string): ApplicantTruth | null {
+  if (!row) return null;
+  const citizenship = (row.citizenship || row.country || null) as string | null;
+  const englishMajority = !!citizenship && ['US', 'GB', 'CA', 'AU', 'NZ', 'IE'].includes(citizenship.toUpperCase());
+  return {
+    student_id: userId,
+    citizenship,
+    secondary_completed: !!(row.graduation_year || row.last_education_level),
+    secondary_kind: null,
+    secondary_grade_pct: null,
+    english_test_type: row.english_test_type ?? null,
+    english_total_score: row.english_total_score ?? null,
+    english_medium_secondary: false,
+    majority_english_country: englishMajority,
+    local_language_signals: [],
+  };
+}
+
 export default function TargetCountryDebug() {
   const fixtureMatrix = computeCountryMatrix(FIXTURE_APPLICANT);
 
   const [userId, setUserId] = useState<string | null>(null);
+  const [liveMatrix, setLiveMatrix] = useState<CountryMatrix | null>(null);
+  const [liveError, setLiveError] = useState<string | null>(null);
+  const [liveLoading, setLiveLoading] = useState(false);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setUserId(data.session?.user?.id ?? null);
     });
   }, []);
 
-  const { profile } = useStudentProfile();
-  const { documents } = useStudentDocuments(userId);
-  const { canonicalFile } = useCanonicalStudentFile({
-    crmProfile: profile,
-    documents: documents ?? [],
-    userId,
-    promotedFields: [],
-  });
-
-  const liveTruth: ApplicantTruth | null = canonicalFile ? buildApplicantTruth(canonicalFile) : null;
-  const liveMatrix: CountryMatrix | null = liveTruth ? computeCountryMatrix(liveTruth) : null;
+  useEffect(() => {
+    if (!userId) return;
+    setLiveLoading(true);
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          setLiveError(error.message);
+          setLiveLoading(false);
+          return;
+        }
+        const truth = buildLiveTruthFromProfile(data as any, userId);
+        if (truth) setLiveMatrix(computeCountryMatrix(truth));
+        setLiveLoading(false);
+      });
+  }, [userId]);
 
   return (
     <div className="container py-6 space-y-4">
@@ -190,18 +221,15 @@ export default function TargetCountryDebug() {
       <Tabs defaultValue="fixture">
         <TabsList>
           <TabsTrigger value="fixture">Fixture (proof)</TabsTrigger>
-          <TabsTrigger value="live">Live canonical (smoke)</TabsTrigger>
+          <TabsTrigger value="live">Live DB profile (smoke)</TabsTrigger>
         </TabsList>
         <TabsContent value="fixture" className="mt-4">
           <MatrixView matrix={fixtureMatrix} label="synthetic" />
         </TabsContent>
         <TabsContent value="live" className="mt-4">
-          {!userId && (
-            <p className="text-sm text-muted-foreground">Sign in to compute the live matrix.</p>
-          )}
-          {userId && !liveMatrix && (
-            <p className="text-sm text-muted-foreground">Loading canonical truth…</p>
-          )}
+          {!userId && <p className="text-sm text-muted-foreground">Sign in to compute the live matrix.</p>}
+          {userId && liveLoading && <p className="text-sm text-muted-foreground">Loading profile…</p>}
+          {liveError && <p className="text-sm text-destructive">DB error: {liveError}</p>}
           {liveMatrix && <MatrixView matrix={liveMatrix} label={`db user ${userId?.slice(0, 8)}…`} />}
         </TabsContent>
       </Tabs>
