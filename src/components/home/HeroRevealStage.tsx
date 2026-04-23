@@ -98,12 +98,29 @@ export function HeroRevealStage({ hero, next }: HeroRevealStageProps) {
     };
   }, []);
 
+  // Load active hero video setting (non-blocking)
+  const [video, setVideo] = useState<HeroVideoSetting>({ enabled: false, url: null });
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("feature_settings")
+        .select("value")
+        .eq("key", "hero_reveal_video")
+        .maybeSingle();
+      if (!cancelled && data?.value) {
+        const v = data.value as any;
+        setVideo({ enabled: !!v.enabled, url: v.url ?? null });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <section
       ref={stageRef}
       data-reveal-stage=""
       className="reveal-stage relative"
-      // 200vh so the sticky hero stays for one full screen of scroll.
       style={{ height: "200vh" }}
       aria-hidden={false}
     >
@@ -111,6 +128,19 @@ export function HeroRevealStage({ hero, next }: HeroRevealStageProps) {
         data-reveal-sticky=""
         className="reveal-sticky sticky top-0 h-screen w-full overflow-hidden"
       >
+        {video.enabled && video.url && (
+          <video
+            key={video.url}
+            src={video.url}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-hidden="true"
+            className="reveal-video pointer-events-none absolute inset-0 w-full h-full object-cover"
+          />
+        )}
         <div className="reveal-hero h-full w-full will-change-transform">
           {hero}
         </div>
