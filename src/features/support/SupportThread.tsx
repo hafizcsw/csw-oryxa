@@ -12,9 +12,11 @@ import { cn } from '@/lib/utils';
 
 interface SupportThreadProps {
   caseId: string;
+  /** When embedded (e.g. inside the FAB MiniChatWindow), hide the back nav and fill the parent. */
+  embedded?: boolean;
 }
 
-export function SupportThread({ caseId }: SupportThreadProps) {
+export function SupportThread({ caseId, embedded = false }: SupportThreadProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const isAr = (i18n.language || 'en').startsWith('ar');
@@ -60,11 +62,20 @@ export function SupportThread({ caseId }: SupportThreadProps) {
         : ShieldQuestion;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] max-h-[800px] rounded-xl border border-border bg-background overflow-hidden">
-      <div className="border-b border-border px-4 py-3 flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/portal/support')} aria-label={t('common.back', { defaultValue: 'Back' })}>
-          <ArrowLeft className={cn('h-4 w-4', isAr && 'rotate-180')} />
-        </Button>
+    <div
+      className={cn(
+        'flex flex-col bg-background overflow-hidden',
+        embedded
+          ? 'h-full min-h-0'
+          : 'h-[calc(100vh-8rem)] max-h-[800px] rounded-xl border border-border',
+      )}
+    >
+      <div className={cn('border-b border-border px-4 py-3 flex items-center gap-3', embedded && 'px-3 py-2')}>
+        {!embedded && (
+          <Button variant="ghost" size="icon" onClick={() => navigate('/portal/support')} aria-label={t('common.back', { defaultValue: 'Back' })}>
+            <ArrowLeft className={cn('h-4 w-4', isAr && 'rotate-180')} />
+          </Button>
+        )}
         <div className="flex-1 min-w-0">
           {caseQuery.isLoading ? (
             <Skeleton className="h-5 w-48" />
