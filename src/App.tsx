@@ -8,10 +8,7 @@ import { StudentTourProvider } from "@/contexts/StudentTourContext";
 import { MalakChatProvider, useMalakChat } from "@/contexts/MalakChatContext";
 import { StudentSiteTour } from "@/components/onboarding/StudentSiteTour";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
-import { AuthStartModal } from "@/components/auth/AuthStartModal";
-import { WelcomeTransition } from "@/components/auth/WelcomeTransition";
 import { welcomeAlreadyRouted } from "@/lib/welcomeTransition";
-import { PhoneActivationGate } from "@/components/auth/PhoneActivationGate";
 import { CanonicalRedirect } from "@/components/system/CanonicalRedirect";
 import { SearchRedirect } from "@/components/system/SearchRedirect";
 import { ScrollToTop } from "@/components/system/ScrollToTop";
@@ -20,14 +17,20 @@ import { LocaleRouteWrapper } from "@/components/routing/LocaleRouteWrapper";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { usePresenceHeartbeat } from "@/hooks/usePresence";
 
-import { PortalAuthFloater } from "@/components/portal/support/PortalAuthFloater";
 import { Layout } from "@/components/layout/Layout";
 import { InstitutionGuard } from "@/components/institution/InstitutionGuard";
 import { StaffGuard } from "@/components/staff/StaffGuard";
 import { InstitutionDashboardLayout } from "@/components/institution/InstitutionDashboardLayout";
 import { InstitutionPreviewProvider } from "@/contexts/InstitutionPreviewContext";
-import { InstitutionPickerModal } from "@/components/institution/InstitutionPickerModal";
-import { CrmTestPanel } from "@/components/dev/CrmTestPanel";
+
+// Lazy-loaded root-level overlays (not needed for first paint)
+const AuthStartModal = lazy(() => import("@/components/auth/AuthStartModal").then(m => ({ default: m.AuthStartModal })));
+const WelcomeTransition = lazy(() => import("@/components/auth/WelcomeTransition").then(m => ({ default: m.WelcomeTransition })));
+const PhoneActivationGate = lazy(() => import("@/components/auth/PhoneActivationGate").then(m => ({ default: m.PhoneActivationGate })));
+const PortalAuthFloater = lazy(() => import("@/components/portal/support/PortalAuthFloater").then(m => ({ default: m.PortalAuthFloater })));
+const InstitutionPickerModal = lazy(() => import("@/components/institution/InstitutionPickerModal").then(m => ({ default: m.InstitutionPickerModal })));
+const CrmTestPanel = lazy(() => import("@/components/dev/CrmTestPanel").then(m => ({ default: m.CrmTestPanel })));
+const StudentSiteTour = lazy(() => import("@/components/onboarding/StudentSiteTour").then(m => ({ default: m.StudentSiteTour })));
 import { supabase } from "@/integrations/supabase/client";
 import { useVisitorTracker } from "@/hooks/useVisitorTracker";
 import { useHtmlLangDir } from "@/i18n/useHtmlLangDir";
