@@ -189,13 +189,18 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     orphanSweepRef.current = true;
     void (async () => {
       try {
+        // ⛔ Door-1 closure: orphan auto-purge of document_lane_facts is DISABLED.
+        // The live pipeline writes lane facts immediately, but the local snapshot
+        // used to compute "orphans" lags by one refresh cycle, so this sweep was
+        // deleting fresh rows (pg_stat: 92 inserted / 92 deleted / 0 live).
+        // Foundation + analyses orphan cleanup is left untouched.
         const { supabase } = await import('@/integrations/supabase/client');
         await Promise.allSettled([
           (supabase as any).from('document_foundation_outputs').delete().in('document_id', orphans),
-          (supabase as any).from('document_lane_facts').delete().in('document_id', orphans),
+          // (supabase as any).from('document_lane_facts').delete().in('document_id', orphans), // DISABLED — Door-1 truth-table
           (supabase as any).from('document_analyses').delete().in('document_id', orphans),
         ]);
-        console.log('[StudyFileTab] purged orphaned lane facts', { count: orphans.length });
+        console.log('[StudyFileTab] purged orphaned foundation/analyses (lane_facts skipped)', { count: orphans.length });
         await refetchLaneFacts();
       } catch (e) {
         console.warn('[StudyFileTab] orphan sweep failed (non-fatal)', e);
