@@ -580,6 +580,7 @@ export function CentralUploadHub({
       // immediately; the full pages array is set once all pages are rendered.
       pdfsToRender.forEach(async ({ key, file }) => {
         try {
+          const { renderPdfPagesToThumbnails } = await import('@/features/documents/pdf-thumbnails');
           const { pageUrls } = await renderPdfPagesToThumbnails(file, {
             scale: 1.3,
             maxPages: 25,
