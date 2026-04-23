@@ -93,9 +93,6 @@ export function MessagesTab({ identityApproved, onOpenIdentity, onBack }: Messag
     { key: "support",     label: t("portal.support.panel.messages.filters.support",     { defaultValue: "Support" }) },
     { key: "teacher",     label: t("portal.support.panel.messages.filters.teacher",     { defaultValue: "Teachers" }) },
     { key: "university",  label: t("portal.support.panel.messages.filters.university",  { defaultValue: "Universities" }) },
-    { key: "peer",        label: t("portal.support.panel.messages.filters.peer",        { defaultValue: "Peers" }) },
-    { key: "application", label: t("portal.support.panel.messages.filters.application", { defaultValue: "Applications" }) },
-    { key: "csw",         label: t("portal.support.panel.messages.filters.csw",         { defaultValue: "CSW" }) },
   ];
 
   // Step 5: open existing case if present, otherwise show create flow.
