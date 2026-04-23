@@ -10,6 +10,7 @@ import { CarouselIndicators } from "@/components/ui/carousel-indicators";
 import UniversitiesHero from "@/sections/UniversitiesHero";
 // HeroSection stays static (above-the-fold).
 import { HeroSection } from "@/components/home/HeroSection";
+import { LazyMount } from "@/components/perf/LazyMount";
 // Below-the-fold: lazy-load to keep initial bundle small.
 const WorldMapSection = lazy(() => import("@/components/home/WorldMapSection").then(m => ({ default: m.WorldMapSection })));
 const CSWCoinSection = lazy(() => import("@/components/home/CSWCoinSection").then(m => ({ default: m.CSWCoinSection })));
@@ -420,12 +421,13 @@ const Index = () => {
           {/* All below-the-fold sections are lazy-loaded behind a single Suspense boundary */}
           <Suspense fallback={<div className="min-h-[200px]" />}>
           {/* University Community Section */}
-          <UniversityCommunitySection />
+          <LazyMount minHeight={400}><UniversityCommunitySection /></LazyMount>
 
            {/* About ORYXA */}
-           <AboutOryxaSection />
+           <LazyMount minHeight={400}><AboutOryxaSection /></LazyMount>
 
           {/* Enhanced Services Section */}
+          <LazyMount minHeight={500}>
           <section className="py-20 px-6 bg-gradient-to-b from-background to-muted/30">
             <div className="max-w-7xl mx-auto">
               <div className="text-center space-y-3 mb-16">
@@ -456,17 +458,19 @@ const Index = () => {
               </div>
             </div>
           </section>
+          </LazyMount>
 
           {/* Institutions Section */}
-          <InstitutionsSection />
+          <LazyMount minHeight={400}><InstitutionsSection /></LazyMount>
 
           {/* ORX RANK Section */}
-          <OrxRankSection />
+          <LazyMount minHeight={400}><OrxRankSection /></LazyMount>
 
           {/* Interactive World Map */}
-          <WorldMapSection />
+          <LazyMount minHeight={500}><WorldMapSection /></LazyMount>
 
           {/* Enhanced Study Destinations Section */}
+          <LazyMount minHeight={600}>
           <section id="destinations" className="py-20 px-6 bg-background">
             <div className="max-w-7xl mx-auto">
               <div className="flex flex-col items-center text-center mb-12 gap-6">
@@ -536,8 +540,11 @@ const Index = () => {
           </section>
 
 
+          </LazyMount>
+
           {/* Enhanced Testimonials Section */}
           {testimonials.length > 0 && (
+            <LazyMount minHeight={500}>
             <section className="py-20 px-6 bg-gradient-to-b from-muted/30 to-background">
               <div className="max-w-7xl mx-auto">
                 <div className="text-center space-y-3 mb-16">
@@ -562,10 +569,12 @@ const Index = () => {
                 </Carousel>
               </div>
             </section>
+            </LazyMount>
           )}
 
           {/* Enhanced Blog Posts Section */}
           {posts.length > 0 && (
+            <LazyMount minHeight={500}>
             <section className="py-20 px-6 bg-background">
               <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-12">
@@ -631,6 +640,7 @@ const Index = () => {
                 </div>
               </div>
             </section>
+            </LazyMount>
           )}
           </Suspense>
         </Layout>
