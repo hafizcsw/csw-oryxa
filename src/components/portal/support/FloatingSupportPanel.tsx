@@ -86,14 +86,14 @@ export function FloatingSupportPanel({ onClose, initialView = "default", initial
 
   return (
     <>
-      {/* Mobile backdrop */}
+      {/* Outside-click catcher: dim on mobile, transparent on desktop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.18 }}
         onClick={onClose}
-        className="fixed inset-0 z-[55] bg-black/40 backdrop-blur-sm sm:bg-transparent sm:backdrop-blur-0 sm:pointer-events-none"
+        className="fixed inset-0 z-[55] bg-black/40 backdrop-blur-sm sm:bg-transparent sm:backdrop-blur-0"
         aria-hidden="true"
       />
 
