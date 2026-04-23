@@ -66,7 +66,7 @@ export function FloatingSupportLauncher() {
         whileHover={reduced ? undefined : { scale: 1.06 }}
         whileTap={reduced ? undefined : { scale: 0.94 }}
         className={cn(
-          "fixed bottom-[5.2rem] start-4 sm:bottom-[7.8rem] sm:start-6 z-[60]",
+          "fixed bottom-4 start-4 sm:bottom-6 sm:start-6 z-[60]",
           "h-14 w-14 rounded-full",
           "bg-background/40 backdrop-blur-md",
           "shadow-[0_8px_32px_-4px_hsl(var(--primary)/0.45)]",
