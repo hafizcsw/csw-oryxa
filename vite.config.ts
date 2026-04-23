@@ -166,21 +166,15 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks(id) {
             if (!id.includes('node_modules')) return undefined;
-            // Heavy, isolated libs — keep in their own chunks.
-            if (id.includes('three') || id.includes('@react-three')) return 'three';
-            if (id.includes('pdfjs-dist') || id.includes('pdf-lib')) return 'pdf';
-            // Avoid forcing d3/recharts into a shared chunk: this caused a production boot crash on the homepage.
-            // Let Rollup split these modules naturally per import graph.
-            if (id.includes('leaflet') || id.includes('maplibre')) return 'maps';
-            if (id.includes('framer-motion')) return 'motion';
-            if (id.includes('@tanstack')) return 'query';
-            if (id.includes('@radix-ui')) return 'radix';
-            if (id.includes('lucide-react')) return 'icons';
-            if (id.includes('date-fns') || id.includes('dayjs')) return 'dates';
-            if (id.includes('@supabase')) return 'supabase';
-            if (id.includes('react-router')) return 'router';
+            // Core vendor only — kept tight to minimize initial JS on the homepage.
             if (id.match(/[\\/](react|react-dom|scheduler|use-sync-external-store)[\\/]/)) return 'react-vendor';
-            // Everything else: let Rollup chunk per-import-graph (no catch-all bucket).
+            if (id.includes('react-router')) return 'router';
+            if (id.includes('@supabase')) return 'supabase';
+            if (id.includes('@tanstack')) return 'query';
+            // Everything else (three, maps, pdf, recharts, framer-motion, radix, icons, dates, …)
+            // is intentionally NOT pinned to a manual chunk so Rollup can split it
+            // per import graph and keep it OUT of the initial homepage bundle
+            // (loaded only when the route/component that imports it is reached).
             return undefined;
           },
         },

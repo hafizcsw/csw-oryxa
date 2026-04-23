@@ -1,6 +1,11 @@
 import { useState, useMemo, useCallback, memo, useEffect, useRef, lazy, Suspense } from "react";
 import { MapResultsRail } from "./MapResultsRail";
-import { WorldMapLeaflet, type LeafletMapHandle, type MapViewport } from "./WorldMapLeaflet";
+// Type-only import keeps leaflet/the map module out of the initial bundle.
+import type { LeafletMapHandle, MapViewport } from "./WorldMapLeaflet";
+// Lazy: pulls leaflet (~150KB) — load only when the map section renders.
+const WorldMapLeaflet = lazy(() =>
+  import("./WorldMapLeaflet").then(m => ({ default: m.WorldMapLeaflet }))
+);
 const Globe3DView = lazy(() => import("./Globe3D").then(m => ({ default: m.Globe3DView })));
 import { MapUniversitySearch } from "./MapUniversitySearch";
 import { useNavigate } from "react-router-dom";
@@ -661,30 +666,36 @@ export const WorldMapSection = memo(function WorldMapSection() {
             </div>
           )}
 
-          <WorldMapLeaflet
-              ref={mapLeafletRef}
-              countryStats={countryStats}
-              onCountrySelect={handleMapCountrySelect}
-              onCitySelect={handleCityClick}
-              onRegionSelect={handleMapRegionSelect}
-              onBackToCountry={handleBackToCountry}
-              onBackToWorld={handleBackToWorld}
-              onViewportChange={handleViewportChange}
-              selectedCountryCode={selectedCountryCode}
-              selectedRegionId={selectedRegionForCity?.regionId || null}
-              drillLevel={drillLevel === "city" ? "region" : drillLevel}
-              isRtl={isRtl}
-              subdivisionGeodata={subdivisionGeodata}
-              regionSummaries={regionSummaries}
-              visibleCountryCodes={filteredCodes}
-              citySummaries={geoEnrichedCities.length > 0 ? geoEnrichedCities : undefined}
-              cityUniversities={countryUniversities || undefined}
-              regionCities={selectedCity ? [selectedCity] : selectedRegionForCity?.cities}
-               osmOverlay={osmOverlay}
-               osmOverlayLoading={osmOverlayLoading}
-               countryMeta={countryMeta}
-               onCountryHover={handleCountryHover}
-            />
+          <Suspense fallback={
+            <div className="absolute inset-0 flex items-center justify-center bg-card/50">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          }>
+            <WorldMapLeaflet
+                ref={mapLeafletRef}
+                countryStats={countryStats}
+                onCountrySelect={handleMapCountrySelect}
+                onCitySelect={handleCityClick}
+                onRegionSelect={handleMapRegionSelect}
+                onBackToCountry={handleBackToCountry}
+                onBackToWorld={handleBackToWorld}
+                onViewportChange={handleViewportChange}
+                selectedCountryCode={selectedCountryCode}
+                selectedRegionId={selectedRegionForCity?.regionId || null}
+                drillLevel={drillLevel === "city" ? "region" : drillLevel}
+                isRtl={isRtl}
+                subdivisionGeodata={subdivisionGeodata}
+                regionSummaries={regionSummaries}
+                visibleCountryCodes={filteredCodes}
+                citySummaries={geoEnrichedCities.length > 0 ? geoEnrichedCities : undefined}
+                cityUniversities={countryUniversities || undefined}
+                regionCities={selectedCity ? [selectedCity] : selectedRegionForCity?.cities}
+                 osmOverlay={osmOverlay}
+                 osmOverlayLoading={osmOverlayLoading}
+                 countryMeta={countryMeta}
+                 onCountryHover={handleCountryHover}
+              />
+          </Suspense>
 
           {/* Loading indicator for geodata */}
           {loadingGeodata && (
