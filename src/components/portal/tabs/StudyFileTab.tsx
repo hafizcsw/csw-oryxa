@@ -673,6 +673,24 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         onEditField={analysisHook.editFieldValue}
       />
 
+      {/* ═══ Phase A: Student Evaluation Workspace (persisted under extracted info) ═══ */}
+      <StudentEvaluationWorkspace
+        loading={evaluation.loading}
+        computing={evaluation.computing}
+        saved={evaluation.saved}
+        credentialsByDocId={evaluation.credentialsByDocId}
+        snapshot={evaluation.snapshot}
+        snapshotResult={evaluation.snapshotResult}
+        lastComputedAt={evaluation.lastComputedAt}
+        recomputeReason={evaluation.recomputeReason}
+        documentNames={documentNames}
+        onRecompute={evaluation.recompute}
+      />
+
+    </div>
+  );
+}
+
     </div>
   );
 }
