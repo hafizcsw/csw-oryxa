@@ -42,7 +42,7 @@ export function DefaultHomeView({
     <div className="flex flex-col h-full min-h-0">
       <PanelCategoriesGrid
         activeView="default"
-        identityApproved={identityApproved}
+        identityStatus={identityStatus}
         unreadCount={unreadCount}
         onSwitchView={onSwitchView}
         onClose={onClose}
