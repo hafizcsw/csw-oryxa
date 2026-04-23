@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 interface AccountTopBarProps {
   phone?: string | null;
@@ -68,6 +70,12 @@ export function AccountTopBar({
 
       {/* Wallet Badge & Student ID */}
       <div className="flex items-center gap-2">
+        {/* Theme + Language toggles */}
+        <div className="flex items-center gap-0.5 rounded-full border border-border/70 bg-muted/40 px-1.5 py-0.5">
+          <ThemeToggle />
+          <LanguageToggle />
+        </div>
+
         {/* Settings Button */}
         <Button
           variant="ghost"
