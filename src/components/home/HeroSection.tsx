@@ -15,6 +15,7 @@ import { CompareFloatingBar } from '@/components/compare/CompareFloatingBar';
 import { CompareDrawer } from '@/components/compare/CompareDrawer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMalakChat } from '@/contexts/MalakChatContext';
+import { useTheme } from 'next-themes';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
