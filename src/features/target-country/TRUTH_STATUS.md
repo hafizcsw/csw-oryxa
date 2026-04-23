@@ -105,6 +105,29 @@ edits per new country. That is acceptable, but it is not "data-only".
 
 ---
 
+## Freeze List (no expansion in this lane)
+
+The following are explicitly **frozen**. Do not implement, expand, or
+re-scope them while Door 2 / Door 3 remain PARTIAL:
+
+- APUS full
+- ISUS full
+- CCUS full
+- DB persistence of `application_measurement_snapshot`
+- Program graph
+- University matching
+- Scholarships
+- Visa logic
+- Improvement engine
+- Any new "door" beyond Doors 1–3
+
+The current admin surface (`/admin/target-country`) is explicitly
+**non-authoritative** as live target-student proof: it accepts pasted
+JSON via the engine input forwarder. It is not a target-student
+runtime closure path.
+
+---
+
 ## Rule of judgment
 
 - Do not call anything CLOSED without runtime evidence that matches the
@@ -113,3 +136,5 @@ edits per new country. That is acceptable, but it is not "data-only".
   **runtime-proven (live target)**, **partial**, **placeholder**.
 - Do not reopen Door 1.
 - Do not expand Door 3 before Door 2 is truthfully closed.
+- "Data-only proof" is forbidden for TR. Use **"low-friction
+  extensibility"** only.
