@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import defaultHeroVideo from "@/assets/hero-students-campus.mp4";
 
 /**
  * HeroRevealStage
@@ -99,7 +100,8 @@ export function HeroRevealStage({ hero, next }: HeroRevealStageProps) {
   }, []);
 
   // Load active hero video setting (non-blocking)
-  const [video, setVideo] = useState<HeroVideoSetting>({ enabled: false, url: null });
+  // Default to bundled cinematic video; admin override via feature_settings.
+  const [video, setVideo] = useState<HeroVideoSetting>({ enabled: true, url: defaultHeroVideo });
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -110,7 +112,8 @@ export function HeroRevealStage({ hero, next }: HeroRevealStageProps) {
         .maybeSingle();
       if (!cancelled && data?.value) {
         const v = data.value as any;
-        setVideo({ enabled: !!v.enabled, url: v.url ?? null });
+        // Only override if admin explicitly configured a URL
+        if (v.url) setVideo({ enabled: !!v.enabled, url: v.url });
       }
     })();
     return () => { cancelled = true; };
