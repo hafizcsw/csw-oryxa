@@ -614,7 +614,13 @@ export default function AccountPage() {
   // Wallet balance from CRM or default
   const walletBalance = (crmProfile as { wallet_balance?: number } | null)?.wallet_balance ?? 0;
 
-  // Avatar update handler - saves local profile and syncs CRM when linked
+  // ✅ Avatar update handler — SINGLE WRITE PATH ONLY
+  // CRM is already updated by the upload flow (uploadAvatar → set_avatar).
+  // Here we ONLY:
+  //   1. Mirror the storage path locally in `profiles.avatar_storage_path` for portal-side display
+  //   2. Refetch the CRM profile so the UI shows the new avatar_url
+  // We DO NOT call updateCrmProfile({ avatar_url }) — that would overwrite the
+  // public URL written by set_avatar with a raw storage path.
   const handleAvatarUpdate = async (path: string | null): Promise<boolean> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -627,9 +633,9 @@ export default function AccountPage() {
           );
       }
 
-      // Teacher accounts may not have linked customer profile; skip student CRM update there
+      // ✅ CRM already has the avatar (set_avatar wrote the public URL).
+      // Just refresh the cached profile so UI picks up the new avatar_url.
       if (!isTeacher) {
-        await updateCrmProfile({ avatar_url: path });
         await refetchCrm();
       }
 

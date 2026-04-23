@@ -102,20 +102,9 @@ export function AccountHero({
         console.warn('[AccountHero] Failed to update local profile avatar:', e);
       }
       
-      // Persist avatar path via student-portal-api → CRM RPC (Portal=Proxy pattern)
-      try {
-        await supabase.functions.invoke('student-portal-api', {
-          body: {
-            action: 'update_profile',
-            payload: { 
-              avatar_storage_path: filePath,
-              avatar_url: publicUrl 
-            }
-          }
-        });
-      } catch (e) {
-        console.warn('[AccountHero] Failed to persist avatar to CRM:', e);
-      }
+      // ⚠️ DO NOT send avatar via generic update_profile.
+      // Avatar must flow through the unified uploadAvatar → set_avatar pipeline,
+      // otherwise a raw storage path would overwrite the public URL set by set_avatar.
       
       // Also register as customer file in CRM with FULL metadata
       try {
