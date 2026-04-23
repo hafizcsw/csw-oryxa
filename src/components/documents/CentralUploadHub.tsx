@@ -9,7 +9,8 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DocumentRecord, ProcessingStatus } from '@/features/documents/document-registry-model';
 import { AIDataFlowHero } from './AIDataFlowHero';
-import { renderPdfPagesToThumbnails } from '@/features/documents/pdf-thumbnails';
+// pdfjs is ~350KB — load only when the user actually uploads a PDF.
+// Static import here was forcing pdfjs into the Account chunk on every visit.
 
 interface CentralUploadHubProps {
   records: DocumentRecord[];
@@ -579,6 +580,7 @@ export function CentralUploadHub({
       // immediately; the full pages array is set once all pages are rendered.
       pdfsToRender.forEach(async ({ key, file }) => {
         try {
+          const { renderPdfPagesToThumbnails } = await import('@/features/documents/pdf-thumbnails');
           const { pageUrls } = await renderPdfPagesToThumbnails(file, {
             scale: 1.3,
             maxPages: 25,

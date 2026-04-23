@@ -34,10 +34,11 @@ import { AccountMobileNav } from "@/components/portal/account/AccountMobileNav";
 import { AccountTopBar } from "@/components/portal/account/AccountTopBar";
 
 import { Footer } from "@/components/layout/Footer";
-import { DashboardOverview } from "@/components/portal/account/DashboardOverview";
-import { TeacherAccountOverview } from "@/components/portal/account/TeacherAccountOverview";
-import { TeacherVerificationTab } from "@/components/portal/account/TeacherVerificationTab";
-import { TeacherDocumentsTab } from "@/components/portal/account/TeacherDocumentsTab";
+// Teacher-only tabs and large student tabs are lazy — most users never reach them on first paint.
+const DashboardOverview = lazy(() => import("@/components/portal/account/DashboardOverview").then(m => ({ default: m.DashboardOverview })));
+const TeacherAccountOverview = lazy(() => import("@/components/portal/account/TeacherAccountOverview").then(m => ({ default: m.TeacherAccountOverview })));
+const TeacherVerificationTab = lazy(() => import("@/components/portal/account/TeacherVerificationTab").then(m => ({ default: m.TeacherVerificationTab })));
+const TeacherDocumentsTab = lazy(() => import("@/components/portal/account/TeacherDocumentsTab").then(m => ({ default: m.TeacherDocumentsTab })));
 import { FloatingStudentCTA } from "@/components/portal/FloatingStudentCTA";
 import { useStaffAuthority } from "@/hooks/useStaffAuthority";
 import { useTeacherPermissions } from "@/lib/teacherPermissions";
@@ -46,8 +47,8 @@ import { useTeacherState } from "@/hooks/useTeacherState";
 // JourneyStepsFixed moved to ApplicationStatusTab
 import { calculateProfileProgress } from "@/utils/calculateProfileProgress";
 import { useFileQuality } from "@/hooks/useFileQuality";
-import { StudentInbox } from "@/components/comm/StudentInbox";
-import { StudyFileTab } from "@/components/portal/tabs/StudyFileTab";
+const StudentInbox = lazy(() => import("@/components/comm/StudentInbox").then(m => ({ default: m.StudentInbox })));
+const StudyFileTab = lazy(() => import("@/components/portal/tabs/StudyFileTab").then(m => ({ default: m.StudyFileTab })));
 // IdentityActivationDialog is mounted inside StudyFileTab (single canonical lock point).
 import { useIdentityStatus } from "@/hooks/useIdentityStatus";
 
