@@ -19,26 +19,21 @@ import type { Door3JobType } from './types';
  * @deprecated DEAD PATH. Use the live mistral-document-pipeline path instead.
  * See docs/document-pipeline-truth-table.md.
  */
-export async function enqueueDoor3Job(args: {
+export async function enqueueDoor3Job(_args: {
   document_id: string;
   job_type: Door3JobType;
   payload?: Record<string, unknown>;
 }): Promise<{ ok: boolean; job_id?: string; error?: string }> {
+  // HARD-DEAD: edge function `door3-enqueue` is not deployed. Calling this
+  // path would fail at the network layer anyway; we fail fast and loud here
+  // so any accidental caller is caught immediately.
+  const msg =
+    '[DEAD PATH] enqueueDoor3Job is removed from the live pipeline. ' +
+    'Use student-portal-api → mistral-document-pipeline. ' +
+    'See docs/document-pipeline-truth-table.md';
   // eslint-disable-next-line no-console
-  console.warn(
-    '[DEPRECATED] enqueueDoor3Job called — this is a dead path. ' +
-      'Use student-portal-api → mistral-document-pipeline instead. ' +
-      'See docs/document-pipeline-truth-table.md',
-    { job_type: args.job_type, document_id: args.document_id },
-  );
-  try {
-    const { data, error } = await supabase.functions.invoke('door3-enqueue', {
-      body: args,
-    });
-    if (error) return { ok: false, error: error.message };
-    if (!data?.ok) return { ok: false, error: data?.error ?? 'unknown' };
-    return { ok: true, job_id: data.job_id };
-  } catch (e) {
-    return { ok: false, error: (e as Error).message };
-  }
+  console.error(msg);
+  // Reference supabase to keep the import valid (no runtime call).
+  void supabase;
+  return { ok: false, error: 'dead_path:door3-enqueue' };
 }
