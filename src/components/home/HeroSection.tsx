@@ -175,8 +175,10 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-white dark:bg-black" />
 
 
-        {/* Antigravity-style ring particle field (GPGPU sim + dash render) */}
-        <AntigravityParticleField />
+        {/* Antigravity-style ring particle field (GPGPU sim + dash render) — lazy-loaded */}
+        <Suspense fallback={null}>
+          <AntigravityParticleField />
+        </Suspense>
 
         <div className="relative z-10 w-full h-full max-w-6xl mx-auto px-4 sm:px-8 py-8 flex items-center justify-center">
           {isDeepSearchMode ? (
