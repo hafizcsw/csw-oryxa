@@ -634,8 +634,7 @@ const Index = () => {
               </div>
             </section>
           )}
-
-
+          </Suspense>
         </Layout>
       </ChatProvider>
   );
