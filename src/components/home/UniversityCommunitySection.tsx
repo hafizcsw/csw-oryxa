@@ -118,9 +118,7 @@ export function UniversityCommunitySection() {
           </div>
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--ag-border)] text-[11px] font-medium tracking-wide text-[var(--ag-muted)]">
             <Sparkles className="w-3 h-3" />
-            <span className="font-mono tabular-nums">001</span>
-            <span>—</span>
-            <span>{language === "ar" ? "الأول من نوعه" : "First of its kind"}</span>
+            <span className="font-mono tabular-nums">001 / {t("home.community.badge")}</span>
           </div>
         </motion.div>
 
