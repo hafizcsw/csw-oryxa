@@ -38,6 +38,22 @@ export function FloatingSupportPanel({ onClose, initialView = "default", initial
   const [fallbackName, setFallbackName] = useState<string | null>(null);
 
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Close on any click/touch outside the panel (and outside the floating launcher button).
+  useEffect(() => {
+    const handler = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (panelRef.current?.contains(target)) return;
+      // Ignore clicks on the floating launcher itself (it manages its own toggle).
+      const launcher = (target as HTMLElement).closest?.('[data-floating-launcher]');
+      if (launcher) return;
+      onClose();
+    };
+    document.addEventListener("pointerdown", handler, true);
+    return () => document.removeEventListener("pointerdown", handler, true);
+  }, [onClose]);
 
   const buildShortName = (raw?: string | null): string | null => {
     if (!raw) return null;
@@ -88,6 +104,7 @@ export function FloatingSupportPanel({ onClose, initialView = "default", initial
     <>
       {/* Outside-click catcher: dim on mobile, transparent on desktop */}
       <motion.div
+        ref={panelRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
