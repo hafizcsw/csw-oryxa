@@ -261,13 +261,17 @@ function RailWrapper({
         </span>
         <div className="flex items-center gap-1">
           <button
+            type="button"
             onClick={() => onScroll("left")}
+            aria-label="Scroll left"
             className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <button
+            type="button"
             onClick={() => onScroll("right")}
+            aria-label="Scroll right"
             className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
           >
             <ChevronRight className="h-4 w-4" />
