@@ -442,13 +442,19 @@ export default function Universities() {
                   }
                 }}
               >
-                {currentTab === "universities" && universities.map((university) => (
-                  <UniversityCard
-                    key={university.id}
-                    university={university}
-                    onViewDetails={handleViewDetails}
-                  />
-                ))}
+                {currentTab === "universities" && universities.map((university, idx) => {
+                  const node = (
+                    <UniversityCard
+                      university={university}
+                      onViewDetails={handleViewDetails}
+                    />
+                  );
+                  return idx < 6 ? (
+                    <div key={university.id}>{node}</div>
+                  ) : (
+                    <LazyMount key={university.id} minHeight={360} rootMargin="600px 0px">{node}</LazyMount>
+                  );
+                })}
                 {currentTab === "programs" && universities.map((p: any) => {
                   const programId = p.program_id || p.id;
                   return (
