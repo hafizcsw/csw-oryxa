@@ -216,7 +216,7 @@ export function Layout({
 
             {/* Notifications (authenticated only) — placed right next to avatar */}
             {isAuthenticated && !hideStudentNav && (
-              <HeaderMessenger />
+              <Suspense fallback={null}><HeaderMessenger /></Suspense>
             )}
 
             {/* 5. Account/Auth */}
@@ -232,10 +232,10 @@ export function Layout({
       
       <CompareFloatingButton />
       
-      {/* Auth Start Modal */}
-      <AuthStartModal open={showAuthModal} onOpenChange={closeAuthModal} />
-      
-      {/* #7.3 Shortlist Drawer */}
-      <ShortlistDrawer open={showShortlistDrawer} onOpenChange={setShowShortlistDrawer} />
+      {/* Lazy overlays — invisible until triggered */}
+      <Suspense fallback={null}>
+        <AuthStartModal open={showAuthModal} onOpenChange={closeAuthModal} />
+        <ShortlistDrawer open={showShortlistDrawer} onOpenChange={setShowShortlistDrawer} />
+      </Suspense>
     </div>;
 }
