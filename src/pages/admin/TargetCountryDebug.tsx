@@ -1,28 +1,31 @@
 // ═══════════════════════════════════════════════════════════════
 // Door 2 — Country Eligibility Debug Surface (Admin)
 // ═══════════════════════════════════════════════════════════════
-// Runs the country eligibility engine on:
-//   1) FIXTURE_APPLICANT (deterministic proof)
-//   2) Live DB profile of the signed-in user (smoke test)
-// Renders a 10-country matrix with reasons, gaps, evidence.
+// Admin page. Operates on TARGET STUDENT CONTEXT, not current actor.
+// Tabs:
+//   1) Fixture (proof)         — deterministic engine + 10 packs proof
+//   2) Target student (smoke)  — admin pastes applicant truth JSON of
+//                                a real target student → runs engine
+//                                and emits live console artifact.
+// Never falls back to current admin's signed-in identity for matrix.
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import {
   computeCountryMatrix,
   COUNTRY_PACKS,
   FIXTURE_APPLICANT,
-  buildApplicantTruth,
+  type ApplicantTruth,
   type CountryEligibility,
   type CountryMatrix,
   type CountryStatus,
 } from '@/features/target-country';
-import { useStudentProfile } from '@/hooks/useStudentProfile';
-import { useStudentDocuments } from '@/hooks/useStudentDocuments';
-import { useCanonicalStudentFile } from '@/hooks/useCanonicalStudentFile';
 
 const STATUS_VARIANT: Record<CountryStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   eligible: 'default',
@@ -154,36 +157,68 @@ function MatrixView({ matrix, label }: { matrix: CountryMatrix; label: string })
   );
 }
 
+const TRUTH_TEMPLATE: ApplicantTruth = {
+  student_id: 'paste-real-student-id-here',
+  citizenship: 'SA',
+  secondary_completed: true,
+  secondary_kind: 'general',
+  secondary_grade_pct: 82,
+  english_test_type: 'ielts',
+  english_total_score: 6,
+  english_medium_secondary: false,
+  majority_english_country: false,
+  local_language_signals: [],
+};
+
 export default function TargetCountryDebug() {
   const fixtureMatrix = useMemo(() => computeCountryMatrix(FIXTURE_APPLICANT), []);
 
-  // ═══ Live smoke — same pipeline as Door 1 baseline ═══
-  // CRM edge fn (StudentPortalProfile) → mapCrmToCanonical → buildApplicantTruth → engine
-  const { profile, crmProfile, loading: profileLoading, error: profileError } = useStudentProfile();
-  const { documents } = useStudentDocuments();
-  const { canonicalFile } = useCanonicalStudentFile({
-    crmProfile,
-    documents,
-    userId: profile?.user_id ?? null,
-  });
-
-  const liveTruth = useMemo(
-    () => (canonicalFile ? buildApplicantTruth(canonicalFile) : null),
-    [canonicalFile],
+  // ═══ Target student smoke — explicit admin-supplied context ═══
+  // No reliance on current signed-in actor. Admin pastes the canonical
+  // applicant truth of a real target student (built upstream from the
+  // canonical Door 1 pipeline for that student_id).
+  const [targetStudentId, setTargetStudentId] = useState<string>('');
+  const [truthJsonText, setTruthJsonText] = useState<string>(
+    JSON.stringify(TRUTH_TEMPLATE, null, 2),
   );
-  const liveMatrix = useMemo(
-    () => (liveTruth ? computeCountryMatrix(liveTruth) : null),
-    [liveTruth],
+  const [parsedTruth, setParsedTruth] = useState<ApplicantTruth | null>(null);
+  const [parseError, setParseError] = useState<string | null>(null);
+
+  const targetMatrix = useMemo(
+    () => (parsedTruth ? computeCountryMatrix(parsedTruth) : null),
+    [parsedTruth],
   );
 
-  // Console artifact for runtime proof
+  function handleRun() {
+    setParseError(null);
+    try {
+      const obj = JSON.parse(truthJsonText) as ApplicantTruth;
+      if (!obj.student_id || typeof obj.student_id !== 'string') {
+        throw new Error('truth.student_id is required (string)');
+      }
+      if (!obj.citizenship || typeof obj.citizenship !== 'string') {
+        throw new Error('truth.citizenship is required (ISO-2 string)');
+      }
+      if (targetStudentId && obj.student_id !== targetStudentId) {
+        throw new Error(
+          `target_student_id (${targetStudentId}) does not match truth.student_id (${obj.student_id})`,
+        );
+      }
+      setParsedTruth(obj);
+    } catch (e: any) {
+      setParsedTruth(null);
+      setParseError(e?.message || 'invalid JSON');
+    }
+  }
+
+  // Console artifact for runtime proof — only when target context exists
   useEffect(() => {
-    if (liveMatrix && canonicalFile) {
+    if (targetMatrix && parsedTruth) {
       // eslint-disable-next-line no-console
       console.log('[Door2][live-smoke] truth+matrix', {
-        student_id: canonicalFile.student_id,
-        truth: liveMatrix.applicant_summary,
-        results: liveMatrix.results.map((r) => ({
+        student_id: parsedTruth.student_id,
+        truth: targetMatrix.applicant_summary,
+        results: targetMatrix.results.map((r) => ({
           country: r.country_code,
           status: r.status,
           eligible_paths: r.eligible_entry_paths,
@@ -194,7 +229,7 @@ export default function TargetCountryDebug() {
         })),
       });
     }
-  }, [liveMatrix, canonicalFile]);
+  }, [targetMatrix, parsedTruth]);
 
   return (
     <div className="container py-6 space-y-4">
@@ -204,30 +239,71 @@ export default function TargetCountryDebug() {
           After-secondary, country-level only · 10 packs · pure engine
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          Live truth pipeline: <code>CRM edge fn → mapCrmToCanonical → buildApplicantTruth → engine</code>
+          Admin route. Operates on <strong>target student context</strong> only — never on
+          current signed-in admin/staff identity.
         </p>
       </div>
 
       <Tabs defaultValue="fixture">
         <TabsList>
           <TabsTrigger value="fixture">Fixture (proof)</TabsTrigger>
-          <TabsTrigger value="live">Live canonical (smoke)</TabsTrigger>
+          <TabsTrigger value="target">Target student (smoke)</TabsTrigger>
         </TabsList>
+
         <TabsContent value="fixture" className="mt-4">
           <MatrixView matrix={fixtureMatrix} label="synthetic" />
         </TabsContent>
-        <TabsContent value="live" className="mt-4">
-          {profileLoading && <p className="text-sm text-muted-foreground">Loading CRM profile…</p>}
-          {profileError && <p className="text-sm text-destructive">CRM error: {profileError}</p>}
-          {!profileLoading && !crmProfile && (
-            <p className="text-sm text-muted-foreground">
-              Sign in to compute the live matrix from canonical truth.
-            </p>
-          )}
-          {liveMatrix && canonicalFile && (
+
+        <TabsContent value="target" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Target student input</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Paste the canonical applicant truth JSON for a real target student. This page
+                does not derive truth from the current admin actor.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-xs font-medium uppercase text-muted-foreground">
+                  target_student_id (optional cross-check)
+                </label>
+                <Input
+                  value={targetStudentId}
+                  onChange={(e) => setTargetStudentId(e.target.value)}
+                  placeholder="student UUID — must match truth.student_id"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium uppercase text-muted-foreground">
+                  applicant truth JSON
+                </label>
+                <Textarea
+                  value={truthJsonText}
+                  onChange={(e) => setTruthJsonText(e.target.value)}
+                  rows={14}
+                  className="font-mono text-xs"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Button onClick={handleRun}>Run matrix on target student</Button>
+                {parseError && (
+                  <span className="text-xs text-destructive">{parseError}</span>
+                )}
+              </div>
+              {!parsedTruth && !parseError && (
+                <p className="text-xs text-muted-foreground">
+                  admin route requires selected target student · fixture proof still
+                  available in the other tab
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {targetMatrix && parsedTruth && (
             <MatrixView
-              matrix={liveMatrix}
-              label={`canonical · ${canonicalFile.student_id.slice(0, 8)}…`}
+              matrix={targetMatrix}
+              label={`target · ${parsedTruth.student_id.slice(0, 12)}…`}
             />
           )}
         </TabsContent>
