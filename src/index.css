@@ -1010,26 +1010,37 @@ All colors MUST be HSL.
 }
 
 /* =========================================================
-   Hero reveal stage — Antigravity-style sticky transition
-   Uses ONE CSS variable --rp (0..1) written by JS via rAF.
-   All transitions are transform/opacity only, GPU-friendly.
+   Hero reveal stage — push handoff (no floating overlay)
+   --------------------------------------------------------
+   Stage = relative + overflow:clip, height 200vh.
+   Sticky viewport (100vh, overflow:clip) holds ONLY:
+     [video z0] [hero z1] [veil z2]
+   Next section lives AFTER sticky in normal flow — it does
+   NOT float over hero. As the user scrolls, the document
+   pushes the sticky out the top while next slides up into
+   place from below, contained by the stage's clip.
+   --rp (0..1) drives only intra-hero motion + veil.
    ========================================================= */
 .reveal-stage {
   --rp: 0;
-  /* hero scale: 1 -> 0.94 */
-  --hero-scale: calc(1 - (var(--rp) * 0.06));
-  /* hero content opacity: 1 -> 0.35 */
-  --hero-opacity: calc(1 - (var(--rp) * 0.65));
-  /* dark overlay opacity: 0 -> 0.25 */
-  --overlay-opacity: calc(var(--rp) * 0.25);
-  /* next section translate: 80px -> 0 */
-  --next-y: calc(80px * (1 - var(--rp)));
-  /* next section opacity: 0 -> 1 (snaps in over second half) */
-  --next-opacity: clamp(0, calc(var(--rp) * 1.6 - 0.2), 1);
+  /* gentle hero lift: 0 -> -8vh (parallax inside sticky) */
+  --hero-y: calc(var(--rp) * -8vh);
+  /* very subtle scale: 1 -> 0.97 */
+  --hero-scale: calc(1 - (var(--rp) * 0.03));
+  /* hero content fade: 1 -> 0.55 (stays readable until handoff) */
+  --hero-opacity: calc(1 - (var(--rp) * 0.45));
+  /* dark veil: 0 -> 0.35 (masks hero edge during push) */
+  --overlay-opacity: calc(var(--rp) * 0.35);
+}
+
+.reveal-stage .reveal-sticky {
+  /* hard containment so nothing visually escapes the viewport box */
+  overflow: clip;
+  contain: paint;
 }
 
 .reveal-stage .reveal-hero {
-  transform: scale(var(--hero-scale));
+  transform: translate3d(0, var(--hero-y), 0) scale(var(--hero-scale));
   opacity: var(--hero-opacity);
   transform-origin: center center;
 }
@@ -1038,47 +1049,48 @@ All colors MUST be HSL.
   opacity: var(--overlay-opacity);
 }
 
+/* Stacking inside sticky viewport */
+.reveal-stage .reveal-video   { z-index: 0; }
+.reveal-stage .reveal-hero    { position: relative; z-index: 1; }
+.reveal-stage .reveal-overlay { z-index: 2; }
+
+/* Next section sits in normal flow under the sticky.
+   No transform, no opacity tricks — real document push. */
 .reveal-stage .reveal-next {
-  transform: translate3d(0, var(--next-y), 0);
-  opacity: var(--next-opacity);
+  position: relative;
+  z-index: 0;
+  background-color: hsl(var(--background));
 }
 
-/* Mobile / reduced motion: disable scrub.
-   JS sets --rp = 1 so hero stays fully visible until next mounts.
-   Next section gets a one-shot fade when it intersects. */
+/* Hero reveal background video — sits behind hero, fades up with --rp */
+.reveal-stage .reveal-video {
+  opacity: calc(0.4 + var(--rp) * 0.45);
+}
+
+/* Mobile / reduced motion: no scrub, no sticky, just stacked sections. */
 @media (max-width: 768px), (prefers-reduced-motion: reduce) {
   .reveal-stage {
     height: auto !important;
+    overflow: visible;
   }
   .reveal-stage .reveal-sticky {
     position: relative;
     height: auto;
+    overflow: visible;
   }
   .reveal-stage .reveal-hero {
     transform: none;
     opacity: 1;
   }
-  .reveal-stage .reveal-overlay {
-    display: none;
-  }
+  .reveal-stage .reveal-overlay { display: none; }
+  .reveal-stage .reveal-video   { display: none; }
   .reveal-stage .reveal-next {
-    transform: translate3d(0, 24px, 0);
     opacity: 0;
+    transform: translate3d(0, 24px, 0);
     transition: transform 500ms ease-out, opacity 500ms ease-out;
   }
   .reveal-stage .reveal-next[data-revealed="true"] {
     transform: translate3d(0, 0, 0);
     opacity: 1;
   }
-}
-
-/* Hero reveal background video — sits behind hero, fades up with --rp */
-.reveal-stage .reveal-video {
-  opacity: calc(0.35 + var(--rp) * 0.45);
-  z-index: 0;
-}
-.reveal-stage .reveal-hero { position: relative; z-index: 1; }
-.reveal-stage .reveal-overlay { z-index: 2; }
-@media (max-width: 768px) {
-  .reveal-stage .reveal-video { display: none; }
 }
