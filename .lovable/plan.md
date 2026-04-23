@@ -1,72 +1,96 @@
 
+## تحليل عميق: موقع لوحة الشات العائمة
 
-## الهدف
-استبدال `HeroParticleField` (Canvas 2D) بـ **WebGL shader-based atmospheric field** يعتمد على noise-driven motion + mouse disturbance + depth، مذاب تمامًا داخل الـ gradient الحالي. التصميم/الألوان/الـ layout بدون أي تغيير.
+### الوضع الحالي (المشكلة)
 
-## فئة الإيفكت
-**Single full-screen fragment shader** (OGL — ~15 KB gz) يرسم حقل بسيط حيًا فوق الخلفية بـ blend mode `screen`/`additive`، بدون particles مرئية، بدون نقاط، بدون شبكة.
+```text
+┌─────────────────────────────────────────────────────────┐
+│                    Header (top-16)                      │
+├──────────────────────────┬──────────┬───────────────────┤
+│                          │          │                   │
+│                          │  Panel   │   Sidebar         │
+│       Main Content       │  400px   │   (Avatar)        │
+│                          │          │   w-56 = 224px    │
+│                          │          │                   │
+│                          │  ↑       │   ↑               │
+│                          │ end-56   │ visible           │
+│                          │ (فجوة)   │                   │
+└──────────────────────────┴──────────┴───────────────────┘
+                            ↑
+                  اللوحة "تطفو" بفجوة 224px من الحافة
+                  (md:end-56) — هذا خطأ
+```
 
-## المكتبة
-**OGL** — أصغر بكثير من Three.js، يكفي لـ full-screen shader pass.
+**الكود الحالي:**
+```tsx
+"sm:inset-x-auto sm:top-16 sm:bottom-0 md:end-56 sm:end-0 ..."
+```
 
-## الملفات
+`md:end-56` يدفع اللوحة 14rem بعيدًا عن الحافة على شاشات md+، مما يخلق فجوة بين اللوحة والسايدبار، فتبدو معلقة في منتصف اللاشيء (كما في الصورة الأولى).
 
-### 1) ‎`src/components/home/hero-shader/atmosphericFieldShader.ts` (جديد)
-- `vertex`: full-screen quad ثابت.
-- `fragment`: 
-  - 3D simplex noise (مدمج، ~50 سطر GLSL).
-  - طبقتان من الـ noise بترددات/سرعات مختلفة → **ميكرو-فليكر غير متزامن**.
-  - حقل depth وهمي عبر noise بطيء جدًا (FBM-lite) → إحساس عمق.
-  - **Mouse disturbance**: `uMouse` (vec2 في 0..1) مع `uMouseStrength` (smoothed). تشويش soft Gaussian falloff حول الماوس.
-  - النتيجة: قناع شفافية أبيض monochrome (RGB=1, A=mask) يتراكب فوق الـ gradient → لا يغير الألوان، يضيف "حياة".
-- `uniforms`: `uTime`, `uResolution`, `uMouse`, `uMouseStrength`, `uIntensity`, `uNoiseScale`, `uSpeed`, `uMouseRadius`, `uDepthBoost`.
+---
 
-### 2) ‎`src/components/home/hero-shader/HeroAtmosphericField.tsx` (جديد، يستبدل HeroParticleField)
-- يُنشئ OGL `Renderer`, `Program`, `Mesh` (full-screen triangle) داخل canvas.
-- `requestAnimationFrame` loop واحد.
-- معالجات `pointermove`/`pointerleave` تحدّث `uMouse` + تنعيم `uMouseStrength` (lerp).
-- `ResizeObserver` لتحديث الـ resolution + DPR (مقصور على 1.5).
-- `document.visibilitychange` → pause.
-- `prefers-reduced-motion` → freeze time + disable mouse.
-- Mobile (`max-width: 640px`) → mouse معطّل، intensity أخفض.
-- **WebGL fallback**: لو `getContext('webgl2'||'webgl')` فشل → render nothing (لا fallback لـ canvas 2D).
-- **Two presets** (الـ A/B المطلوبان) يُمرَّران عبر prop `variant`:
-  ```ts
-  PRESETS = {
-    quieter:    { intensity: 0.10, noiseScale: 1.2, speed: 0.06, mouseRadius: 0.22, depthBoost: 0.35 },
-    reactive:   { intensity: 0.16, noiseScale: 1.6, speed: 0.10, mouseRadius: 0.30, depthBoost: 0.50 },
-  }
-  ```
-- نفس الـ wrapper styling: `position:absolute; inset:0; z-index:1; pointer-events:none; mix-blend-mode: screen` (للذوبان داخل الـ gradient).
+### الوضع المطلوب (مثل Messenger)
 
-### 3) ‎`src/components/home/HeroSection.tsx` (تعديل سطر واحد)
-- استبدال `<HeroParticleField />` بـ `<HeroAtmosphericField variant="quieter" />`.
-- أضع متغير `HERO_FIELD_VARIANT` في أعلى الملف لتبديل سهل بين `'quieter'` و `'reactive'`.
+```text
+┌─────────────────────────────────────────────────────────┐
+│                    Header (top-16)                      │
+├────────────────────────────────┬──────────┬─────────────┤
+│                                │          │             │
+│                                │          │  Sidebar    │
+│        Main Content            │  Panel   │  (Avatar)   │
+│                                │  400px   │   w-56      │
+│                                │          │             │
+│                                │  ملتصق   │   يبقى      │
+│                                │  بحافة   │   ظاهرًا    │
+│                                │  السايد  │             │
+│                                │  بار     │             │
+└────────────────────────────────┴──────────┴─────────────┘
+                                  ↑
+                       end-56 على RTL = اللوحة تبدأ
+                       من حيث ينتهي السايدبار تمامًا
+                       بدون فجوة
+```
 
-### 4) ‎`src/components/home/HeroParticleField.tsx`
-- **حذف الملف** (لم يعد مستخدمًا).
+في فيسبوك Messenger: نافذة الشات ملتصقة بالحافة الفعلية للمنطقة المتاحة (بعد عناصر الـ chrome الثابتة مباشرة)، بدون أي مسافة.
 
-## مكان الـ config الموحّد
-كل القيم القابلة للتعديل (الـ presets + الثوابت العامة) في رأس `HeroAtmosphericField.tsx` تحت `// === CONFIG ===` block واحد.
+---
 
-## التبعيات
-- إضافة: `ogl@^1.0.11` (~15 KB gz).
-- لا three، لا @react-three/fiber.
+### الحل الدقيق
 
-## التوافق مع التصميم
-| العنصر | الحالة |
-|---|---|
-| الـ gradient الأزرق→البنفسجي→البرتقالي | بدون تغيير |
-| النص + ORYXA box | بدون تغيير، يبقى z-index: 2 فوق الـ canvas |
-| الـ spacing/layout | بدون تغيير |
-| الألوان | الـ shader يخرج أبيض monochrome فقط، blend `screen` يحافظ على الـ palette |
+السايدبار في RTL على اليسار من منظور المستخدم لكنه `end` في CSS logical properties. المطلوب أن تبدأ اللوحة **مباشرة** عند حافة السايدبار بدون أي فاصل إضافي.
 
-## التسليم النهائي
-- ملفات مضافة: `hero-shader/atmosphericFieldShader.ts`, `hero-shader/HeroAtmosphericField.tsx`.
-- ملف معدّل: `HeroSection.tsx` (سطر import + سطر JSX + ثابت variant).
-- ملف محذوف: `HeroParticleField.tsx`.
-- التبديل بين A/B = تغيير قيمة `HERO_FIELD_VARIANT` في `HeroSection.tsx`.
+**القيمة الحالية الخاطئة:** `md:end-56 sm:end-0`
+- على sm: `end-0` (ملتصق بالحافة) ✓
+- على md+: `end-56` يضيف 14rem إضافية ✗ (هذا ما يخلق الفجوة)
 
-## ملاحظة على فيديوهات desktop/mobile
-لا أستطيع توليد فيديوهات تلقائيًا. بعد التنفيذ سأطلب منك مراجعة الـ preview على الشاشتين، وسأرسل screenshots عبر المتصفح إن طلبت.
+**التصحيح:** إزالة `md:end-56` نهائيًا والاعتماد على `sm:end-0` فقط لكل المقاسات. السايدبار له `position` مستقل في الـ layout، فاللوحة ستلتصق بحافة المتصفح والسايدبار سيظهر فوقها أو بجانبها حسب z-index الفعلي.
 
+**لكن** — إذا كان السايدبار جزءًا من تدفق المستند (وليس fixed)، فاللوحة بـ `fixed end-0` ستغطيه. لذا الحل الصحيح:
+- إبقاء اللوحة `fixed end-0` (ملتصقة بحافة المتصفح)
+- التأكد أن السايدبار له z-index أعلى أو أنه fixed أيضًا
+- العرض 400px أصغر من المسافة بين السايدبار وحافة المحتوى، فلا تداخل بصريًا
+
+---
+
+### التغيير في الملف
+
+**`src/components/portal/support/FloatingSupportPanel.tsx`** (السطور 102-106):
+
+```tsx
+// قبل
+bottomDockedView
+  ? "sm:inset-x-auto sm:top-16 sm:bottom-0 md:end-56 sm:end-0 sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-none"
+  : "sm:inset-x-auto sm:top-16 sm:bottom-0 md:end-56 sm:end-0 sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-none",
+
+// بعد
+bottomDockedView
+  ? "sm:inset-x-auto sm:top-16 sm:bottom-0 sm:end-0 sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-none"
+  : "sm:inset-x-auto sm:top-16 sm:bottom-0 sm:end-0 sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-none",
+```
+
+### النتيجة المتوقعة
+- اللوحة ملتصقة بحافة المتصفح (يمين في LTR، يسار في RTL).
+- السايدبار يظهر بشكل طبيعي في تدفق الصفحة.
+- لا فجوة، لا تطفو في الفراغ — مثل Messenger تمامًا.
+- الهيدر (top-16) يبقى الحد العلوي.
