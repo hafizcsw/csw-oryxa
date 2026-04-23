@@ -427,84 +427,90 @@ const Index = () => {
           {/* Hero — untouched */}
           <HeroSection />
 
-          <Suspense fallback={<div className="min-h-[400px]" />}>
-            {/* 1. Mission statement */}
-            <AGSection eyebrow={t("home.ag.eyebrow.mission")}>
-              <AGStatement
-                headline={t("home.ag.statement1.headline")}
-                description={t("home.ag.statement1.desc")}
+          {/* Unified AG canvas below the hero — single bg/text language,
+              prevents black/white "flicker" between sections */}
+          <div className="bg-[var(--ag-bg)] text-[var(--ag-fg)]">
+            <Suspense fallback={<div className="min-h-[400px]" />}>
+              {/* 1. Mission statement */}
+              <AGSection eyebrow={t("home.ag.eyebrow.mission")}>
+                <AGStatement
+                  headline={t("home.ag.statement1.headline")}
+                  description={t("home.ag.statement1.desc")}
+                />
+              </AGSection>
+
+              {/* 2. Student journey triptych */}
+              <AGSection
+                eyebrow={t("home.ag.eyebrow.journey")}
+                className="border-t border-[var(--ag-border)]"
+              >
+                <AGTriptych>
+                  {(["discover", "decide", "depart"] as const).map((k, i) => (
+                    <AGCard key={k} index={i}>
+                      <h3 className="text-2xl md:text-[28px] font-semibold tracking-[-0.01em] mb-3">
+                        {t(`home.ag.triptych1.${k}.title`)}
+                      </h3>
+                      <p className="text-[var(--ag-muted)] leading-relaxed text-[15px]">
+                        {t(`home.ag.triptych1.${k}.desc`)}
+                      </p>
+                    </AGCard>
+                  ))}
+                </AGTriptych>
+              </AGSection>
+
+              {/* 3. World map — wrapped only, internals untouched */}
+              <AGSection
+                eyebrow={t("home.ag.eyebrow.global")}
+                innerClassName="!max-w-[1400px]"
+                className="border-t border-[var(--ag-border)]"
+              >
+                <LazyMount minHeight={400}><WorldMapSection /></LazyMount>
+              </AGSection>
+
+              {/* 4. Built-for global students statement */}
+              <AGSection className="border-t border-[var(--ag-border)]">
+                <AGStatement
+                  headline={t("home.ag.statement2.headline")}
+                  description={t("home.ag.statement2.desc")}
+                />
+              </AGSection>
+
+              {/* 5. Use-case triptych */}
+              <AGSection
+                eyebrow={t("home.ag.eyebrow.platform")}
+                className="border-t border-[var(--ag-border)]"
+              >
+                <AGTriptych>
+                  {(["undergrad", "postgrad", "scholarship"] as const).map((k, i) => (
+                    <AGCard key={k} index={i}>
+                      <h3 className="text-2xl md:text-[28px] font-semibold tracking-[-0.01em] mb-3">
+                        {t(`home.ag.triptych2.${k}.title`)}
+                      </h3>
+                      <p className="text-[var(--ag-muted)] leading-relaxed text-[15px]">
+                        {t(`home.ag.triptych2.${k}.desc`)}
+                      </p>
+                    </AGCard>
+                  ))}
+                </AGTriptych>
+              </AGSection>
+
+              {/* 6. Dark anchor band with particles (auto-inverted) */}
+              <AGAnchorBand
+                headline={t("home.ag.anchor.headline")}
+                primaryCta={{
+                  label: t("home.ag.anchor.primary"),
+                  onClick: goSearch,
+                }}
+                secondaryCta={{
+                  label: t("home.ag.anchor.secondary"),
+                  onClick: openOldChat,
+                }}
               />
-            </AGSection>
 
-            {/* 2. Student journey triptych */}
-            <AGSection eyebrow={t("home.ag.eyebrow.journey")}>
-              <AGTriptych>
-                {(["discover", "decide", "depart"] as const).map((k, i) => (
-                  <AGCard key={k} index={i}>
-                    <h3 className="text-2xl md:text-[28px] font-semibold tracking-[-0.01em] mb-3">
-                      {t(`home.ag.triptych1.${k}.title`)}
-                    </h3>
-                    <p className="text-[var(--ag-muted)] leading-relaxed text-[15px]">
-                      {t(`home.ag.triptych1.${k}.desc`)}
-                    </p>
-                  </AGCard>
-                ))}
-              </AGTriptych>
-            </AGSection>
-
-            {/* 3. World map (kept, restyled wrapper) */}
-            <AGSection eyebrow={t("home.ag.eyebrow.global")} innerClassName="!max-w-[1400px]">
-              <LazyMount minHeight={400}><WorldMapSection /></LazyMount>
-            </AGSection>
-
-            {/* 4. Built-for global students statement */}
-            <AGSection>
-              <AGStatement
-                headline={t("home.ag.statement2.headline")}
-                description={t("home.ag.statement2.desc")}
-              />
-            </AGSection>
-
-            {/* 5. Use-case triptych */}
-            <AGSection eyebrow={t("home.ag.eyebrow.platform")}>
-              <AGTriptych>
-                {(["undergrad", "postgrad", "scholarship"] as const).map((k, i) => (
-                  <AGCard key={k} index={i}>
-                    <h3 className="text-2xl md:text-[28px] font-semibold tracking-[-0.01em] mb-3">
-                      {t(`home.ag.triptych2.${k}.title`)}
-                    </h3>
-                    <p className="text-[var(--ag-muted)] leading-relaxed text-[15px]">
-                      {t(`home.ag.triptych2.${k}.desc`)}
-                    </p>
-                  </AGCard>
-                ))}
-              </AGTriptych>
-            </AGSection>
-
-            {/* 6. About ORYXA (kept) */}
-            <AGSection>
-              <LazyMount minHeight={400}><AboutOryxaSection /></LazyMount>
-            </AGSection>
-
-            {/* 7. Partners marquee (kept) */}
-            <LazyMount minHeight={300}><PartnersMarquee /></LazyMount>
-
-            {/* 8. Dark anchor band with particles */}
-            <AGAnchorBand
-              headline={t("home.ag.anchor.headline")}
-              primaryCta={{
-                label: t("home.ag.anchor.primary"),
-                onClick: goSearch,
-              }}
-              secondaryCta={{
-                label: t("home.ag.anchor.secondary"),
-                onClick: openOldChat,
-              }}
-            />
-
-            {/* 9. Footer-anchor display word */}
-            <AGDisplayAnchor word={t("home.ag.display")} />
-          </Suspense>
+              {/* 7. Footer-anchor display word */}
+              <AGDisplayAnchor word={t("home.ag.display")} />
+            </Suspense>
+          </div>
         </Layout>
       </ChatProvider>
   );
