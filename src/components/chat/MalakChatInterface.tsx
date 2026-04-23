@@ -1487,6 +1487,8 @@ export function MalakChatInterface({
                   <Button 
                     variant="ghost" 
                     size="icon"
+                    aria-label={t('portal.chat.controls.add', { defaultValue: 'Add attachment' })}
+                    title={t('portal.chat.controls.add', { defaultValue: 'Add attachment' })}
                     className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
                   >
                     <Plus className="w-5 h-5" />
@@ -1501,10 +1503,13 @@ export function MalakChatInterface({
                         <div className="flex items-center gap-0.5 bg-blue-50 dark:bg-blue-950/50 rounded-full pl-1 pr-2 py-1">
                           {/* X button to clear */}
                           <button 
+                            type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               setSearchMode('normal');
                             }}
+                            aria-label={t('portal.chat.controls.clearSearchMode', { defaultValue: 'Clear search mode' })}
+                            title={t('portal.chat.controls.clearSearchMode', { defaultValue: 'Clear search mode' })}
                             className="h-6 w-6 rounded-full flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900 text-blue-600 dark:text-blue-400"
                           >
                             <X className="w-3.5 h-3.5" />
