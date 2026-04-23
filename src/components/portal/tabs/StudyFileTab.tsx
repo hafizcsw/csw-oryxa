@@ -34,6 +34,9 @@ import type { DocumentTypeFilter } from "./DocumentsTab";
 import { guessSlotFromFileName } from "@/features/documents/document-registry-model";
 import { useDocumentLaneFacts } from "@/hooks/useDocumentLaneFacts";
 import { LaneFactsCard } from "@/components/student-file/LaneFactsCard";
+import { useStudentEvaluation } from "@/hooks/useStudentEvaluation";
+import { analysesToEvalInputs } from "@/features/evaluation-snapshot/adapter";
+import { StudentEvaluationWorkspace } from "@/components/evaluation/StudentEvaluationWorkspace";
 
 const ProfileTab = lazy(() => import("@/components/portal/tabs/ProfileTab").then(m => ({ default: m.ProfileTab })));
 const ReadinessTab = lazy(() => import("@/components/readiness/ReadinessTab").then(m => ({ default: m.ReadinessTab })));
