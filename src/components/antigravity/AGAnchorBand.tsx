@@ -35,10 +35,12 @@ export function AGAnchorBand({
     <section
       ref={ref}
       data-ag-reveal
-      data-ag-tone="dark"
+      data-ag-tone="invert"
       className={cn(
         "ag-section relative w-full overflow-hidden",
+        // Inverted band: bg = ink, text = paper (works in both themes)
         "bg-[var(--ag-fg)] text-[var(--ag-bg)]",
+        "border-y border-[var(--ag-border)]",
         "py-[clamp(120px,16vw,220px)]",
         className
       )}
@@ -71,7 +73,7 @@ export function AGAnchorBand({
                 onClick={primaryCta.onClick}
                 className={cn(
                   "px-7 py-3.5 rounded-[var(--ag-radius-pill)]",
-                  "bg-white text-[var(--ag-fg)] font-medium text-[15px]",
+                  "bg-[var(--ag-bg)] text-[var(--ag-fg)] font-medium text-[15px]",
                   "transition-transform duration-300 hover:scale-[1.03]"
                 )}
               >
@@ -84,8 +86,8 @@ export function AGAnchorBand({
                 onClick={secondaryCta.onClick}
                 className={cn(
                   "px-7 py-3.5 rounded-[var(--ag-radius-pill)]",
-                  "bg-transparent text-white border border-white/30 font-medium text-[15px]",
-                  "transition-colors duration-300 hover:bg-white/10"
+                  "bg-transparent border border-current/40 font-medium text-[15px]",
+                  "transition-colors duration-300 hover:bg-[var(--ag-bg)]/10"
                 )}
               >
                 {secondaryCta.label}
