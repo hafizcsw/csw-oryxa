@@ -150,7 +150,7 @@ export function FloatingSupportLauncher() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {open && <FloatingSupportPanel onClose={() => setOpen(false)} />}
+        {open && <FloatingSupportPanel onClose={() => setOpen(false)} initialView="messages" />}
       </AnimatePresence>
     </>
   );
