@@ -265,6 +265,9 @@ export function StudentInbox() {
                   >
                     <div className="relative flex-shrink-0">
                       <Avatar className={cn('h-12 w-12', isSelected && 'ring-2 ring-primary/40')}>
+                        {item.source === 'support' && (
+                          <AvatarImage src={avatarSupport} alt="Support" loading="lazy" width={512} height={512} />
+                        )}
                         <AvatarFallback className={cn(
                           'text-sm font-semibold',
                           item.unread || isSelected ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
