@@ -153,7 +153,7 @@ export function FloatingSupportPanel({ onClose, initialView = "default" }: Float
             <OryxaTab />
           ) : activeView === "default" ? (
             <DefaultHomeView
-              identityApproved={identityApproved}
+              identityStatus={status?.identity_status ?? null}
               unreadCount={unreadCount}
               onSwitchView={setActiveView}
               onClose={onClose}
