@@ -1201,7 +1201,9 @@
       "other": "Outro",
       "visa": "Visa",
       "logout": "Sair",
-      "messages": "Mensagens"
+      "messages": "Mensagens",
+      "readiness": "Prontidão",
+      "myStudyFile": "Meu arquivo de estudos"
     },
     "nav": {
       "sections": "Seções"
@@ -1258,7 +1260,17 @@
       "walletWaitlistJoinedHint": "Sua carteira ainda não está ativa. Você está na lista de espera e entraremos em contato assim que for ativada.",
       "walletApprovedTitle": "Carteira aprovada",
       "walletApprovedDesc": "Sua carteira está ativa. Você pode depositar e transferir.",
-      "walletApprovedBadge": "Ativa"
+      "walletApprovedBadge": "Ativa",
+      "whyVerifyButton": "Por que verificar minha conta?",
+      "whyVerifyTitle": "Por que a verificação da conta é importante?",
+      "whyVerifyIntro": "Verificar sua conta o conecta diretamente com nossa equipe dedicada e desbloqueia oportunidades reais não disponíveis para contas não verificadas.",
+      "whyVerifyPoint1Title": "Proteja e recupere sua conta",
+      "whyVerifyPoint1Body": "Se você perder o acesso, seus dados permanecem protegidos — a recuperação só é possível com sua identidade e uma sessão de vídeo ao vivo com nossa equipe de suporte.",
+      "whyVerifyPoint2Title": "Bolsas e programas em todo o mundo",
+      "whyVerifyPoint2Body": "Seu perfil verificado é mostrado a universidades parceiras, então elas entram em contato com ofertas para participar de seus programas e bolsas em vez de você correr atrás.",
+      "whyVerifyPoint3Title": "Publicar na comunidade de estudantes verificados",
+      "whyVerifyPoint3Body": "Você poderá publicar dentro da comunidade CSW que estamos construindo para apoiar projetos de estudantes — incluindo lançar campanhas de investimento para seu próprio projeto.",
+      "whyVerifyClose": "Entendi, obrigado"
     },
     "markets": {
       "title": "Taxas de Câmbio",
@@ -1272,7 +1284,8 @@
       "currency": "Moeda",
       "price": "Preço",
       "change24h": "Variação 24h",
-      "trade": "Negociar"
+      "trade": "Negociar",
+      "usd": "USD"
     },
     "wallet": {
       "estimatedBalance": "Saldo Estimado",
@@ -1471,7 +1484,18 @@
       "localPrograms": "Local Programs",
       "detailsAfterLink": "Full details will appear after linking your account",
       "program": "Programa",
-      "syncing": "Syncing favorites..."
+      "syncing": "Syncing favorites...",
+      "favoriteUniversities": "Universidades favoritas",
+      "favoritedPrograms": "programas favoritos",
+      "favoritedUniversity": "Universidade favorita",
+      "countries": "países",
+      "universities": "universidades",
+      "details": "Detalhes",
+      "months": "meses",
+      "browseAvailable": "Explorar programas disponíveis",
+      "unknown": "Desconhecido",
+      "unknownUniversity": "Universidade desconhecida",
+      "applyNow": "Inscrever-se agora"
     },
     "payments": {
       "title": "Histórico de Transações",
@@ -1747,7 +1771,8 @@
           "Alojamento + chegada (recepção + SIM + registro)",
           "Prioridade de velocidade"
         ]
-      }
+      },
+      "connectionError": "Ocorreu um erro de conexão"
     },
     "contracts": {
       "createdAt": "Created At",
@@ -1887,7 +1912,8 @@
         "not_staff": "Not registered as staff",
         "approval_resolution_unavailable": "Approval check unavailable",
         "resolution_error": "Verification check error",
-        "not_teacher_role": "Not a teacher role"
+        "not_teacher_role": "Not a teacher role",
+        "verification_columns_unavailable": "Os campos de verificação não estão disponíveis no CRM"
       },
       "verification": "Verification",
       "verificationCenter": "Verification Center",
@@ -1926,7 +1952,8 @@
         "teacher_identity": "Government-issued ID, passport, or residence permit.",
         "teacher_education": "Teaching certificate, diploma, or degree.",
         "teacher_supporting": "Any additional supporting documents (optional)."
-      }
+      },
+      "avatarUploadFailed": "Falha no upload da foto de perfil"
     },
     "analysis": {
       "artifact": {
@@ -1965,6 +1992,26 @@
         "pending_review": "em revisão",
         "rejected": "rejeitado",
         "superseded": "substituído"
+      },
+      "title": "Análise de documentos",
+      "documents_analyzed": "Documentos analisados",
+      "accepted": "aceito",
+      "pending": "pendente",
+      "rejected": "rejeitado",
+      "no_fields_extracted": "Não foi possível extrair campos deste documento",
+      "engine": {
+        "title": "Atividade do mecanismo — o que está acontecendo agora",
+        "stage": {
+          "reading": "Lendo arquivo",
+          "ocr": "Executando OCR",
+          "classifying": "Classificando documento",
+          "mrz": "Analisando MRZ do passaporte",
+          "extracting": "Extraindo campos",
+          "transcript_rows": "Analisando linhas do histórico",
+          "building_proposals": "Gerando propostas",
+          "completed": "Concluído",
+          "failed": "Falhou"
+        }
       }
     },
     "assembly": {
@@ -1981,7 +2028,13 @@
         "needs_review": "Needs Review",
         "needs_review_desc": "Documents whose lane could not be resolved automatically.",
         "doc_count": "{{count}} documents",
-        "waiting": "Waiting for a matching document…"
+        "waiting": "Waiting for a matching document…",
+        "delete_one": "Excluir este arquivo",
+        "delete_all": "Excluir tudo",
+        "confirm_delete_one": "Excluir este arquivo permanentemente?",
+        "confirm_delete_all": "{{count}} arquivo(s) serão excluídos permanentemente. Continuar?",
+        "delete_failed": "Falha ao excluir arquivo",
+        "delete_done": "Excluído: {{ok}} ok / {{fail}} falhou"
       },
       "header": {
         "lane": "Lane",
@@ -2093,19 +2146,46 @@
           "country_of_education": "Country of education",
           "transcript_language": "Transcript language"
         }
+      },
+      "edit": {
+        "edit": "Editar",
+        "save": "Salvar",
+        "cancel": "Cancelar",
+        "continue": "Continuar",
+        "add_manually": "Adicionar manualmente",
+        "placeholder": "Insira o valor correto…",
+        "pending_notice": "Salvo como pendente — nossa equipe revisará antes de ser confirmado.",
+        "confirm_title": "Editar um campo confirmado",
+        "confirm_body": "Este campo foi confirmado anteriormente. Editá-lo o moverá de volta para \"Aguardando revisão\" até que nossa equipe verifique o novo valor. Continuar?"
       }
     },
     "studyFile": {
       "lane_review_reason": {
         "image_ocr_deferred_to_door_3": "Imagens e arquivos digitalizados não podem ser extraídos automaticamente nesta fase. Envie um PDF original se possível, ou continue e o arquivo será enviado para revisão."
-      }
+      },
+      "quality": "Qualidade do arquivo",
+      "summary": "Resumo do arquivo",
+      "identity": "Identidade",
+      "academic": "Acadêmico",
+      "language": "Idioma",
+      "targeting": "Direcionamento",
+      "filled": "Preenchido",
+      "missing": "Faltando",
+      "status_incomplete": "Incompleto",
+      "status_partial": "Parcial",
+      "status_complete": "Completo",
+      "status_verified": "Verificado"
     },
     "identity": {
       "title": "Verificação da conta",
       "subtitle": "Confirme sua identidade para desbloquear seu arquivo de estudos.",
       "doc": {
         "instruction": "Escolha o tipo de documento e envie uma foto clara ou PDF.",
-        "upload": "Enviar documento"
+        "upload": "Enviar documento",
+        "chooseTitle": "Escolha o tipo de documento",
+        "dropTitle": "Solte seu documento aqui",
+        "dropHint": "ou clique para procurar no seu dispositivo",
+        "formats": "JPG, PNG, WEBP ou PDF — até 10 MB"
       },
       "docKind": {
         "passport": "Passaporte",
@@ -2114,12 +2194,24 @@
       },
       "selfie": {
         "instruction": "Olhe para a câmera e tire uma selfie clara.",
-        "capture": "Tirar selfie"
+        "capture": "Tirar selfie",
+        "title": "Tire uma selfie nítida",
+        "tip": {
+          "lighting": "Use boa iluminação uniforme",
+          "frame": "Mantenha todo o rosto dentro do oval",
+          "noAccessories": "Remova óculos de sol, chapéus e máscaras"
+        }
       },
       "video": {
         "instruction": "Grave um vídeo de 5 segundos olhando para a câmera.",
         "start": "Iniciar gravação",
-        "recording": "Gravando…"
+        "recording": "Gravando…",
+        "title": "Grave um vídeo de presença de 5 segundos",
+        "tip": {
+          "lookCamera": "Olhe diretamente para a câmera",
+          "turnHead": "Vire lentamente a cabeça para esquerda e direita",
+          "smile": "Sorria naturalmente"
+        }
       },
       "reader": {
         "running": "Analisando seu documento…"
@@ -2191,6 +2283,11 @@
             "driver_license": "Número da carteira de motorista"
           }
         }
+      },
+      "stepper": {
+        "document": "Documento",
+        "selfie": "Selfie",
+        "video": "Vídeo"
       }
     },
     "support": {
@@ -2217,6 +2314,101 @@
         "bodyTooShort": "Escreva uma mensagem mais longa.",
         "submitFailed": "Falha ao enviar. Tente novamente."
       }
+    },
+    "paymentProof": {
+      "title": "Anexar comprovante de pagamento",
+      "subtitle": "Envie seu recibo de transferência bancária para verificação",
+      "fileLabel": "Comprovante de pagamento",
+      "removeFile": "Remover arquivo",
+      "uploading": "Enviando... {{progress}}%",
+      "amountLabel": "Valor necessário",
+      "checklistTitle": "Certifique-se de que o comprovante mostre:",
+      "cancel": "Cancelar",
+      "submitting": "Enviando...",
+      "submit": "Enviar comprovante",
+      "dropzone": {
+        "title": "Arraste seu arquivo aqui",
+        "subtitle": "ou clique para escolher",
+        "formats": "JPG, PNG, PDF",
+        "maxSize": "Até 10 MB"
+      },
+      "reference": {
+        "label": "Número de referência",
+        "optional": "Opcional",
+        "placeholder": "Exemplo: TXN123456789",
+        "hint": "Número de transferência do seu banco ou app de pagamento"
+      },
+      "checklist": {
+        "amount": "Valor",
+        "date": "Data",
+        "sender": "Remetente",
+        "currency": "Moeda"
+      },
+      "success": {
+        "title": "Comprovante enviado com sucesso",
+        "description": "Seu comprovante será revisado em 24-48 horas"
+      },
+      "errors": {
+        "unsupportedTypeTitle": "Tipo de arquivo não suportado",
+        "unsupportedTypeDescription": "Envie uma imagem (JPG, PNG) ou um arquivo PDF",
+        "fileTooLargeTitle": "Arquivo muito grande",
+        "fileTooLargeDescription": "O tamanho máximo é 10 MB",
+        "noFileTitle": "Nenhum arquivo selecionado",
+        "noFileDescription": "Por favor, envie seu comprovante de pagamento",
+        "loginRequiredTitle": "Por favor, faça login",
+        "uploadFailedTitle": "Falha no upload do arquivo",
+        "submitFailedFallback": "Falha ao enviar comprovante",
+        "genericTitle": "Erro",
+        "genericDescription": "Ocorreu um erro inesperado"
+      }
+    },
+    "uploadHub": {
+      "title": "Enviar documentos",
+      "dropzone_title": "Solte os arquivos aqui ou clique para procurar",
+      "dropzone_subtitle": "PDF, imagens, Word — um ou vários arquivos",
+      "queue_title": "Fila de upload",
+      "in_progress": "enviando…",
+      "clear_completed": "Limpar concluídos",
+      "status_pending_upload": "Na fila",
+      "status_uploading": "Enviando…",
+      "status_confirming": "Confirmando…",
+      "status_registered": "Registrado",
+      "status_upload_failed": "Falhou",
+      "status_cancelled": "Cancelado",
+      "guidance": {
+        "subtitle": "Envie seus documentos acadêmicos e pessoais para construir automaticamente seu perfil inteligente",
+        "secure_badge": "Verificado e criptografado",
+        "what_to_upload": "O que você pode enviar",
+        "examples": {
+          "passport": "Passaporte / Documento nacional de identidade",
+          "transcripts": "Certificados e históricos escolares",
+          "language": "Testes de idioma (IELTS, TOEFL...)",
+          "cv": "CV / cartas de recomendação"
+        },
+        "formats_label": "Formatos suportados",
+        "formats_value": "PDF · JPG · PNG · DOCX",
+        "size_label": "Tamanho máx.",
+        "size_value": "20 MB por arquivo",
+        "tip": "Dica: envie um PDF original em vez de uma imagem digitalizada para extração mais precisa"
+      },
+      "after_upload": {
+        "title": "O que acontece após o upload?",
+        "step1_title": "Nós lemos o documento",
+        "step1_desc": "OCR inteligente entende qualquer formato",
+        "step2_title": "Extraímos seus dados",
+        "step2_desc": "Nome, datas, notas, especialidade",
+        "step3_title": "Construímos seu arquivo",
+        "step3_desc": "Um perfil unificado enviado às universidades"
+      }
+    },
+    "saveDocs": {
+      "region_label": "Documentos não salvos",
+      "title_one": "Você tem 1 documento não salvo",
+      "title_other": "Você tem {{count}} documentos não salvos",
+      "title": "Você tem {{count}} documento(s) não salvo(s)",
+      "warning": "Se você sair ou atualizar sem salvar, esses arquivos serão excluídos automaticamente.",
+      "consent": "Concordo em salvar estes documentos",
+      "save_button": "Salvar documentos"
     }
   },
   "studio": {

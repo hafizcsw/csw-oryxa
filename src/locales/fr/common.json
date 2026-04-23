@@ -1200,7 +1200,9 @@
       "studyApplication": "Study & Apply",
       "other": "Other",
       "visa": "Visa",
-      "messages": "Messages"
+      "messages": "Messages",
+      "readiness": "Préparation",
+      "myStudyFile": "Mon dossier d'études"
     },
     "nav": {
       "sections": "Sections de navigation"
@@ -1255,7 +1257,17 @@
       "walletWaitlistJoinedHint": "Ton portefeuille n'est pas encore actif. Tu es sur la liste d'attente et nous te contacterons dès l'activation.",
       "walletApprovedTitle": "Portefeuille approuvé",
       "walletApprovedDesc": "Ton portefeuille est désormais actif. Tu peux déposer et transférer.",
-      "walletApprovedBadge": "Actif"
+      "walletApprovedBadge": "Actif",
+      "whyVerifyButton": "Pourquoi vérifier mon compte ?",
+      "whyVerifyTitle": "Pourquoi la vérification du compte est-elle importante ?",
+      "whyVerifyIntro": "Vérifier votre compte vous met directement en relation avec notre équipe dédiée et débloque de réelles opportunités qui ne sont pas disponibles pour les comptes non vérifiés.",
+      "whyVerifyPoint1Title": "Protégez et récupérez votre compte",
+      "whyVerifyPoint1Body": "Si vous perdez l'accès, vos données restent protégées — la récupération n'est possible qu'avec votre pièce d'identité et une session vidéo en direct avec notre équipe d'assistance.",
+      "whyVerifyPoint2Title": "Bourses et programmes du monde entier",
+      "whyVerifyPoint2Body": "Votre profil vérifié est présenté aux universités partenaires, qui vous contactent avec des offres pour rejoindre leurs programmes et bourses au lieu que vous les poursuiviez.",
+      "whyVerifyPoint3Title": "Publier dans la communauté des étudiants vérifiés",
+      "whyVerifyPoint3Body": "Vous pourrez publier dans la communauté CSW que nous construisons pour soutenir les projets étudiants — y compris lancer des campagnes d'investissement pour votre propre projet.",
+      "whyVerifyClose": "Compris, merci"
     },
     "markets": {
       "title": "Markets",
@@ -1269,7 +1281,8 @@
       "currency": "Currency",
       "price": "Price",
       "change24h": "24h Change",
-      "trade": "Trade"
+      "trade": "Trade",
+      "usd": "USD"
     },
     "wallet": {
       "estimatedBalance": "Estimated Balance",
@@ -1424,7 +1437,10 @@
           "validation_failed": "Validation échouée",
           "manual_flag": "Signalement manuel"
         }
-      }
+      },
+      "title": "Documents",
+      "refresh": "Actualiser",
+      "requiredDocs": "Documents requis"
     },
     "shortlist": {
       "title": "Favorite Programs",
@@ -1463,7 +1479,18 @@
       "localPrograms": "Local Programs",
       "detailsAfterLink": "Full details will appear after linking your account",
       "program": "Programme",
-      "syncing": "Syncing favorites..."
+      "syncing": "Syncing favorites...",
+      "favoriteUniversities": "Universités favorites",
+      "favoritedPrograms": "programmes favoris",
+      "favoritedUniversity": "Université favorite",
+      "countries": "pays",
+      "universities": "universités",
+      "details": "Détails",
+      "months": "mois",
+      "browseAvailable": "Parcourir les programmes disponibles",
+      "unknown": "Inconnu",
+      "unknownUniversity": "Université inconnue",
+      "applyNow": "Postuler maintenant"
     },
     "payments": {
       "title": "Paiements",
@@ -1728,7 +1755,8 @@
           "Logement + arrivée (accueil + SIM + enregistrement)",
           "Priorité de rapidité"
         ]
-      }
+      },
+      "connectionError": "Une erreur de connexion s'est produite"
     },
     "contracts": {
       "createdAt": "Created At",
@@ -1868,7 +1896,8 @@
         "not_staff": "Not registered as staff",
         "approval_resolution_unavailable": "Approval check unavailable",
         "resolution_error": "Verification check error",
-        "not_teacher_role": "Not a teacher role"
+        "not_teacher_role": "Not a teacher role",
+        "verification_columns_unavailable": "Les champs de vérification ne sont pas disponibles dans le CRM"
       },
       "verification": "Verification",
       "verificationCenter": "Verification Center",
@@ -1907,7 +1936,8 @@
         "teacher_identity": "Government-issued ID, passport, or residence permit.",
         "teacher_education": "Teaching certificate, diploma, or degree.",
         "teacher_supporting": "Any additional supporting documents (optional)."
-      }
+      },
+      "avatarUploadFailed": "Échec du téléchargement de la photo de profil"
     },
     "analysis": {
       "artifact": {
@@ -1946,6 +1976,26 @@
         "pending_review": "en attente",
         "rejected": "rejeté",
         "superseded": "remplacé"
+      },
+      "title": "Analyse de documents",
+      "documents_analyzed": "Documents analysés",
+      "accepted": "accepté",
+      "pending": "en attente",
+      "rejected": "rejeté",
+      "no_fields_extracted": "Aucun champ n'a pu être extrait de ce document",
+      "engine": {
+        "title": "Activité du moteur — ce qui se passe maintenant",
+        "stage": {
+          "reading": "Lecture du fichier",
+          "ocr": "Exécution de l'OCR",
+          "classifying": "Classification du document",
+          "mrz": "Lecture du MRZ du passeport",
+          "extracting": "Extraction des champs",
+          "transcript_rows": "Analyse des lignes du relevé",
+          "building_proposals": "Création des propositions",
+          "completed": "Terminé",
+          "failed": "Échec"
+        }
       }
     },
     "assembly": {
@@ -1962,7 +2012,13 @@
         "needs_review": "Needs Review",
         "needs_review_desc": "Documents whose lane could not be resolved automatically.",
         "doc_count": "{{count}} documents",
-        "waiting": "Waiting for a matching document…"
+        "waiting": "Waiting for a matching document…",
+        "delete_one": "Supprimer ce fichier",
+        "delete_all": "Tout supprimer",
+        "confirm_delete_one": "Supprimer définitivement ce fichier ?",
+        "confirm_delete_all": "{{count}} fichier(s) seront supprimés définitivement. Continuer ?",
+        "delete_failed": "Échec de la suppression du fichier",
+        "delete_done": "Supprimé : {{ok}} ok / {{fail}} échec(s)"
       },
       "header": {
         "lane": "Lane",
@@ -2074,19 +2130,46 @@
           "country_of_education": "Country of education",
           "transcript_language": "Transcript language"
         }
+      },
+      "edit": {
+        "edit": "Modifier",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "continue": "Continuer",
+        "add_manually": "Ajouter manuellement",
+        "placeholder": "Saisissez la valeur correcte…",
+        "pending_notice": "Enregistré comme en attente — notre équipe l'examinera avant qu'il ne soit confirmé.",
+        "confirm_title": "Modifier un champ confirmé",
+        "confirm_body": "Ce champ a déjà été confirmé. Le modifier le remettra à « En attente de révision » jusqu'à ce que notre équipe vérifie la nouvelle valeur. Continuer ?"
       }
     },
     "studyFile": {
       "lane_review_reason": {
         "image_ocr_deferred_to_door_3": "Les images et les fichiers numérisés ne peuvent pas être extraits automatiquement à ce stade. Veuillez téléverser un PDF original si possible, ou continuez et le fichier sera envoyé pour révision."
-      }
+      },
+      "quality": "Qualité du dossier",
+      "summary": "Résumé du dossier",
+      "identity": "Identité",
+      "academic": "Académique",
+      "language": "Langue",
+      "targeting": "Ciblage",
+      "filled": "Rempli",
+      "missing": "Manquant",
+      "status_incomplete": "Incomplet",
+      "status_partial": "Partiel",
+      "status_complete": "Complet",
+      "status_verified": "Vérifié"
     },
     "identity": {
       "title": "Vérification du compte",
       "subtitle": "Confirmez votre identité pour débloquer votre dossier d’études.",
       "doc": {
         "instruction": "Choisissez le type de document et téléchargez une photo claire ou un PDF.",
-        "upload": "Téléverser le document"
+        "upload": "Téléverser le document",
+        "chooseTitle": "Choisissez le type de document",
+        "dropTitle": "Déposez votre document ici",
+        "dropHint": "ou cliquez pour parcourir depuis votre appareil",
+        "formats": "JPG, PNG, WEBP ou PDF — jusqu'à 10 Mo"
       },
       "docKind": {
         "passport": "Passeport",
@@ -2095,12 +2178,24 @@
       },
       "selfie": {
         "instruction": "Regardez la caméra et prenez un selfie clair.",
-        "capture": "Prendre la photo"
+        "capture": "Prendre la photo",
+        "title": "Prenez un selfie clair",
+        "tip": {
+          "lighting": "Utilisez un éclairage bon et uniforme",
+          "frame": "Gardez votre visage entier dans l'ovale",
+          "noAccessories": "Retirez les lunettes de soleil, chapeaux et masques"
+        }
       },
       "video": {
         "instruction": "Enregistrez une vidéo de 5 secondes en regardant la caméra.",
         "start": "Démarrer l’enregistrement",
-        "recording": "Enregistrement…"
+        "recording": "Enregistrement…",
+        "title": "Enregistrez une vidéo de présence de 5 secondes",
+        "tip": {
+          "lookCamera": "Regardez directement la caméra",
+          "turnHead": "Tournez lentement la tête à gauche et à droite",
+          "smile": "Souriez naturellement"
+        }
       },
       "reader": {
         "running": "Analyse du document…"
@@ -2172,6 +2267,11 @@
             "driver_license": "Numéro de permis de conduire"
           }
         }
+      },
+      "stepper": {
+        "document": "Document",
+        "selfie": "Selfie",
+        "video": "Vidéo"
       }
     },
     "support": {
@@ -2198,6 +2298,101 @@
         "bodyTooShort": "Veuillez écrire un message plus long.",
         "submitFailed": "Échec de l’envoi. Réessayez."
       }
+    },
+    "paymentProof": {
+      "title": "Joindre la preuve de paiement",
+      "subtitle": "Téléchargez votre reçu de virement bancaire pour vérification",
+      "fileLabel": "Preuve de paiement",
+      "removeFile": "Supprimer le fichier",
+      "uploading": "Téléchargement... {{progress}}%",
+      "amountLabel": "Montant requis",
+      "checklistTitle": "Assurez-vous que la preuve montre :",
+      "cancel": "Annuler",
+      "submitting": "Envoi en cours...",
+      "submit": "Envoyer la preuve",
+      "dropzone": {
+        "title": "Glissez votre fichier ici",
+        "subtitle": "ou cliquez pour choisir",
+        "formats": "JPG, PNG, PDF",
+        "maxSize": "Jusqu'à 10 Mo"
+      },
+      "reference": {
+        "label": "Numéro de référence",
+        "optional": "Facultatif",
+        "placeholder": "Exemple : TXN123456789",
+        "hint": "Numéro de virement de votre banque ou application de paiement"
+      },
+      "checklist": {
+        "amount": "Montant",
+        "date": "Date",
+        "sender": "Expéditeur",
+        "currency": "Devise"
+      },
+      "success": {
+        "title": "Preuve envoyée avec succès",
+        "description": "Votre preuve sera examinée sous 24-48 heures"
+      },
+      "errors": {
+        "unsupportedTypeTitle": "Type de fichier non pris en charge",
+        "unsupportedTypeDescription": "Veuillez télécharger une image (JPG, PNG) ou un fichier PDF",
+        "fileTooLargeTitle": "Fichier trop volumineux",
+        "fileTooLargeDescription": "La taille maximale est de 10 Mo",
+        "noFileTitle": "Aucun fichier sélectionné",
+        "noFileDescription": "Veuillez télécharger votre preuve de paiement",
+        "loginRequiredTitle": "Veuillez vous connecter",
+        "uploadFailedTitle": "Échec du téléchargement du fichier",
+        "submitFailedFallback": "Échec de l'envoi de la preuve",
+        "genericTitle": "Erreur",
+        "genericDescription": "Une erreur inattendue s'est produite"
+      }
+    },
+    "uploadHub": {
+      "title": "Télécharger des documents",
+      "dropzone_title": "Déposez les fichiers ici ou cliquez pour parcourir",
+      "dropzone_subtitle": "PDF, images, Word — un ou plusieurs fichiers",
+      "queue_title": "File d'attente de téléchargement",
+      "in_progress": "téléchargement en cours…",
+      "clear_completed": "Effacer les éléments terminés",
+      "status_pending_upload": "En file d'attente",
+      "status_uploading": "Téléchargement…",
+      "status_confirming": "Confirmation…",
+      "status_registered": "Enregistré",
+      "status_upload_failed": "Échec",
+      "status_cancelled": "Annulé",
+      "guidance": {
+        "subtitle": "Téléchargez vos documents académiques et personnels pour construire automatiquement votre profil intelligent",
+        "secure_badge": "Vérifié et chiffré",
+        "what_to_upload": "Ce que vous pouvez télécharger",
+        "examples": {
+          "passport": "Passeport / Carte d'identité nationale",
+          "transcripts": "Certificats et relevés de notes",
+          "language": "Tests de langue (IELTS, TOEFL...)",
+          "cv": "CV / lettres de recommandation"
+        },
+        "formats_label": "Formats pris en charge",
+        "formats_value": "PDF · JPG · PNG · DOCX",
+        "size_label": "Taille max",
+        "size_value": "20 Mo par fichier",
+        "tip": "Astuce : téléchargez un PDF original plutôt qu'une image scannée pour une extraction plus précise"
+      },
+      "after_upload": {
+        "title": "Que se passe-t-il après le téléchargement ?",
+        "step1_title": "Nous lisons le document",
+        "step1_desc": "L'OCR intelligent comprend tous les formats",
+        "step2_title": "Nous extrayons vos données",
+        "step2_desc": "Nom, dates, notes, spécialité",
+        "step3_title": "Nous construisons votre dossier",
+        "step3_desc": "Un profil unifié envoyé aux universités"
+      }
+    },
+    "saveDocs": {
+      "region_label": "Documents non enregistrés",
+      "title_one": "Vous avez 1 document non enregistré",
+      "title_other": "Vous avez {{count}} documents non enregistrés",
+      "title": "Vous avez {{count}} document(s) non enregistré(s)",
+      "warning": "Si vous quittez ou actualisez sans enregistrer, ces fichiers seront automatiquement supprimés.",
+      "consent": "J'accepte d'enregistrer ces documents",
+      "save_button": "Enregistrer les documents"
     }
   },
   "compare_action": "+ Comparer",

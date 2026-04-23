@@ -1202,7 +1202,9 @@
       "studyApplication": "Study & Apply",
       "other": "Other",
       "visa": "Visa",
-      "messages": "Сообщения"
+      "messages": "Сообщения",
+      "readiness": "Готовность",
+      "myStudyFile": "Моё учебное досье"
     },
     "nav": {
       "sections": "Sections"
@@ -1257,7 +1259,17 @@
       "walletWaitlistJoinedHint": "Ваш кошелёк ещё не активен. Вы в списке ожидания, и мы свяжемся с вами сразу после активации.",
       "walletApprovedTitle": "Кошелёк одобрен",
       "walletApprovedDesc": "Ваш кошелёк активен. Вы можете пополнять и переводить средства.",
-      "walletApprovedBadge": "Активен"
+      "walletApprovedBadge": "Активен",
+      "whyVerifyButton": "Зачем подтверждать мой аккаунт?",
+      "whyVerifyTitle": "Почему важна верификация аккаунта?",
+      "whyVerifyIntro": "Подтверждение аккаунта связывает вас напрямую с нашей командой и открывает реальные возможности, недоступные неподтверждённым аккаунтам.",
+      "whyVerifyPoint1Title": "Защитите и восстановите свой аккаунт",
+      "whyVerifyPoint1Body": "Если вы потеряете доступ, ваши данные останутся защищены — восстановление возможно только с предъявлением документа и в ходе видеосеанса с нашей службой поддержки.",
+      "whyVerifyPoint2Title": "Стипендии и программы по всему миру",
+      "whyVerifyPoint2Body": "Ваш подтверждённый профиль показывается университетам-партнёрам, которые сами связываются с вами, предлагая программы и стипендии — вам не нужно их преследовать.",
+      "whyVerifyPoint3Title": "Публикуйтесь в сообществе верифицированных студентов",
+      "whyVerifyPoint3Body": "Вы сможете публиковаться в сообществе CSW, которое мы создаём для поддержки студенческих проектов — включая запуск инвестиционных кампаний для собственного проекта.",
+      "whyVerifyClose": "Понятно, спасибо"
     },
     "markets": {
       "title": "Markets",
@@ -1271,7 +1283,8 @@
       "currency": "Currency",
       "price": "Price",
       "change24h": "24h Change",
-      "trade": "Trade"
+      "trade": "Trade",
+      "usd": "USD"
     },
     "wallet": {
       "estimatedBalance": "Estimated Balance",
@@ -1474,7 +1487,12 @@
       "favoritedUniversity": "Избранный университет",
       "countries": "стран",
       "universities": "университетов",
-      "details": "Подробнее"
+      "details": "Подробнее",
+      "months": "месяцев",
+      "browseAvailable": "Просмотреть доступные программы",
+      "unknown": "Неизвестно",
+      "unknownUniversity": "Неизвестный университет",
+      "applyNow": "Подать заявку"
     },
     "payments": {
       "title": "Платежи",
@@ -1739,7 +1757,8 @@
           "Жильё + прибытие (встреча + SIM + регистрация)",
           "Приоритетная скорость"
         ]
-      }
+      },
+      "connectionError": "Произошла ошибка подключения"
     },
     "contracts": {
       "createdAt": "Created At",
@@ -1879,7 +1898,8 @@
         "not_staff": "Not registered as staff",
         "approval_resolution_unavailable": "Approval check unavailable",
         "resolution_error": "Verification check error",
-        "not_teacher_role": "Not a teacher role"
+        "not_teacher_role": "Not a teacher role",
+        "verification_columns_unavailable": "Поля верификации недоступны в CRM"
       },
       "verification": "Verification",
       "verificationCenter": "Verification Center",
@@ -1918,7 +1938,8 @@
         "teacher_identity": "Government-issued ID, passport, or residence permit.",
         "teacher_education": "Teaching certificate, diploma, or degree.",
         "teacher_supporting": "Any additional supporting documents (optional)."
-      }
+      },
+      "avatarUploadFailed": "Не удалось загрузить фото профиля"
     },
     "analysis": {
       "artifact": {
@@ -1957,6 +1978,26 @@
         "pending_review": "на проверке",
         "rejected": "отклонено",
         "superseded": "заменено"
+      },
+      "title": "Анализ документов",
+      "documents_analyzed": "Проанализированные документы",
+      "accepted": "принято",
+      "pending": "в ожидании",
+      "rejected": "отклонено",
+      "no_fields_extracted": "Не удалось извлечь поля из этого документа",
+      "engine": {
+        "title": "Активность движка — что происходит сейчас",
+        "stage": {
+          "reading": "Чтение файла",
+          "ocr": "Запуск OCR",
+          "classifying": "Классификация документа",
+          "mrz": "Анализ MRZ паспорта",
+          "extracting": "Извлечение полей",
+          "transcript_rows": "Анализ строк выписки",
+          "building_proposals": "Формирование предложений",
+          "completed": "Завершено",
+          "failed": "Ошибка"
+        }
       }
     },
     "assembly": {
@@ -1973,7 +2014,13 @@
         "needs_review": "Needs Review",
         "needs_review_desc": "Documents whose lane could not be resolved automatically.",
         "doc_count": "{{count}} documents",
-        "waiting": "Waiting for a matching document…"
+        "waiting": "Waiting for a matching document…",
+        "delete_one": "Удалить этот файл",
+        "delete_all": "Удалить всё",
+        "confirm_delete_one": "Удалить этот файл безвозвратно?",
+        "confirm_delete_all": "{{count}} файл(ов) будут удалены безвозвратно. Продолжить?",
+        "delete_failed": "Не удалось удалить файл",
+        "delete_done": "Удалено: {{ok}} успешно / {{fail}} с ошибкой"
       },
       "header": {
         "lane": "Lane",
@@ -2085,19 +2132,46 @@
           "country_of_education": "Country of education",
           "transcript_language": "Transcript language"
         }
+      },
+      "edit": {
+        "edit": "Редактировать",
+        "save": "Сохранить",
+        "cancel": "Отмена",
+        "continue": "Продолжить",
+        "add_manually": "Добавить вручную",
+        "placeholder": "Введите правильное значение…",
+        "pending_notice": "Сохранено как ожидающее — наша команда проверит, прежде чем подтвердить.",
+        "confirm_title": "Изменить подтверждённое поле",
+        "confirm_body": "Это поле было ранее подтверждено. Редактирование вернёт его в статус «Ожидает проверки», пока наша команда не проверит новое значение. Продолжить?"
       }
     },
     "studyFile": {
       "lane_review_reason": {
         "image_ocr_deferred_to_door_3": "Изображения и отсканированные файлы пока нельзя обработать автоматически. Если возможно, загрузите оригинальный PDF, или продолжите — файл будет отправлен на ручную проверку."
-      }
+      },
+      "quality": "Качество досье",
+      "summary": "Сводка по досье",
+      "identity": "Личность",
+      "academic": "Академический",
+      "language": "Язык",
+      "targeting": "Цели обучения",
+      "filled": "Заполнено",
+      "missing": "Отсутствует",
+      "status_incomplete": "Неполное",
+      "status_partial": "Частично",
+      "status_complete": "Завершено",
+      "status_verified": "Подтверждено"
     },
     "identity": {
       "title": "Подтверждение аккаунта",
       "subtitle": "Подтвердите свою личность, чтобы открыть учебное досье.",
       "doc": {
         "instruction": "Выберите тип документа и загрузите чёткое фото или PDF.",
-        "upload": "Загрузить документ"
+        "upload": "Загрузить документ",
+        "chooseTitle": "Выберите тип документа",
+        "dropTitle": "Перетащите ваш документ сюда",
+        "dropHint": "или нажмите, чтобы выбрать с устройства",
+        "formats": "JPG, PNG, WEBP или PDF — до 10 МБ"
       },
       "docKind": {
         "passport": "Паспорт",
@@ -2106,12 +2180,24 @@
       },
       "selfie": {
         "instruction": "Посмотрите в камеру и сделайте чёткое селфи.",
-        "capture": "Сделать селфи"
+        "capture": "Сделать селфи",
+        "title": "Сделайте чёткое селфи",
+        "tip": {
+          "lighting": "Используйте хорошее равномерное освещение",
+          "frame": "Держите всё лицо внутри овала",
+          "noAccessories": "Снимите солнцезащитные очки, шляпы и маски"
+        }
       },
       "video": {
         "instruction": "Запишите 5-секундное видео, глядя в камеру.",
         "start": "Начать запись",
-        "recording": "Запись…"
+        "recording": "Запись…",
+        "title": "Запишите 5-секундное видео для проверки",
+        "tip": {
+          "lookCamera": "Смотрите прямо в камеру",
+          "turnHead": "Медленно поворачивайте голову влево и вправо",
+          "smile": "Улыбнитесь естественно"
+        }
       },
       "reader": {
         "running": "Анализ вашего документа…"
@@ -2183,6 +2269,11 @@
             "driver_license": "Номер водительского удостоверения"
           }
         }
+      },
+      "stepper": {
+        "document": "Документ",
+        "selfie": "Селфи",
+        "video": "Видео"
       }
     },
     "support": {
@@ -2209,6 +2300,101 @@
         "bodyTooShort": "Напишите более длинное сообщение.",
         "submitFailed": "Ошибка отправки. Попробуйте снова."
       }
+    },
+    "paymentProof": {
+      "title": "Прикрепить подтверждение оплаты",
+      "subtitle": "Загрузите квитанцию о банковском переводе для проверки",
+      "fileLabel": "Подтверждение оплаты",
+      "removeFile": "Удалить файл",
+      "uploading": "Загрузка... {{progress}}%",
+      "amountLabel": "Требуемая сумма",
+      "checklistTitle": "Убедитесь, что в подтверждении видно:",
+      "cancel": "Отмена",
+      "submitting": "Отправка...",
+      "submit": "Отправить подтверждение",
+      "dropzone": {
+        "title": "Перетащите файл сюда",
+        "subtitle": "или нажмите, чтобы выбрать",
+        "formats": "JPG, PNG, PDF",
+        "maxSize": "До 10 МБ"
+      },
+      "reference": {
+        "label": "Номер ссылки",
+        "optional": "Необязательно",
+        "placeholder": "Пример: TXN123456789",
+        "hint": "Номер перевода из вашего банка или платёжного приложения"
+      },
+      "checklist": {
+        "amount": "Сумма",
+        "date": "Дата",
+        "sender": "Отправитель",
+        "currency": "Валюта"
+      },
+      "success": {
+        "title": "Подтверждение успешно отправлено",
+        "description": "Ваше подтверждение будет проверено в течение 24-48 часов"
+      },
+      "errors": {
+        "unsupportedTypeTitle": "Неподдерживаемый тип файла",
+        "unsupportedTypeDescription": "Загрузите изображение (JPG, PNG) или PDF-файл",
+        "fileTooLargeTitle": "Файл слишком большой",
+        "fileTooLargeDescription": "Максимальный размер — 10 МБ",
+        "noFileTitle": "Файл не выбран",
+        "noFileDescription": "Пожалуйста, загрузите подтверждение оплаты",
+        "loginRequiredTitle": "Пожалуйста, войдите",
+        "uploadFailedTitle": "Не удалось загрузить файл",
+        "submitFailedFallback": "Не удалось отправить подтверждение",
+        "genericTitle": "Ошибка",
+        "genericDescription": "Произошла непредвиденная ошибка"
+      }
+    },
+    "uploadHub": {
+      "title": "Загрузить документы",
+      "dropzone_title": "Перетащите файлы сюда или нажмите для выбора",
+      "dropzone_subtitle": "PDF, изображения, Word — один или несколько файлов",
+      "queue_title": "Очередь загрузки",
+      "in_progress": "загрузка…",
+      "clear_completed": "Очистить завершённые",
+      "status_pending_upload": "В очереди",
+      "status_uploading": "Загрузка…",
+      "status_confirming": "Подтверждение…",
+      "status_registered": "Зарегистрировано",
+      "status_upload_failed": "Ошибка",
+      "status_cancelled": "Отменено",
+      "guidance": {
+        "subtitle": "Загрузите свои учебные и личные документы для автоматического создания умного профиля",
+        "secure_badge": "Проверено и зашифровано",
+        "what_to_upload": "Что можно загрузить",
+        "examples": {
+          "passport": "Паспорт / удостоверение личности",
+          "transcripts": "Сертификаты и выписки из ведомости",
+          "language": "Языковые тесты (IELTS, TOEFL...)",
+          "cv": "Резюме / рекомендательные письма"
+        },
+        "formats_label": "Поддерживаемые форматы",
+        "formats_value": "PDF · JPG · PNG · DOCX",
+        "size_label": "Макс. размер",
+        "size_value": "20 МБ на файл",
+        "tip": "Совет: загружайте оригинальный PDF вместо сканированного изображения для более точного извлечения"
+      },
+      "after_upload": {
+        "title": "Что происходит после загрузки?",
+        "step1_title": "Мы читаем документ",
+        "step1_desc": "Умный OCR понимает любой формат",
+        "step2_title": "Мы извлекаем ваши данные",
+        "step2_desc": "Имя, даты, оценки, специальность",
+        "step3_title": "Мы создаём ваше досье",
+        "step3_desc": "Единый профиль, отправляемый университетам"
+      }
+    },
+    "saveDocs": {
+      "region_label": "Несохранённые документы",
+      "title_one": "У вас 1 несохранённый документ",
+      "title_other": "У вас {{count}} несохранённых документов",
+      "title": "У вас {{count}} несохранённых документ(ов)",
+      "warning": "Если вы уйдёте или обновите страницу без сохранения, эти файлы будут автоматически удалены.",
+      "consent": "Я согласен сохранить эти документы",
+      "save_button": "Сохранить документы"
     }
   },
   "compare_action": "+ Сравнить",

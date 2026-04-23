@@ -1201,7 +1201,9 @@
       "other": "その他",
       "visa": "Visa",
       "logout": "ログアウト",
-      "messages": "メッセージ"
+      "messages": "メッセージ",
+      "readiness": "準備状況",
+      "myStudyFile": "私の学習ファイル"
     },
     "nav": {
       "sections": "Sections"
@@ -1258,7 +1260,17 @@
       "walletWaitlistJoinedHint": "ウォレットはまだ有効ではありません。ウェイトリストに登録済みで、有効化され次第ご連絡します。",
       "walletApprovedTitle": "ウォレットが承認されました",
       "walletApprovedDesc": "ウォレットが有効になりました。入金と送金が可能です。",
-      "walletApprovedBadge": "有効"
+      "walletApprovedBadge": "有効",
+      "whyVerifyButton": "なぜアカウントを認証するのか？",
+      "whyVerifyTitle": "なぜアカウント認証が重要なのか？",
+      "whyVerifyIntro": "アカウントを認証すると、専任チームに直接つながり、未認証アカウントでは利用できない本物の機会が解放されます。",
+      "whyVerifyPoint1Title": "アカウントを保護・復元",
+      "whyVerifyPoint1Body": "アクセスを失っても、データは保護されたままです — 復元は身分証明書とサポートチームとのライブビデオセッションでのみ可能です。",
+      "whyVerifyPoint2Title": "世界中の奨学金とプログラム",
+      "whyVerifyPoint2Body": "認証済みプロフィールはパートナー大学に表示され、あなたが追いかける代わりに、大学側からプログラムや奨学金のオファーが届きます。",
+      "whyVerifyPoint3Title": "認証済み学生コミュニティで公開",
+      "whyVerifyPoint3Body": "私たちが学生プロジェクトを支援するために構築しているCSWコミュニティ内に投稿できます — 自分のプロジェクトの投資キャンペーンの立ち上げも含まれます。",
+      "whyVerifyClose": "わかりました、ありがとう"
     },
     "markets": {
       "title": "為替レート",
@@ -1272,7 +1284,8 @@
       "currency": "通貨",
       "price": "価格",
       "change24h": "24時間変動",
-      "trade": "取引"
+      "trade": "取引",
+      "usd": "USD"
     },
     "wallet": {
       "estimatedBalance": "推定残高",
@@ -1471,7 +1484,18 @@
       "localPrograms": "Local Programs",
       "detailsAfterLink": "Full details will appear after linking your account",
       "program": "プログラム",
-      "syncing": "Syncing favorites..."
+      "syncing": "Syncing favorites...",
+      "favoriteUniversities": "お気に入りの大学",
+      "favoritedPrograms": "お気に入りのプログラム",
+      "favoritedUniversity": "お気に入りの大学",
+      "countries": "カ国",
+      "universities": "大学",
+      "details": "詳細",
+      "months": "カ月",
+      "browseAvailable": "利用可能なプログラムを閲覧",
+      "unknown": "不明",
+      "unknownUniversity": "不明な大学",
+      "applyNow": "今すぐ申請"
     },
     "payments": {
       "title": "取引履歴",
@@ -1747,7 +1771,8 @@
           "住居 + 到着（出迎え + SIM + 登録）",
           "優先スピード"
         ]
-      }
+      },
+      "connectionError": "接続エラーが発生しました"
     },
     "contracts": {
       "createdAt": "Created At",
@@ -1887,7 +1912,8 @@
         "not_staff": "Not registered as staff",
         "approval_resolution_unavailable": "Approval check unavailable",
         "resolution_error": "Verification check error",
-        "not_teacher_role": "Not a teacher role"
+        "not_teacher_role": "Not a teacher role",
+        "verification_columns_unavailable": "認証フィールドはCRMで利用できません"
       },
       "verification": "Verification",
       "verificationCenter": "Verification Center",
@@ -1926,7 +1952,8 @@
         "teacher_identity": "Government-issued ID, passport, or residence permit.",
         "teacher_education": "Teaching certificate, diploma, or degree.",
         "teacher_supporting": "Any additional supporting documents (optional)."
-      }
+      },
+      "avatarUploadFailed": "プロフィール写真のアップロードに失敗"
     },
     "analysis": {
       "artifact": {
@@ -1965,6 +1992,26 @@
         "pending_review": "レビュー待ち",
         "rejected": "却下",
         "superseded": "置換済み"
+      },
+      "title": "ドキュメント分析",
+      "documents_analyzed": "分析済みドキュメント",
+      "accepted": "承認済み",
+      "pending": "保留中",
+      "rejected": "却下済み",
+      "no_fields_extracted": "このドキュメントからフィールドを抽出できませんでした",
+      "engine": {
+        "title": "エンジンの動作 — 現在の処理状況",
+        "stage": {
+          "reading": "ファイルを読み込み中",
+          "ocr": "OCRを実行中",
+          "classifying": "ドキュメントを分類中",
+          "mrz": "パスポートのMRZを解析中",
+          "extracting": "フィールドを抽出中",
+          "transcript_rows": "成績証明書の行を解析中",
+          "building_proposals": "提案を作成中",
+          "completed": "完了",
+          "failed": "失敗"
+        }
       }
     },
     "assembly": {
@@ -1981,7 +2028,13 @@
         "needs_review": "Needs Review",
         "needs_review_desc": "Documents whose lane could not be resolved automatically.",
         "doc_count": "{{count}} documents",
-        "waiting": "Waiting for a matching document…"
+        "waiting": "Waiting for a matching document…",
+        "delete_one": "このファイルを削除",
+        "delete_all": "すべて削除",
+        "confirm_delete_one": "このファイルを完全に削除しますか？",
+        "confirm_delete_all": "{{count}}個のファイルが完全に削除されます。続行しますか？",
+        "delete_failed": "ファイルの削除に失敗しました",
+        "delete_done": "削除完了: {{ok}} 成功 / {{fail}} 失敗"
       },
       "header": {
         "lane": "Lane",
@@ -2093,19 +2146,46 @@
           "country_of_education": "Country of education",
           "transcript_language": "Transcript language"
         }
+      },
+      "edit": {
+        "edit": "編集",
+        "save": "保存",
+        "cancel": "キャンセル",
+        "continue": "続行",
+        "add_manually": "手動で追加",
+        "placeholder": "正しい値を入力…",
+        "pending_notice": "保留中として保存されました — 確認される前にチームが確認します。",
+        "confirm_title": "確認済みフィールドを編集",
+        "confirm_body": "このフィールドは以前に確認済みです。編集すると、新しい値がチームによって確認されるまで「レビュー保留中」に戻ります。続行しますか？"
       }
     },
     "studyFile": {
       "lane_review_reason": {
         "image_ocr_deferred_to_door_3": "現時点では画像とスキャンされたファイルは自動抽出できません。可能であればオリジナルの PDF をアップロードするか、続行するとファイルはレビュー用に送信されます。"
-      }
+      },
+      "quality": "ファイルの品質",
+      "summary": "ファイル概要",
+      "identity": "身分",
+      "academic": "学術",
+      "language": "言語",
+      "targeting": "目標設定",
+      "filled": "入力済み",
+      "missing": "未入力",
+      "status_incomplete": "未完了",
+      "status_partial": "部分的",
+      "status_complete": "完了",
+      "status_verified": "認証済み"
     },
     "identity": {
       "title": "アカウント認証",
       "subtitle": "本人確認を行い、学習ファイルのロックを解除してください。",
       "doc": {
         "instruction": "書類の種類を選び、鮮明な写真またはPDFをアップロードしてください。",
-        "upload": "書類をアップロード"
+        "upload": "書類をアップロード",
+        "chooseTitle": "ドキュメントタイプを選択",
+        "dropTitle": "ここにドキュメントをドロップ",
+        "dropHint": "またはクリックしてデバイスから参照",
+        "formats": "JPG、PNG、WEBP、PDF — 最大10MB"
       },
       "docKind": {
         "passport": "パスポート",
@@ -2114,12 +2194,24 @@
       },
       "selfie": {
         "instruction": "カメラを見て、はっきりとした自撮り写真を撮ってください。",
-        "capture": "撮影する"
+        "capture": "撮影する",
+        "title": "鮮明な自撮りを撮影",
+        "tip": {
+          "lighting": "明るく均一な照明を使用してください",
+          "frame": "顔全体を楕円の中に収めてください",
+          "noAccessories": "サングラス、帽子、マスクを外してください"
+        }
       },
       "video": {
         "instruction": "カメラを見ながら5秒間の動画を録画してください。",
         "start": "録画開始",
-        "recording": "録画中…"
+        "recording": "録画中…",
+        "title": "5秒間のライブネス動画を撮影",
+        "tip": {
+          "lookCamera": "カメラを直視してください",
+          "turnHead": "ゆっくりと頭を左右に動かしてください",
+          "smile": "自然な笑顔を見せてください"
+        }
       },
       "reader": {
         "running": "書類を解析中…"
@@ -2191,6 +2283,11 @@
             "driver_license": "運転免許証番号"
           }
         }
+      },
+      "stepper": {
+        "document": "ドキュメント",
+        "selfie": "自撮り",
+        "video": "動画"
       }
     },
     "support": {
@@ -2217,6 +2314,101 @@
         "bodyTooShort": "もう少し長いメッセージを入力してください。",
         "submitFailed": "送信に失敗しました。もう一度お試しください。"
       }
+    },
+    "paymentProof": {
+      "title": "支払い証明を添付",
+      "subtitle": "確認のため銀行送金のレシートをアップロード",
+      "fileLabel": "支払い証明",
+      "removeFile": "ファイルを削除",
+      "uploading": "アップロード中... {{progress}}%",
+      "amountLabel": "必要な金額",
+      "checklistTitle": "証明書に以下が表示されていることを確認してください：",
+      "cancel": "キャンセル",
+      "submitting": "送信中...",
+      "submit": "証明を送信",
+      "dropzone": {
+        "title": "ここにファイルをドラッグ",
+        "subtitle": "またはクリックして選択",
+        "formats": "JPG、PNG、PDF",
+        "maxSize": "最大10MB"
+      },
+      "reference": {
+        "label": "参照番号",
+        "optional": "任意",
+        "placeholder": "例：TXN123456789",
+        "hint": "銀行または決済アプリの送金番号"
+      },
+      "checklist": {
+        "amount": "金額",
+        "date": "日付",
+        "sender": "送信者",
+        "currency": "通貨"
+      },
+      "success": {
+        "title": "証明が正常に送信されました",
+        "description": "証明は24〜48時間以内に確認されます"
+      },
+      "errors": {
+        "unsupportedTypeTitle": "サポートされていないファイル形式",
+        "unsupportedTypeDescription": "画像（JPG、PNG）またはPDFファイルをアップロードしてください",
+        "fileTooLargeTitle": "ファイルが大きすぎます",
+        "fileTooLargeDescription": "最大サイズは10MBです",
+        "noFileTitle": "ファイルが選択されていません",
+        "noFileDescription": "支払い証明をアップロードしてください",
+        "loginRequiredTitle": "サインインしてください",
+        "uploadFailedTitle": "ファイルのアップロードに失敗しました",
+        "submitFailedFallback": "証明の送信に失敗しました",
+        "genericTitle": "エラー",
+        "genericDescription": "予期しないエラーが発生しました"
+      }
+    },
+    "uploadHub": {
+      "title": "ドキュメントをアップロード",
+      "dropzone_title": "ここにファイルをドロップまたはクリックして参照",
+      "dropzone_subtitle": "PDF、画像、Word — 単一または複数ファイル",
+      "queue_title": "アップロードキュー",
+      "in_progress": "アップロード中…",
+      "clear_completed": "完了したものをクリア",
+      "status_pending_upload": "待機中",
+      "status_uploading": "アップロード中…",
+      "status_confirming": "確認中…",
+      "status_registered": "登録済み",
+      "status_upload_failed": "失敗",
+      "status_cancelled": "キャンセル済み",
+      "guidance": {
+        "subtitle": "学術・個人書類をアップロードして、スマートプロフィールを自動構築",
+        "secure_badge": "認証済み・暗号化",
+        "what_to_upload": "アップロードできるもの",
+        "examples": {
+          "passport": "パスポート / 身分証明書",
+          "transcripts": "証明書と成績証明書",
+          "language": "語学試験 (IELTS、TOEFL...)",
+          "cv": "履歴書 / 推薦状"
+        },
+        "formats_label": "対応フォーマット",
+        "formats_value": "PDF · JPG · PNG · DOCX",
+        "size_label": "最大サイズ",
+        "size_value": "ファイルごとに20MB",
+        "tip": "ヒント：より正確な抽出のため、スキャン画像ではなくオリジナルPDFをアップロード"
+      },
+      "after_upload": {
+        "title": "アップロード後に何が起こるか？",
+        "step1_title": "ドキュメントを読み取ります",
+        "step1_desc": "スマートOCRがあらゆる形式を理解",
+        "step2_title": "データを抽出します",
+        "step2_desc": "氏名、日付、成績、専攻",
+        "step3_title": "あなたのファイルを構築",
+        "step3_desc": "大学に送信される統合プロフィール"
+      }
+    },
+    "saveDocs": {
+      "region_label": "未保存のドキュメント",
+      "title_one": "未保存のドキュメントが1個あります",
+      "title_other": "未保存のドキュメントが{{count}}個あります",
+      "title": "未保存のドキュメントが{{count}}個あります",
+      "warning": "保存せずに離れたり更新したりすると、これらのファイルは自動的に削除されます。",
+      "consent": "これらのドキュメントの保存に同意します",
+      "save_button": "ドキュメントを保存"
     }
   },
   "studio": {

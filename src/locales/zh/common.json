@@ -1202,7 +1202,9 @@
       "other": "其他",
       "visa": "签证",
       "logout": "退出登录",
-      "messages": "消息"
+      "messages": "消息",
+      "readiness": "准备情况",
+      "myStudyFile": "我的学习档案"
     },
     "nav": {
       "sections": "Sections"
@@ -1259,7 +1261,17 @@
       "walletWaitlistJoinedHint": "您的钱包尚未激活。您已加入候补名单,激活后我们将立即联系您。",
       "walletApprovedTitle": "钱包已批准",
       "walletApprovedDesc": "您的钱包已激活。您可以充值和转账。",
-      "walletApprovedBadge": "已激活"
+      "walletApprovedBadge": "已激活",
+      "whyVerifyButton": "为什么要验证我的账户？",
+      "whyVerifyTitle": "为什么账户验证很重要？",
+      "whyVerifyIntro": "验证您的账户可让您直接与我们的专属团队联系，并解锁未验证账户无法获得的真正机会。",
+      "whyVerifyPoint1Title": "保护并恢复您的账户",
+      "whyVerifyPoint1Body": "如果您失去访问权限，您的数据仍受保护——只有通过您的身份证件和与我们支持团队的实时视频会话才能恢复。",
+      "whyVerifyPoint2Title": "全球奖学金和项目",
+      "whyVerifyPoint2Body": "您经过验证的个人资料会展示给合作大学，让他们主动联系您提供课程和奖学金机会，而不是您去追逐。",
+      "whyVerifyPoint3Title": "在已验证学生社区发布",
+      "whyVerifyPoint3Body": "您将能够在我们正在构建的 CSW 社区内发布内容，以支持学生项目——包括为您自己的项目启动投资活动。",
+      "whyVerifyClose": "明白了，谢谢"
     },
     "markets": {
       "title": "汇率",
@@ -1273,7 +1285,8 @@
       "currency": "货币",
       "price": "价格",
       "change24h": "24小时变化",
-      "trade": "交易"
+      "trade": "交易",
+      "usd": "美元"
     },
     "wallet": {
       "estimatedBalance": "预估余额",
@@ -1472,7 +1485,18 @@
       "localPrograms": "Local Programs",
       "detailsAfterLink": "Full details will appear after linking your account",
       "program": "专业",
-      "syncing": "Syncing favorites..."
+      "syncing": "Syncing favorites...",
+      "favoriteUniversities": "收藏的大学",
+      "favoritedPrograms": "收藏的项目",
+      "favoritedUniversity": "收藏的大学",
+      "countries": "国家",
+      "universities": "所大学",
+      "details": "详情",
+      "months": "个月",
+      "browseAvailable": "浏览可用项目",
+      "unknown": "未知",
+      "unknownUniversity": "未知大学",
+      "applyNow": "立即申请"
     },
     "payments": {
       "title": "交易记录",
@@ -1743,7 +1767,15 @@
       "title": "可用服务",
       "subtitle": "选择您需要的服务",
       "selectFirst": "请先选择一个项目",
-      "selectFirstDesc": "将项目添加到收藏夹以查看该国家的推荐服务"
+      "selectFirstDesc": "将项目添加到收藏夹以查看该国家的推荐服务",
+      "loginAction": "Log in",
+      "linkAccountRequired": "You must link your account first to save",
+      "linkAccountAction": "Link Account",
+      "selectAtLeastOne": "Select at least one service",
+      "selectionsSaved": "Your selections have been saved ✅",
+      "selectionsSaveFailed": "Failed to save selections",
+      "selectProgramBeforeCheckout": "You must select a primary program before continuing",
+      "connectionError": "发生连接错误"
     },
     "verifyingLink": "验证链接中...",
     "tokenMissing": "缺少访问令牌",
@@ -1930,7 +1962,8 @@
         "not_staff": "Not registered as staff",
         "approval_resolution_unavailable": "Approval check unavailable",
         "resolution_error": "Verification check error",
-        "not_teacher_role": "Not a teacher role"
+        "not_teacher_role": "Not a teacher role",
+        "verification_columns_unavailable": "CRM 中没有验证字段"
       },
       "verification": "Verification",
       "verificationCenter": "Verification Center",
@@ -1969,7 +2002,8 @@
         "teacher_identity": "Government-issued ID, passport, or residence permit.",
         "teacher_education": "Teaching certificate, diploma, or degree.",
         "teacher_supporting": "Any additional supporting documents (optional)."
-      }
+      },
+      "avatarUploadFailed": "个人资料照片上传失败"
     },
     "analysis": {
       "artifact": {
@@ -2008,6 +2042,26 @@
         "pending_review": "待审核",
         "rejected": "已拒绝",
         "superseded": "已取代"
+      },
+      "title": "文档分析",
+      "documents_analyzed": "已分析的文档",
+      "accepted": "已接受",
+      "pending": "待处理",
+      "rejected": "已拒绝",
+      "no_fields_extracted": "无法从此文档中提取任何字段",
+      "engine": {
+        "title": "引擎活动 — 当前正在发生什么",
+        "stage": {
+          "reading": "正在读取文件",
+          "ocr": "正在运行 OCR",
+          "classifying": "正在分类文档",
+          "mrz": "正在解析护照 MRZ",
+          "extracting": "正在提取字段",
+          "transcript_rows": "正在解析成绩单行",
+          "building_proposals": "正在生成建议",
+          "completed": "已完成",
+          "failed": "失败"
+        }
       }
     },
     "assembly": {
@@ -2024,7 +2078,13 @@
         "needs_review": "Needs Review",
         "needs_review_desc": "Documents whose lane could not be resolved automatically.",
         "doc_count": "{{count}} documents",
-        "waiting": "Waiting for a matching document…"
+        "waiting": "Waiting for a matching document…",
+        "delete_one": "删除此文件",
+        "delete_all": "全部删除",
+        "confirm_delete_one": "是否永久删除此文件？",
+        "confirm_delete_all": "将永久删除 {{count}} 个文件。是否继续？",
+        "delete_failed": "删除文件失败",
+        "delete_done": "已删除：{{ok}} 成功 / {{fail}} 失败"
       },
       "header": {
         "lane": "Lane",
@@ -2136,19 +2196,46 @@
           "country_of_education": "Country of education",
           "transcript_language": "Transcript language"
         }
+      },
+      "edit": {
+        "edit": "编辑",
+        "save": "保存",
+        "cancel": "取消",
+        "continue": "继续",
+        "add_manually": "手动添加",
+        "placeholder": "输入正确的值…",
+        "pending_notice": "已保存为待处理 — 我们的团队将在确认之前进行审核。",
+        "confirm_title": "编辑已确认的字段",
+        "confirm_body": "此字段之前已确认。编辑后将返回到「待审核」状态，直到我们的团队验证新值。是否继续？"
       }
     },
     "studyFile": {
       "lane_review_reason": {
         "image_ocr_deferred_to_door_3": "目前无法自动提取图片和扫描文件。如可能，请上传原始 PDF；或继续操作，文件将被提交人工审核。"
-      }
+      },
+      "quality": "档案质量",
+      "summary": "档案摘要",
+      "identity": "身份",
+      "academic": "学术",
+      "language": "语言",
+      "targeting": "目标",
+      "filled": "已填写",
+      "missing": "缺失",
+      "status_incomplete": "不完整",
+      "status_partial": "部分",
+      "status_complete": "完成",
+      "status_verified": "已验证"
     },
     "identity": {
       "title": "账户验证",
       "subtitle": "确认您的身份以解锁您的学习档案。",
       "doc": {
         "instruction": "选择您的证件类型并上传清晰的照片或 PDF。",
-        "upload": "上传文件"
+        "upload": "上传文件",
+        "chooseTitle": "选择文档类型",
+        "dropTitle": "将您的文档拖放到此处",
+        "dropHint": "或点击从您的设备浏览",
+        "formats": "JPG、PNG、WEBP 或 PDF — 最大 10MB"
       },
       "docKind": {
         "passport": "护照",
@@ -2157,12 +2244,24 @@
       },
       "selfie": {
         "instruction": "看着摄像头并拍摄清晰的自拍。",
-        "capture": "拍摄自拍"
+        "capture": "拍摄自拍",
+        "title": "拍摄清晰的自拍",
+        "tip": {
+          "lighting": "使用良好均匀的照明",
+          "frame": "将您的整张脸保持在椭圆形内",
+          "noAccessories": "摘下太阳镜、帽子和口罩"
+        }
       },
       "video": {
         "instruction": "看着摄像头录制一段 5 秒的视频。",
         "start": "开始录制",
-        "recording": "录制中…"
+        "recording": "录制中…",
+        "title": "录制 5 秒的活体检测视频",
+        "tip": {
+          "lookCamera": "直视镜头",
+          "turnHead": "慢慢左右转头",
+          "smile": "自然地微笑"
+        }
       },
       "reader": {
         "running": "正在分析您的文件…"
@@ -2234,6 +2333,11 @@
             "driver_license": "驾驶证号码"
           }
         }
+      },
+      "stepper": {
+        "document": "文档",
+        "selfie": "自拍",
+        "video": "视频"
       }
     },
     "support": {
@@ -2260,6 +2364,101 @@
         "bodyTooShort": "请填写更长的消息。",
         "submitFailed": "发送失败。请重试。"
       }
+    },
+    "paymentProof": {
+      "title": "附加付款凭证",
+      "subtitle": "上传您的银行转账收据以供验证",
+      "fileLabel": "付款凭证",
+      "removeFile": "删除文件",
+      "uploading": "正在上传... {{progress}}%",
+      "amountLabel": "所需金额",
+      "checklistTitle": "请确保凭证显示：",
+      "cancel": "取消",
+      "submitting": "正在提交...",
+      "submit": "提交凭证",
+      "dropzone": {
+        "title": "将文件拖到此处",
+        "subtitle": "或点击选择",
+        "formats": "JPG、PNG、PDF",
+        "maxSize": "最大 10MB"
+      },
+      "reference": {
+        "label": "参考编号",
+        "optional": "可选",
+        "placeholder": "示例：TXN123456789",
+        "hint": "来自您的银行或支付应用的转账编号"
+      },
+      "checklist": {
+        "amount": "金额",
+        "date": "日期",
+        "sender": "发送方",
+        "currency": "货币"
+      },
+      "success": {
+        "title": "凭证提交成功",
+        "description": "您的凭证将在 24-48 小时内审核"
+      },
+      "errors": {
+        "unsupportedTypeTitle": "不支持的文件类型",
+        "unsupportedTypeDescription": "请上传图片（JPG、PNG）或 PDF 文件",
+        "fileTooLargeTitle": "文件太大",
+        "fileTooLargeDescription": "最大尺寸为 10MB",
+        "noFileTitle": "未选择文件",
+        "noFileDescription": "请上传付款凭证",
+        "loginRequiredTitle": "请登录",
+        "uploadFailedTitle": "文件上传失败",
+        "submitFailedFallback": "提交凭证失败",
+        "genericTitle": "错误",
+        "genericDescription": "发生意外错误"
+      }
+    },
+    "uploadHub": {
+      "title": "上传文档",
+      "dropzone_title": "将文件拖放到此处或点击浏览",
+      "dropzone_subtitle": "PDF、图片、Word — 单个或多个文件",
+      "queue_title": "上传队列",
+      "in_progress": "上传中…",
+      "clear_completed": "清除已完成",
+      "status_pending_upload": "队列中",
+      "status_uploading": "上传中…",
+      "status_confirming": "确认中…",
+      "status_registered": "已注册",
+      "status_upload_failed": "失败",
+      "status_cancelled": "已取消",
+      "guidance": {
+        "subtitle": "上传您的学术和个人文档以自动构建您的智能档案",
+        "secure_badge": "已验证且加密",
+        "what_to_upload": "您可以上传什么",
+        "examples": {
+          "passport": "护照 / 身份证",
+          "transcripts": "证书和成绩单",
+          "language": "语言考试 (IELTS、TOEFL...)",
+          "cv": "简历 / 推荐信"
+        },
+        "formats_label": "支持的格式",
+        "formats_value": "PDF · JPG · PNG · DOCX",
+        "size_label": "最大尺寸",
+        "size_value": "每个文件 20MB",
+        "tip": "提示：上传原始 PDF 而非扫描图像可获得更准确的提取"
+      },
+      "after_upload": {
+        "title": "上传后会发生什么？",
+        "step1_title": "我们阅读文档",
+        "step1_desc": "智能 OCR 理解任何格式",
+        "step2_title": "我们提取您的数据",
+        "step2_desc": "姓名、日期、成绩、专业",
+        "step3_title": "我们构建您的档案",
+        "step3_desc": "发送给大学的统一档案"
+      }
+    },
+    "saveDocs": {
+      "region_label": "未保存的文档",
+      "title_one": "您有 1 个未保存的文档",
+      "title_other": "您有 {{count}} 个未保存的文档",
+      "title": "您有 {{count}} 个未保存的文档",
+      "warning": "如果您未保存就离开或刷新，这些文件将被自动删除。",
+      "consent": "我同意保存这些文档",
+      "save_button": "保存文档"
     }
   },
   "compare_action": "+ 对比",
