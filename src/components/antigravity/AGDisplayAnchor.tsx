@@ -24,7 +24,8 @@ export function AGDisplayAnchor({
       data-ag-reveal
       className={cn(
         "ag-display-anchor relative w-full overflow-hidden",
-        tone === "light" ? "bg-[var(--ag-bg)] text-[var(--ag-fg)]" : "bg-[var(--ag-fg)] text-[var(--ag-bg)]",
+        // Inherits parent bg/text — works in both themes via AG tokens
+        "bg-[var(--ag-bg)] text-[var(--ag-fg)]",
         "pt-12 pb-0",
         className
       )}
