@@ -112,14 +112,20 @@ export interface NormalizerInput {
 
 export type NormalizerReasonCode =
   | 'pattern_matched'
+  | 'no_pattern_match'
   | 'no_pattern_matched'
   | 'multiple_patterns_tied'
   | 'grade_normalized'
   | 'grade_unparseable'
+  | 'grade_unit_missing'
   | 'language_cefr_mapped'
   | 'language_score_out_of_range'
   | 'manual_review_required'
-  | 'country_profile_missing';
+  | 'country_profile_missing'
+  | 'multiple_streams_detected'
+  | 'stream_advanced_vs_elite_unclear'
+  | 'track_vocational_vs_academic_unclear'
+  | 'award_year_missing';
 
 export interface NormalizerDecision {
   decision_kind: 'pattern_match' | 'grade_norm' | 'language_map' | 'review_flag';
