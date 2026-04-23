@@ -350,20 +350,35 @@ export default function TargetCountryDebug() {
   return (
     <div className="container py-6 space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">Door 2 + Door 3 — Eligibility &amp; Measurement Surface</h1>
+        <h1 className="text-2xl font-bold">Target-Country — Eligibility &amp; Measurement Surface</h1>
         <p className="text-sm text-muted-foreground">
           After-secondary, country-level only · {fixtureArtifact.countries_in_matrix.length} packs · pure engine
         </p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Admin route. Operates on <strong>target student context</strong> only — never on
-          current signed-in admin/staff identity.
-        </p>
+        <div className="mt-2 rounded border border-warning/40 bg-warning/5 p-3 text-xs space-y-1">
+          <p className="font-medium uppercase text-warning">Truth status (see TRUTH_STATUS.md)</p>
+          <p>
+            <strong>Door 1</strong> = CLOSED ·{' '}
+            <strong>Door 2</strong> = PARTIAL ·{' '}
+            <strong>Door 3</strong> = PARTIAL
+          </p>
+          <p className="text-muted-foreground">
+            Live target-student runtime is <strong>not</strong> authoritative: there is no
+            admin-side CRM proxy that loads a target student's truth by{' '}
+            <code>target_user_id</code>. The "Engine input forwarder" tab below accepts pasted
+            JSON only — it is a developer convenience, not target-student runtime closure.
+          </p>
+          <p className="text-muted-foreground">
+            TR (country-11) extensibility is "low-friction", <strong>not</strong> data-only:
+            it required edits to the <code>CountryCode</code> union and the{' '}
+            <code>COUNTRY_PACKS</code> registry.
+          </p>
+        </div>
       </div>
 
       <Tabs defaultValue="fixture">
         <TabsList>
           <TabsTrigger value="fixture">Fixture (proof)</TabsTrigger>
-          <TabsTrigger value="target">Target student (live smoke)</TabsTrigger>
+          <TabsTrigger value="target">Engine input forwarder (NOT live target)</TabsTrigger>
         </TabsList>
 
         <TabsContent value="fixture" className="mt-4">
@@ -373,10 +388,14 @@ export default function TargetCountryDebug() {
         <TabsContent value="target" className="mt-4 space-y-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Target student input</CardTitle>
+              <CardTitle className="text-base">
+                Engine input forwarder — NOT a live target-student loader
+              </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Paste the canonical applicant truth JSON for a real target student. This page
-                does not derive truth from the current admin actor.
+                Paste an <code>ApplicantTruth</code> JSON to drive the engine. There is no
+                admin-side CRM proxy yet that fetches a real target student's canonical truth
+                by <code>target_user_id</code>, so this surface cannot prove Door 2 runtime
+                closure. Use the Fixture tab for deterministic proof.
               </p>
             </CardHeader>
             <CardContent className="space-y-3">
