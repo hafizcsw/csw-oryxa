@@ -121,12 +121,14 @@ export function HeroRevealStage({ hero, next }: HeroRevealStageProps) {
       ref={stageRef}
       data-reveal-stage=""
       className="reveal-stage relative"
-      style={{ height: "200vh" }}
+      style={{ height: "200vh", overflow: "clip" }}
       aria-hidden={false}
     >
+      {/* Sticky viewport: hero + video + veil ONLY. Hard-clipped. */}
       <div
         data-reveal-sticky=""
-        className="reveal-sticky sticky top-0 h-screen w-full overflow-hidden"
+        className="reveal-sticky sticky top-0 h-screen w-full"
+        style={{ overflow: "clip" }}
       >
         {video.enabled && video.url && (
           <video
@@ -141,7 +143,7 @@ export function HeroRevealStage({ hero, next }: HeroRevealStageProps) {
             className="reveal-video pointer-events-none absolute inset-0 w-full h-full object-cover"
           />
         )}
-        <div className="reveal-hero h-full w-full will-change-transform">
+        <div className="reveal-hero absolute inset-0 will-change-transform">
           {hero}
         </div>
         <div
@@ -150,10 +152,13 @@ export function HeroRevealStage({ hero, next }: HeroRevealStageProps) {
         />
       </div>
 
+      {/* Next section lives in normal flow AFTER sticky.
+          As user scrolls, the document pushes sticky out the top
+          and next slides up into view — contained by stage's clip. */}
       <div
         ref={nextWrapperRef}
         data-reveal-next=""
-        className="reveal-next relative z-10 will-change-transform"
+        className="reveal-next relative"
       >
         {next}
       </div>
