@@ -9,6 +9,7 @@ import { ES_PACK } from './ES';
 import { FI_PACK } from './FI';
 import { IT_PACK } from './IT';
 import { CH_PACK } from './CH';
+import { TR_PACK } from './TR';
 
 export const COUNTRY_PACKS: Record<CountryCode, TargetCountryProfile> = {
   CN: CN_PACK,
@@ -21,6 +22,7 @@ export const COUNTRY_PACKS: Record<CountryCode, TargetCountryProfile> = {
   FI: FI_PACK,
   IT: IT_PACK,
   CH: CH_PACK,
+  TR: TR_PACK,
 };
 
 export function getPack(code: CountryCode): TargetCountryProfile {
