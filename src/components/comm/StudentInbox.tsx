@@ -16,7 +16,8 @@ import {
   MailOpen, Plus, X, Users, MessageSquare, LifeBuoy, School,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import avatarSupport from '@/assets/avatar-support.png';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { useUnifiedInbox, type InboxSource, type UnifiedInboxItem } from '@/hooks/useUnifiedInbox';
 import { CommThreadView } from '@/components/comm/CommThreadView';
@@ -264,6 +265,9 @@ export function StudentInbox() {
                   >
                     <div className="relative flex-shrink-0">
                       <Avatar className={cn('h-12 w-12', isSelected && 'ring-2 ring-primary/40')}>
+                        {item.source === 'support' && (
+                          <AvatarImage src={avatarSupport} alt="Support" loading="lazy" width={512} height={512} />
+                        )}
                         <AvatarFallback className={cn(
                           'text-sm font-semibold',
                           item.unread || isSelected ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
