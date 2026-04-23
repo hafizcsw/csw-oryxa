@@ -48,8 +48,8 @@ export function FloatingSupportLauncher() {
         }
         drag="x"
         dragConstraints={{
-          left: -(typeof window !== "undefined" ? window.innerWidth - 96 : 0),
-          right: 0,
+          left: 0,
+          right: (typeof window !== "undefined" ? window.innerWidth - 96 : 0),
         }}
         dragElastic={0.1}
         whileDrag={reduced ? undefined : { scale: 1.08 }}
@@ -66,7 +66,7 @@ export function FloatingSupportLauncher() {
         whileHover={reduced ? undefined : { scale: 1.06 }}
         whileTap={reduced ? undefined : { scale: 0.94 }}
         className={cn(
-          "fixed bottom-4 end-4 sm:bottom-6 sm:end-6 z-[60]",
+          "fixed bottom-4 start-4 sm:bottom-6 sm:start-6 z-[60]",
           "h-14 w-14 rounded-full",
           "bg-background/40 backdrop-blur-md",
           "shadow-[0_8px_32px_-4px_hsl(var(--primary)/0.45)]",
@@ -132,7 +132,7 @@ export function FloatingSupportLauncher() {
               exit={reduced ? { opacity: 0 } : { scale: 0, opacity: 0 }}
               transition={SPRING}
               className={cn(
-                "absolute -top-1 -end-1",
+                "absolute -top-1 -start-1",
                 "min-w-[20px] h-5 px-1.5 rounded-full",
                 "bg-destructive text-destructive-foreground",
                 "text-[11px] font-semibold leading-none",
