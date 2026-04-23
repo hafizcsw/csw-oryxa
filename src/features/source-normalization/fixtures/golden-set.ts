@@ -11,7 +11,9 @@ export interface GoldenCase {
   category: 'clear' | 'ambiguous' | 'noisy';
   notes: string;
   input: NormalizerInput;
-  expected: Partial<NormalizerOutput>;
+  expected: Partial<NormalizerOutput> & {
+    reason_codes?: string[];
+  };
 }
 
 export const GOLDEN_SET: GoldenCase[] = [
