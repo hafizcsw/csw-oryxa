@@ -1008,3 +1008,66 @@ All colors MUST be HSL.
 .leaflet-country-card-tooltip::before {
   display: none !important;
 }
+
+/* =========================================================
+   Hero reveal stage — Antigravity-style sticky transition
+   Uses ONE CSS variable --rp (0..1) written by JS via rAF.
+   All transitions are transform/opacity only, GPU-friendly.
+   ========================================================= */
+.reveal-stage {
+  --rp: 0;
+  /* hero scale: 1 -> 0.94 */
+  --hero-scale: calc(1 - (var(--rp) * 0.06));
+  /* hero content opacity: 1 -> 0.35 */
+  --hero-opacity: calc(1 - (var(--rp) * 0.65));
+  /* dark overlay opacity: 0 -> 0.25 */
+  --overlay-opacity: calc(var(--rp) * 0.25);
+  /* next section translate: 80px -> 0 */
+  --next-y: calc(80px * (1 - var(--rp)));
+  /* next section opacity: 0 -> 1 (snaps in over second half) */
+  --next-opacity: clamp(0, calc(var(--rp) * 1.6 - 0.2), 1);
+}
+
+.reveal-stage .reveal-hero {
+  transform: scale(var(--hero-scale));
+  opacity: var(--hero-opacity);
+  transform-origin: center center;
+}
+
+.reveal-stage .reveal-overlay {
+  opacity: var(--overlay-opacity);
+}
+
+.reveal-stage .reveal-next {
+  transform: translate3d(0, var(--next-y), 0);
+  opacity: var(--next-opacity);
+}
+
+/* Mobile / reduced motion: disable scrub.
+   JS sets --rp = 1 so hero stays fully visible until next mounts.
+   Next section gets a one-shot fade when it intersects. */
+@media (max-width: 768px), (prefers-reduced-motion: reduce) {
+  .reveal-stage {
+    height: auto !important;
+  }
+  .reveal-stage .reveal-sticky {
+    position: relative;
+    height: auto;
+  }
+  .reveal-stage .reveal-hero {
+    transform: none;
+    opacity: 1;
+  }
+  .reveal-stage .reveal-overlay {
+    display: none;
+  }
+  .reveal-stage .reveal-next {
+    transform: translate3d(0, 24px, 0);
+    opacity: 0;
+    transition: transform 500ms ease-out, opacity 500ms ease-out;
+  }
+  .reveal-stage .reveal-next[data-revealed="true"] {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}

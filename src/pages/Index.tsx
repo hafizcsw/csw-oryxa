@@ -10,6 +10,7 @@ import { CarouselIndicators } from "@/components/ui/carousel-indicators";
 import UniversitiesHero from "@/sections/UniversitiesHero";
 // HeroSection stays static (above-the-fold).
 import { HeroSection } from "@/components/home/HeroSection";
+import { HeroRevealStage } from "@/components/home/HeroRevealStage";
 import { LazyMount } from "@/components/perf/LazyMount";
 // Below-the-fold: lazy-load to keep initial bundle small.
 const WorldMapSection = lazy(() => import("@/components/home/WorldMapSection").then(m => ({ default: m.WorldMapSection })));
@@ -415,13 +416,19 @@ const Index = () => {
   return (
     <ChatProvider>
       <Layout>
-          {/* Hero Section with Integrated Chat */}
-          <HeroSection />
+          {/* Hero + first section sticky reveal stage (Antigravity-style, no scroll-jack) */}
+          <HeroRevealStage
+            hero={<HeroSection />}
+            next={
+              <Suspense fallback={<div className="min-h-[400px]" />}>
+                <LazyMount minHeight={400}><UniversityCommunitySection /></LazyMount>
+              </Suspense>
+            }
+          />
 
-          {/* All below-the-fold sections are lazy-loaded behind a single Suspense boundary */}
+          {/* Remaining below-the-fold sections are lazy-loaded behind a single Suspense boundary */}
           <Suspense fallback={<div className="min-h-[200px]" />}>
-          {/* University Community Section */}
-          <LazyMount minHeight={400}><UniversityCommunitySection /></LazyMount>
+
 
            {/* About ORYXA */}
            <LazyMount minHeight={400}><AboutOryxaSection /></LazyMount>
