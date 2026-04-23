@@ -478,13 +478,6 @@ const Index = () => {
                 <LazyMount minHeight={400}><WorldMapSection /></LazyMount>
               </AGSection>
 
-              {/* 7. Built-for global students statement */}
-              <AGSection className="border-t border-[var(--ag-border)]">
-                <AGStatement
-                  headline={t("home.ag.statement2.headline")}
-                  description={t("home.ag.statement2.desc")}
-                />
-              </AGSection>
 
               {/* 8. Institutions — partner with us */}
               <div className="border-t border-[var(--ag-border)]">
