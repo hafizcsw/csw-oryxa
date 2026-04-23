@@ -1,61 +1,65 @@
 
-# Fix light-mode hero stars so they actually appear
 
-## Root cause
-The hero particle layer is present, but the current light-mode setup is too weak to read reliably:
-- `HeroSection` mounts `AntigravityParticleField` without an explicit theme prop
-- the particle field infers theme from `document.documentElement.classList.contains('dark')`
-- in light mode it uses smaller particles and a blue tone that is still too faint
-- blending is fixed to `THREE.AdditiveBlending`, which is tuned for dark backgrounds, not for a white hero
+# إصلاح شامل: توحيد الثيم + إزالة التداخل أسفل الهيرو
 
-## What to change
+## التشخيص الفعلي (من الكود + ردك)
 
-### 1. Pass the resolved theme explicitly from the hero
-In `src/components/home/HeroSection.tsx`:
-- read `resolvedTheme` with `useTheme()`
-- pass `theme={resolvedTheme === "dark" ? "dark" : "light"}` into `AntigravityParticleField`
+1. **الأقسام السوداء AG ثابتة**: استخدمت توكنز `--ag-bg: #0A0A0A` و `--ag-fg: #FAFAFA` بشكل ثابت — لا تستجيب للوضع النهاري إطلاقاً.
+2. **تداخل بصري**: أقسام بيضاء أصلية (مثل `WorldMapSection`, `PartnersMarquee`, إلخ) ملصوقة بأقسام AG سوداء → خطوط فصل قبيحة و"فقفقة" بصرية عند التمرير.
+3. **تكرار حركة الكشف**: كل قسم AG يستخدم نفس reveal بنفس الإيقاع → الزحام الذي وصفته بـ "تداخل أثناء الحركة".
+4. **نصوص تختفي**: في الوضع النهاري، نصوص مكتوبة `text-white` على عناصر فقدت خلفيتها السوداء → أبيض على أبيض.
+5. **الترتيب الحالي يخلط أنماطاً**: AG + أقسام موروثة قديمة معاً = لغتان بصريتان متضاربتان.
 
-This removes any mismatch between the actual site theme and the particle shader.
+## الحل (نطاق: كل شيء أسفل الهيرو، الهيرو والخريطة لا تُلمَس داخلياً)
 
-### 2. Strengthen the light-mode particle settings
-In `src/components/home/hero-shader/antigravity/AntigravityParticleField.tsx`:
-- keep dark mode unchanged
-- make light mode visibly stronger by increasing:
-  - particle color contrast
-  - alpha multiplier
-  - point size
-  - size clamp
-- use a darker, more readable blue for day mode instead of the current faint tone
+### 1. توكنز AG تتبع الثيم
+في `src/index.css`:
+- إضافة تعريفات تحت `:root` (الوضع النهاري): `--ag-bg`, `--ag-fg`, `--ag-border`, `--ag-muted` بقيم نهارية (خلفية بيضاء ناعمة جداً، نص قريب من الأسود، حدود رمادية رفيعة)
+- إضافة نفس التوكنز تحت `.dark` بالقيم الليلية الحالية
+- النتيجة: كل مكوّن AG يتغيّر تلقائياً مع الثيم بدون لمس مكوّن واحد
 
-Target adjustment:
-- light color: deeper blue / navy family
-- `uAlphaBoost`: increase clearly above current `5.0`
-- `uSizeScale`: increase above current `0.55`
-- `uSizeClamp`: allow larger visible points
+### 2. توحيد لغة بصرية واحدة أسفل الهيرو
+في `src/pages/Index.tsx`:
+- لف كل المنطقة أسفل الهيرو في حاوية واحدة `bg-[var(--ag-bg)] text-[var(--ag-fg)]` — تمنع الفقفقة بين أبيض/أسود
+- إزالة الأقسام الموروثة التي تخلق تنافراً بصرياً من الترتيب الافتراضي (تبقى الملفات للاستخدام لاحقاً) — بناءً على موافقتك السابقة على هذا التوجّه
+- ترتيب نهائي مقترح: Hero → AGStatement → AGTriptych → WorldMap (داخل غلاف AG) → AGStatement → AGTriptych → AGAnchorBand → AGDisplayAnchor → Footer
 
-### 3. Use theme-specific blending
-In `AntigravityParticleField.tsx`:
-- keep `THREE.AdditiveBlending` for dark mode
-- switch light mode to a blending mode that reads on white, such as `THREE.NormalBlending`
+### 3. إصلاح "تداخل الحركة"
+- تنويع توقيت الكشف بين الأقسام: ستاجر متفاوت (40ms / 60ms / 80ms) بدل تكرار نفس الإيقاع
+- ضمان `prefers-reduced-motion`: إيقاف stagger والاكتفاء بـ fade بسيط
+- التأكد أن كل قسم لا يبدأ animation إلا عند `IntersectionObserver` بنسبة 0.2 — بدل البدء كلها معاً
 
-This is the key visual fix so the stars do not disappear into the bright hero.
+### 4. إصلاح "نصوص تختفي"
+- استبدال أي `text-white` / `text-black` صريح في مكوّنات AG بـ `text-[var(--ag-fg)]`
+- استبدال `bg-black` / `bg-white` صريح بـ `bg-[var(--ag-bg)]`
+- مراجعة `AGStatement`, `AGTriptych`, `AGCard`, `AGDisplayAnchor`, `AGAnchorBand`, `AGRevealText`
 
-### 4. Optional light-mode canvas emphasis
-If the stars are still too subtle after the shader change:
-- add a light-mode-only canvas style enhancement on the particle container, such as slightly higher opacity or a subtle blend-mode treatment
-- keep this scoped to the hero only
+### 5. حدود فاصلة بين أقسام AG
+- بدل خلفيات متناقضة، استخدم `border-t border-[var(--ag-border)]` بين أقسام AG → فصل ناعم بدل صدمة لونية
 
-## Files to edit
-- `src/components/home/HeroSection.tsx`
-- `src/components/home/hero-shader/antigravity/AntigravityParticleField.tsx`
+### 6. الخريطة بدون لمس داخلي
+- لف `<WorldMapSection />` في `<div class="bg-[var(--ag-bg)] py-24">` فقط — لا تعديل داخل المكوّن
 
-## Expected result
-- In light mode, the hero stars are clearly visible without touching the hero layout
-- In dark mode, the current appearance stays the same
-- No map, no below-hero sections, and no homepage composition changes
+## الملفات التي ستتغيّر
+1. `src/index.css` — توكنز AG ثنائية الثيم + ضبط منحنى الحركة
+2. `src/components/antigravity/AGStatement.tsx` — توكنز فقط
+3. `src/components/antigravity/AGTriptych.tsx` — توكنز فقط
+4. `src/components/antigravity/AGCard.tsx` — توكنز فقط
+5. `src/components/antigravity/AGDisplayAnchor.tsx` — توكنز فقط
+6. `src/components/antigravity/AGAnchorBand.tsx` — توكنز فقط + ضمان reveal مرة واحدة
+7. `src/components/antigravity/AGRevealText.tsx` — توقيت stagger متغير + احترام reduced-motion
+8. `src/pages/Index.tsx` — تركيب نهائي موحّد أسفل الهيرو
 
-## Done criteria
-- light-mode hero visibly shows the particle field at normal desktop viewport
-- dark-mode hero matches current behavior
-- no hardcoded visible UI text introduced
-- change is code-ready; runtime proof will require preview verification after implementation
+## خارج النطاق صراحةً
+- `HeroSection` لا يُلمس
+- داخل `WorldMapSection` لا يُلمس (غلاف خارجي فقط)
+- لا مكتبات جديدة، لا scroll-jacking، لا GSAP
+- لا نصوص ظاهرة جديدة — لا تغيير في مفاتيح الترجمة
+
+## معايير الإغلاق (Runtime-proven بعد التنفيذ)
+- التبديل بين الوضع النهاري والليلي يغيّر فعلياً ألوان كل قسم أسفل الهيرو
+- لا توجد حدود حادة بين قسم أبيض وقسم أسود متجاوران
+- كل النصوص مقروءة في الوضعين
+- حركة الكشف لا تبدأ في كل الأقسام دفعة واحدة
+- لا أخطاء console جديدة
+
