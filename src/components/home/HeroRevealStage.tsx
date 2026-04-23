@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import defaultHeroVideo from "@/assets/hero-students-campus.mp4";
 
 /**
  * HeroRevealStage
