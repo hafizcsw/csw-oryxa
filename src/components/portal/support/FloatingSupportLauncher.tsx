@@ -42,6 +42,7 @@ export function FloatingSupportLauncher() {
         key="oryxa-fab"
         ref={fabRef}
         type="button"
+        data-floating-launcher
         aria-label={
           open
             ? t("portal.support.launcher.ariaClose")
