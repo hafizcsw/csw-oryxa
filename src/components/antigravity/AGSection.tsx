@@ -53,7 +53,7 @@ export function AGSection({
           <div
             className={cn(
               "ag-eyebrow mb-10 text-[11px] tracking-[0.18em] uppercase font-medium",
-              tone === "light" ? "text-[var(--ag-muted)]" : "text-white/60"
+              "text-[var(--ag-muted)]"
             )}
           >
             {eyebrow}
