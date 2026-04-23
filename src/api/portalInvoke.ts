@@ -4,6 +4,18 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 
+// In-flight request dedupe: collapses concurrent identical calls into one
+// network request. Critical for actions that many components fire on mount
+// (e.g. resolve_staff_authority) to avoid stampeding the edge function and
+// triggering 504 IDLE_TIMEOUT.
+const inflight = new Map<string, Promise<any>>();
+
+const DEDUPE_ACTIONS = new Set([
+  'resolve_staff_authority',
+  'resolve_teacher_approval',
+  'resolve_course_access',
+]);
+
 export async function portalInvoke<T = unknown>(
   action: string, 
   payload: Record<string, unknown> = {}
@@ -14,6 +26,15 @@ export async function portalInvoke<T = unknown>(
     return { ok: false, error: 'NO_SESSION', details: 'يجب تسجيل الدخول أولاً' };
   }
 
+  const dedupeKey = DEDUPE_ACTIONS.has(action)
+    ? `${action}::${session.user.id}::${JSON.stringify(payload)}`
+    : null;
+
+  if (dedupeKey && inflight.has(dedupeKey)) {
+    return inflight.get(dedupeKey)!;
+  }
+
+  const exec = (async () => {
   try {
     const { data, error } = await supabase.functions.invoke('student-portal-api', {
       body: { action, ...payload },
@@ -60,4 +81,12 @@ export async function portalInvoke<T = unknown>(
       details: err instanceof Error ? err.message : String(err),
     };
   }
+  })();
+
+  if (dedupeKey) {
+    inflight.set(dedupeKey, exec);
+    exec.finally(() => inflight.delete(dedupeKey));
+  }
+
+  return exec;
 }
