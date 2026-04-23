@@ -1471,6 +1471,7 @@ export function MalakChatInterface({
                 isGuestLocked && "opacity-60 cursor-not-allowed"
               )}
               rows={1} 
+              aria-label="Chat message input"
               autoResize={true}
               maxHeight={isFloating ? 120 : 200}
             />
