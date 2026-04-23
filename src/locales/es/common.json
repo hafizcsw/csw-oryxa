@@ -453,6 +453,56 @@
         }
       },
       "cta": "Descubre la metodología ORX RANK"
+    },
+    "ag": {
+      "eyebrow": {
+        "mission": "NUESTRA MISIÓN",
+        "journey": "VIAJE DEL ESTUDIANTE",
+        "global": "ALCANCE GLOBAL",
+        "platform": "PLATAFORMA"
+      },
+      "statement1": {
+        "headline": "Una nueva forma de descubrir, decidir y partir hacia tu universidad en el extranjero.",
+        "desc": "ORYXA reúne cada paso del viaje del estudiante global en una interfaz tranquila e inteligente."
+      },
+      "triptych1": {
+        "discover": {
+          "title": "Descubre",
+          "desc": "Más de 500 programas en 25+ países con filtros inteligentes."
+        },
+        "decide": {
+          "title": "Decide",
+          "desc": "Compara admisiones, costos y compatibilidad con claridad."
+        },
+        "depart": {
+          "title": "Parte",
+          "desc": "Apoyo con visa, vivienda y llegada — de principio a fin."
+        }
+      },
+      "statement2": {
+        "headline": "Construida para estudiantes globales, en doce idiomas.",
+        "desc": "De pregrado a posgrado y becas — una plataforma, tu idioma."
+      },
+      "triptych2": {
+        "undergrad": {
+          "title": "Pregrado",
+          "desc": "Encuentra tu primer título con confianza."
+        },
+        "postgrad": {
+          "title": "Posgrado",
+          "desc": "Programas que realmente encajan con tu perfil."
+        },
+        "scholarship": {
+          "title": "Becas",
+          "desc": "Descubre caminos financiados que te habrías perdido."
+        }
+      },
+      "anchor": {
+        "headline": "Comienza tu viaje.",
+        "primary": "Empezar",
+        "secondary": "Hablar con ORYXA"
+      },
+      "display": "ORYXA"
     }
   },
   "services": {

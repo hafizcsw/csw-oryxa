@@ -453,6 +453,56 @@
         }
       },
       "cta": "ORX RANK の方法論を見る"
+    },
+    "ag": {
+      "eyebrow": {
+        "mission": "私たちのミッション",
+        "journey": "学生の旅",
+        "global": "グローバル展開",
+        "platform": "プラットフォーム"
+      },
+      "statement1": {
+        "headline": "海外の大学を発見し、決定し、出発する新しい方法。",
+        "desc": "ORYXAは、グローバルな学生の旅のすべてのステップを、静かで知的なインターフェースに集約します。"
+      },
+      "triptych1": {
+        "discover": {
+          "title": "発見",
+          "desc": "25カ国以上で500以上のプログラムをスマートに検索。"
+        },
+        "decide": {
+          "title": "決定",
+          "desc": "入学条件、費用、適合性を並べて比較。"
+        },
+        "depart": {
+          "title": "出発",
+          "desc": "ビザ、住居、到着までを一貫サポート。"
+        }
+      },
+      "statement2": {
+        "headline": "グローバルな学生のために、12言語で。",
+        "desc": "学部から大学院、奨学金まで — 一つのプラットフォームで、あなたの言語で。"
+      },
+      "triptych2": {
+        "undergrad": {
+          "title": "学部",
+          "desc": "自信を持って最初の学位を見つけましょう。"
+        },
+        "postgrad": {
+          "title": "大学院",
+          "desc": "あなたのプロファイルに合うプログラム。"
+        },
+        "scholarship": {
+          "title": "奨学金",
+          "desc": "見逃していた資金援助の道を発見。"
+        }
+      },
+      "anchor": {
+        "headline": "旅を始めましょう。",
+        "primary": "始める",
+        "secondary": "ORYXAに相談"
+      },
+      "display": "ORYXA"
     }
   },
   "services": {

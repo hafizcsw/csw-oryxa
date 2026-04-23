@@ -454,6 +454,56 @@
         }
       },
       "cta": "了解 ORX RANK 评估方法"
+    },
+    "ag": {
+      "eyebrow": {
+        "mission": "我们的使命",
+        "journey": "学生旅程",
+        "global": "全球覆盖",
+        "platform": "平台"
+      },
+      "statement1": {
+        "headline": "发现、决定并启程前往海外大学的全新方式。",
+        "desc": "ORYXA 将全球学生旅程的每一步整合到一个安静而智能的界面中。"
+      },
+      "triptych1": {
+        "discover": {
+          "title": "发现",
+          "desc": "在 25+ 个国家搜索 500+ 个课程,意图感知筛选。"
+        },
+        "decide": {
+          "title": "决定",
+          "desc": "并排比较录取、费用和适配度。"
+        },
+        "depart": {
+          "title": "出发",
+          "desc": "签证、住房和抵达全程指导。"
+        }
+      },
+      "statement2": {
+        "headline": "为全球学生打造,支持十二种语言。",
+        "desc": "从本科探索到研究生策略再到奖学金 — 一个平台,你的语言。"
+      },
+      "triptych2": {
+        "undergrad": {
+          "title": "本科",
+          "desc": "自信地找到你的第一个学位。"
+        },
+        "postgrad": {
+          "title": "研究生",
+          "desc": "匹配真正适合你的项目。"
+        },
+        "scholarship": {
+          "title": "奖学金",
+          "desc": "发现你可能错过的资助路径。"
+        }
+      },
+      "anchor": {
+        "headline": "开启你的旅程。",
+        "primary": "开始",
+        "secondary": "联系 ORYXA"
+      },
+      "display": "ORYXA"
     }
   },
   "services": {
