@@ -6,21 +6,23 @@
 //   2) Live DB profile of the signed-in user (smoke test)
 // Renders a 10-country matrix with reasons, gaps, evidence.
 // ═══════════════════════════════════════════════════════════════
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { supabase } from '@/integrations/supabase/client';
 import {
   computeCountryMatrix,
   COUNTRY_PACKS,
   FIXTURE_APPLICANT,
-  type ApplicantTruth,
+  buildApplicantTruth,
   type CountryEligibility,
   type CountryMatrix,
   type CountryStatus,
 } from '@/features/target-country';
+import { useStudentProfile } from '@/hooks/useStudentProfile';
+import { useStudentDocuments } from '@/hooks/useStudentDocuments';
+import { useCanonicalStudentFile } from '@/hooks/useCanonicalStudentFile';
 
 const STATUS_VARIANT: Record<CountryStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   eligible: 'default',
