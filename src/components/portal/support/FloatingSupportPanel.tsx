@@ -110,7 +110,7 @@ export function FloatingSupportPanel({ onClose, initialView = "default" }: Float
           "fixed inset-x-0 bottom-0 z-[58] w-full h-[88vh] rounded-t-3xl rounded-b-none",
           bottomDockedView
             ? "sm:inset-x-auto sm:bottom-0 sm:end-6 sm:h-[640px] sm:max-h-[calc(100vh-2rem)] sm:rounded-t-3xl sm:rounded-b-none"
-            : "sm:inset-x-auto sm:bottom-24 sm:end-6 sm:h-[640px] sm:max-h-[calc(100vh-8rem)] sm:rounded-3xl",
+            : "sm:inset-x-auto sm:bottom-6 sm:end-6 sm:h-[640px] sm:max-h-[calc(100vh-2rem)] sm:rounded-3xl",
           expanded ? "sm:w-[520px]" : "sm:w-[400px]",
           "bg-card/95 backdrop-blur-xl",
           "border border-border/50",
