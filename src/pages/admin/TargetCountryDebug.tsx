@@ -165,6 +165,8 @@ const TRUTH_TEMPLATE: ApplicantTruth = {
   secondary_grade_pct: 82,
   english_test_type: 'ielts',
   english_total_score: 6,
+  english_medium_secondary: false,
+  majority_english_country: false,
   local_language_signals: [],
 };
 
