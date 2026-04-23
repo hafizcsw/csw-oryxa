@@ -16,7 +16,8 @@ import {
   MailOpen, Plus, X, Users, MessageSquare, LifeBuoy, School,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import avatarSupport from '@/assets/avatar-support.png';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { useUnifiedInbox, type InboxSource, type UnifiedInboxItem } from '@/hooks/useUnifiedInbox';
 import { CommThreadView } from '@/components/comm/CommThreadView';
