@@ -1,96 +1,60 @@
 
-## تحليل عميق: موقع لوحة الشات العائمة
+## إشعار رسائل جديدة في الزر العائم
 
-### الوضع الحالي (المشكلة)
+### المتطلبات
+1. عند وصول رسالة جديدة → تشغيل صوت تنبيه
+2. مؤشر بصري واضح على الزر العائم (badge + animation)
+3. عند الضغط على الزر العائم → فتح اللوحة مباشرة على الرسالة الجديدة (تبويب Messages مع الـ thread المحدد)
 
-```text
-┌─────────────────────────────────────────────────────────┐
-│                    Header (top-16)                      │
-├──────────────────────────┬──────────┬───────────────────┤
-│                          │          │                   │
-│                          │  Panel   │   Sidebar         │
-│       Main Content       │  400px   │   (Avatar)        │
-│                          │          │   w-56 = 224px    │
-│                          │          │                   │
-│                          │  ↑       │   ↑               │
-│                          │ end-56   │ visible           │
-│                          │ (فجوة)   │                   │
-└──────────────────────────┴──────────┴───────────────────┘
-                            ↑
-                  اللوحة "تطفو" بفجوة 224px من الحافة
-                  (md:end-56) — هذا خطأ
-```
+### التحليل
 
-**الكود الحالي:**
-```tsx
-"sm:inset-x-auto sm:top-16 sm:bottom-0 md:end-56 sm:end-0 ..."
-```
+**الموجود حالياً:**
+- `useCommUnreadCount` يجلب عدد الرسائل غير المقروءة
+- `FloatingSupportPanel` يستقبل `initialView` لتحديد التبويب الافتتاحي
+- `MessagesTab` يدير حالة `selected` للـ thread المفتوح
 
-`md:end-56` يدفع اللوحة 14rem بعيدًا عن الحافة على شاشات md+، مما يخلق فجوة بين اللوحة والسايدبار، فتبدو معلقة في منتصف اللاشيء (كما في الصورة الأولى).
+**ما ينقص:**
+1. الكشف عن وصول رسالة *جديدة* (ليس فقط العدد الحالي) — Realtime subscription على `comm_messages`
+2. تشغيل صوت عند الكشف
+3. تمرير `thread_id` آخر رسالة جديدة من الزر العائم → اللوحة → MessagesTab → فتح الـ thread
+4. مؤشر بصري نابض على الزر العائم
 
----
+### خطة التنفيذ
 
-### الوضع المطلوب (مثل Messenger)
+#### 1. Hook جديد: `useNewMessageNotifier`
+ملف جديد: `src/hooks/useNewMessageNotifier.ts`
+- اشتراك Realtime على `comm_messages` بـ filter للمستخدم الحالي (عبر threads التي هو participant فيها)
+- عند رسالة جديدة من sender غير المستخدم نفسه:
+  - تشغيل صوت تنبيه (Web Audio API — beep قصير، بدون ملف خارجي)
+  - تخزين `lastNewThreadId` و `hasNew` flag
+- API يرجع: `{ hasNew, lastNewThreadId, clearNew() }`
 
-```text
-┌─────────────────────────────────────────────────────────┐
-│                    Header (top-16)                      │
-├────────────────────────────────┬──────────┬─────────────┤
-│                                │          │             │
-│                                │          │  Sidebar    │
-│        Main Content            │  Panel   │  (Avatar)   │
-│                                │  400px   │   w-56      │
-│                                │          │             │
-│                                │  ملتصق   │   يبقى      │
-│                                │  بحافة   │   ظاهرًا    │
-│                                │  السايد  │             │
-│                                │  بار     │             │
-└────────────────────────────────┴──────────┴─────────────┘
-                                  ↑
-                       end-56 على RTL = اللوحة تبدأ
-                       من حيث ينتهي السايدبار تمامًا
-                       بدون فجوة
-```
+#### 2. تعديل الزر العائم (FloatingSupportButton)
+أحتاج أولاً قراءة ملف الزر العائم لمعرفة موقعه واسمه.
+- إضافة badge أحمر نابض عند `hasNew`
+- تخزين `lastNewThreadId` في state أو ref
+- عند الضغط → فتح اللوحة مع `initialView="messages"` و `initialThreadId={lastNewThreadId}` ثم `clearNew()`
 
-في فيسبوك Messenger: نافذة الشات ملتصقة بالحافة الفعلية للمنطقة المتاحة (بعد عناصر الـ chrome الثابتة مباشرة)، بدون أي مسافة.
+#### 3. تعديل `FloatingSupportPanel`
+- إضافة prop جديدة `initialThreadId?: string`
+- تمريرها إلى `MessagesTab`
 
----
+#### 4. تعديل `MessagesTab`
+- إضافة prop `initialThreadId?: string`
+- عند التحميل، إذا وُجد → `setSelected` للـ thread المطابق
 
-### الحل الدقيق
+#### 5. الصوت
+- استخدام Web Audio API (oscillator) لإنتاج beep قصير لطيف
+- لا حاجة لملف صوتي خارجي
+- احترام تفضيل reduced motion / mute (اختياري — beep خفيف لمرة واحدة)
 
-السايدبار في RTL على اليسار من منظور المستخدم لكنه `end` في CSS logical properties. المطلوب أن تبدأ اللوحة **مباشرة** عند حافة السايدبار بدون أي فاصل إضافي.
+### الملفات المتأثرة
+- جديد: `src/hooks/useNewMessageNotifier.ts`
+- تعديل: زر العائم (سأحدد الملف بقراءة المجلد)
+- تعديل: `src/components/portal/support/FloatingSupportPanel.tsx` (prop جديدة)
+- تعديل: `src/components/portal/support/panel/MessagesTab.tsx` (prop + auto-open)
 
-**القيمة الحالية الخاطئة:** `md:end-56 sm:end-0`
-- على sm: `end-0` (ملتصق بالحافة) ✓
-- على md+: `end-56` يضيف 14rem إضافية ✗ (هذا ما يخلق الفجوة)
-
-**التصحيح:** إزالة `md:end-56` نهائيًا والاعتماد على `sm:end-0` فقط لكل المقاسات. السايدبار له `position` مستقل في الـ layout، فاللوحة ستلتصق بحافة المتصفح والسايدبار سيظهر فوقها أو بجانبها حسب z-index الفعلي.
-
-**لكن** — إذا كان السايدبار جزءًا من تدفق المستند (وليس fixed)، فاللوحة بـ `fixed end-0` ستغطيه. لذا الحل الصحيح:
-- إبقاء اللوحة `fixed end-0` (ملتصقة بحافة المتصفح)
-- التأكد أن السايدبار له z-index أعلى أو أنه fixed أيضًا
-- العرض 400px أصغر من المسافة بين السايدبار وحافة المحتوى، فلا تداخل بصريًا
-
----
-
-### التغيير في الملف
-
-**`src/components/portal/support/FloatingSupportPanel.tsx`** (السطور 102-106):
-
-```tsx
-// قبل
-bottomDockedView
-  ? "sm:inset-x-auto sm:top-16 sm:bottom-0 md:end-56 sm:end-0 sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-none"
-  : "sm:inset-x-auto sm:top-16 sm:bottom-0 md:end-56 sm:end-0 sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-none",
-
-// بعد
-bottomDockedView
-  ? "sm:inset-x-auto sm:top-16 sm:bottom-0 sm:end-0 sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-none"
-  : "sm:inset-x-auto sm:top-16 sm:bottom-0 sm:end-0 sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-none",
-```
-
-### النتيجة المتوقعة
-- اللوحة ملتصقة بحافة المتصفح (يمين في LTR، يسار في RTL).
-- السايدبار يظهر بشكل طبيعي في تدفق الصفحة.
-- لا فجوة، لا تطفو في الفراغ — مثل Messenger تمامًا.
-- الهيدر (top-16) يبقى الحد العلوي.
+### ملاحظات
+- المعمارية: لا تغيير في business logic، فقط UI + realtime listener
+- لا hardcoded text — سأستخدم translation keys للـ aria-label
+- Realtime يعتمد على Supabase channels (موجود بالمشروع)
