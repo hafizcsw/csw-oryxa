@@ -19,9 +19,10 @@ const SPRING = { type: "spring" as const, stiffness: 320, damping: 30, mass: 0.8
 
 interface FloatingSupportPanelProps {
   onClose: () => void;
+  initialView?: PanelView;
 }
 
-export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
+export function FloatingSupportPanel({ onClose, initialView = "default" }: FloatingSupportPanelProps) {
   const { t, language } = useLanguage();
   const { status, refetch: refetchIdentity } = useIdentityStatus();
   const { fields: extracted } = useExtractedIdentity();
@@ -31,7 +32,7 @@ export function FloatingSupportPanel({ onClose }: FloatingSupportPanelProps) {
 
   const [identityOpen, setIdentityOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [activeView, setActiveView] = useState<PanelView>("default");
+  const [activeView, setActiveView] = useState<PanelView>(initialView);
   const [authed, setAuthed] = useState(false);
   const [fallbackName, setFallbackName] = useState<string | null>(null);
 
