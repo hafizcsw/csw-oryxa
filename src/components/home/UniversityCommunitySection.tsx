@@ -120,7 +120,7 @@ export function UniversityCommunitySection() {
             <Sparkles className="w-3 h-3" />
             <span className="font-mono tabular-nums">001</span>
             <span>—</span>
-            <span>{t("home.community.firstOfItsKind")}</span>
+            <span>{language === "ar" ? "الأول من نوعه" : "First of its kind"}</span>
           </div>
         </motion.div>
 
