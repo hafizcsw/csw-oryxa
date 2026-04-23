@@ -7,6 +7,7 @@
  * No data unification, no fake thread shells — opens the real backend thread.
  */
 import { motion } from "framer-motion";
+import { createPortal } from "react-dom";
 import { X, Minus } from "lucide-react";
 import { CommThreadView } from "@/components/comm/CommThreadView";
 import { SupportThread } from "@/features/support/SupportThread";
@@ -20,17 +21,23 @@ interface MiniChatWindowProps {
 }
 
 export function MiniChatWindow({ item, onClose, onMinimize }: MiniChatWindowProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isRtl = language === "ar";
   const initial = (item.title || "?").charAt(0).toUpperCase();
   const title = item.title || t("portal.support.panel.title");
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <motion.div
       initial={{ opacity: 0, y: 24, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 24, scale: 0.96 }}
       transition={{ type: "spring", stiffness: 320, damping: 28 }}
-      className="fixed bottom-6 z-[59] w-[340px] h-[480px] max-w-[calc(100vw-2rem)] flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden ltr:right-[440px] rtl:left-[440px] ltr:sm:right-[440px] rtl:sm:left-[440px] max-sm:inset-x-2 max-sm:bottom-2 max-sm:w-auto max-sm:h-[60vh]"
+      style={{
+        ...(isRtl ? { left: "440px" } : { right: "440px" }),
+      }}
+      className="fixed bottom-6 z-[59] w-[340px] h-[480px] max-w-[calc(100vw-2rem)] flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden max-sm:inset-x-2 max-sm:bottom-2 max-sm:w-auto max-sm:h-[60vh]"
       role="dialog"
       aria-label={title}
     >
@@ -66,7 +73,6 @@ export function MiniChatWindow({ item, onClose, onMinimize }: MiniChatWindowProp
         </button>
       </div>
 
-      {/* Body — routes to the real native surface */}
       <div className="flex-1 min-h-0 overflow-hidden bg-background">
         {item.raw.kind === "support" ? (
           <SupportThread caseId={item.nativeId} embedded />
@@ -79,6 +85,7 @@ export function MiniChatWindow({ item, onClose, onMinimize }: MiniChatWindowProp
           />
         )}
       </div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   );
 }
