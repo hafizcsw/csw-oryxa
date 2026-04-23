@@ -167,6 +167,7 @@ export function FloatingSupportPanel({ onClose, initialView = "default", initial
               identityApproved={identityApproved}
               onOpenIdentity={() => setIdentityOpen(true)}
               onBack={() => setActiveView("default")}
+              initialThreadId={initialThreadId}
             />
           ) : activeView === "getSupport" ? (
             <GetSupportView
