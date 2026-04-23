@@ -419,6 +419,8 @@ const Index = () => {
           {/* Hero Section with Integrated Chat */}
           <HeroSection />
 
+          {/* All below-the-fold sections are lazy-loaded behind a single Suspense boundary */}
+          <Suspense fallback={<div className="min-h-[200px]" />}>
           {/* University Community Section */}
           <UniversityCommunitySection />
 
