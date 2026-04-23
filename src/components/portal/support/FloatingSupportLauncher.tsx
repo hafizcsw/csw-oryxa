@@ -63,6 +63,10 @@ export function FloatingSupportLauncher() {
         onDragEnd={() => setTimeout(() => setIsDragging(false), 100)}
         onClick={() => {
           if (isDragging) return;
+          if (hasNew && lastNativeId) {
+            setPendingThreadId(lastNativeId);
+            clearNew();
+          }
           setOpen((v) => !v);
         }}
         initial={reduced ? { opacity: 1 } : { scale: 0, opacity: 0 }}
