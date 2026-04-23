@@ -31,6 +31,7 @@ interface TickerSettings {
 
 export function HeroSection() {
   const { language, t } = useLanguage();
+  const { resolvedTheme } = useTheme();
   const { showSuggestedPrograms, universities } = useMalakChat();
   const isArabic = language === 'ar';
   const [isTickerVisible, setIsTickerVisible] = useState(true);
@@ -178,7 +179,7 @@ export function HeroSection() {
 
         {/* Antigravity-style ring particle field (GPGPU sim + dash render) — lazy-loaded */}
         <Suspense fallback={null}>
-          <AntigravityParticleField />
+          <AntigravityParticleField theme={resolvedTheme === 'dark' ? 'dark' : 'light'} />
         </Suspense>
 
         <div className="relative z-10 w-full h-full max-w-6xl mx-auto px-4 sm:px-8 py-8 flex items-center justify-center">
