@@ -666,30 +666,36 @@ export const WorldMapSection = memo(function WorldMapSection() {
             </div>
           )}
 
-          <WorldMapLeaflet
-              ref={mapLeafletRef}
-              countryStats={countryStats}
-              onCountrySelect={handleMapCountrySelect}
-              onCitySelect={handleCityClick}
-              onRegionSelect={handleMapRegionSelect}
-              onBackToCountry={handleBackToCountry}
-              onBackToWorld={handleBackToWorld}
-              onViewportChange={handleViewportChange}
-              selectedCountryCode={selectedCountryCode}
-              selectedRegionId={selectedRegionForCity?.regionId || null}
-              drillLevel={drillLevel === "city" ? "region" : drillLevel}
-              isRtl={isRtl}
-              subdivisionGeodata={subdivisionGeodata}
-              regionSummaries={regionSummaries}
-              visibleCountryCodes={filteredCodes}
-              citySummaries={geoEnrichedCities.length > 0 ? geoEnrichedCities : undefined}
-              cityUniversities={countryUniversities || undefined}
-              regionCities={selectedCity ? [selectedCity] : selectedRegionForCity?.cities}
-               osmOverlay={osmOverlay}
-               osmOverlayLoading={osmOverlayLoading}
-               countryMeta={countryMeta}
-               onCountryHover={handleCountryHover}
-            />
+          <Suspense fallback={
+            <div className="absolute inset-0 flex items-center justify-center bg-card/50">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          }>
+            <WorldMapLeaflet
+                ref={mapLeafletRef}
+                countryStats={countryStats}
+                onCountrySelect={handleMapCountrySelect}
+                onCitySelect={handleCityClick}
+                onRegionSelect={handleMapRegionSelect}
+                onBackToCountry={handleBackToCountry}
+                onBackToWorld={handleBackToWorld}
+                onViewportChange={handleViewportChange}
+                selectedCountryCode={selectedCountryCode}
+                selectedRegionId={selectedRegionForCity?.regionId || null}
+                drillLevel={drillLevel === "city" ? "region" : drillLevel}
+                isRtl={isRtl}
+                subdivisionGeodata={subdivisionGeodata}
+                regionSummaries={regionSummaries}
+                visibleCountryCodes={filteredCodes}
+                citySummaries={geoEnrichedCities.length > 0 ? geoEnrichedCities : undefined}
+                cityUniversities={countryUniversities || undefined}
+                regionCities={selectedCity ? [selectedCity] : selectedRegionForCity?.cities}
+                 osmOverlay={osmOverlay}
+                 osmOverlayLoading={osmOverlayLoading}
+                 countryMeta={countryMeta}
+                 onCountryHover={handleCountryHover}
+              />
+          </Suspense>
 
           {/* Loading indicator for geodata */}
           {loadingGeodata && (
