@@ -170,6 +170,7 @@ const BulkPublish = lazy(() => import("./pages/admin/BulkPublish"));
 const OrxControlPanel = lazy(() => import("./pages/admin/OrxControlPanel"));
 const LanguageEnrollments = lazy(() => import("./pages/admin/LanguageEnrollments"));
 const DecisionDashboard = lazy(() => import("./pages/admin/DecisionDashboard"));
+const TargetCountryDebug = lazy(() => import("./pages/admin/TargetCountryDebug"));
 const UniversitiesWithoutWebsitePdf = lazy(() => import("./pages/tools/UniversitiesWithoutWebsitePdf"));
 const ExportNoCityPage = lazy(() => import("./pages/tools/ExportNoCityPage"));
 
@@ -843,6 +844,7 @@ function AppContent() {
           {/* Admin Routes (Lazy) */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<DecisionDashboard />} />
+            <Route path="target-country" element={<TargetCountryDebug />} />
             <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="analytics-reports" element={<AnalyticsReports />} />
             <Route path="telemetry" element={<Telemetry />} />
