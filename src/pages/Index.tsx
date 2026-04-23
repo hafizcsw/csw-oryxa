@@ -12,6 +12,14 @@ import UniversitiesHero from "@/sections/UniversitiesHero";
 import { HeroSection } from "@/components/home/HeroSection";
 
 import { LazyMount } from "@/components/perf/LazyMount";
+import {
+  AGSection,
+  AGStatement,
+  AGTriptych,
+  AGCard,
+  AGAnchorBand,
+  AGDisplayAnchor,
+} from "@/components/antigravity";
 // Below-the-fold: lazy-load to keep initial bundle small.
 const WorldMapSection = lazy(() => import("@/components/home/WorldMapSection").then(m => ({ default: m.WorldMapSection })));
 const CSWCoinSection = lazy(() => import("@/components/home/CSWCoinSection").then(m => ({ default: m.CSWCoinSection })));
