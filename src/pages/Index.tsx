@@ -416,15 +416,11 @@ const Index = () => {
   return (
     <ChatProvider>
       <Layout>
-          {/* Hero + first section sticky reveal stage (Antigravity-style, no scroll-jack) */}
-          <HeroRevealStage
-            hero={<HeroSection />}
-            next={
-              <Suspense fallback={<div className="min-h-[400px]" />}>
-                <LazyMount minHeight={400}><UniversityCommunitySection /></LazyMount>
-              </Suspense>
-            }
-          />
+          {/* Hero + first section — normal flow, no sticky reveal */}
+          <HeroSection />
+          <Suspense fallback={<div className="min-h-[400px]" />}>
+            <LazyMount minHeight={400}><UniversityCommunitySection /></LazyMount>
+          </Suspense>
 
           {/* Remaining below-the-fold sections are lazy-loaded behind a single Suspense boundary */}
           <Suspense fallback={<div className="min-h-[200px]" />}>
