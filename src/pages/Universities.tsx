@@ -24,6 +24,7 @@ import { Loader2 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { SEARCH_TABS, type TabKey, DEFAULT_TAB } from "@/config/searchTabs";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { LazyMount } from "@/components/perf/LazyMount";
 import "@/styles/universities-hero.css";
 export default function Universities() {
   const [searchParams] = useSearchParams();
@@ -441,18 +442,23 @@ export default function Universities() {
                   }
                 }}
               >
-                {currentTab === "universities" && universities.map((university) => (
-                  <UniversityCard
-                    key={university.id}
-                    university={university}
-                    onViewDetails={handleViewDetails}
-                  />
-                ))}
-                {currentTab === "programs" && universities.map((p: any) => {
+                {currentTab === "universities" && universities.map((university, idx) => {
+                  const node = (
+                    <UniversityCard
+                      university={university}
+                      onViewDetails={handleViewDetails}
+                    />
+                  );
+                  return idx < 6 ? (
+                    <div key={university.id}>{node}</div>
+                  ) : (
+                    <LazyMount key={university.id} minHeight={360} rootMargin="600px 0px">{node}</LazyMount>
+                  );
+                })}
+                {currentTab === "programs" && universities.map((p: any, idx: number) => {
                   const programId = p.program_id || p.id;
-                  return (
+                  const node = (
                     <ProgramCard
-                      key={programId}
                       p={{
                         program_id: programId,
                         program_name: p.program_name || p.title,
@@ -497,44 +503,61 @@ export default function Universities() {
                       }}
                     />
                   );
+                  return idx < 6 ? (
+                    <div key={programId}>{node}</div>
+                  ) : (
+                    <LazyMount key={programId} minHeight={360} rootMargin="600px 0px">{node}</LazyMount>
+                  );
                 })}
-                {currentTab === "scholarships" && universities.map((s: any) => (
-                  <ScholarshipCard
-                    key={s.id}
-                    s={{
-                      id: s.id,
-                      title: s.title,
-                      amount: s.amount,
-                      currency_code: s.currency_code,
-                      deadline_date: s.deadline,
-                      url: s.url,
-                      provider_name: s.provider_name,
-                      university_name: s.university_name,
-                      country_name: s.country_name,
-                      country_slug: s.country_slug,
-                      degree_name: s.degree_name,
-                      description: s.description,
-                    }}
-                  />
-                ))}
-                {currentTab === "events" && universities.map((e: any) => (
-                  <EventCard
-                    key={e.id}
-                    e={{
-                      id: e.id,
-                      title: e.title,
-                      event_type: e.event_type,
-                      start_at: e.start_at,
-                      end_at: e.end_at,
-                      organizer: e.organizer,
-                      url: e.url,
-                      city: e.city,
-                      is_online: e.is_online,
-                      venue_name: e.venue_name,
-                      country_name: e.country_name,
-                    }}
-                  />
-                ))}
+                {currentTab === "scholarships" && universities.map((s: any, idx: number) => {
+                  const node = (
+                    <ScholarshipCard
+                      s={{
+                        id: s.id,
+                        title: s.title,
+                        amount: s.amount,
+                        currency_code: s.currency_code,
+                        deadline_date: s.deadline,
+                        url: s.url,
+                        provider_name: s.provider_name,
+                        university_name: s.university_name,
+                        country_name: s.country_name,
+                        country_slug: s.country_slug,
+                        degree_name: s.degree_name,
+                        description: s.description,
+                      }}
+                    />
+                  );
+                  return idx < 6 ? (
+                    <div key={s.id}>{node}</div>
+                  ) : (
+                    <LazyMount key={s.id} minHeight={300} rootMargin="600px 0px">{node}</LazyMount>
+                  );
+                })}
+                {currentTab === "events" && universities.map((e: any, idx: number) => {
+                  const node = (
+                    <EventCard
+                      e={{
+                        id: e.id,
+                        title: e.title,
+                        event_type: e.event_type,
+                        start_at: e.start_at,
+                        end_at: e.end_at,
+                        organizer: e.organizer,
+                        url: e.url,
+                        city: e.city,
+                        is_online: e.is_online,
+                        venue_name: e.venue_name,
+                        country_name: e.country_name,
+                      }}
+                    />
+                  );
+                  return idx < 6 ? (
+                    <div key={e.id}>{node}</div>
+                  ) : (
+                    <LazyMount key={e.id} minHeight={260} rootMargin="600px 0px">{node}</LazyMount>
+                  );
+                })}
               </div>
 
               {/* Load More Button */}
