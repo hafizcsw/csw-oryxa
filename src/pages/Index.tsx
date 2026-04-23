@@ -507,8 +507,6 @@ const Index = () => {
                 }}
               />
 
-              {/* 7. Footer-anchor display word */}
-              <AGDisplayAnchor word={t("home.ag.display")} />
             </Suspense>
           </div>
         </Layout>

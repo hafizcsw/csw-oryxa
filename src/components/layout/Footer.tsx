@@ -72,7 +72,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-muted/30 border-t-2 border-border py-16 mt-auto">
+    <footer className="bg-muted/30 border-t-2 border-border pt-16 pb-0 mt-auto overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
         {/* Footer Grid - hidden only on staff routes for teachers */}
         {!hideStudentNav && (
@@ -233,6 +233,15 @@ export function Footer() {
             © {new Date().getFullYear()} Connect Study World. {t("footer.copyright")}.
           </p>
         </div>
+      </div>
+
+      {/* Antigravity-style giant brand word — flush to footer bottom */}
+      <div
+        aria-hidden="true"
+        className="select-none text-center font-display font-semibold tracking-[-0.04em] text-foreground/90 leading-[0.78] mt-12 -mb-[0.18em] px-2 whitespace-nowrap"
+        style={{ fontSize: "clamp(120px, 28vw, 420px)" }}
+      >
+        ORYXA
       </div>
     </footer>
   );
