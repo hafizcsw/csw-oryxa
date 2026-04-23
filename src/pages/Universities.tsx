@@ -455,11 +455,10 @@ export default function Universities() {
                     <LazyMount key={university.id} minHeight={360} rootMargin="600px 0px">{node}</LazyMount>
                   );
                 })}
-                {currentTab === "programs" && universities.map((p: any) => {
+                {currentTab === "programs" && universities.map((p: any, idx: number) => {
                   const programId = p.program_id || p.id;
-                  return (
+                  const node = (
                     <ProgramCard
-                      key={programId}
                       p={{
                         program_id: programId,
                         program_name: p.program_name || p.title,
@@ -503,6 +502,11 @@ export default function Universities() {
                         discipline_name_en: p.discipline_name_en,
                       }}
                     />
+                  );
+                  return idx < 6 ? (
+                    <div key={programId}>{node}</div>
+                  ) : (
+                    <LazyMount key={programId} minHeight={360} rootMargin="600px 0px">{node}</LazyMount>
                   );
                 })}
                 {currentTab === "scholarships" && universities.map((s: any) => (
