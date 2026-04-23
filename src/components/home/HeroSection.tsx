@@ -1,7 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { X } from 'lucide-react';
 import { MalakChatInterface } from '@/components/chat/MalakChatInterface';
-import { AntigravityParticleField } from '@/components/home/hero-shader/antigravity/AntigravityParticleField';
+// Lazy: pulls three.js (~700KB). Keep out of the homepage initial bundle.
+const AntigravityParticleField = lazy(() =>
+  import('@/components/home/hero-shader/antigravity/AntigravityParticleField').then(m => ({
+    default: m.AntigravityParticleField,
+  }))
+);
 import oryxaMark from '@/assets/orxya-mark.png';
 import { DeepSearchLayout } from '@/components/chat/DeepSearchLayout';
 import { SearchResultsPanel } from '@/components/chat/SearchResultsPanel';
