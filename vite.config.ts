@@ -169,7 +169,8 @@ export default defineConfig(({ mode }) => {
             // Heavy, isolated libs — keep in their own chunks.
             if (id.includes('three') || id.includes('@react-three')) return 'three';
             if (id.includes('pdfjs-dist') || id.includes('pdf-lib')) return 'pdf';
-            if (id.includes('recharts') || id.includes('d3-')) return 'charts';
+            // Avoid forcing d3/recharts into a shared chunk: this caused a production boot crash on the homepage.
+            // Let Rollup split these modules naturally per import graph.
             if (id.includes('leaflet') || id.includes('maplibre')) return 'maps';
             if (id.includes('framer-motion')) return 'motion';
             if (id.includes('@tanstack')) return 'query';
