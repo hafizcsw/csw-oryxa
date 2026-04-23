@@ -1010,31 +1010,28 @@ All colors MUST be HSL.
 }
 
 /* =========================================================
-   Hero reveal stage — Antigravity-style curtain handoff
+   Hero reveal stage — Antigravity-style window expansion
    --------------------------------------------------------
-   Mechanic (matches antigravity.google):
-   • Hero stays VISUALLY ANCHORED in the sticky viewport.
-   • Next section slides UP from below as a curtain that
-     "lifts" hero off-screen — hero never translates up
-     itself; next rises from y:100vh → 0 over the stage.
-   • Top edge of next has rounded corners + soft shadow
-     so it reads as a separate plane handing off the hero.
-   • Stage clips everything; nothing floats outside.
-
-   --rp (0..1) drives:
-     - subtle hero scale-down + slight fade (depth cue)
-     - veil opacity (masks hero behind rising curtain)
-     - next translateY 100vh → 0 (the actual handoff)
+   Mechanic (matches antigravity.google reference):
+   • Hero stays anchored, particles/content visible.
+   • Next section appears as a SMALL FRAMED WINDOW in the
+     center of the viewport (≈60% w, rounded, shadowed).
+   • As --rp goes 0 → 1, that window EXPANDS to fill the
+     full viewport (scale + radius eases to 0).
+   • This reads as "zooming into" the next surface, not a
+     curtain rising or content floating up.
    ========================================================= */
 .reveal-stage {
   --rp: 0;
-  /* hero depth cue: barely-there scale + fade */
-  --hero-scale: calc(1 - (var(--rp) * 0.04));
-  --hero-opacity: calc(1 - (var(--rp) * 0.35));
-  /* veil behind curtain edge: 0 -> 0.45 */
-  --overlay-opacity: calc(var(--rp) * 0.45);
-  /* curtain rise: starts off-screen, lands at 0 */
-  --next-y: calc((1 - var(--rp)) * 100vh);
+  /* hero gets a tiny depth cue — barely perceptible */
+  --hero-scale: calc(1 - (var(--rp) * 0.03));
+  --hero-opacity: calc(1 - (var(--rp) * 0.25));
+  /* veil fills the gap around the framed window */
+  --overlay-opacity: calc(var(--rp) * 0.35);
+  /* window frame: starts at 0.62 scale, ends at 1.0 */
+  --next-scale: calc(0.62 + (var(--rp) * 0.38));
+  /* corner radius eases from 24px → 0 */
+  --next-radius: calc(24px * (1 - var(--rp)));
 }
 
 .reveal-stage .reveal-sticky {
@@ -1045,7 +1042,7 @@ All colors MUST be HSL.
 .reveal-stage .reveal-hero {
   transform: scale(var(--hero-scale));
   opacity: var(--hero-opacity);
-  transform-origin: center 40%;
+  transform-origin: center center;
 }
 
 .reveal-stage .reveal-overlay {
@@ -1057,21 +1054,23 @@ All colors MUST be HSL.
 .reveal-stage .reveal-hero    { position: relative; z-index: 1; }
 .reveal-stage .reveal-overlay { z-index: 2; }
 
-/* The curtain: next section rises from below over the sticky.
-   It's absolutely positioned inside the stage so it can
-   overlay the sticky viewport while the stage clips it. */
+/* The framed window: next section sits centered over the
+   sticky viewport, scaled down, then grows to full size.
+   Absolute + inset:0 + transform-origin center → expands
+   symmetrically from the middle of the screen. */
 .reveal-stage .reveal-next {
   position: absolute;
-  inset: 0 0 auto 0;
-  top: 100vh;                /* sits just below sticky viewport */
-  z-index: 3;                /* above hero + veil */
-  transform: translate3d(0, var(--next-y), 0);
-  will-change: transform;
-  background-color: hsl(var(--background));
-  border-top-left-radius: 28px;
-  border-top-right-radius: 28px;
-  box-shadow: 0 -24px 48px -12px hsl(0 0% 0% / 0.45);
+  inset: 0;
+  z-index: 3;
+  transform: scale(var(--next-scale));
+  transform-origin: center center;
+  border-radius: var(--next-radius);
   overflow: hidden;
+  background-color: hsl(var(--background));
+  box-shadow:
+    0 30px 80px -20px hsl(0 0% 0% / 0.6),
+    0 0 0 1px hsl(0 0% 100% / 0.06);
+  will-change: transform, border-radius;
 }
 
 /* Hero reveal background video — sits behind hero, fades up with --rp */
@@ -1079,7 +1078,7 @@ All colors MUST be HSL.
   opacity: calc(0.4 + var(--rp) * 0.45);
 }
 
-/* Mobile / reduced motion: no curtain, just stacked sections. */
+/* Mobile / reduced motion: no zoom frame, just stacked sections. */
 @media (max-width: 768px), (prefers-reduced-motion: reduce) {
   .reveal-stage {
     height: auto !important;
@@ -1098,14 +1097,13 @@ All colors MUST be HSL.
   .reveal-stage .reveal-video   { display: none; }
   .reveal-stage .reveal-next {
     position: relative;
-    top: auto;
     inset: auto;
     transform: none;
     border-radius: 0;
     box-shadow: none;
     overflow: visible;
     opacity: 0;
-    transition: opacity 500ms ease-out, transform 500ms ease-out;
+    transition: opacity 500ms ease-out;
   }
   .reveal-stage .reveal-next[data-revealed="true"] {
     opacity: 1;
