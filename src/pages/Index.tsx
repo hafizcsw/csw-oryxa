@@ -10,6 +10,7 @@ import { CarouselIndicators } from "@/components/ui/carousel-indicators";
 import UniversitiesHero from "@/sections/UniversitiesHero";
 // HeroSection stays static (above-the-fold).
 import { HeroSection } from "@/components/home/HeroSection";
+import { LazyMount } from "@/components/perf/LazyMount";
 // Below-the-fold: lazy-load to keep initial bundle small.
 const WorldMapSection = lazy(() => import("@/components/home/WorldMapSection").then(m => ({ default: m.WorldMapSection })));
 const CSWCoinSection = lazy(() => import("@/components/home/CSWCoinSection").then(m => ({ default: m.CSWCoinSection })));
