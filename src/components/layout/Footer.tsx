@@ -72,7 +72,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-muted/30 border-t-2 border-border py-16 mt-auto">
+    <footer className="bg-muted/30 border-t-2 border-border pt-16 pb-0 mt-auto overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
         {/* Footer Grid - hidden only on staff routes for teachers */}
         {!hideStudentNav && (
