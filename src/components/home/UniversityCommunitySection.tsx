@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
-import { Users, Building2, ArrowRight, Heart, MessageCircle } from "lucide-react";
+import { Users, Building2, ArrowRight, Heart, MessageCircle, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { isRtlLanguage } from "@/i18n/languages";
 
 interface PreviewPost {
@@ -23,10 +22,10 @@ interface PreviewPost {
 }
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 24 },
   visible: (i: number) => ({
     opacity: 1, y: 0,
-    transition: { duration: 0.4, delay: i * 0.08, ease: "easeOut" as const },
+    transition: { duration: 0.6, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
@@ -92,7 +91,6 @@ export function UniversityCommunitySection() {
     return t("home.community.dayAgo", { n: days });
   };
 
-  // Localized university name resolver — Arabic prefers name_ar, others fall back to name.
   const getUniversityDisplayName = (post: PreviewPost): string => {
     if (language === "ar" && post.university_name_ar) return post.university_name_ar;
     return post.university_name || t("home.community.university");
@@ -101,140 +99,188 @@ export function UniversityCommunitySection() {
   const showEmptyState = !loading && posts.length === 0;
 
   return (
-    <section className="py-20 px-6 bg-muted/30">
-      <div className="max-w-6xl mx-auto">
+    <section className="relative py-28 md:py-36 px-6 bg-transparent overflow-hidden">
+      <div className="max-w-[1280px] mx-auto">
+        {/* Eyebrow + "First of its kind" marker */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center space-y-3 mb-12"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
+          custom={0}
+          variants={fadeUp}
+          className="flex items-center justify-between gap-4 mb-12 flex-wrap"
         >
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 px-3 py-1 rounded-full">
-            <Users className="w-3.5 h-3.5" />
-            {t("home.community.badge")}
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-            {t("home.community.title")}
-          </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            {t("home.community.subtitle")}
-          </p>
+          <div className="flex items-center gap-3">
+            <span className="h-px w-10 bg-[var(--ag-border)]" />
+            <span className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[var(--ag-muted)]">
+              {t("home.community.badge")}
+            </span>
+          </div>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--ag-border)] text-[11px] font-medium tracking-wide text-[var(--ag-muted)]">
+            <Sparkles className="w-3 h-3" />
+            <span className="font-mono tabular-nums">001</span>
+            <span>—</span>
+            <span>{t("home.community.firstOfItsKind")}</span>
+          </div>
         </motion.div>
+
+        {/* Editorial headline split */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-end mb-20">
+          <motion.h2
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            custom={1}
+            variants={fadeUp}
+            className="lg:col-span-8 text-[clamp(2.4rem,6vw,5.25rem)] font-semibold tracking-[-0.025em] leading-[0.98] text-[var(--ag-fg)]"
+          >
+            {t("home.community.title")}
+          </motion.h2>
+
+          <motion.p
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            custom={2}
+            variants={fadeUp}
+            className="lg:col-span-4 text-base md:text-lg text-[var(--ag-muted)] leading-[1.7]"
+          >
+            {t("home.community.subtitle")}
+          </motion.p>
+        </div>
 
         {showEmptyState ? (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial="hidden"
+            whileInView="visible"
             viewport={{ once: true }}
-            className="text-center py-14 rounded-2xl border border-border bg-card"
+            custom={0}
+            variants={fadeUp}
+            className="border-t border-b border-[var(--ag-border)] py-20 px-6 text-center"
           >
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8 text-primary" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">
+            <h3 className="text-2xl md:text-3xl font-semibold tracking-[-0.01em] text-[var(--ag-fg)] mb-4">
               {t("home.community.joinTitle")}
             </h3>
-            <p className="text-muted-foreground max-w-md mx-auto mb-6">
+            <p className="text-[var(--ag-muted)] max-w-lg mx-auto mb-8 leading-[1.7]">
               {t("home.community.joinDesc")}
             </p>
-            <Button onClick={() => navigate("/community")} className="gap-2">
+            <button
+              onClick={() => navigate("/community")}
+              className={cn(
+                "group inline-flex items-center gap-3 px-7 py-3.5 rounded-full",
+                "bg-[var(--ag-fg)] text-[var(--ag-bg)] text-sm font-medium tracking-wide",
+                "hover:opacity-90 transition-opacity"
+              )}
+            >
               {t("home.community.getStarted")}
-              <ArrowRight className={cn("w-4 h-4", isRTL && "rotate-180")} />
-            </Button>
+              <ArrowRight className={cn("w-4 h-4 transition-transform group-hover:translate-x-1", isRTL && "rotate-180 group-hover:-translate-x-1")} />
+            </button>
           </motion.div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+            {/* Posts grid — AG editorial cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-t border-[var(--ag-border)]">
               {posts.map((post, i) => (
-                <motion.div
+                <motion.button
                   key={post.id}
+                  type="button"
                   initial="hidden"
                   whileInView="visible"
-                  viewport={{ once: true }}
+                  viewport={{ once: true, margin: "-60px" }}
                   custom={i}
                   variants={fadeUp}
                   onClick={() => navigate("/community")}
                   className={cn(
-                    "group cursor-pointer rounded-xl border border-border/50 bg-card p-5",
-                    "hover:border-primary/30 hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+                    "group text-left p-7 transition-colors duration-300",
+                    "border-b border-[var(--ag-border)]",
+                    "md:[&:nth-child(odd)]:border-r lg:[&:nth-child(odd)]:border-r-0",
+                    "lg:[&:not(:nth-child(3n))]:border-r border-[var(--ag-border)]",
+                    "hover:bg-[color-mix(in_srgb,var(--ag-fg)_4%,transparent)]"
                   )}
                 >
-                  <div className="flex items-center gap-2.5 mb-3">
-                    {post.author_type === "university" ? (
-                      <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-border flex-shrink-0">
-                        {post.university_logo ? (
-                          <img src={post.university_logo} alt="" className="w-full h-full object-contain p-1" />
-                        ) : (
-                          <Building2 className="w-4 h-4 text-muted-foreground" />
-                        )}
-                      </div>
-                    ) : (
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0">
-                        <Users className="w-4 h-4 text-primary" />
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-sm text-foreground truncate">
+                  {/* Meta row */}
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {post.author_type === "university" ? (
+                        <div className="w-8 h-8 rounded-full bg-[color-mix(in_srgb,var(--ag-fg)_8%,transparent)] flex items-center justify-center overflow-hidden border border-[var(--ag-border)] flex-shrink-0">
+                          {post.university_logo ? (
+                            <img src={post.university_logo} alt="" className="w-full h-full object-contain p-1" />
+                          ) : (
+                            <Building2 className="w-3.5 h-3.5 text-[var(--ag-muted)]" />
+                          )}
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full border border-[var(--ag-border)] flex items-center justify-center flex-shrink-0">
+                          <Users className="w-3.5 h-3.5 text-[var(--ag-muted)]" />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-[var(--ag-fg)] truncate">
                           {post.author_type === "university"
                             ? getUniversityDisplayName(post)
                             : post.author_name}
-                        </span>
-                        <span className={cn(
-                          "text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0",
-                          post.author_type === "university"
-                            ? "bg-blue-500/10 text-blue-600"
-                            : "bg-emerald-500/10 text-emerald-600"
-                        )}>
+                        </div>
+                        <div className="text-[11px] text-[var(--ag-muted)] uppercase tracking-wider">
                           {post.author_type === "university"
                             ? t("home.community.uniShort")
                             : t("home.community.studentShort")}
-                        </span>
+                          {" · "}
+                          {timeAgo(post.created_at)}
+                        </div>
                       </div>
-                      <span className="text-[11px] text-muted-foreground">{timeAgo(post.created_at)}</span>
                     </div>
+                    <span className="text-[10px] font-mono text-[var(--ag-muted)] tabular-nums flex-shrink-0">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
                   </div>
 
-                  <p className="text-sm text-foreground/85 line-clamp-3 leading-relaxed">
+                  {/* Content */}
+                  <p className="text-[15px] text-[var(--ag-fg)] line-clamp-4 leading-[1.65] mb-5">
                     {post.content}
                   </p>
 
                   {post.image_url && (
-                    <div className="mt-3 rounded-lg overflow-hidden border border-border h-32">
+                    <div className="mb-5 rounded-md overflow-hidden border border-[var(--ag-border)] aspect-[16/9]">
                       <img src={post.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                     </div>
                   )}
 
-                  <div className="flex items-center gap-4 mt-3 pt-2.5 border-t border-border/50 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
+                  {/* Engagement */}
+                  <div className="flex items-center gap-5 text-xs text-[var(--ag-muted)] font-mono tabular-nums">
+                    <span className="flex items-center gap-1.5">
                       <Heart className="w-3.5 h-3.5" />
                       {post.likes_count}
                     </span>
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-1.5">
                       <MessageCircle className="w-3.5 h-3.5" />
                       {post.comments_count}
                     </span>
                   </div>
-                </motion.div>
+                </motion.button>
               ))}
             </div>
 
             <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true }}
-              className="text-center"
+              custom={0}
+              variants={fadeUp}
+              className="mt-16 flex justify-center"
             >
-              <Button
+              <button
                 onClick={() => navigate("/community")}
-                size="lg"
-                variant="outline"
-                className="gap-2"
+                className={cn(
+                  "group inline-flex items-center gap-3 px-8 py-4 rounded-full",
+                  "border border-[var(--ag-border)] bg-transparent",
+                  "text-[var(--ag-fg)] text-sm font-medium tracking-wide",
+                  "hover:bg-[var(--ag-fg)] hover:text-[var(--ag-bg)]",
+                  "transition-colors duration-300"
+                )}
               >
                 {t("home.community.explore")}
-                <ArrowRight className={cn("w-4 h-4", isRTL && "rotate-180")} />
-              </Button>
+                <ArrowRight className={cn("w-4 h-4 transition-transform group-hover:translate-x-1", isRTL && "rotate-180 group-hover:-translate-x-1")} />
+              </button>
             </motion.div>
           </>
         )}
