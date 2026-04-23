@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation, Navigate, useNavigate, usePa
 import { ThemeProvider } from "@/components/theme-provider";
 import { StudentTourProvider } from "@/contexts/StudentTourContext";
 import { MalakChatProvider, useMalakChat } from "@/contexts/MalakChatContext";
-import { StudentSiteTour } from "@/components/onboarding/StudentSiteTour";
+
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { welcomeAlreadyRouted } from "@/lib/welcomeTransition";
 import { CanonicalRedirect } from "@/components/system/CanonicalRedirect";
