@@ -562,9 +562,9 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   // ═══ Phase A: Student Evaluation Workspace (persisted) ═══
   const evalDocs = useMemo(
     () => analysesToEvalInputs(analysisHook.analyses, {
-      citizenshipCountry: canonicalFile?.identity?.citizenship_country_code ?? null,
+      citizenshipCountry: canonicalFile?.identity?.citizenship ?? null,
     }),
-    [analysisHook.analyses, canonicalFile?.identity?.citizenship_country_code],
+    [analysisHook.analyses, canonicalFile?.identity?.citizenship],
   );
 
   const evaluation = useStudentEvaluation({
