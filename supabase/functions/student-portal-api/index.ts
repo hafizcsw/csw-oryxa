@@ -8952,7 +8952,7 @@ Deno.serve(async (req) => {
         const endpoint = ENDPOINT_MAP[action];
         const traceId = (req.headers.get('x-client-trace-id')
           || (typeof body?.client_trace_id === 'string' ? body.client_trace_id : null)
-          || requestId);
+          || genRequestId());
 
         const { crmCustomerId: resolvedCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!resolvedCustomerId) {
