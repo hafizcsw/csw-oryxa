@@ -468,10 +468,6 @@ const Index = () => {
                 </AGTriptych>
               </AGSection>
 
-              {/* 5. Why choose us — services grid */}
-              <div className="border-t border-[var(--ag-border)]">
-                <WhyChooseUsSection />
-              </div>
 
               {/* 6. World map — wrapped only, internals untouched */}
               <AGSection
