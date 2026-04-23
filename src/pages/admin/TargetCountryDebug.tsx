@@ -6,21 +6,23 @@
 //   2) Live DB profile of the signed-in user (smoke test)
 // Renders a 10-country matrix with reasons, gaps, evidence.
 // ═══════════════════════════════════════════════════════════════
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { supabase } from '@/integrations/supabase/client';
 import {
   computeCountryMatrix,
   COUNTRY_PACKS,
   FIXTURE_APPLICANT,
-  type ApplicantTruth,
+  buildApplicantTruth,
   type CountryEligibility,
   type CountryMatrix,
   type CountryStatus,
 } from '@/features/target-country';
+import { useStudentProfile } from '@/hooks/useStudentProfile';
+import { useStudentDocuments } from '@/hooks/useStudentDocuments';
+import { useCanonicalStudentFile } from '@/hooks/useCanonicalStudentFile';
 
 const STATUS_VARIANT: Record<CountryStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   eligible: 'default',
@@ -152,62 +154,47 @@ function MatrixView({ matrix, label }: { matrix: CountryMatrix; label: string })
   );
 }
 
-/**
- * Build a minimal ApplicantTruth from `profiles` row only.
- * This is intentionally narrow — proves the engine works on
- * real DB data without coupling to Door 1 internal hooks.
- */
-function buildLiveTruthFromProfile(row: Record<string, any> | null, userId: string): ApplicantTruth | null {
-  if (!row) return null;
-  const citizenship = (row.citizenship || row.country || null) as string | null;
-  const englishMajority = !!citizenship && ['US', 'GB', 'CA', 'AU', 'NZ', 'IE'].includes(citizenship.toUpperCase());
-  return {
-    student_id: userId,
-    citizenship,
-    secondary_completed: !!(row.graduation_year || row.last_education_level),
-    secondary_kind: null,
-    secondary_grade_pct: null,
-    english_test_type: row.english_test_type ?? null,
-    english_total_score: row.english_total_score ?? null,
-    english_medium_secondary: false,
-    majority_english_country: englishMajority,
-    local_language_signals: [],
-  };
-}
-
 export default function TargetCountryDebug() {
-  const fixtureMatrix = computeCountryMatrix(FIXTURE_APPLICANT);
+  const fixtureMatrix = useMemo(() => computeCountryMatrix(FIXTURE_APPLICANT), []);
 
-  const [userId, setUserId] = useState<string | null>(null);
-  const [liveMatrix, setLiveMatrix] = useState<CountryMatrix | null>(null);
-  const [liveError, setLiveError] = useState<string | null>(null);
-  const [liveLoading, setLiveLoading] = useState(false);
+  // ═══ Live smoke — same pipeline as Door 1 baseline ═══
+  // CRM edge fn (StudentPortalProfile) → mapCrmToCanonical → buildApplicantTruth → engine
+  const { profile, crmProfile, loading: profileLoading, error: profileError } = useStudentProfile();
+  const { documents } = useStudentDocuments();
+  const { canonicalFile } = useCanonicalStudentFile({
+    crmProfile,
+    documents,
+    userId: profile?.user_id ?? null,
+  });
 
+  const liveTruth = useMemo(
+    () => (canonicalFile ? buildApplicantTruth(canonicalFile) : null),
+    [canonicalFile],
+  );
+  const liveMatrix = useMemo(
+    () => (liveTruth ? computeCountryMatrix(liveTruth) : null),
+    [liveTruth],
+  );
+
+  // Console artifact for runtime proof
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setUserId(data.session?.user?.id ?? null);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!userId) return;
-    setLiveLoading(true);
-    supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (error) {
-          setLiveError(error.message);
-          setLiveLoading(false);
-          return;
-        }
-        const truth = buildLiveTruthFromProfile(data as any, userId);
-        if (truth) setLiveMatrix(computeCountryMatrix(truth));
-        setLiveLoading(false);
+    if (liveMatrix && canonicalFile) {
+      // eslint-disable-next-line no-console
+      console.log('[Door2][live-smoke] truth+matrix', {
+        student_id: canonicalFile.student_id,
+        truth: liveMatrix.applicant_summary,
+        results: liveMatrix.results.map((r) => ({
+          country: r.country_code,
+          status: r.status,
+          eligible_paths: r.eligible_entry_paths,
+          blocked_paths: r.blocked_entry_paths,
+          matched_rule_ids: r.matched_rule_ids,
+          evidence_ids: r.evidence_ids,
+          confidence: r.confidence,
+        })),
       });
-  }, [userId]);
+    }
+  }, [liveMatrix, canonicalFile]);
 
   return (
     <div className="container py-6 space-y-4">
@@ -216,21 +203,33 @@ export default function TargetCountryDebug() {
         <p className="text-sm text-muted-foreground">
           After-secondary, country-level only · 10 packs · pure engine
         </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Live truth pipeline: <code>CRM edge fn → mapCrmToCanonical → buildApplicantTruth → engine</code>
+        </p>
       </div>
 
       <Tabs defaultValue="fixture">
         <TabsList>
           <TabsTrigger value="fixture">Fixture (proof)</TabsTrigger>
-          <TabsTrigger value="live">Live DB profile (smoke)</TabsTrigger>
+          <TabsTrigger value="live">Live canonical (smoke)</TabsTrigger>
         </TabsList>
         <TabsContent value="fixture" className="mt-4">
           <MatrixView matrix={fixtureMatrix} label="synthetic" />
         </TabsContent>
         <TabsContent value="live" className="mt-4">
-          {!userId && <p className="text-sm text-muted-foreground">Sign in to compute the live matrix.</p>}
-          {userId && liveLoading && <p className="text-sm text-muted-foreground">Loading profile…</p>}
-          {liveError && <p className="text-sm text-destructive">DB error: {liveError}</p>}
-          {liveMatrix && <MatrixView matrix={liveMatrix} label={`db user ${userId?.slice(0, 8)}…`} />}
+          {profileLoading && <p className="text-sm text-muted-foreground">Loading CRM profile…</p>}
+          {profileError && <p className="text-sm text-destructive">CRM error: {profileError}</p>}
+          {!profileLoading && !crmProfile && (
+            <p className="text-sm text-muted-foreground">
+              Sign in to compute the live matrix from canonical truth.
+            </p>
+          )}
+          {liveMatrix && canonicalFile && (
+            <MatrixView
+              matrix={liveMatrix}
+              label={`canonical · ${canonicalFile.student_id.slice(0, 8)}…`}
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>
