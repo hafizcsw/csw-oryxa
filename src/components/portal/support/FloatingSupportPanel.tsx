@@ -104,6 +104,7 @@ export function FloatingSupportPanel({ onClose, initialView = "default", initial
     <>
       {/* Outside-click catcher: dim on mobile, transparent on desktop */}
       <motion.div
+        ref={panelRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
