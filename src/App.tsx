@@ -1000,7 +1000,9 @@ const App = () => (
                 <Sonner />
                 <BrowserRouter>
                   <AppContent />
-                  <StudentSiteTour />
+                  <Suspense fallback={null}>
+                    <StudentSiteTour />
+                  </Suspense>
                 </BrowserRouter>
               </TooltipProvider>
             </QueryClientProvider>
