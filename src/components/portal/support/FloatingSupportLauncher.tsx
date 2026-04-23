@@ -48,8 +48,8 @@ export function FloatingSupportLauncher() {
         }
         drag="x"
         dragConstraints={{
-          left: -(typeof window !== "undefined" ? window.innerWidth - 96 : 0),
-          right: 0,
+          left: 0,
+          right: (typeof window !== "undefined" ? window.innerWidth - 96 : 0),
         }}
         dragElastic={0.1}
         whileDrag={reduced ? undefined : { scale: 1.08 }}
