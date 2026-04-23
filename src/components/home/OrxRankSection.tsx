@@ -15,7 +15,7 @@ export function OrxRankSection() {
   const isArabic = language === "ar";
 
   return (
-    <section className="py-20 px-6 bg-gradient-to-b from-muted/30 to-background relative overflow-hidden">
+    <section className="py-20 px-6 bg-transparent relative overflow-hidden">
       {/* Subtle decorative glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 

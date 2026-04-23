@@ -33,7 +33,7 @@ export const PartnersMarquee = () => {
   const { t } = useLanguage();
   
   return (
-    <section className="py-16 bg-muted/30 overflow-hidden">
+    <section className="py-16 bg-transparent overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 mb-10">
         <div className="text-center space-y-2">
           <p className="text-sm font-medium text-primary">
