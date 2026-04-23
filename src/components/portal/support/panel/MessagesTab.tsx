@@ -34,6 +34,7 @@ interface MessagesTabProps {
   identityApproved: boolean;
   onOpenIdentity: () => void;
   onBack?: () => void;
+  initialThreadId?: string | null;
 }
 
 type FilterKey = "all" | "unread" | InboxSource;
@@ -60,7 +61,7 @@ const SOURCE_META: Record<InboxSource, { Icon: typeof LifeBuoy; tone: string }> 
   other:       { Icon: MessageSquare, tone: "bg-muted text-foreground/70" },
 };
 
-export function MessagesTab({ identityApproved, onOpenIdentity, onBack }: MessagesTabProps) {
+export function MessagesTab({ identityApproved, onOpenIdentity, onBack, initialThreadId = null }: MessagesTabProps) {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const isRtl = language === "ar";
@@ -70,6 +71,17 @@ export function MessagesTab({ identityApproved, onOpenIdentity, onBack }: Messag
   const [pendingNewSupport, setPendingNewSupport] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
+  const autoOpenedRef = useRef(false);
+
+  // Auto-open the thread that triggered the launcher notification.
+  useEffect(() => {
+    if (!initialThreadId || autoOpenedRef.current) return;
+    const match = items.find((i) => i.nativeId === initialThreadId);
+    if (match) {
+      setSelected(match);
+      autoOpenedRef.current = true;
+    }
+  }, [initialThreadId, items]);
 
   const visibleItems = useMemo(() => {
     const q = search.trim().toLowerCase();
