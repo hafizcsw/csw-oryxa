@@ -1071,3 +1071,14 @@ All colors MUST be HSL.
     opacity: 1;
   }
 }
+
+/* Hero reveal background video — sits behind hero, fades up with --rp */
+.reveal-stage .reveal-video {
+  opacity: calc(0.35 + var(--rp) * 0.45);
+  z-index: 0;
+}
+.reveal-stage .reveal-hero { position: relative; z-index: 1; }
+.reveal-stage .reveal-overlay { z-index: 2; }
+@media (max-width: 768px) {
+  .reveal-stage .reveal-video { display: none; }
+}
