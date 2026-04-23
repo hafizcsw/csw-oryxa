@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
+import { useNewMessageNotifier } from "@/hooks/useNewMessageNotifier";
 import { FloatingSupportPanel } from "./FloatingSupportPanel";
 import { cn } from "@/lib/utils";
 
@@ -15,8 +16,13 @@ export function FloatingSupportLauncher() {
   const reduced = useReducedMotion();
   const fabRef = useRef<HTMLButtonElement>(null);
 
+  const { hasNew, lastNativeId, lastSource, clearNew } = useNewMessageNotifier(!open);
+  const [pendingThreadId, setPendingThreadId] = useState<string | null>(null);
+
   const openItems = tickets.filter((t) => t.ui_state !== "resolved").length;
-  const badgeText = openItems > 99 ? "99+" : String(openItems);
+  const totalBadge = openItems + (hasNew && lastSource !== "support" ? 1 : 0);
+  const badgeText = totalBadge > 99 ? "99+" : String(totalBadge);
+  const showBadge = totalBadge > 0 || hasNew;
 
   // ESC closes panel
   useEffect(() => {
