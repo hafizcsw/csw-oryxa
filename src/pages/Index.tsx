@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback, lazy, Suspense } from "react";
 import { AutoPlayVideoCard } from "@/components/AutoPlayVideoCard";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
@@ -10,16 +10,18 @@ import { MalakChatInterface } from "@/components/chat/MalakChatInterface";
 import { CarouselIndicators } from "@/components/ui/carousel-indicators";
 import UniversitiesHero from "@/sections/UniversitiesHero";
 import AiAdvisor from "@/components/AiAdvisor";
+// HeroSection stays static (above-the-fold).
 import { HeroSection } from "@/components/home/HeroSection";
-import { WorldMapSection } from "@/components/home/WorldMapSection";
-import { CSWCoinSection } from "@/components/home/CSWCoinSection";
-import { MoneyTransferSection } from "@/components/home/MoneyTransferSection";
-import { WhyChooseUsSection } from "@/components/home/WhyChooseUsSection";
-import { OrxRankSection } from "@/components/home/OrxRankSection";
-import { AboutOryxaSection } from "@/components/home/AboutOryxaSection";
-import { InstitutionsSection } from "@/components/home/InstitutionsSection";
-import { UniversityCommunitySection } from "@/components/home/UniversityCommunitySection";
-import { PartnersMarquee } from "@/components/home/PartnersMarquee";
+// Below-the-fold: lazy-load to keep initial bundle small.
+const WorldMapSection = lazy(() => import("@/components/home/WorldMapSection").then(m => ({ default: m.WorldMapSection })));
+const CSWCoinSection = lazy(() => import("@/components/home/CSWCoinSection").then(m => ({ default: m.CSWCoinSection })));
+const MoneyTransferSection = lazy(() => import("@/components/home/MoneyTransferSection").then(m => ({ default: m.MoneyTransferSection })));
+const WhyChooseUsSection = lazy(() => import("@/components/home/WhyChooseUsSection").then(m => ({ default: m.WhyChooseUsSection })));
+const OrxRankSection = lazy(() => import("@/components/home/OrxRankSection").then(m => ({ default: m.OrxRankSection })));
+const AboutOryxaSection = lazy(() => import("@/components/home/AboutOryxaSection").then(m => ({ default: m.AboutOryxaSection })));
+const InstitutionsSection = lazy(() => import("@/components/home/InstitutionsSection").then(m => ({ default: m.InstitutionsSection })));
+const UniversityCommunitySection = lazy(() => import("@/components/home/UniversityCommunitySection").then(m => ({ default: m.UniversityCommunitySection })));
+const PartnersMarquee = lazy(() => import("@/components/home/PartnersMarquee").then(m => ({ default: m.PartnersMarquee })));
 import heroImage from "@/assets/hero-students.jpg";
 import { Search, Heart, Globe, ChevronDown, Home, Plane, Banknote, GraduationCap, HeartPulse, Smartphone, Coins, FileText, LucideIcon, MapPin, ChevronRight, ArrowRight, Play, TrendingUp, Award, Users, Bitcoin } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -417,6 +419,8 @@ const Index = () => {
           {/* Hero Section with Integrated Chat */}
           <HeroSection />
 
+          {/* All below-the-fold sections are lazy-loaded behind a single Suspense boundary */}
+          <Suspense fallback={<div className="min-h-[200px]" />}>
           {/* University Community Section */}
           <UniversityCommunitySection />
 
@@ -630,8 +634,7 @@ const Index = () => {
               </div>
             </section>
           )}
-
-
+          </Suspense>
         </Layout>
       </ChatProvider>
   );
