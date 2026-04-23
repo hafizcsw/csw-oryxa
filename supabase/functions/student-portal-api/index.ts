@@ -8602,6 +8602,15 @@ Deno.serve(async (req) => {
         // Same intentional generic-passport-lane routing as before.
         const fileKind = 'passport_id';
         const readerDocumentId = crypto.randomUUID();
+        // forensic trace_id: request → logs → row evidence
+        const documentTraceId =
+          req.headers.get('x-document-trace-id') ?? crypto.randomUUID();
+        console.log(JSON.stringify({
+          trace_id: documentTraceId,
+          stage: 'identity_reader_invoke',
+          document_id: readerDocumentId,
+          file_id: idDocFileId,
+        }));
         let truthState: string | undefined;
         let family: string | undefined;
         let laneConfidence: number | undefined;
@@ -8614,6 +8623,7 @@ Deno.serve(async (req) => {
               'Content-Type': 'application/json',
               Authorization: req.headers.get('Authorization') ?? '',
               apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+              'x-document-trace-id': documentTraceId,
             },
             body: JSON.stringify({
               document_id: readerDocumentId,

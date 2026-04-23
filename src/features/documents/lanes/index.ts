@@ -1,10 +1,18 @@
 // ═══════════════════════════════════════════════════════════════
-// Door 2 — Lanes Public API + Dispatcher
+// ⛔ DEPRECATED — DEAD PATH (Phase A truth-table)
 // ═══════════════════════════════════════════════════════════════
-// The ONLY surface uploadAndRegister is allowed to import.
-// Decides which lane to run based on the foundation route.
-// Lanes for academic_transcript / composite_document / unknown
-// are NOT implemented in Door 2 — they remain in needs_review.
+// This client-side lane dispatcher (Door 2 era) is no longer the live
+// path. The live path runs server-side in:
+//   student-portal-api (identity_upload_sign_url)
+//      → mistral-document-pipeline
+//      → document_lane_facts / document_review_queue
+//
+// `dispatchLane`, `runPassportLane`, `runSimpleCertificateLane`, and
+// `persistLaneFacts` MUST NOT be called from any new code. The exported
+// types (LaneFactsOutput, CanonicalField, LaneKind, FieldStatus) are
+// still consumed by `useDocumentLaneFacts` / `LaneFactsCard` and remain
+// valid — they describe the row shape, not a live execution path.
+// See: docs/document-pipeline-truth-table.md
 // ═══════════════════════════════════════════════════════════════
 
 import { runPassportLane } from './passport-lane';
