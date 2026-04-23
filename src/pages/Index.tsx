@@ -5,7 +5,6 @@ import { Layout } from "@/components/layout/Layout";
 import { DSButton } from "@/components/design-system/DSButton";
 import { DSIconGridItem } from "@/components/design-system/DSIconGridItem";
 import { useChat, ChatProvider } from "@/contexts/ChatContext";
-import { useChat, ChatProvider } from "@/contexts/ChatContext";
 // RecommendedPrograms import removed - was unused and causing side effects
 import { CarouselIndicators } from "@/components/ui/carousel-indicators";
 import UniversitiesHero from "@/sections/UniversitiesHero";
