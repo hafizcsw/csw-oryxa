@@ -469,14 +469,18 @@ const Index = () => {
               </AGSection>
 
 
-              {/* 6. World map — wrapped only, internals untouched */}
-              <AGSection
-                eyebrow={t("home.ag.eyebrow.global")}
-                innerClassName="!max-w-[1400px]"
-                className="border-t border-[var(--ag-border)]"
-              >
-                <LazyMount minHeight={400}><WorldMapSection /></LazyMount>
-              </AGSection>
+              {/* 6. World map — AG editorial wrapper, internals untouched */}
+              <section className="relative w-full bg-[var(--ag-bg)] text-[var(--ag-fg)] border-t border-[var(--ag-border)] py-20 md:py-24">
+                <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+                  <div className="flex items-center gap-3 mb-8">
+                    <span className="h-px w-10 bg-[var(--ag-border)]" />
+                    <span className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[var(--ag-muted)]">
+                      {t("home.ag.eyebrow.global")}
+                    </span>
+                  </div>
+                  <LazyMount minHeight={400}><WorldMapSection /></LazyMount>
+                </div>
+              </section>
 
 
               {/* 8. Institutions — partner with us */}
