@@ -24,6 +24,7 @@ import { Loader2 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { SEARCH_TABS, type TabKey, DEFAULT_TAB } from "@/config/searchTabs";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { LazyMount } from "@/components/perf/LazyMount";
 import "@/styles/universities-hero.css";
 export default function Universities() {
   const [searchParams] = useSearchParams();
