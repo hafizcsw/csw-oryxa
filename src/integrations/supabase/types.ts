@@ -3536,6 +3536,7 @@ export type Database = {
           lane_confidence: number
           notes: string[]
           requires_review: boolean
+          trace_id: string | null
           truth_state: string
           updated_at: string
           user_id: string
@@ -3549,6 +3550,7 @@ export type Database = {
           lane_confidence?: number
           notes?: string[]
           requires_review?: boolean
+          trace_id?: string | null
           truth_state?: string
           updated_at?: string
           user_id: string
@@ -3562,6 +3564,7 @@ export type Database = {
           lane_confidence?: number
           notes?: string[]
           requires_review?: boolean
+          trace_id?: string | null
           truth_state?: string
           updated_at?: string
           user_id?: string
@@ -3622,6 +3625,7 @@ export type Database = {
           resolved_at: string | null
           resolved_by: string | null
           state: Database["public"]["Enums"]["door3_review_state"]
+          trace_id: string | null
           updated_at: string
           user_id: string
         }
@@ -3636,6 +3640,7 @@ export type Database = {
           resolved_at?: string | null
           resolved_by?: string | null
           state?: Database["public"]["Enums"]["door3_review_state"]
+          trace_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -3650,6 +3655,7 @@ export type Database = {
           resolved_at?: string | null
           resolved_by?: string | null
           state?: Database["public"]["Enums"]["door3_review_state"]
+          trace_id?: string | null
           updated_at?: string
           user_id?: string
         }
