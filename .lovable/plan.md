@@ -1,65 +1,63 @@
 
 
-# إصلاح شامل: توحيد الثيم + إزالة التداخل أسفل الهيرو
+# إعادة المحتوى الغني للصفحة الرئيسية + إعادة الكرة المتفاعلة (AnomalyOrb)
 
-## التشخيص الفعلي (من الكود + ردك)
+## ما سيتم استعادته (موجود في الكود وغير مستخدم حالياً)
+الأقسام التالية موجودة كملفات سليمة لكن `Index.tsx` لا يستخدمها:
+1. `AboutOryxaSection` — يحتوي على **AnomalyOrb** (هويتنا) + شبكة قدرات
+2. `WhyChooseUsSection` — لماذا تختارنا (شبكة الخدمات)
+3. `MoneyTransferSection` / `CSWCoinSection` — حسب الحاجة
+4. `InstitutionsSection` — انضم كشريك
+5. `OrxRankSection` — نظام التقييم ORX RANK
+6. `UniversityCommunitySection` — مجتمع الطلاب والجامعات
+7. `PartnersMarquee` — شريط الشركاء
 
-1. **الأقسام السوداء AG ثابتة**: استخدمت توكنز `--ag-bg: #0A0A0A` و `--ag-fg: #FAFAFA` بشكل ثابت — لا تستجيب للوضع النهاري إطلاقاً.
-2. **تداخل بصري**: أقسام بيضاء أصلية (مثل `WorldMapSection`, `PartnersMarquee`, إلخ) ملصوقة بأقسام AG سوداء → خطوط فصل قبيحة و"فقفقة" بصرية عند التمرير.
-3. **تكرار حركة الكشف**: كل قسم AG يستخدم نفس reveal بنفس الإيقاع → الزحام الذي وصفته بـ "تداخل أثناء الحركة".
-4. **نصوص تختفي**: في الوضع النهاري، نصوص مكتوبة `text-white` على عناصر فقدت خلفيتها السوداء → أبيض على أبيض.
-5. **الترتيب الحالي يخلط أنماطاً**: AG + أقسام موروثة قديمة معاً = لغتان بصريتان متضاربتان.
+## الترتيب الجديد المقترح (يدمج AG الحديث + المحتوى الغني)
 
-## الحل (نطاق: كل شيء أسفل الهيرو، الهيرو والخريطة لا تُلمَس داخلياً)
+```
+Hero (كما هو)
+─────────────────────────────────────
+[غلاف AG الموحّد bg-[var(--ag-bg)]]
+  1. AGStatement — بيان المهمة
+  2. UniversityCommunitySection — مجتمع الطلاب والجامعات (صورة 1 أعلى)
+  3. AboutOryxaSection — ★ AnomalyOrb هنا (هويتنا) + بطاقات القدرات
+  4. WhyChooseUsSection — خدماتنا المميزة للطلاب (صورة 2)
+  5. WorldMapSection — استكشف وجهات الدراسة (صورة 3)
+  6. InstitutionsSection — انضم كشريك (صورة 2 أسفل)
+  7. OrxRankSection — ORX RANK
+  8. AGAnchorBand — CTA النهائي (يبقى كما هو)
+```
 
-### 1. توكنز AG تتبع الثيم
-في `src/index.css`:
-- إضافة تعريفات تحت `:root` (الوضع النهاري): `--ag-bg`, `--ag-fg`, `--ag-border`, `--ag-muted` بقيم نهارية (خلفية بيضاء ناعمة جداً، نص قريب من الأسود، حدود رمادية رفيعة)
-- إضافة نفس التوكنز تحت `.dark` بالقيم الليلية الحالية
-- النتيجة: كل مكوّن AG يتغيّر تلقائياً مع الثيم بدون لمس مكوّن واحد
+## كيف نحترم التصميم الجديد (الثيم الموحّد)
 
-### 2. توحيد لغة بصرية واحدة أسفل الهيرو
-في `src/pages/Index.tsx`:
-- لف كل المنطقة أسفل الهيرو في حاوية واحدة `bg-[var(--ag-bg)] text-[var(--ag-fg)]` — تمنع الفقفقة بين أبيض/أسود
-- إزالة الأقسام الموروثة التي تخلق تنافراً بصرياً من الترتيب الافتراضي (تبقى الملفات للاستخدام لاحقاً) — بناءً على موافقتك السابقة على هذا التوجّه
-- ترتيب نهائي مقترح: Hero → AGStatement → AGTriptych → WorldMap (داخل غلاف AG) → AGStatement → AGTriptych → AGAnchorBand → AGDisplayAnchor → Footer
-
-### 3. إصلاح "تداخل الحركة"
-- تنويع توقيت الكشف بين الأقسام: ستاجر متفاوت (40ms / 60ms / 80ms) بدل تكرار نفس الإيقاع
-- ضمان `prefers-reduced-motion`: إيقاف stagger والاكتفاء بـ fade بسيط
-- التأكد أن كل قسم لا يبدأ animation إلا عند `IntersectionObserver` بنسبة 0.2 — بدل البدء كلها معاً
-
-### 4. إصلاح "نصوص تختفي"
-- استبدال أي `text-white` / `text-black` صريح في مكوّنات AG بـ `text-[var(--ag-fg)]`
-- استبدال `bg-black` / `bg-white` صريح بـ `bg-[var(--ag-bg)]`
-- مراجعة `AGStatement`, `AGTriptych`, `AGCard`, `AGDisplayAnchor`, `AGAnchorBand`, `AGRevealText`
-
-### 5. حدود فاصلة بين أقسام AG
-- بدل خلفيات متناقضة، استخدم `border-t border-[var(--ag-border)]` بين أقسام AG → فصل ناعم بدل صدمة لونية
-
-### 6. الخريطة بدون لمس داخلي
-- لف `<WorldMapSection />` في `<div class="bg-[var(--ag-bg)] py-24">` فقط — لا تعديل داخل المكوّن
+1. **غلاف موحّد**: كل الأقسام داخل `<div className="bg-[var(--ag-bg)] text-[var(--ag-fg)]">` — لا فقفقة بين أبيض/أسود
+2. **فواصل ناعمة**: `border-t border-[var(--ag-border)]` بين كل قسم بدل التباينات الحادة
+3. **استبدال الخلفيات الصلبة في الأقسام المُستعادة**:
+   - `bg-muted/30` و `bg-gradient-to-b from-muted/30...` → `bg-transparent` (يرث من الغلاف)
+   - `text-foreground` يبقى (يستجيب للثيم تلقائياً)
+   - `text-white` صريح (إن وجد) → `text-[var(--ag-fg)]`
+4. **الكرة AnomalyOrb**: تعمل من `next-themes` بالفعل (تكتشف dark/light تلقائياً) — نضعها داخل `AboutOryxaSection` بحجم 220 كما كانت
+5. **حركة الكشف**: الأقسام المُستعادة تستخدم `framer-motion` مع `whileInView` و`viewport={{ once: true }}` بالفعل — متوافق مع قاعدة "لا تبدأ كلها معاً"
+6. **احترام `prefers-reduced-motion`**: framer-motion يحترمه افتراضياً
 
 ## الملفات التي ستتغيّر
-1. `src/index.css` — توكنز AG ثنائية الثيم + ضبط منحنى الحركة
-2. `src/components/antigravity/AGStatement.tsx` — توكنز فقط
-3. `src/components/antigravity/AGTriptych.tsx` — توكنز فقط
-4. `src/components/antigravity/AGCard.tsx` — توكنز فقط
-5. `src/components/antigravity/AGDisplayAnchor.tsx` — توكنز فقط
-6. `src/components/antigravity/AGAnchorBand.tsx` — توكنز فقط + ضمان reveal مرة واحدة
-7. `src/components/antigravity/AGRevealText.tsx` — توقيت stagger متغير + احترام reduced-motion
-8. `src/pages/Index.tsx` — تركيب نهائي موحّد أسفل الهيرو
+1. **`src/pages/Index.tsx`** — تركيب جديد: استيراد lazy للأقسام المُستعادة + ترتيبها داخل غلاف AG مع فواصل
+2. **`src/components/home/OrxRankSection.tsx`** — استبدال `bg-gradient-to-b from-muted/30` بـ `bg-transparent`
+3. **`src/components/home/InstitutionsSection.tsx`** — استبدال `bg-muted/30` بـ `bg-transparent`
+4. **`src/components/home/AboutOryxaSection.tsx`** — لا تغيير جوهري (AnomalyOrb موجود بالفعل)؛ إزالة أي خلفية محلية متعارضة إن وجدت
+5. **`src/components/home/WhyChooseUsSection.tsx`**, **`UniversityCommunitySection.tsx`**, **`PartnersMarquee.tsx`** — مراجعة سريعة + إزالة خلفيات متعارضة فقط إن وُجدت
 
-## خارج النطاق صراحةً
-- `HeroSection` لا يُلمس
-- داخل `WorldMapSection` لا يُلمس (غلاف خارجي فقط)
-- لا مكتبات جديدة، لا scroll-jacking، لا GSAP
-- لا نصوص ظاهرة جديدة — لا تغيير في مفاتيح الترجمة
+## خارج النطاق
+- لا تعديل على `HeroSection`
+- لا تعديل داخل `WorldMapSection` (غلاف خارجي فقط)
+- لا تعديل داخل `AnomalyOrb` (يعمل بشكل صحيح مع الثيم)
+- لا نصوص جديدة — كل المفاتيح موجودة بالفعل في `home.aboutOryxa.*`, `home.orx.*`, `home.institutions.*`, إلخ
+- لا تغيير على `AGAnchorBand` أو الـ Footer
 
-## معايير الإغلاق (Runtime-proven بعد التنفيذ)
-- التبديل بين الوضع النهاري والليلي يغيّر فعلياً ألوان كل قسم أسفل الهيرو
-- لا توجد حدود حادة بين قسم أبيض وقسم أسود متجاوران
-- كل النصوص مقروءة في الوضعين
-- حركة الكشف لا تبدأ في كل الأقسام دفعة واحدة
+## معايير الإغلاق (Runtime)
+- صفحة Index تعرض: مجتمع الطلاب + AnomalyOrb المتفاعلة + خدماتنا المميزة + الخريطة + ORX RANK + انضم كشريك
+- التبديل بين النهاري/الليلي يلوّن كل قسم بشكل متناسق دون تداخل
+- الكرة AnomalyOrb ظاهرة ومتحركة في قسم AboutOryxa
+- لا حدود حادة بين الأقسام
 - لا أخطاء console جديدة
 
