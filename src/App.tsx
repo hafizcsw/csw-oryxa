@@ -971,24 +971,18 @@ function AppContent() {
         </Routes>
       </Suspense>
       
-      {/* Unified Floating Launcher — Support + Oryxa AI merged */}
-      <PortalAuthFloater />
-      
-      {/* CRM Test Mode Panel - Activated via ?testmode=1 */}
-      <CrmTestPanel />
-      
-      {/* Institution Preview Picker for Super Admins */}
-      <InstitutionPickerModal />
-      
-      {/* 🆕 Auth Start Modal - Shows on first visit */}
-      <AuthStartModal open={showAuthModal} onOpenChange={(open) => open ? openAuthModal() : closeAuthModal()} />
-      
-      {/* 🆕 Phone Activation Gate - Forces social/email students to verify phone */}
-      <PhoneActivationGate 
-        open={showActivationGate} 
-        onOpenChange={setShowActivationGate}
-        onActivated={() => setShowActivationGate(false)}
-      />
+      {/* Lazy-loaded root overlays — invisible until needed, no fallback to avoid layout shift */}
+      <Suspense fallback={null}>
+        <PortalAuthFloater />
+        <CrmTestPanel />
+        <InstitutionPickerModal />
+        <AuthStartModal open={showAuthModal} onOpenChange={(open) => open ? openAuthModal() : closeAuthModal()} />
+        <PhoneActivationGate 
+          open={showActivationGate} 
+          onOpenChange={setShowActivationGate}
+          onActivated={() => setShowActivationGate(false)}
+        />
+      </Suspense>
     </>
   );
 }
