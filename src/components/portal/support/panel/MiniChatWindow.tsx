@@ -69,7 +69,7 @@ export function MiniChatWindow({ item, onClose, onMinimize }: MiniChatWindowProp
       {/* Body — routes to the real native surface */}
       <div className="flex-1 min-h-0 overflow-hidden bg-background">
         {item.raw.kind === "support" ? (
-          <SupportThread caseId={item.nativeId} />
+          <SupportThread caseId={item.nativeId} embedded />
         ) : (
           <CommThreadView
             threadId={item.nativeId}
