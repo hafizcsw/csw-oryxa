@@ -6,8 +6,9 @@ const MAX_AVATAR_DIMENSION = 2048;
 const isHttpUrl = (value: string) => value.startsWith("http://") || value.startsWith("https://");
 
 // Legacy Supabase project hosts whose /storage/ URLs must be rewritten to the
-// current project. Old CRM rows still carry full URLs from these projects.
-const LEGACY_STORAGE_HOST_PATTERN = /^https?:\/\/(hlrkyoxwbjsgqbncgzpi|csw-world|csw-oryxa)\.supabase\.co\/storage\/v1\/object\/public\/avatars\//i;
+// current project. Old rows still carry full URLs from these deprecated projects.
+// NOTE: hlrkyoxwbjsgqbncgzpi (CRM) is the active avatar storage source — DO NOT rewrite it.
+const LEGACY_STORAGE_HOST_PATTERN = /^https?:\/\/(csw-world|csw-oryxa)\.supabase\.co\/storage\/v1\/object\/public\/avatars\//i;
 
 function rewriteLegacyAvatarUrl(value: string): string {
   // Match legacy host and extract the storage path after /avatars/
