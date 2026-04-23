@@ -20,9 +20,10 @@ const SPRING = { type: "spring" as const, stiffness: 320, damping: 30, mass: 0.8
 interface FloatingSupportPanelProps {
   onClose: () => void;
   initialView?: PanelView;
+  initialThreadId?: string | null;
 }
 
-export function FloatingSupportPanel({ onClose, initialView = "default" }: FloatingSupportPanelProps) {
+export function FloatingSupportPanel({ onClose, initialView = "default", initialThreadId = null }: FloatingSupportPanelProps) {
   const { t, language } = useLanguage();
   const { status, refetch: refetchIdentity } = useIdentityStatus();
   const { fields: extracted } = useExtractedIdentity();
