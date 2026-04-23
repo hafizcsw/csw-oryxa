@@ -139,6 +139,7 @@ const CRMBoard = lazy(() => import("./pages/admin/CRMBoard"));
 const AdminIntegrationLogs = lazy(() => import("./pages/admin/IntegrationLogs"));
 const AdminSettings = lazy(() => import("./pages/admin/Settings"));
 const FeatureSettingsAdmin = lazy(() => import("./pages/admin/FeatureSettings"));
+const HeroVideoSettings = lazy(() => import("./pages/admin/HeroVideoSettings"));
 const FeatureFlags = lazy(() => import("./pages/admin/FeatureFlags"));
 const AdminUsers = lazy(() => import("./pages/admin/Users"));
 const AdminHealth = lazy(() => import("./pages/admin/Health"));
@@ -907,6 +908,7 @@ function AppContent() {
             <Route path="generate-program-scholarship-images" element={<GenerateProgramScholarshipImages />} />
             <Route path="media-review" element={<MediaReview />} />
             <Route path="news-ticker" element={<NewsTickerSettings />} />
+            <Route path="hero-video" element={<HeroVideoSettings />} />
             <Route path="website-enrichment" element={<WebsiteEnrichment />} />
             <Route path="bulk-publish" element={<BulkPublish />} />
             <Route path="orx-control" element={<OrxControlPanel />} />
