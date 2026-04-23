@@ -232,6 +232,10 @@ export default function LanguagesLanding() {
 
         <LazyMount minHeight={400} rootMargin="500px 0px">
         <section className="max-w-5xl mx-auto px-4 py-16">
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="text-center mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+              {t("languages.steps.title")}
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
               {t("languages.steps.subtitle")}
@@ -444,6 +448,7 @@ export default function LanguagesLanding() {
             })}
           </div>
         </section>
+        </LazyMount>
 
       </div>
     </Layout>
