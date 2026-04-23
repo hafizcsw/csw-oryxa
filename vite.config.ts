@@ -7,7 +7,7 @@ import { foundationPrivacyGuardPlugin } from "./vite-plugins/foundation-privacy-
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const enablePWA = mode === "production";
+  const enablePWA = false; // Temporarily disabled — was causing white screen on cswworld.com
 
   return {
     define: {

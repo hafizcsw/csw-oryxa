@@ -12,22 +12,18 @@ import "./styles/universities.css";
 import "./styles/ai.css";
 import { initWebVitals } from "./lib/vitals";
 
-// Clear stale SW caches on every load to prevent serving old versions
+// Aggressively unregister any existing service workers and clear caches
+// to recover users stuck on a stale PWA shell (white screen on cswworld.com)
 if (typeof window !== "undefined") {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.getRegistrations().then((regs) => {
       regs.forEach((reg) => {
-        if (reg.waiting) {
-          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-        }
-        if (import.meta.env.DEV) {
-          void reg.unregister();
-        }
+        void reg.unregister();
       });
     }).catch(() => {});
   }
 
-  if (import.meta.env.DEV && "caches" in window) {
+  if ("caches" in window) {
     caches.keys().then((keys) => {
       keys.forEach((key) => void caches.delete(key));
     }).catch(() => {});
