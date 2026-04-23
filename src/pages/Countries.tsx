@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Globe, Search, SortAsc, Loader2, MapPin, GraduationCap, X } from "lucide-react";
+import { LazyMount } from "@/components/perf/LazyMount";
 
 type SortOption = "universities" | "programs" | "rank" | "alphabetical";
 
@@ -267,23 +268,32 @@ export default function Countries() {
               </p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {filteredCountries.map((country) => (
-                  <CountryStatCard
-                    key={country.id}
-                    slug={country.slug}
-                    nameAr={country.name_ar}
-                    nameEn={country.name_en}
-                    imageUrl={country.image_url}
-                    countryCode={country.country_code}
-                    stats={{
-                      universitiesCount: country.universities_count,
-                      programsCount: country.programs_count,
-                      rankedUniversitiesCount: country.ranked_universities_count,
-                      educationRankGlobal: country.education_rank_global,
-                      internationalStudents: country.international_students,
-                    }}
-                  />
-                ))}
+                {filteredCountries.map((country, idx) => {
+                  const card = (
+                    <CountryStatCard
+                      slug={country.slug}
+                      nameAr={country.name_ar}
+                      nameEn={country.name_en}
+                      imageUrl={country.image_url}
+                      countryCode={country.country_code}
+                      stats={{
+                        universitiesCount: country.universities_count,
+                        programsCount: country.programs_count,
+                        rankedUniversitiesCount: country.ranked_universities_count,
+                        educationRankGlobal: country.education_rank_global,
+                        internationalStudents: country.international_students,
+                      }}
+                    />
+                  );
+                  // Render first 8 immediately; lazy-mount the rest as user scrolls
+                  return idx < 8 ? (
+                    <div key={country.id}>{card}</div>
+                  ) : (
+                    <LazyMount key={country.id} minHeight={340} rootMargin="600px 0px">
+                      {card}
+                    </LazyMount>
+                  );
+                })}
               </div>
             </>
           )}
