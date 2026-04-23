@@ -421,12 +421,13 @@ const Index = () => {
           {/* All below-the-fold sections are lazy-loaded behind a single Suspense boundary */}
           <Suspense fallback={<div className="min-h-[200px]" />}>
           {/* University Community Section */}
-          <UniversityCommunitySection />
+          <LazyMount minHeight={400}><UniversityCommunitySection /></LazyMount>
 
            {/* About ORYXA */}
-           <AboutOryxaSection />
+           <LazyMount minHeight={400}><AboutOryxaSection /></LazyMount>
 
           {/* Enhanced Services Section */}
+          <LazyMount minHeight={500}>
           <section className="py-20 px-6 bg-gradient-to-b from-background to-muted/30">
             <div className="max-w-7xl mx-auto">
               <div className="text-center space-y-3 mb-16">
@@ -457,15 +458,16 @@ const Index = () => {
               </div>
             </div>
           </section>
+          </LazyMount>
 
           {/* Institutions Section */}
-          <InstitutionsSection />
+          <LazyMount minHeight={400}><InstitutionsSection /></LazyMount>
 
           {/* ORX RANK Section */}
-          <OrxRankSection />
+          <LazyMount minHeight={400}><OrxRankSection /></LazyMount>
 
           {/* Interactive World Map */}
-          <WorldMapSection />
+          <LazyMount minHeight={500}><WorldMapSection /></LazyMount>
 
           {/* Enhanced Study Destinations Section */}
           <section id="destinations" className="py-20 px-6 bg-background">
