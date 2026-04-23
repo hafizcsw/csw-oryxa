@@ -79,7 +79,7 @@ export function Footer() {
         <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-10 mb-12`} dir={isRtl ? "rtl" : "ltr"}>
           {/* About Column */}
           <div>
-            <h3 className="text-primary font-bold text-lg mb-5">{t("footer.about")}</h3>
+            <h3 className="text-foreground font-bold text-lg mb-5">{t("footer.about")}</h3>
             <ul className="space-y-3">
               {aboutLinks.map((link) => (
                 <li key={link.href}>
@@ -96,7 +96,7 @@ export function Footer() {
 
           {/* For Institutions Column */}
           <div>
-            <h3 className="text-primary font-bold text-lg mb-5">{t("footer.institutionsTitle")}</h3>
+            <h3 className="text-foreground font-bold text-lg mb-5">{t("footer.institutionsTitle")}</h3>
             <ul className="space-y-3">
               {institutionLinks.map((link) => (
                 <li key={link.href}>
@@ -113,7 +113,7 @@ export function Footer() {
 
           {/* Services Column */}
           <div>
-            <h3 className="text-primary font-bold text-lg mb-5">{t("footer.services")}</h3>
+            <h3 className="text-foreground font-bold text-lg mb-5">{t("footer.services")}</h3>
             <ul className="space-y-3">
               {servicesLinks.map((link) => (
                 <li key={link.href}>
@@ -130,7 +130,7 @@ export function Footer() {
 
           {/* Study Column */}
           <div>
-            <h3 className="text-primary font-bold text-lg mb-5">{t("footer.study")}</h3>
+            <h3 className="text-foreground font-bold text-lg mb-5">{t("footer.study")}</h3>
             <ul className="space-y-3">
               {studyLinks.map((link) => (
                 <li key={link.href}>
@@ -147,7 +147,7 @@ export function Footer() {
 
           {/* Resources Column */}
           <div>
-            <h3 className="text-primary font-bold text-lg mb-5">{t("footer.resources")}</h3>
+            <h3 className="text-foreground font-bold text-lg mb-5">{t("footer.resources")}</h3>
             <ul className="space-y-3">
               {resourcesLinks.map((link) => (
                 <li key={link.href}>
@@ -164,7 +164,7 @@ export function Footer() {
 
           {/* Careers Column */}
           <div>
-            <h3 className="text-primary font-bold text-lg mb-5">{t("footer.careers")}</h3>
+            <h3 className="text-foreground font-bold text-lg mb-5">{t("footer.careers")}</h3>
             <ul className="space-y-3">
               {careersLinks.map((link) => (
                 <li key={link.href}>

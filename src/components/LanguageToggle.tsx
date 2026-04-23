@@ -69,8 +69,8 @@ export function LanguageToggle() {
           aria-expanded={open}
           type="button"
         >
-          <span className="text-sm leading-none inline-flex items-center justify-center w-5 h-5 overflow-hidden">{currentLang?.flag}</span>
-          <span className="text-xs font-semibold uppercase tracking-wide max-w-[2.5ch] truncate">
+          <span aria-hidden="true" className="text-sm leading-none inline-flex items-center justify-center w-5 h-5 overflow-hidden">{currentLang?.flag}</span>
+          <span aria-hidden="true" className="text-xs font-semibold uppercase tracking-wide max-w-[2.5ch] truncate">
             {currentLang?.code}
           </span>
         </button>

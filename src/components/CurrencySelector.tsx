@@ -25,10 +25,10 @@ export function CurrencySelector() {
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center gap-1 px-2 py-1 rounded-md hover:bg-white/10 transition-colors text-xs font-medium"
-        aria-label="Select currency"
+        aria-label={`Select currency, current: ${current.code}`}
       >
-        <span>{current.flag}</span>
-        <span>{current.code}</span>
+        <span aria-hidden="true">{current.flag}</span>
+        <span aria-hidden="true">{current.code}</span>
         {isLoading && <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
       </button>
 

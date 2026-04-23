@@ -523,7 +523,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
             <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent" />
             <div className="flex flex-wrap items-center gap-2">
               <Select value={filters.region} onValueChange={setRegion}>
-                <SelectTrigger className="flex-1 min-w-[140px] max-w-[220px] h-10 bg-background border border-border text-sm text-foreground rounded-lg">
+                <SelectTrigger aria-label={t("home.worldMap.filters.region")} className="flex-1 min-w-[140px] max-w-[220px] h-10 bg-background border border-border text-sm text-foreground rounded-lg">
                   <Globe className="h-4 w-4 text-muted-foreground shrink-0 me-1.5" />
                     <SelectValue placeholder={t("home.worldMap.filters.region")} />
                 </SelectTrigger>
@@ -536,7 +536,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
               </Select>
 
               <Select value={filters.degree_slug} onValueChange={setDegreeSlug}>
-                <SelectTrigger className="flex-1 min-w-[140px] max-w-[220px] h-10 bg-background border border-border text-sm text-foreground rounded-lg">
+                <SelectTrigger aria-label={t("home.worldMap.filters.degreeLevel")} className="flex-1 min-w-[140px] max-w-[220px] h-10 bg-background border border-border text-sm text-foreground rounded-lg">
                   <GraduationCap className="h-4 w-4 text-muted-foreground shrink-0 me-1.5" />
                     <SelectValue placeholder={t("home.worldMap.filters.degreeLevel")} />
                 </SelectTrigger>
@@ -550,7 +550,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
 
               <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-3 py-2 min-w-[200px] max-w-[280px] flex-1 h-10">
                 <DollarSign className="h-4 w-4 text-muted-foreground shrink-0" />
-                <Slider value={[filters.fees_max]} onValueChange={([v]) => setFeesMax(v)} min={1000} max={50000} step={1000} className="flex-1" />
+                <Slider aria-label={t("home.worldMap.filters.maxFees") || "Maximum tuition fees"} value={[filters.fees_max]} onValueChange={([v]) => setFeesMax(v)} min={1000} max={50000} step={1000} className="flex-1" />
                 <span className="text-xs font-semibold min-w-[55px] text-end text-foreground">${filters.fees_max.toLocaleString()}</span>
               </div>
 
