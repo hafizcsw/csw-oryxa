@@ -5,11 +5,10 @@ import { Layout } from "@/components/layout/Layout";
 import { DSButton } from "@/components/design-system/DSButton";
 import { DSIconGridItem } from "@/components/design-system/DSIconGridItem";
 import { useChat, ChatProvider } from "@/contexts/ChatContext";
-import { MalakChatInterface } from "@/components/chat/MalakChatInterface";
+import { useChat, ChatProvider } from "@/contexts/ChatContext";
 // RecommendedPrograms import removed - was unused and causing side effects
 import { CarouselIndicators } from "@/components/ui/carousel-indicators";
 import UniversitiesHero from "@/sections/UniversitiesHero";
-import AiAdvisor from "@/components/AiAdvisor";
 // HeroSection stays static (above-the-fold).
 import { HeroSection } from "@/components/home/HeroSection";
 // Below-the-fold: lazy-load to keep initial bundle small.
