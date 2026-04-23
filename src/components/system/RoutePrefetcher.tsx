@@ -12,7 +12,10 @@ type Importer = () => Promise<unknown>;
 
 // Lazy importers keyed by route pattern. Add the most-visited routes only.
 const ROUTE_IMPORTERS: Array<{ test: (path: string) => boolean; load: Importer }> = [
+  // /account: also warm the most-likely first tabs so the page renders instantly.
   { test: (p) => p === '/' || p.startsWith('/account'), load: () => import('@/pages/Account') },
+  { test: (p) => p === '/' || p.startsWith('/account'), load: () => import('@/components/portal/account/DashboardOverview') },
+  { test: (p) => p === '/' || p.startsWith('/account'), load: () => import('@/components/portal/tabs/StudyFileTab') },
   { test: (p) => p.startsWith('/search') || p.startsWith('/universities'), load: () => import('@/pages/Universities') },
   { test: (p) => p.startsWith('/countries'), load: () => import('@/pages/Countries') },
   { test: (p) => p.startsWith('/country/'), load: () => import('@/pages/Country') },
