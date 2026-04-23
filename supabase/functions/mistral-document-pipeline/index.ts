@@ -25,8 +25,18 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-document-trace-id",
 };
+
+// Tagged log line. trace_id is the forensic key linking
+// request → logs → row evidence (lane_facts / review_queue).
+function tlog(trace_id: string, stage: string, payload: Record<string, unknown> = {}) {
+  try {
+    console.log(JSON.stringify({ trace_id, stage, ts: new Date().toISOString(), ...payload }));
+  } catch {
+    console.log(`[mistral-pipeline] trace=${trace_id} stage=${stage}`);
+  }
+}
 
 const MISTRAL_API = "https://api.mistral.ai/v1";
 const OCR_MODEL = "mistral-ocr-latest";
@@ -316,15 +326,30 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const t0 = Date.now();
+  // trace_id: forensic link request → logs → row. Prefer caller-supplied
+  // x-document-trace-id; otherwise mint one here.
+  const trace_id =
+    req.headers.get("x-document-trace-id") ?? crypto.randomUUID();
+
   let body: PipelineRequest;
   try {
     body = await req.json();
   } catch {
-    return json({ ok: false, error: "invalid_json" }, 400);
+    tlog(trace_id, "request_invalid_json");
+    return json({ ok: false, error: "invalid_json", trace_id }, 400);
   }
   if (!body?.document_id || !body?.bucket || !body?.path) {
-    return json({ ok: false, error: "missing_fields" }, 400);
+    tlog(trace_id, "request_missing_fields", { body_keys: Object.keys(body ?? {}) });
+    return json({ ok: false, error: "missing_fields", trace_id }, 400);
   }
+  tlog(trace_id, "request_received", {
+    document_id: body.document_id,
+    bucket: body.bucket,
+    path: body.path,
+    file_kind: body.file_kind ?? null,
+    declared_family: body.declared_family ?? null,
+    has_signed_url: !!body.signed_url,
+  });
 
   const MISTRAL_API_KEY = Deno.env.get("MISTRAL_API_KEY");
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -352,7 +377,9 @@ Deno.serve(async (req) => {
     //    Caller MUST pass a pre-signed GET URL (obtained via CRM `sign_file`).
     //    Fallback: try this project's storage (rare; only if bucket really exists here).
     let signedUrl = body.signed_url ?? null;
+    let signed_url_source: "caller" | "self_storage" = "caller";
     if (!signedUrl) {
+      signed_url_source = "self_storage";
       const { data: signed, error: sErr } = await supabase
         .storage
         .from(body.bucket)
@@ -362,15 +389,24 @@ Deno.serve(async (req) => {
       }
       signedUrl = signed.signedUrl;
     }
+    tlog(trace_id, "signed_url_resolved", { source: signed_url_source });
 
     // 2. OCR
     const ocr = await mistralOcr({ signedUrl, apiKey: MISTRAL_API_KEY });
+    tlog(trace_id, "ocr_completed", { pages: ocr.pages, chars: ocr.text.length });
 
     // 3. Extract
     const ext = await mistralExtract({
       ocrText: ocr.text,
       declaredFamily,
       apiKey: MISTRAL_API_KEY,
+    });
+    tlog(trace_id, "extraction_completed", {
+      family: ext.family,
+      family_confidence: ext.family_confidence,
+      is_recognized: ext.is_recognized,
+      rejection_reason: ext.rejection_reason,
+      fact_keys: Object.keys(ext.facts),
     });
 
     // 4. Decide truth
@@ -396,6 +432,15 @@ Deno.serve(async (req) => {
       if (requires_review) review_reason = "fields_incomplete_or_low_confidence";
     }
 
+    tlog(trace_id, "lane_detected", {
+      family,
+      lane,
+      truth_state,
+      lane_confidence,
+      requires_review,
+      review_reason,
+    });
+
     const engine_metadata = {
       producer: PIPELINE_VERSION,
       processing_ms: Date.now() - t0,
@@ -407,9 +452,10 @@ Deno.serve(async (req) => {
       family_detected: family,
       family_confidence: ext.family_confidence,
       review_reason,
+      trace_id,
     };
 
-    // 5. Persist truth row (always)
+    // 5. Persist truth row (always when we have a lane)
     if (lane) {
       const { error: upErr } = await supabase
         .from("document_lane_facts")
@@ -424,10 +470,35 @@ Deno.serve(async (req) => {
             facts: ext.facts as unknown as Record<string, unknown>,
             engine_metadata,
             notes: ext.notes,
+            trace_id,
           },
           { onConflict: "document_id" },
         );
-      if (upErr) console.warn("[mistral-pipeline] lane_facts upsert failed", upErr);
+      if (upErr) {
+        // SURFACE the failure: was previously a silent console.warn.
+        console.error(
+          JSON.stringify({
+            trace_id,
+            stage: "lane_facts_write",
+            ok: false,
+            error_message: upErr.message,
+            error_code: (upErr as any).code ?? null,
+            error_details: (upErr as any).details ?? null,
+            error_hint: (upErr as any).hint ?? null,
+            document_id: body.document_id,
+            lane,
+          }),
+        );
+      } else {
+        tlog(trace_id, "lane_facts_write", {
+          ok: true,
+          document_id: body.document_id,
+          lane,
+          truth_state,
+        });
+      }
+    } else {
+      tlog(trace_id, "lane_facts_write", { ok: false, skipped: true, reason: "no_lane" });
     }
 
     // 6. Mirror to review queue when review is required (or unrecognized)
@@ -447,12 +518,42 @@ Deno.serve(async (req) => {
         reason: review_reason ?? "needs_review",
         evidence_summary: { facts: ext.facts, notes: ext.notes },
         confidence_summary: { lane_confidence, family_confidence: ext.family_confidence },
+        trace_id,
       });
-      if (rqErr) console.warn("[mistral-pipeline] review_queue insert failed", rqErr);
+      if (rqErr) {
+        console.error(
+          JSON.stringify({
+            trace_id,
+            stage: "review_queue_write",
+            ok: false,
+            error_message: rqErr.message,
+            error_code: (rqErr as any).code ?? null,
+            document_id: body.document_id,
+          }),
+        );
+      } else {
+        tlog(trace_id, "review_queue_write", {
+          ok: true,
+          document_id: body.document_id,
+          reason: review_reason ?? "needs_review",
+        });
+      }
     }
+
+    tlog(trace_id, "final_response", {
+      ok: true,
+      document_id: body.document_id,
+      family,
+      lane,
+      truth_state,
+      lane_confidence,
+      requires_review,
+      processing_ms: Date.now() - t0,
+    });
 
     return json({
       ok: true,
+      trace_id,
       document_id: body.document_id,
       family,
       lane,
@@ -467,7 +568,15 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     const msg = (e as Error).message ?? String(e);
-    console.error("[mistral-pipeline] ERROR", msg);
+    console.error(
+      JSON.stringify({
+        trace_id,
+        stage: "pipeline_error",
+        ok: false,
+        error_message: msg,
+        document_id: body.document_id,
+      }),
+    );
 
     // Honest failure: persist needs_review row so the file is not lost.
     try {
@@ -484,12 +593,35 @@ Deno.serve(async (req) => {
         reason: "mistral_pipeline_error",
         evidence_summary: { error: msg, declared_family: declaredFamily },
         confidence_summary: {},
+        trace_id,
       });
-    } catch { /* swallow */ }
+      tlog(trace_id, "review_queue_write", {
+        ok: true,
+        reason: "mistral_pipeline_error",
+        on_error_path: true,
+      });
+    } catch (e2) {
+      console.error(
+        JSON.stringify({
+          trace_id,
+          stage: "review_queue_write",
+          ok: false,
+          on_error_path: true,
+          error_message: (e2 as Error).message,
+        }),
+      );
+    }
+
+    tlog(trace_id, "final_response", {
+      ok: false,
+      document_id: body.document_id,
+      processing_ms: Date.now() - t0,
+    });
 
     return json(
       {
         ok: false,
+        trace_id,
         document_id: body.document_id,
         error: "mistral_pipeline_error",
         details: msg,
