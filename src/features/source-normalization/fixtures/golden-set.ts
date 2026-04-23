@@ -11,7 +11,9 @@ export interface GoldenCase {
   category: 'clear' | 'ambiguous' | 'noisy';
   notes: string;
   input: NormalizerInput;
-  expected: Partial<NormalizerOutput>;
+  expected: Partial<NormalizerOutput> & {
+    reason_codes?: string[];
+  };
 }
 
 export const GOLDEN_SET: GoldenCase[] = [
@@ -90,12 +92,14 @@ export const GOLDEN_SET: GoldenCase[] = [
       normalized_credential_subtype: 'thanaweya_amma',
       normalized_grade_pct: 85.37,
       needs_manual_review: true,
+      matched_rule_ids: ['EG.rule.thanaweya_amma'],
+      reason_codes: ['multiple_streams_detected'],
     },
   },
   {
     case_id: 'AE.ambiguous.advanced_vs_elite',
     category: 'ambiguous',
-    notes: 'AE secondary but stream (advanced/elite) unclear in source.',
+    notes: 'AE secondary, score "92" lacks explicit unit (% vs raw) AND stream (advanced/elite) unclear.',
     input: {
       student_user_id: 'fixture-student-ae-2',
       source_country_code: 'AE',
@@ -106,8 +110,10 @@ export const GOLDEN_SET: GoldenCase[] = [
     expected: {
       normalized_credential_kind: 'secondary_general',
       normalized_credential_subtype: 'moe_secondary',
-      normalized_grade_pct: 92,
+      normalized_grade_pct: null,
       needs_manual_review: true,
+      matched_rule_ids: ['AE.rule.moe_secondary'],
+      reason_codes: ['grade_unit_missing', 'stream_advanced_vs_elite_unclear'],
     },
   },
   {
@@ -126,13 +132,15 @@ export const GOLDEN_SET: GoldenCase[] = [
       normalized_credential_subtype: 'tawjihi',
       normalized_grade_pct: 78,
       needs_manual_review: true,
+      matched_rule_ids: ['JO.rule.tawjihi'],
+      reason_codes: ['track_vocational_vs_academic_unclear'],
     },
   },
   // ── NOISY ──────────────────────────────────────────────────
   {
     case_id: 'EG.noisy.unparseable_grade',
     category: 'noisy',
-    notes: 'EG name OK but grade field is free text ("ممتاز").',
+    notes: 'EG name OK but grade field is free text ("ممتاز"). No descriptive→pct mapping by policy.',
     input: {
       student_user_id: 'fixture-student-eg-3',
       source_country_code: 'EG',
@@ -145,6 +153,8 @@ export const GOLDEN_SET: GoldenCase[] = [
       normalized_credential_subtype: 'thanaweya_amma',
       normalized_grade_pct: null,
       needs_manual_review: true,
+      matched_rule_ids: ['EG.rule.thanaweya_amma'],
+      reason_codes: ['grade_unparseable'],
     },
   },
   {
@@ -162,12 +172,14 @@ export const GOLDEN_SET: GoldenCase[] = [
       normalized_credential_kind: 'unknown',
       normalized_grade_pct: null,
       needs_manual_review: true,
+      matched_rule_ids: [],
+      reason_codes: ['no_pattern_match'],
     },
   },
   {
     case_id: 'JO.noisy.year_missing_grade_text',
     category: 'noisy',
-    notes: 'JO tawjihi, no year, grade is descriptive text.',
+    notes: 'JO tawjihi, no year, grade is descriptive transliteration ("jayyid jiddan").',
     input: {
       student_user_id: 'fixture-student-jo-3',
       source_country_code: 'JO',
@@ -179,6 +191,8 @@ export const GOLDEN_SET: GoldenCase[] = [
       normalized_credential_subtype: 'tawjihi',
       normalized_grade_pct: null,
       needs_manual_review: true,
+      matched_rule_ids: ['JO.rule.tawjihi'],
+      reason_codes: ['grade_unparseable', 'award_year_missing'],
     },
   },
 ];
