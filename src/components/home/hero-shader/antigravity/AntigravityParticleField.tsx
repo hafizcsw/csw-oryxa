@@ -120,19 +120,19 @@ export function AntigravityParticleField({ className, theme }: Props) {
     // Theme: explicit prop wins; otherwise read <html class="dark"> + observe.
     const isDark = () =>
       theme ? theme === 'dark' : document.documentElement.classList.contains('dark');
-    // Light mode = heavy blue dots (#1E88E5 ≈ vec3(0.12,0.53,0.90)), small + clamped.
+    // Light mode = deep navy/blue dots, larger + much higher alpha so they read on white.
     // Dark mode = white, original size, original alpha.
     const colorFor = () =>
-      isDark() ? new THREE.Color(1, 1, 1) : new THREE.Color(0.05, 0.32, 0.75);
+      isDark() ? new THREE.Color(1, 1, 1) : new THREE.Color(0.04, 0.16, 0.45);
 
     const uniforms = {
       uTime:       { value: 0 },
       uMousePos:   { value: new THREE.Vector2(0, 0) },
       uPixelRatio: { value: pixelRatio },
       uColor:      { value: colorFor() },
-      uAlphaBoost: { value: isDark() ? 1.0 : 5.0 },
-      uSizeScale:  { value: isDark() ? 1.0 : 0.55 },
-      uSizeClamp:  { value: isDark() ? 9999.0 : 4.0 * pixelRatio },
+      uAlphaBoost: { value: isDark() ? 1.0 : 14.0 },
+      uSizeScale:  { value: isDark() ? 1.0 : 1.4 },
+      uSizeClamp:  { value: isDark() ? 9999.0 : 12.0 * pixelRatio },
     };
 
     // RawShaderMaterial: matches source intent (no THREE-injected prelude).
@@ -143,7 +143,8 @@ export function AntigravityParticleField({ className, theme }: Props) {
       transparent: true,
       depthTest: false,
       depthWrite: false,
-      blending: THREE.AdditiveBlending, // implementation choice — not source-proven
+      // Additive disappears on white. Use Normal blending in light mode.
+      blending: isDark() ? THREE.AdditiveBlending : THREE.NormalBlending,
     });
 
     // Fallback observer only when no explicit theme prop is provided.
