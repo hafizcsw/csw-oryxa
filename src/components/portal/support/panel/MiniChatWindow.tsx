@@ -30,7 +30,7 @@ export function MiniChatWindow({ item, onClose, onMinimize }: MiniChatWindowProp
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 24, scale: 0.96 }}
       transition={{ type: "spring", stiffness: 320, damping: 28 }}
-      className="absolute bottom-2 end-2 z-30 w-[320px] h-[440px] max-w-[calc(100%-1rem)] sm:max-w-[320px] flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden"
+      className="absolute bottom-0 end-full me-2 z-30 w-[320px] h-[440px] max-w-[calc(100vw-2rem)] sm:max-w-[320px] flex flex-col rounded-2xl bg-card border border-border shadow-2xl overflow-hidden"
       role="dialog"
       aria-label={title}
     >
