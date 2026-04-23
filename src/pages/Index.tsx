@@ -500,10 +500,6 @@ const Index = () => {
                 <OrxRankSection />
               </div>
 
-              {/* 10. Partners marquee */}
-              <div className="border-t border-[var(--ag-border)]">
-                <PartnersMarquee />
-              </div>
 
               {/* 11. Use-case triptych */}
               <AGSection
