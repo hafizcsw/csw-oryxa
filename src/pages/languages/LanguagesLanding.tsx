@@ -15,6 +15,7 @@ import { TeacherCard } from "@/components/languages/TeacherCard";
 import { TeacherFilters } from "@/components/languages/TeacherFilters";
 import { MOCK_TEACHERS } from "@/components/languages/teacherData";
 import { useRealTeacherAvatars } from "@/hooks/useRealTeacherAvatars";
+import { LazyMount } from "@/components/perf/LazyMount";
 
 interface LanguageCard {
   id: string;
@@ -221,12 +222,15 @@ export default function LanguagesLanding() {
             </motion.div>
 
             {teachers.slice(3).map((teacher, i) => (
-              <TeacherCard key={teacher.id} teacher={teacher} index={i + 3} />
+              <LazyMount key={teacher.id} minHeight={180} rootMargin="500px 0px">
+                <TeacherCard teacher={teacher} index={i + 3} />
+              </LazyMount>
             ))}
           </div>
         </section>
 
 
+        <LazyMount minHeight={400} rootMargin="500px 0px">
         <section className="max-w-5xl mx-auto px-4 py-16">
           <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="text-center mb-12">
@@ -444,6 +448,7 @@ export default function LanguagesLanding() {
             })}
           </div>
         </section>
+        </LazyMount>
 
       </div>
     </Layout>
