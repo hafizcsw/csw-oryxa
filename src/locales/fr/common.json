@@ -453,6 +453,56 @@
         }
       },
       "cta": "Découvrir la méthodologie ORX RANK"
+    },
+    "ag": {
+      "eyebrow": {
+        "mission": "NOTRE MISSION",
+        "journey": "PARCOURS ÉTUDIANT",
+        "global": "PORTÉE MONDIALE",
+        "platform": "PLATEFORME"
+      },
+      "statement1": {
+        "headline": "Une nouvelle façon de découvrir, décider et partir pour votre université à l'étranger.",
+        "desc": "ORYXA rassemble chaque étape du parcours étudiant mondial dans une interface calme et intelligente."
+      },
+      "triptych1": {
+        "discover": {
+          "title": "Découvrir",
+          "desc": "Explorez 500+ programmes dans 25+ pays avec des filtres intelligents."
+        },
+        "decide": {
+          "title": "Décider",
+          "desc": "Comparez admissions, coûts et adéquation côte à côte."
+        },
+        "depart": {
+          "title": "Partir",
+          "desc": "Visa, logement et arrivée — accompagnement de bout en bout."
+        }
+      },
+      "statement2": {
+        "headline": "Conçue pour les étudiants du monde, en douze langues.",
+        "desc": "De la licence au master jusqu'aux bourses — une seule plateforme, dans votre langue."
+      },
+      "triptych2": {
+        "undergrad": {
+          "title": "Licence",
+          "desc": "Trouvez votre premier diplôme en toute confiance."
+        },
+        "postgrad": {
+          "title": "Master",
+          "desc": "Trouvez des programmes qui correspondent à votre profil."
+        },
+        "scholarship": {
+          "title": "Bourses",
+          "desc": "Découvrez les voies financées que vous auriez manquées."
+        }
+      },
+      "anchor": {
+        "headline": "Commencez votre parcours.",
+        "primary": "Commencer",
+        "secondary": "Parler à ORYXA"
+      },
+      "display": "ORYXA"
     }
   },
   "services": {

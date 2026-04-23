@@ -453,6 +453,56 @@
         }
       },
       "cta": "ORX-RANK-Methodik entdecken"
+    },
+    "ag": {
+      "eyebrow": {
+        "mission": "UNSERE MISSION",
+        "journey": "STUDIENREISE",
+        "global": "GLOBALE REICHWEITE",
+        "platform": "PLATTFORM"
+      },
+      "statement1": {
+        "headline": "Eine neue Art, Ihre Universität im Ausland zu entdecken, zu entscheiden und abzureisen.",
+        "desc": "ORYXA vereint jeden Schritt der globalen Studienreise in einer ruhigen, intelligenten Oberfläche."
+      },
+      "triptych1": {
+        "discover": {
+          "title": "Entdecken",
+          "desc": "Über 500 Programme in 25+ Ländern mit intelligenten Filtern."
+        },
+        "decide": {
+          "title": "Entscheiden",
+          "desc": "Zulassung, Kosten und Passung klar vergleichen."
+        },
+        "depart": {
+          "title": "Abreisen",
+          "desc": "Visum, Unterkunft und Ankunft — durchgehend begleitet."
+        }
+      },
+      "statement2": {
+        "headline": "Für globale Studierende, in zwölf Sprachen.",
+        "desc": "Von Bachelor bis Master und Stipendien — eine Plattform, Ihre Sprache."
+      },
+      "triptych2": {
+        "undergrad": {
+          "title": "Bachelor",
+          "desc": "Finden Sie Ihren ersten Abschluss mit Vertrauen."
+        },
+        "postgrad": {
+          "title": "Master",
+          "desc": "Programme, die wirklich zu Ihrem Profil passen."
+        },
+        "scholarship": {
+          "title": "Stipendien",
+          "desc": "Entdecken Sie finanzierte Wege."
+        }
+      },
+      "anchor": {
+        "headline": "Beginnen Sie Ihre Reise.",
+        "primary": "Loslegen",
+        "secondary": "Mit ORYXA sprechen"
+      },
+      "display": "ORYXA"
     }
   },
   "services": {

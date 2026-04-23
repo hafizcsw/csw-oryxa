@@ -472,6 +472,56 @@
       "minAgo": "{{n}}m ago",
       "hourAgo": "{{n}}h ago",
       "dayAgo": "{{n}}d ago"
+    },
+    "ag": {
+      "eyebrow": {
+        "mission": "OUR MISSION",
+        "journey": "STUDENT JOURNEY",
+        "global": "GLOBAL REACH",
+        "platform": "PLATFORM"
+      },
+      "statement1": {
+        "headline": "A new way to discover, decide, and depart for your university abroad.",
+        "desc": "ORYXA brings every step of the global student journey into one calm, intelligent surface."
+      },
+      "triptych1": {
+        "discover": {
+          "title": "Discover",
+          "desc": "Search 500+ programs across 25+ countries with intent-aware filters."
+        },
+        "decide": {
+          "title": "Decide",
+          "desc": "Compare admissions, costs, and fit side-by-side with clear evidence."
+        },
+        "depart": {
+          "title": "Depart",
+          "desc": "Get visa, housing, and arrival support — guided end-to-end."
+        }
+      },
+      "statement2": {
+        "headline": "Built for global students, in twelve languages.",
+        "desc": "From undergraduate discovery to postgraduate strategy and scholarship hunting — one platform, your language."
+      },
+      "triptych2": {
+        "undergrad": {
+          "title": "Undergraduate",
+          "desc": "Find your first degree with confidence."
+        },
+        "postgrad": {
+          "title": "Postgraduate",
+          "desc": "Match to programs that actually fit your profile."
+        },
+        "scholarship": {
+          "title": "Scholarships",
+          "desc": "Surface funded paths you would have missed."
+        }
+      },
+      "anchor": {
+        "headline": "Begin your journey.",
+        "primary": "Get started",
+        "secondary": "Talk to ORYXA"
+      },
+      "display": "ORYXA"
     }
   },
   "services": {
