@@ -1,110 +1,110 @@
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowRight, Compass, BarChart3, Target, Brain, Zap, Shield, Globe } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AnomalyOrb from "@/components/orb/AnomalyOrb";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 24 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, delay: i * 0.1, ease: "easeOut" as const },
+    transition: { duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
-export function AboutOryxaSection() {
-  const { t } = useLanguage();
-  const navigate = useNavigate();
+const CAPABILITIES = ["discovery", "comparison", "decision", "automation", "trust", "global"] as const;
 
-  const capabilities = [
-    { icon: Brain, key: "discovery", color: "text-blue-400", bg: "bg-blue-500/10" },
-    { icon: BarChart3, key: "comparison", color: "text-emerald-400", bg: "bg-emerald-500/10" },
-    { icon: Target, key: "decision", color: "text-amber-400", bg: "bg-amber-500/10" },
-    { icon: Zap, key: "automation", color: "text-purple-400", bg: "bg-purple-500/10" },
-    { icon: Shield, key: "trust", color: "text-rose-400", bg: "bg-rose-500/10" },
-    { icon: Globe, key: "global", color: "text-cyan-400", bg: "bg-cyan-500/10" },
-  ];
+export function AboutOryxaSection() {
+  const { t, language } = useLanguage();
+  const navigate = useNavigate();
+  const isRTL = ["ar", "he", "fa", "ur"].includes(language);
 
   return (
-    <section className="relative py-24 px-6 overflow-hidden">
-      {/* Subtle background glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]" />
-      </div>
-
-      <div className="max-w-6xl mx-auto relative z-10">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            custom={0}
-            variants={fadeUp}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-bold tracking-wide mb-5"
-          >
-            <Sparkles className="h-4 w-4" />
+    <section className="relative py-28 md:py-36 px-6 overflow-hidden bg-transparent">
+      <div className="max-w-[1280px] mx-auto">
+        {/* Eyebrow */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
+          custom={0}
+          variants={fadeUp}
+          className="flex items-center gap-3 mb-10"
+        >
+          <span className="h-px w-10 bg-[var(--ag-border)]" />
+          <span className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[var(--ag-muted)]">
             {t("home.aboutOryxa.badge")}
-          </motion.div>
+          </span>
+        </motion.div>
 
-          <motion.h2
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            custom={1}
-            variants={fadeUp}
-            className="text-3xl md:text-5xl font-extrabold text-foreground tracking-tight mb-5"
-          >
-            {t("home.aboutOryxa.headline")}
-          </motion.h2>
+        {/* Headline + Orb split */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center mb-24">
+          <div className="lg:col-span-7 order-2 lg:order-1">
+            <motion.h2
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              custom={1}
+              variants={fadeUp}
+              className="text-[clamp(2.4rem,6vw,5.25rem)] font-semibold tracking-[-0.025em] leading-[0.98] text-[var(--ag-fg)] mb-8"
+            >
+              {t("home.aboutOryxa.headline")}
+            </motion.h2>
 
-          <motion.p
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            custom={2}
-            variants={fadeUp}
-            className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed"
-          >
-            {t("home.aboutOryxa.subheadline")}
-          </motion.p>
-        </div>
+            <motion.p
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              custom={2}
+              variants={fadeUp}
+              className="text-lg md:text-xl text-[var(--ag-muted)] max-w-xl leading-[1.6]"
+            >
+              {t("home.aboutOryxa.subheadline")}
+            </motion.p>
+          </div>
 
-        {/* Orb centered + Capabilities grid below */}
-        <div className="flex flex-col items-center gap-14">
           {/* Orb */}
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            custom={0}
+            custom={2}
             variants={fadeUp}
-            className="relative"
+            className="lg:col-span-5 order-1 lg:order-2 flex items-center justify-center"
           >
-            <AnomalyOrb size={220} distortion={0.6} pulseSpeed={0.6} />
+            <AnomalyOrb size={300} distortion={0.6} pulseSpeed={0.6} />
           </motion.div>
+        </div>
 
-          {/* Capabilities Grid - 3x2 */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full">
-            {capabilities.map(({ icon: Icon, key, color, bg }, i) => (
+        {/* Capabilities — editorial numbered list */}
+        <div className="border-t border-[var(--ag-border)]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {CAPABILITIES.map((key, i) => (
               <motion.div
                 key={key}
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: true }}
-                custom={i + 1}
+                viewport={{ once: true, margin: "-60px" }}
+                custom={i}
                 variants={fadeUp}
-                className="group relative p-4 rounded-xl border border-border/40 bg-card/50 backdrop-blur-sm hover:border-primary/30 hover:bg-card/80 transition-all duration-300"
+                className={cn(
+                  "group relative py-10 px-2 md:px-6",
+                  "border-b border-[var(--ag-border)]",
+                  "md:[&:nth-child(odd)]:border-r lg:[&:nth-child(odd)]:border-r-0",
+                  "lg:[&:not(:nth-child(3n))]:border-r border-[var(--ag-border)]"
+                )}
               >
-                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center mb-3", bg)}>
-                  <Icon className={cn("w-4 h-4", color)} />
+                <div className="flex items-baseline gap-4 mb-4">
+                  <span className="text-xs font-mono text-[var(--ag-muted)] tabular-nums">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className="text-xl md:text-2xl font-semibold tracking-[-0.01em] text-[var(--ag-fg)]">
+                    {t(`home.aboutOryxa.capability.${key}.title`)}
+                  </h3>
                 </div>
-                <h3 className="text-sm font-bold text-foreground mb-2">
-                  {t(`home.aboutOryxa.capability.${key}.title`)}
-                </h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-[15px] text-[var(--ag-muted)] leading-[1.65] pl-9">
                   {t(`home.aboutOryxa.capability.${key}.desc`)}
                 </p>
               </motion.div>
@@ -119,18 +119,20 @@ export function AboutOryxaSection() {
           viewport={{ once: true }}
           custom={0}
           variants={fadeUp}
-          className="text-center mt-12"
+          className="mt-20 flex justify-center"
         >
           <button
             onClick={() => navigate("/about-oryxa")}
             className={cn(
-              "inline-flex items-center gap-2 px-7 py-3 rounded-full",
-              "bg-primary text-primary-foreground font-bold text-sm",
-              "hover:opacity-90 transition-opacity shadow-lg shadow-primary/20"
+              "group inline-flex items-center gap-3 px-8 py-4 rounded-full",
+              "border border-[var(--ag-border)] bg-transparent",
+              "text-[var(--ag-fg)] text-sm font-medium tracking-wide",
+              "hover:bg-[var(--ag-fg)] hover:text-[var(--ag-bg)]",
+              "transition-colors duration-300"
             )}
           >
             {t("home.aboutOryxa.cta")}
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className={cn("w-4 h-4 transition-transform group-hover:translate-x-1", isRTL && "rotate-180 group-hover:-translate-x-1")} />
           </button>
         </motion.div>
       </div>
