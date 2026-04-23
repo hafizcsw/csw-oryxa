@@ -1010,39 +1010,42 @@ All colors MUST be HSL.
 }
 
 /* =========================================================
-   Hero reveal stage — push handoff (no floating overlay)
+   Hero reveal stage — Antigravity-style curtain handoff
    --------------------------------------------------------
-   Stage = relative + overflow:clip, height 200vh.
-   Sticky viewport (100vh, overflow:clip) holds ONLY:
-     [video z0] [hero z1] [veil z2]
-   Next section lives AFTER sticky in normal flow — it does
-   NOT float over hero. As the user scrolls, the document
-   pushes the sticky out the top while next slides up into
-   place from below, contained by the stage's clip.
-   --rp (0..1) drives only intra-hero motion + veil.
+   Mechanic (matches antigravity.google):
+   • Hero stays VISUALLY ANCHORED in the sticky viewport.
+   • Next section slides UP from below as a curtain that
+     "lifts" hero off-screen — hero never translates up
+     itself; next rises from y:100vh → 0 over the stage.
+   • Top edge of next has rounded corners + soft shadow
+     so it reads as a separate plane handing off the hero.
+   • Stage clips everything; nothing floats outside.
+
+   --rp (0..1) drives:
+     - subtle hero scale-down + slight fade (depth cue)
+     - veil opacity (masks hero behind rising curtain)
+     - next translateY 100vh → 0 (the actual handoff)
    ========================================================= */
 .reveal-stage {
   --rp: 0;
-  /* gentle hero lift: 0 -> -8vh (parallax inside sticky) */
-  --hero-y: calc(var(--rp) * -8vh);
-  /* very subtle scale: 1 -> 0.97 */
-  --hero-scale: calc(1 - (var(--rp) * 0.03));
-  /* hero content fade: 1 -> 0.55 (stays readable until handoff) */
-  --hero-opacity: calc(1 - (var(--rp) * 0.45));
-  /* dark veil: 0 -> 0.35 (masks hero edge during push) */
-  --overlay-opacity: calc(var(--rp) * 0.35);
+  /* hero depth cue: barely-there scale + fade */
+  --hero-scale: calc(1 - (var(--rp) * 0.04));
+  --hero-opacity: calc(1 - (var(--rp) * 0.35));
+  /* veil behind curtain edge: 0 -> 0.45 */
+  --overlay-opacity: calc(var(--rp) * 0.45);
+  /* curtain rise: starts off-screen, lands at 0 */
+  --next-y: calc((1 - var(--rp)) * 100vh);
 }
 
 .reveal-stage .reveal-sticky {
-  /* hard containment so nothing visually escapes the viewport box */
   overflow: clip;
   contain: paint;
 }
 
 .reveal-stage .reveal-hero {
-  transform: translate3d(0, var(--hero-y), 0) scale(var(--hero-scale));
+  transform: scale(var(--hero-scale));
   opacity: var(--hero-opacity);
-  transform-origin: center center;
+  transform-origin: center 40%;
 }
 
 .reveal-stage .reveal-overlay {
@@ -1054,12 +1057,21 @@ All colors MUST be HSL.
 .reveal-stage .reveal-hero    { position: relative; z-index: 1; }
 .reveal-stage .reveal-overlay { z-index: 2; }
 
-/* Next section sits in normal flow under the sticky.
-   No transform, no opacity tricks — real document push. */
+/* The curtain: next section rises from below over the sticky.
+   It's absolutely positioned inside the stage so it can
+   overlay the sticky viewport while the stage clips it. */
 .reveal-stage .reveal-next {
-  position: relative;
-  z-index: 0;
+  position: absolute;
+  inset: 0 0 auto 0;
+  top: 100vh;                /* sits just below sticky viewport */
+  z-index: 3;                /* above hero + veil */
+  transform: translate3d(0, var(--next-y), 0);
+  will-change: transform;
   background-color: hsl(var(--background));
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  box-shadow: 0 -24px 48px -12px hsl(0 0% 0% / 0.45);
+  overflow: hidden;
 }
 
 /* Hero reveal background video — sits behind hero, fades up with --rp */
@@ -1067,7 +1079,7 @@ All colors MUST be HSL.
   opacity: calc(0.4 + var(--rp) * 0.45);
 }
 
-/* Mobile / reduced motion: no scrub, no sticky, just stacked sections. */
+/* Mobile / reduced motion: no curtain, just stacked sections. */
 @media (max-width: 768px), (prefers-reduced-motion: reduce) {
   .reveal-stage {
     height: auto !important;
@@ -1085,12 +1097,17 @@ All colors MUST be HSL.
   .reveal-stage .reveal-overlay { display: none; }
   .reveal-stage .reveal-video   { display: none; }
   .reveal-stage .reveal-next {
+    position: relative;
+    top: auto;
+    inset: auto;
+    transform: none;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
     opacity: 0;
-    transform: translate3d(0, 24px, 0);
-    transition: transform 500ms ease-out, opacity 500ms ease-out;
+    transition: opacity 500ms ease-out, transform 500ms ease-out;
   }
   .reveal-stage .reveal-next[data-revealed="true"] {
-    transform: translate3d(0, 0, 0);
     opacity: 1;
   }
 }
