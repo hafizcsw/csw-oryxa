@@ -416,235 +416,86 @@ const Index = () => {
   return (
     <ChatProvider>
       <Layout>
-          {/* Hero + first section — normal flow, no sticky reveal */}
+          {/* Hero — untouched */}
           <HeroSection />
+
           <Suspense fallback={<div className="min-h-[400px]" />}>
-            <LazyMount minHeight={400}><UniversityCommunitySection /></LazyMount>
-          </Suspense>
+            {/* 1. Mission statement */}
+            <AGSection eyebrow={t("home.ag.eyebrow.mission")}>
+              <AGStatement
+                headline={t("home.ag.statement1.headline")}
+                description={t("home.ag.statement1.desc")}
+              />
+            </AGSection>
 
-          {/* Remaining below-the-fold sections are lazy-loaded behind a single Suspense boundary */}
-          <Suspense fallback={<div className="min-h-[200px]" />}>
-
-
-           {/* About ORYXA */}
-           <LazyMount minHeight={400}><AboutOryxaSection /></LazyMount>
-
-          {/* Enhanced Services Section */}
-          <LazyMount minHeight={500}>
-          <section className="py-20 px-6 bg-gradient-to-b from-background to-muted/30">
-            <div className="max-w-7xl mx-auto">
-              <div className="text-center space-y-3 mb-16">
-                <h2 className="text-4xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
-                  {t("home.services.heading")}
-                </h2>
-                <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                  {t("home.services.subheading")}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                {visibleIcons.map((icon, index) => {
-                  const iconData = getIconComponent(icon.icon_key);
-                  const serviceCopy = getServiceCopy(t, icon.icon_key, icon.title);
-                  return (
-                    <DSIconGridItem
-                      key={icon.id}
-                      icon={iconData?.icon}
-                      iconKey={icon.icon_key}
-                      iconColor={iconData?.color}
-                      title={serviceCopy.title}
-                      description={serviceCopy.description}
-                      comingSoon={icon.action_type === 'coming_soon'}
-                      onClick={() => onIconClick(icon)}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-          </LazyMount>
-
-          {/* Institutions Section */}
-          <LazyMount minHeight={400}><InstitutionsSection /></LazyMount>
-
-          {/* ORX RANK Section */}
-          <LazyMount minHeight={400}><OrxRankSection /></LazyMount>
-
-          {/* Interactive World Map */}
-          <LazyMount minHeight={500}><WorldMapSection /></LazyMount>
-
-          {/* Enhanced Study Destinations Section */}
-          <LazyMount minHeight={600}>
-          <section id="destinations" className="py-20 px-6 bg-background">
-            <div className="max-w-7xl mx-auto">
-              <div className="flex flex-col items-center text-center mb-12 gap-6">
-                <div className="space-y-2">
-                  <h2 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                    {t("home.destinations.title")}
-                  </h2>
-                  <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                    {t("home.destinations.subtitle")}
-                  </p>
-                </div>
-                <button
-                  onClick={() => navigate('/universities?tab=programs')}
-                  className="group inline-flex items-center justify-center gap-2 text-purple-600 hover:text-purple-700 font-semibold transition-all duration-300 hover:gap-3"
-                >
-                  {t("home.destinations.viewAll")}
-                  <ChevronRight className="group-hover:translate-x-[-4px] transition-transform" />
-                </button>
-              </div>
-              
-              <Carousel key={`destinations-${language}`} plugins={[plugin.current]} setApi={setCarouselApi} className="w-full" opts={{ direction: "ltr" }} dir="ltr">
-                <CarouselContent>
-                  {countries.map((country, index) => (
-                    <CarouselItem key={country.id} className="md:basis-1/2 lg:basis-1/3">
-                      <div
-                        className="group cursor-pointer animate-fade-in"
-                        style={{ animationDelay: `${index * 80}ms` }}
-                        onClick={() => handleCountryClick(country.slug)}
-                      >
-                        <div className="overflow-hidden border-2 border-border/50 hover:border-purple-500/50 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] rounded-xl bg-card">
-                          <div className="relative overflow-hidden">
-                            <img 
-                              src={country.image_url || '/placeholder.svg'} 
-                              alt={getCountryName(country.slug, country.name_en || country.name_ar)} 
-                              loading={index < 3 ? "eager" : "lazy"}
-                              decoding="async"
-                              className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500" 
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                          </div>
-                          <div className="p-6 space-y-2">
-                            <h3 className="font-bold text-xl group-hover:text-purple-600 transition-colors">
-                              {getCountryName(country.slug, country.name_en || country.name_ar)}
-                            </h3>
-                            <p className="text-muted-foreground flex items-center gap-2">
-                              <MapPin className="w-4 h-4" />
-                              {t("home.destinations.explore")}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="left-2 hover:bg-purple-100 dark:hover:bg-purple-900/30" />
-                <CarouselNext className="right-2 hover:bg-purple-100 dark:hover:bg-purple-900/30" />
-              </Carousel>
-              
-              <div className="mt-8">
-                <CarouselIndicators 
-                  count={countries.length} 
-                  activeIndex={currentSlide}
-                  onIndicatorClick={(index) => carouselApi?.scrollTo(index)}
-                />
-              </div>
-            </div>
-          </section>
-
-
-          </LazyMount>
-
-          {/* Enhanced Testimonials Section */}
-          {testimonials.length > 0 && (
-            <LazyMount minHeight={500}>
-            <section className="py-20 px-6 bg-gradient-to-b from-muted/30 to-background">
-              <div className="max-w-7xl mx-auto">
-                <div className="text-center space-y-3 mb-16">
-                  <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-                    {t("home.testimonials.title")}
-                  </h2>
-                  <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                    {t("home.testimonials.subtitle")}
-                  </p>
-                </div>
-                
-                <Carousel key={`testimonials-${language}`} className="w-full" opts={{ direction: "ltr", align: "start", loop: true }} dir="ltr">
-                  <CarouselContent>
-                    {testimonials.map((testimonial, index) => (
-                      <CarouselItem key={testimonial.id} className="md:basis-1/2 lg:basis-1/3">
-                        <AutoPlayVideoCard testimonial={testimonial} index={index} />
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  <CarouselPrevious />
-                  <CarouselNext />
-                </Carousel>
-              </div>
-            </section>
-            </LazyMount>
-          )}
-
-          {/* Enhanced Blog Posts Section */}
-          {posts.length > 0 && (
-            <LazyMount minHeight={500}>
-            <section className="py-20 px-6 bg-background">
-              <div className="max-w-7xl mx-auto">
-                <div className="flex justify-between items-center mb-12">
-                  <div>
-                    <h2 className="text-4xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                      {t("home.blog.title")}
-                    </h2>
-                    <p className="text-muted-foreground text-lg">
-                      {t("home.blog.subtitle")}
+            {/* 2. Student journey triptych */}
+            <AGSection eyebrow={t("home.ag.eyebrow.journey")}>
+              <AGTriptych>
+                {(["discover", "decide", "depart"] as const).map((k, i) => (
+                  <AGCard key={k} index={i}>
+                    <h3 className="text-2xl md:text-[28px] font-semibold tracking-[-0.01em] mb-3">
+                      {t(`home.ag.triptych1.${k}.title`)}
+                    </h3>
+                    <p className="text-[var(--ag-muted)] leading-relaxed text-[15px]">
+                      {t(`home.ag.triptych1.${k}.desc`)}
                     </p>
-                  </div>
-                  <button 
-                    onClick={() => navigate('/blog')} 
-                    className="group flex items-center gap-2 text-violet-600 hover:text-violet-700 font-semibold transition-all duration-300 hover:gap-3"
-                  >
-                    {t("home.blog.viewAll")}
-                    <ChevronRight className="group-hover:translate-x-[-4px] transition-transform" />
-                  </button>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {posts.slice(0, 6).map((post, index) => (
-                    <div
-                      key={post.id}
-                      className="group cursor-pointer animate-fade-in"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                      onClick={() => {
-                        handlePostClick(post.id, post.slug);
-                        navigate(`/blog/${post.slug}`);
-                      }}
-                    >
-                      <div className="h-full overflow-hidden border-2 border-border/50 hover:border-violet-500/50 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] rounded-xl bg-card">
-                        {post.image_url && (
-                          <div className="relative overflow-hidden h-52">
-                            <img 
-                              src={post.image_url} 
-                              alt={post.title} 
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                          </div>
-                        )}
-                        <div className="p-6 flex-1 flex flex-col space-y-3">
-                          <h3 className="font-bold text-xl group-hover:text-violet-600 transition-colors line-clamp-2">
-                            {post.title}
-                          </h3>
-                          {post.excerpt && (
-                            <p className="text-muted-foreground text-sm line-clamp-3 flex-1 leading-relaxed">
-                              {post.excerpt}
-                            </p>
-                          )}
-                          <div className="flex items-center justify-between pt-3 border-t border-border/50">
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <TrendingUp className="w-3 h-3" />
-                              {new Date(post.published_at).toLocaleDateString(uiDateLocale)}
-                            </span>
-                            <ArrowRight className="w-4 h-4 text-violet-600 group-hover:translate-x-[-4px] transition-transform" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-            </LazyMount>
-          )}
+                  </AGCard>
+                ))}
+              </AGTriptych>
+            </AGSection>
+
+            {/* 3. World map (kept, restyled wrapper) */}
+            <AGSection eyebrow={t("home.ag.eyebrow.global")} innerClassName="!max-w-[1400px]">
+              <LazyMount minHeight={400}><WorldMapSection /></LazyMount>
+            </AGSection>
+
+            {/* 4. Built-for global students statement */}
+            <AGSection>
+              <AGStatement
+                headline={t("home.ag.statement2.headline")}
+                description={t("home.ag.statement2.desc")}
+              />
+            </AGSection>
+
+            {/* 5. Use-case triptych */}
+            <AGSection eyebrow={t("home.ag.eyebrow.platform")}>
+              <AGTriptych>
+                {(["undergrad", "postgrad", "scholarship"] as const).map((k, i) => (
+                  <AGCard key={k} index={i}>
+                    <h3 className="text-2xl md:text-[28px] font-semibold tracking-[-0.01em] mb-3">
+                      {t(`home.ag.triptych2.${k}.title`)}
+                    </h3>
+                    <p className="text-[var(--ag-muted)] leading-relaxed text-[15px]">
+                      {t(`home.ag.triptych2.${k}.desc`)}
+                    </p>
+                  </AGCard>
+                ))}
+              </AGTriptych>
+            </AGSection>
+
+            {/* 6. About ORYXA (kept) */}
+            <AGSection>
+              <LazyMount minHeight={400}><AboutOryxaSection /></LazyMount>
+            </AGSection>
+
+            {/* 7. Partners marquee (kept) */}
+            <LazyMount minHeight={300}><PartnersMarquee /></LazyMount>
+
+            {/* 8. Dark anchor band with particles */}
+            <AGAnchorBand
+              headline={t("home.ag.anchor.headline")}
+              primaryCta={{
+                label: t("home.ag.anchor.primary"),
+                onClick: goSearch,
+              }}
+              secondaryCta={{
+                label: t("home.ag.anchor.secondary"),
+                onClick: openOldChat,
+              }}
+            />
+
+            {/* 9. Footer-anchor display word */}
+            <AGDisplayAnchor word={t("home.ag.display")} />
           </Suspense>
         </Layout>
       </ChatProvider>
