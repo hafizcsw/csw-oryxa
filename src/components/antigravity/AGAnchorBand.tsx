@@ -5,7 +5,7 @@ import { useAGReveal } from "./useAGReveal";
 
 const AntigravityParticleField = lazy(() =>
   import("@/components/home/hero-shader/antigravity/AntigravityParticleField").then(
-    (m) => ({ default: m.default ?? (m as any).AntigravityParticleField })
+    (m) => ({ default: m.AntigravityParticleField })
   )
 );
 
