@@ -219,6 +219,15 @@ export function Footer() {
           </div>
         </div>
 
+        {/* Antigravity-style giant brand word — sits between links and copyright */}
+        <div
+          aria-hidden="true"
+          className="select-none text-center font-display font-semibold tracking-[-0.04em] text-foreground leading-[0.85] my-12 px-2 whitespace-nowrap"
+          style={{ fontSize: "clamp(80px, 18vw, 260px)" }}
+        >
+          ORYXA
+        </div>
+
         {/* Copyright & Legal */}
         <div className="text-center space-y-2">
           <div className="flex justify-center gap-4">
@@ -233,15 +242,6 @@ export function Footer() {
             © {new Date().getFullYear()} Connect Study World. {t("footer.copyright")}.
           </p>
         </div>
-      </div>
-
-      {/* Antigravity-style giant brand word — flush to footer bottom */}
-      <div
-        aria-hidden="true"
-        className="select-none text-center font-display font-semibold tracking-[-0.04em] text-foreground/90 leading-[0.78] mt-12 -mb-[0.18em] px-2 whitespace-nowrap"
-        style={{ fontSize: "clamp(120px, 28vw, 420px)" }}
-      >
-        ORYXA
       </div>
     </footer>
   );
