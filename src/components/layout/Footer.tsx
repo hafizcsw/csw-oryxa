@@ -234,6 +234,15 @@ export function Footer() {
           </p>
         </div>
       </div>
+
+      {/* Antigravity-style giant brand word — flush to footer bottom */}
+      <div
+        aria-hidden="true"
+        className="select-none text-center font-display font-semibold tracking-[-0.04em] text-foreground/90 leading-[0.78] mt-12 -mb-[0.18em] px-2 whitespace-nowrap"
+        style={{ fontSize: "clamp(120px, 28vw, 420px)" }}
+      >
+        ORYXA
+      </div>
     </footer>
   );
 }
