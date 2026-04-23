@@ -470,6 +470,7 @@ const Index = () => {
           <LazyMount minHeight={500}><WorldMapSection /></LazyMount>
 
           {/* Enhanced Study Destinations Section */}
+          <LazyMount minHeight={600}>
           <section id="destinations" className="py-20 px-6 bg-background">
             <div className="max-w-7xl mx-auto">
               <div className="flex flex-col items-center text-center mb-12 gap-6">
@@ -539,8 +540,11 @@ const Index = () => {
           </section>
 
 
+          </LazyMount>
+
           {/* Enhanced Testimonials Section */}
           {testimonials.length > 0 && (
+            <LazyMount minHeight={500}>
             <section className="py-20 px-6 bg-gradient-to-b from-muted/30 to-background">
               <div className="max-w-7xl mx-auto">
                 <div className="text-center space-y-3 mb-16">
@@ -565,10 +569,12 @@ const Index = () => {
                 </Carousel>
               </div>
             </section>
+            </LazyMount>
           )}
 
           {/* Enhanced Blog Posts Section */}
           {posts.length > 0 && (
+            <LazyMount minHeight={500}>
             <section className="py-20 px-6 bg-background">
               <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-12">
@@ -634,6 +640,7 @@ const Index = () => {
                 </div>
               </div>
             </section>
+            </LazyMount>
           )}
           </Suspense>
         </Layout>
