@@ -2672,6 +2672,59 @@ export type Database = {
         }
         Relationships: []
       }
+      credential_mapping_decision_log: {
+        Row: {
+          created_at: string
+          decision_kind: string
+          evidence_ids: string[]
+          id: string
+          matched_rule_id: string | null
+          normalized_id: string | null
+          normalizer_version: string
+          params: Json
+          reason_code: string
+          source_country_code: string
+          student_user_id: string
+          trace_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          decision_kind: string
+          evidence_ids?: string[]
+          id?: string
+          matched_rule_id?: string | null
+          normalized_id?: string | null
+          normalizer_version: string
+          params?: Json
+          reason_code: string
+          source_country_code: string
+          student_user_id: string
+          trace_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          decision_kind?: string
+          evidence_ids?: string[]
+          id?: string
+          matched_rule_id?: string | null
+          normalized_id?: string | null
+          normalizer_version?: string
+          params?: Json
+          reason_code?: string
+          source_country_code?: string
+          student_user_id?: string
+          trace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credential_mapping_decision_log_normalized_id_fkey"
+            columns: ["normalized_id"]
+            isOneToOne: false
+            referencedRelation: "student_credential_normalized"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       csw_program_guidance: {
         Row: {
           created_at: string | null
@@ -3403,6 +3456,127 @@ export type Database = {
           updated_at?: string
           usefulness_status?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      document_evidence_flag: {
+        Row: {
+          canonical_id: string
+          created_at: string
+          flag_code: string
+          id: string
+          params: Json
+          raised_by: string
+          severity: string
+          student_user_id: string
+          trace_id: string | null
+        }
+        Insert: {
+          canonical_id: string
+          created_at?: string
+          flag_code: string
+          id?: string
+          params?: Json
+          raised_by: string
+          severity: string
+          student_user_id: string
+          trace_id?: string | null
+        }
+        Update: {
+          canonical_id?: string
+          created_at?: string
+          flag_code?: string
+          id?: string
+          params?: Json
+          raised_by?: string
+          severity?: string
+          student_user_id?: string
+          trace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_evidence_flag_canonical_id_fkey"
+            columns: ["canonical_id"]
+            isOneToOne: false
+            referencedRelation: "document_extraction_canonical"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_extraction_canonical: {
+        Row: {
+          canonical_fields: Json
+          canonicalizer_version: string
+          created_at: string
+          id: string
+          raw_extraction_id: string
+          source_country_code: string | null
+          student_user_id: string
+          trace_id: string | null
+        }
+        Insert: {
+          canonical_fields: Json
+          canonicalizer_version: string
+          created_at?: string
+          id?: string
+          raw_extraction_id: string
+          source_country_code?: string | null
+          student_user_id: string
+          trace_id?: string | null
+        }
+        Update: {
+          canonical_fields?: Json
+          canonicalizer_version?: string
+          created_at?: string
+          id?: string
+          raw_extraction_id?: string
+          source_country_code?: string | null
+          student_user_id?: string
+          trace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_extraction_canonical_raw_extraction_id_fkey"
+            columns: ["raw_extraction_id"]
+            isOneToOne: false
+            referencedRelation: "document_extraction_raw"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_extraction_raw: {
+        Row: {
+          created_at: string
+          extractor_name: string
+          extractor_version: string | null
+          id: string
+          raw_payload: Json
+          source_country_code: string | null
+          source_document_id: string | null
+          student_user_id: string
+          trace_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          extractor_name: string
+          extractor_version?: string | null
+          id?: string
+          raw_payload: Json
+          source_country_code?: string | null
+          source_document_id?: string | null
+          student_user_id: string
+          trace_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          extractor_name?: string
+          extractor_version?: string | null
+          id?: string
+          raw_payload?: Json
+          source_country_code?: string | null
+          source_document_id?: string | null
+          student_user_id?: string
+          trace_id?: string | null
         }
         Relationships: []
       }
@@ -16731,6 +16905,53 @@ export type Database = {
         }
         Relationships: []
       }
+      student_award_raw: {
+        Row: {
+          award_grade_raw: string | null
+          award_name_raw: string
+          award_score_raw: string | null
+          award_year: number | null
+          created_at: string
+          id: string
+          source_country_code: string
+          source_document_canonical_id: string | null
+          student_user_id: string
+          trace_id: string | null
+        }
+        Insert: {
+          award_grade_raw?: string | null
+          award_name_raw: string
+          award_score_raw?: string | null
+          award_year?: number | null
+          created_at?: string
+          id?: string
+          source_country_code: string
+          source_document_canonical_id?: string | null
+          student_user_id: string
+          trace_id?: string | null
+        }
+        Update: {
+          award_grade_raw?: string | null
+          award_name_raw?: string
+          award_score_raw?: string | null
+          award_year?: number | null
+          created_at?: string
+          id?: string
+          source_country_code?: string
+          source_document_canonical_id?: string | null
+          student_user_id?: string
+          trace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_award_raw_source_document_canonical_id_fkey"
+            columns: ["source_document_canonical_id"]
+            isOneToOne: false
+            referencedRelation: "document_extraction_canonical"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_case_events_v1: {
         Row: {
           application_id: string | null
@@ -16881,6 +17102,71 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      student_credential_normalized: {
+        Row: {
+          confidence: number
+          created_at: string
+          evidence_ids: string[]
+          id: string
+          matched_rule_ids: string[]
+          needs_manual_review: boolean
+          normalized_cefr_level: string | null
+          normalized_credential_kind: string
+          normalized_credential_subtype: string | null
+          normalized_grade_pct: number | null
+          normalized_language_code: string | null
+          normalizer_version: string
+          source_award_raw_id: string | null
+          source_country_code: string
+          student_user_id: string
+          trace_id: string | null
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          evidence_ids?: string[]
+          id?: string
+          matched_rule_ids?: string[]
+          needs_manual_review?: boolean
+          normalized_cefr_level?: string | null
+          normalized_credential_kind: string
+          normalized_credential_subtype?: string | null
+          normalized_grade_pct?: number | null
+          normalized_language_code?: string | null
+          normalizer_version: string
+          source_award_raw_id?: string | null
+          source_country_code: string
+          student_user_id: string
+          trace_id?: string | null
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          evidence_ids?: string[]
+          id?: string
+          matched_rule_ids?: string[]
+          needs_manual_review?: boolean
+          normalized_cefr_level?: string | null
+          normalized_credential_kind?: string
+          normalized_credential_subtype?: string | null
+          normalized_grade_pct?: number | null
+          normalized_language_code?: string | null
+          normalizer_version?: string
+          source_award_raw_id?: string | null
+          source_country_code?: string
+          student_user_id?: string
+          trace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_credential_normalized_source_award_raw_id_fkey"
+            columns: ["source_award_raw_id"]
+            isOneToOne: false
+            referencedRelation: "student_award_raw"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       student_delivery_requests_v1: {
         Row: {
