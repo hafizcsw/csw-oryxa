@@ -81,4 +81,12 @@ export async function portalInvoke<T = unknown>(
       details: err instanceof Error ? err.message : String(err),
     };
   }
+  })();
+
+  if (dedupeKey) {
+    inflight.set(dedupeKey, exec);
+    exec.finally(() => inflight.delete(dedupeKey));
+  }
+
+  return exec;
 }
