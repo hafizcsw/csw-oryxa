@@ -1,4 +1,5 @@
-import { ReactNode, useEffect, useRef } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * HeroRevealStage
@@ -6,25 +7,17 @@ import { ReactNode, useEffect, useRef } from "react";
  * Antigravity-style sticky reveal between the hero and the next
  * section, WITHOUT scroll-jacking.
  *
- * Layout:
- *   <section data-reveal-stage style="height: 200vh">
- *     <div data-reveal-sticky style="position: sticky; top:0; height:100vh">
- *       {hero}            // gets transform: scale + opacity
- *       <div data-reveal-overlay /> // dark veil 0 -> 0.25
- *     </div>
- *     {next}              // translateY(80 -> 0) + opacity(0 -> 1)
- *   </section>
- *
- * Progress 0..1 is derived from scrollY relative to the stage.
- * Updated inside requestAnimationFrame, writes ONE CSS custom
- * property `--rp` on the stage element. All transforms read that
- * variable in CSS — so the JS does no per-element style writes
- * and triggers no layout.
- *
- * On viewport <= 768px we skip the scrub entirely and let CSS
- * reveal the next section with a normal IntersectionObserver
- * fade-in (lighter on mobile, no sticky math).
+ * Now also renders an optional cinematic background video behind the
+ * hero — controlled by `feature_settings.hero_reveal_video` (managed
+ * from /admin/hero-video). The video opacity rides --rp so it
+ * fades in slightly during the reveal and never blocks the chat UI
+ * (pointer-events: none, muted, playsInline, preload=metadata).
  */
+
+interface HeroVideoSetting {
+  enabled: boolean;
+  url: string | null;
+}
 
 interface HeroRevealStageProps {
   hero: ReactNode;
@@ -105,12 +98,29 @@ export function HeroRevealStage({ hero, next }: HeroRevealStageProps) {
     };
   }, []);
 
+  // Load active hero video setting (non-blocking)
+  const [video, setVideo] = useState<HeroVideoSetting>({ enabled: false, url: null });
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("feature_settings")
+        .select("value")
+        .eq("key", "hero_reveal_video")
+        .maybeSingle();
+      if (!cancelled && data?.value) {
+        const v = data.value as any;
+        setVideo({ enabled: !!v.enabled, url: v.url ?? null });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <section
       ref={stageRef}
       data-reveal-stage=""
       className="reveal-stage relative"
-      // 200vh so the sticky hero stays for one full screen of scroll.
       style={{ height: "200vh" }}
       aria-hidden={false}
     >
@@ -118,6 +128,19 @@ export function HeroRevealStage({ hero, next }: HeroRevealStageProps) {
         data-reveal-sticky=""
         className="reveal-sticky sticky top-0 h-screen w-full overflow-hidden"
       >
+        {video.enabled && video.url && (
+          <video
+            key={video.url}
+            src={video.url}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-hidden="true"
+            className="reveal-video pointer-events-none absolute inset-0 w-full h-full object-cover"
+          />
+        )}
         <div className="reveal-hero h-full w-full will-change-transform">
           {hero}
         </div>

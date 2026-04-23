@@ -95,6 +95,7 @@ export function AdminSidebar({ onClose }: AdminSidebarProps) {
       items: [
         { label: t('admin.sidebar.countries'), href: "/admin/countries", icon: "flag" },
         { label: t('admin.sidebar.newsTicker'), href: "/admin/news-ticker", icon: "monitor" },
+        { label: "Hero Video (2K)", href: "/admin/hero-video", icon: "video" },
         { label: t('admin.sidebar.videoTest'), href: "/admin/testimonials", icon: "video" },
         { label: t('admin.sidebar.universityRanking'), href: "/admin/unis-assistant", icon: "trophy" },
         { label: t('admin.sidebar.websiteEnrichment'), href: "/admin/website-enrichment", icon: "search" },
