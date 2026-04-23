@@ -1112,16 +1112,26 @@ All colors MUST be HSL.
 
 /* =========================================================
    Antigravity-style design tokens & motion
+   Theme-aware: tokens follow :root (light) and .dark
    ========================================================= */
 :root {
-  --ag-bg: #FFFFFF;
-  --ag-fg: #0F0F0F;
-  --ag-border: #E5E5E5;
-  --ag-muted: #6B6B6B;
+  /* Light mode — soft warm white, near-black ink */
+  --ag-bg: #FAFAF7;
+  --ag-fg: #0F0F10;
+  --ag-border: #E6E4DE;
+  --ag-muted: #5F5F63;
   --ag-radius: 24px;
   --ag-radius-pill: 999px;
   --ag-ease: cubic-bezier(.2,.8,.2,1);
   --ag-dur: 700ms;
+}
+
+.dark {
+  /* Dark mode — Antigravity black */
+  --ag-bg: #0A0A0A;
+  --ag-fg: #FAFAFA;
+  --ag-border: #1F1F1F;
+  --ag-muted: #9A9A9A;
 }
 
 /* Section-level enter: fade + rise once data-in flips true */
