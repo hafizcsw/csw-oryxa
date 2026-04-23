@@ -1201,7 +1201,9 @@
       "other": "অন্যান্য",
       "visa": "Visa",
       "logout": "লগ আউট",
-      "messages": "বার্তা"
+      "messages": "বার্তা",
+      "readiness": "প্রস্তুতি",
+      "myStudyFile": "আমার অধ্যয়ন ফাইল"
     },
     "nav": {
       "sections": "Sections"
@@ -1258,7 +1260,17 @@
       "walletWaitlistJoinedHint": "আপনার ওয়ালেট এখনো সক্রিয় নয়। আপনি ওয়েটলিস্টে আছেন এবং সক্রিয় হওয়ার সাথে সাথে আমরা যোগাযোগ করব।",
       "walletApprovedTitle": "ওয়ালেট অনুমোদিত",
       "walletApprovedDesc": "আপনার ওয়ালেট এখন সক্রিয়। আপনি জমা ও স্থানান্তর করতে পারেন।",
-      "walletApprovedBadge": "সক্রিয়"
+      "walletApprovedBadge": "সক্রিয়",
+      "whyVerifyButton": "কেন আমার অ্যাকাউন্ট যাচাই করব?",
+      "whyVerifyTitle": "অ্যাকাউন্ট যাচাই কেন গুরুত্বপূর্ণ?",
+      "whyVerifyIntro": "আপনার অ্যাকাউন্ট যাচাই করা আপনাকে আমাদের নিবেদিত দলের সাথে সরাসরি সংযুক্ত করে এবং অযাচাইকৃত অ্যাকাউন্টে অনুপলব্ধ বাস্তব সুযোগগুলি আনলক করে।",
+      "whyVerifyPoint1Title": "আপনার অ্যাকাউন্ট রক্ষা করুন এবং পুনরুদ্ধার করুন",
+      "whyVerifyPoint1Body": "আপনি যদি কখনও অ্যাক্সেস হারান, আপনার ডেটা সুরক্ষিত থাকে — পুনরুদ্ধার শুধুমাত্র আপনার আইডি এবং আমাদের সাপোর্ট টিমের সাথে লাইভ ভিডিও সেশনের মাধ্যমে সম্ভব।",
+      "whyVerifyPoint2Title": "বিশ্বব্যাপী বৃত্তি এবং প্রোগ্রাম",
+      "whyVerifyPoint2Body": "আপনার যাচাইকৃত প্রোফাইল অংশীদার বিশ্ববিদ্যালয়গুলিতে প্রদর্শিত হয়, তাই তারা তাদের প্রোগ্রাম এবং বৃত্তিতে যোগ দেওয়ার অফার নিয়ে আপনার সাথে যোগাযোগ করে।",
+      "whyVerifyPoint3Title": "যাচাইকৃত-ছাত্র সম্প্রদায়ে প্রকাশ করুন",
+      "whyVerifyPoint3Body": "আপনি CSW সম্প্রদায়ে পোস্ট করতে পারবেন যা আমরা ছাত্র প্রকল্পগুলিকে সমর্থন করার জন্য তৈরি করছি — আপনার নিজের প্রকল্পের জন্য বিনিয়োগ প্রচার শুরু করা সহ।",
+      "whyVerifyClose": "বুঝেছি, ধন্যবাদ"
     },
     "markets": {
       "title": "মুদ্রা রেট",
@@ -1272,7 +1284,8 @@
       "currency": "মুদ্রা",
       "price": "মূল্য",
       "change24h": "২৪ঘ পরিবর্তন",
-      "trade": "ট্রেড"
+      "trade": "ট্রেড",
+      "usd": "USD"
     },
     "wallet": {
       "estimatedBalance": "আনুমানিক ব্যালেন্স",
@@ -1471,7 +1484,18 @@
       "localPrograms": "Local Programs",
       "detailsAfterLink": "Full details will appear after linking your account",
       "program": "প্রোগ্রাম",
-      "syncing": "Syncing favorites..."
+      "syncing": "Syncing favorites...",
+      "favoriteUniversities": "প্রিয় বিশ্ববিদ্যালয়",
+      "favoritedPrograms": "প্রিয় প্রোগ্রাম",
+      "favoritedUniversity": "প্রিয় বিশ্ববিদ্যালয়",
+      "countries": "দেশ",
+      "universities": "বিশ্ববিদ্যালয়",
+      "details": "বিস্তারিত",
+      "months": "মাস",
+      "browseAvailable": "উপলব্ধ প্রোগ্রাম ব্রাউজ করুন",
+      "unknown": "অজানা",
+      "unknownUniversity": "অজানা বিশ্ববিদ্যালয়",
+      "applyNow": "এখনই আবেদন করুন"
     },
     "payments": {
       "title": "লেনদেনের ইতিহাস",
@@ -1747,7 +1771,8 @@
           "আবাসন + আগমন (অভ্যর্থনা + SIM + নিবন্ধন)",
           "অগ্রাধিকার গতি"
         ]
-      }
+      },
+      "connectionError": "একটি সংযোগ ত্রুটি ঘটেছে"
     },
     "contracts": {
       "createdAt": "Created At",
@@ -1887,7 +1912,8 @@
         "not_staff": "Not registered as staff",
         "approval_resolution_unavailable": "Approval check unavailable",
         "resolution_error": "Verification check error",
-        "not_teacher_role": "Not a teacher role"
+        "not_teacher_role": "Not a teacher role",
+        "verification_columns_unavailable": "CRM-এ যাচাইকরণ ফিল্ড উপলব্ধ নেই"
       },
       "verification": "Verification",
       "verificationCenter": "Verification Center",
@@ -1926,7 +1952,8 @@
         "teacher_identity": "Government-issued ID, passport, or residence permit.",
         "teacher_education": "Teaching certificate, diploma, or degree.",
         "teacher_supporting": "Any additional supporting documents (optional)."
-      }
+      },
+      "avatarUploadFailed": "প্রোফাইল ছবি আপলোড ব্যর্থ"
     },
     "analysis": {
       "artifact": {
@@ -1965,6 +1992,26 @@
         "pending_review": "পর্যালোচনাধীন",
         "rejected": "প্রত্যাখ্যাত",
         "superseded": "প্রতিস্থাপিত"
+      },
+      "title": "নথি বিশ্লেষণ",
+      "documents_analyzed": "বিশ্লেষিত নথি",
+      "accepted": "গৃহীত",
+      "pending": "মুলতুবি",
+      "rejected": "প্রত্যাখ্যাত",
+      "no_fields_extracted": "এই নথি থেকে কোনো ফিল্ড নিষ্কাশন করা যায়নি",
+      "engine": {
+        "title": "ইঞ্জিন কার্যকলাপ — এখন কী ঘটছে",
+        "stage": {
+          "reading": "ফাইল পড়া হচ্ছে",
+          "ocr": "OCR চালানো হচ্ছে",
+          "classifying": "নথি শ্রেণিবদ্ধ হচ্ছে",
+          "mrz": "পাসপোর্ট MRZ পার্সিং",
+          "extracting": "ফিল্ড নিষ্কাশন",
+          "transcript_rows": "ট্রান্সক্রিপ্ট সারি পার্সিং",
+          "building_proposals": "প্রস্তাবনা তৈরি হচ্ছে",
+          "completed": "সম্পন্ন",
+          "failed": "ব্যর্থ"
+        }
       }
     },
     "assembly": {
@@ -1981,7 +2028,13 @@
         "needs_review": "Needs Review",
         "needs_review_desc": "Documents whose lane could not be resolved automatically.",
         "doc_count": "{{count}} documents",
-        "waiting": "Waiting for a matching document…"
+        "waiting": "Waiting for a matching document…",
+        "delete_one": "এই ফাইলটি মুছুন",
+        "delete_all": "সব মুছুন",
+        "confirm_delete_one": "এই ফাইলটি স্থায়ীভাবে মুছবেন?",
+        "confirm_delete_all": "{{count}} টি ফাইল স্থায়ীভাবে মুছে ফেলা হবে। চালিয়ে যাবেন?",
+        "delete_failed": "ফাইল মুছতে ব্যর্থ",
+        "delete_done": "মুছে ফেলা হয়েছে: {{ok}} সফল / {{fail}} ব্যর্থ"
       },
       "header": {
         "lane": "Lane",
@@ -2093,19 +2146,46 @@
           "country_of_education": "Country of education",
           "transcript_language": "Transcript language"
         }
+      },
+      "edit": {
+        "edit": "সম্পাদনা",
+        "save": "সংরক্ষণ",
+        "cancel": "বাতিল",
+        "continue": "চালিয়ে যান",
+        "add_manually": "ম্যানুয়ালি যোগ করুন",
+        "placeholder": "সঠিক মান লিখুন…",
+        "pending_notice": "মুলতুবি হিসাবে সংরক্ষিত — নিশ্চিত হওয়ার আগে আমাদের দল পর্যালোচনা করবে।",
+        "confirm_title": "নিশ্চিত ফিল্ড সম্পাদনা করুন",
+        "confirm_body": "এই ফিল্ডটি পূর্বে নিশ্চিত করা হয়েছিল। এটি সম্পাদনা করলে এটি \"পর্যালোচনা মুলতুবি\" এ ফিরে যাবে যতক্ষণ না আমাদের দল নতুন মান যাচাই করে। চালিয়ে যাবেন?"
       }
     },
     "studyFile": {
       "lane_review_reason": {
         "image_ocr_deferred_to_door_3": "এই পর্যায়ে ছবি ও স্ক্যান করা ফাইল স্বয়ংক্রিয়ভাবে পড়া যায় না। সম্ভব হলে মূল PDF আপলোড করুন, অথবা চালিয়ে যান এবং ফাইলটি পর্যালোচনার জন্য পাঠানো হবে।"
-      }
+      },
+      "quality": "ফাইলের গুণমান",
+      "summary": "ফাইল সারাংশ",
+      "identity": "পরিচয়",
+      "academic": "একাডেমিক",
+      "language": "ভাষা",
+      "targeting": "লক্ষ্যকরণ",
+      "filled": "পূরণ করা",
+      "missing": "অনুপস্থিত",
+      "status_incomplete": "অসম্পূর্ণ",
+      "status_partial": "আংশিক",
+      "status_complete": "সম্পূর্ণ",
+      "status_verified": "যাচাইকৃত"
     },
     "identity": {
       "title": "অ্যাকাউন্ট যাচাইকরণ",
       "subtitle": "আপনার অধ্যয়ন ফাইল আনলক করতে আপনার পরিচয় নিশ্চিত করুন।",
       "doc": {
         "instruction": "নথির ধরন বাছুন এবং একটি স্পষ্ট ছবি বা PDF আপলোড করুন।",
-        "upload": "নথি আপলোড করুন"
+        "upload": "নথি আপলোড করুন",
+        "chooseTitle": "নথির ধরন নির্বাচন করুন",
+        "dropTitle": "আপনার নথি এখানে ফেলুন",
+        "dropHint": "অথবা আপনার ডিভাইস থেকে ব্রাউজ করতে ক্লিক করুন",
+        "formats": "JPG, PNG, WEBP বা PDF — 10MB পর্যন্ত"
       },
       "docKind": {
         "passport": "পাসপোর্ট",
@@ -2114,12 +2194,24 @@
       },
       "selfie": {
         "instruction": "ক্যামেরার দিকে তাকান এবং একটি স্পষ্ট সেলফি তুলুন।",
-        "capture": "সেলফি তুলুন"
+        "capture": "সেলফি তুলুন",
+        "title": "একটি স্পষ্ট সেলফি নিন",
+        "tip": {
+          "lighting": "ভালো, সমান আলো ব্যবহার করুন",
+          "frame": "আপনার পুরো মুখ ডিম্বাকৃতির ভিতরে রাখুন",
+          "noAccessories": "সানগ্লাস, টুপি এবং মাস্ক সরিয়ে ফেলুন"
+        }
       },
       "video": {
         "instruction": "ক্যামেরার দিকে তাকিয়ে ৫ সেকেন্ডের একটি ভিডিও রেকর্ড করুন।",
         "start": "রেকর্ডিং শুরু করুন",
-        "recording": "রেকর্ডিং চলছে…"
+        "recording": "রেকর্ডিং চলছে…",
+        "title": "একটি 5 সেকেন্ডের লাইভনেস ভিডিও রেকর্ড করুন",
+        "tip": {
+          "lookCamera": "সরাসরি ক্যামেরার দিকে তাকান",
+          "turnHead": "ধীরে ধীরে আপনার মাথা বাম এবং ডানে ঘোরান",
+          "smile": "স্বাভাবিকভাবে হাসুন"
+        }
       },
       "reader": {
         "running": "আপনার নথি বিশ্লেষণ করা হচ্ছে…"
@@ -2191,6 +2283,11 @@
             "driver_license": "ড্রাইভিং লাইসেন্স নম্বর"
           }
         }
+      },
+      "stepper": {
+        "document": "নথি",
+        "selfie": "সেলফি",
+        "video": "ভিডিও"
       }
     },
     "support": {
@@ -2217,6 +2314,101 @@
         "bodyTooShort": "আরও দীর্ঘ বার্তা লিখুন।",
         "submitFailed": "পাঠাতে ব্যর্থ। আবার চেষ্টা করুন।"
       }
+    },
+    "paymentProof": {
+      "title": "পেমেন্ট প্রমাণ সংযুক্ত করুন",
+      "subtitle": "যাচাইয়ের জন্য আপনার ব্যাঙ্ক ট্রান্সফার রসিদ আপলোড করুন",
+      "fileLabel": "পেমেন্ট প্রমাণ",
+      "removeFile": "ফাইল সরান",
+      "uploading": "আপলোড হচ্ছে... {{progress}}%",
+      "amountLabel": "প্রয়োজনীয় পরিমাণ",
+      "checklistTitle": "নিশ্চিত করুন প্রমাণটি দেখায়:",
+      "cancel": "বাতিল",
+      "submitting": "জমা দেওয়া হচ্ছে...",
+      "submit": "প্রমাণ জমা দিন",
+      "dropzone": {
+        "title": "আপনার ফাইল এখানে টানুন",
+        "subtitle": "অথবা নির্বাচন করতে ক্লিক করুন",
+        "formats": "JPG, PNG, PDF",
+        "maxSize": "10MB পর্যন্ত"
+      },
+      "reference": {
+        "label": "রেফারেন্স নম্বর",
+        "optional": "ঐচ্ছিক",
+        "placeholder": "উদাহরণ: TXN123456789",
+        "hint": "আপনার ব্যাঙ্ক বা পেমেন্ট অ্যাপ থেকে ট্রান্সফার নম্বর"
+      },
+      "checklist": {
+        "amount": "পরিমাণ",
+        "date": "তারিখ",
+        "sender": "প্রেরক",
+        "currency": "মুদ্রা"
+      },
+      "success": {
+        "title": "প্রমাণ সফলভাবে জমা দেওয়া হয়েছে",
+        "description": "আপনার প্রমাণ 24-48 ঘন্টার মধ্যে পর্যালোচনা করা হবে"
+      },
+      "errors": {
+        "unsupportedTypeTitle": "অসমর্থিত ফাইলের ধরন",
+        "unsupportedTypeDescription": "অনুগ্রহ করে একটি ছবি (JPG, PNG) বা PDF ফাইল আপলোড করুন",
+        "fileTooLargeTitle": "ফাইল খুব বড়",
+        "fileTooLargeDescription": "সর্বোচ্চ আকার 10 MB",
+        "noFileTitle": "কোনো ফাইল নির্বাচিত হয়নি",
+        "noFileDescription": "অনুগ্রহ করে আপনার পেমেন্ট প্রমাণ আপলোড করুন",
+        "loginRequiredTitle": "অনুগ্রহ করে সাইন ইন করুন",
+        "uploadFailedTitle": "ফাইল আপলোড ব্যর্থ",
+        "submitFailedFallback": "প্রমাণ জমা দিতে ব্যর্থ",
+        "genericTitle": "ত্রুটি",
+        "genericDescription": "একটি অপ্রত্যাশিত ত্রুটি ঘটেছে"
+      }
+    },
+    "uploadHub": {
+      "title": "নথি আপলোড",
+      "dropzone_title": "এখানে ফাইল ফেলুন বা ব্রাউজ করতে ক্লিক করুন",
+      "dropzone_subtitle": "PDF, ছবি, Word — একক বা একাধিক ফাইল",
+      "queue_title": "আপলোড কিউ",
+      "in_progress": "আপলোড হচ্ছে…",
+      "clear_completed": "সম্পন্ন মুছুন",
+      "status_pending_upload": "কিউতে",
+      "status_uploading": "আপলোড হচ্ছে…",
+      "status_confirming": "নিশ্চিতকরণ…",
+      "status_registered": "নিবন্ধিত",
+      "status_upload_failed": "ব্যর্থ",
+      "status_cancelled": "বাতিল",
+      "guidance": {
+        "subtitle": "স্বয়ংক্রিয়ভাবে আপনার স্মার্ট প্রোফাইল তৈরি করতে আপনার একাডেমিক এবং ব্যক্তিগত নথি আপলোড করুন",
+        "secure_badge": "যাচাইকৃত এবং এনক্রিপ্টেড",
+        "what_to_upload": "আপনি কী আপলোড করতে পারেন",
+        "examples": {
+          "passport": "পাসপোর্ট / জাতীয় পরিচয়পত্র",
+          "transcripts": "সার্টিফিকেট ও ট্রান্সক্রিপ্ট",
+          "language": "ভাষা পরীক্ষা (IELTS, TOEFL...)",
+          "cv": "CV / সুপারিশপত্র"
+        },
+        "formats_label": "সমর্থিত ফরম্যাট",
+        "formats_value": "PDF · JPG · PNG · DOCX",
+        "size_label": "সর্বোচ্চ আকার",
+        "size_value": "প্রতি ফাইল 20MB",
+        "tip": "টিপ: আরও সঠিক নিষ্কাশনের জন্য স্ক্যান করা ছবির পরিবর্তে মূল PDF আপলোড করুন"
+      },
+      "after_upload": {
+        "title": "আপলোডের পরে কী হয়?",
+        "step1_title": "আমরা নথি পড়ি",
+        "step1_desc": "স্মার্ট OCR যেকোনো ফরম্যাট বোঝে",
+        "step2_title": "আমরা আপনার ডেটা নিষ্কাশন করি",
+        "step2_desc": "নাম, তারিখ, গ্রেড, প্রধান বিষয়",
+        "step3_title": "আমরা আপনার ফাইল তৈরি করি",
+        "step3_desc": "বিশ্ববিদ্যালয়গুলিতে পাঠানো একটি ঐক্যবদ্ধ প্রোফাইল"
+      }
+    },
+    "saveDocs": {
+      "region_label": "অসংরক্ষিত নথি",
+      "title_one": "আপনার 1 টি অসংরক্ষিত নথি আছে",
+      "title_other": "আপনার {{count}} টি অসংরক্ষিত নথি আছে",
+      "title": "আপনার {{count}} টি অসংরক্ষিত নথি আছে",
+      "warning": "সংরক্ষণ ছাড়াই ছেড়ে গেলে বা রিফ্রেশ করলে, এই ফাইলগুলি স্বয়ংক্রিয়ভাবে মুছে যাবে।",
+      "consent": "আমি এই নথিগুলি সংরক্ষণে সম্মত",
+      "save_button": "নথি সংরক্ষণ করুন"
     }
   },
   "studio": {

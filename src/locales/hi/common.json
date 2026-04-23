@@ -1201,7 +1201,9 @@
       "other": "अन्य",
       "visa": "Visa",
       "logout": "लॉग आउट",
-      "messages": "संदेश"
+      "messages": "संदेश",
+      "readiness": "तैयारी",
+      "myStudyFile": "मेरी अध्ययन फ़ाइल"
     },
     "nav": {
       "sections": "Sections"
@@ -1258,7 +1260,17 @@
       "walletWaitlistJoinedHint": "आपका वॉलेट अभी सक्रिय नहीं है। आप वेटलिस्ट में हैं और सक्रिय होते ही हम संपर्क करेंगे।",
       "walletApprovedTitle": "वॉलेट स्वीकृत",
       "walletApprovedDesc": "आपका वॉलेट अब सक्रिय है। आप जमा और ट्रांसफर कर सकते हैं।",
-      "walletApprovedBadge": "सक्रिय"
+      "walletApprovedBadge": "सक्रिय",
+      "whyVerifyButton": "मेरा खाता क्यों सत्यापित करें?",
+      "whyVerifyTitle": "खाता सत्यापन क्यों महत्वपूर्ण है?",
+      "whyVerifyIntro": "अपना खाता सत्यापित करने से आप हमारी समर्पित टीम से सीधे जुड़ते हैं और वास्तविक अवसर अनलॉक होते हैं जो असत्यापित खातों के लिए उपलब्ध नहीं हैं।",
+      "whyVerifyPoint1Title": "अपने खाते की रक्षा करें और पुनर्प्राप्त करें",
+      "whyVerifyPoint1Body": "यदि आप कभी पहुँच खो देते हैं, तो आपका डेटा सुरक्षित रहता है — पुनर्प्राप्ति केवल आपकी आईडी और हमारी सहायता टीम के साथ लाइव वीडियो सत्र के साथ ही संभव है।",
+      "whyVerifyPoint2Title": "दुनिया भर में छात्रवृत्ति और कार्यक्रम",
+      "whyVerifyPoint2Body": "आपका सत्यापित प्रोफ़ाइल साझेदार विश्वविद्यालयों को दिखाया जाता है, इसलिए वे आपको अपने कार्यक्रमों और छात्रवृत्तियों में शामिल होने के लिए ऑफ़र के साथ संपर्क करते हैं।",
+      "whyVerifyPoint3Title": "सत्यापित छात्र समुदाय में प्रकाशित करें",
+      "whyVerifyPoint3Body": "आप CSW समुदाय में पोस्ट कर सकेंगे जिसे हम छात्र परियोजनाओं का समर्थन करने के लिए बना रहे हैं — जिसमें अपनी परियोजना के लिए निवेश अभियान शुरू करना शामिल है।",
+      "whyVerifyClose": "समझ गया, धन्यवाद"
     },
     "markets": {
       "title": "मुद्रा दरें",
@@ -1272,7 +1284,8 @@
       "currency": "मुद्रा",
       "price": "मूल्य",
       "change24h": "24 घंटे का बदलाव",
-      "trade": "ट्रेड"
+      "trade": "ट्रेड",
+      "usd": "USD"
     },
     "wallet": {
       "estimatedBalance": "अनुमानित शेष",
@@ -1471,7 +1484,18 @@
       "localPrograms": "Local Programs",
       "detailsAfterLink": "Full details will appear after linking your account",
       "program": "कार्यक्रम",
-      "syncing": "Syncing favorites..."
+      "syncing": "Syncing favorites...",
+      "favoriteUniversities": "पसंदीदा विश्वविद्यालय",
+      "favoritedPrograms": "पसंदीदा कार्यक्रम",
+      "favoritedUniversity": "पसंदीदा विश्वविद्यालय",
+      "countries": "देश",
+      "universities": "विश्वविद्यालय",
+      "details": "विवरण",
+      "months": "महीने",
+      "browseAvailable": "उपलब्ध कार्यक्रम ब्राउज़ करें",
+      "unknown": "अज्ञात",
+      "unknownUniversity": "अज्ञात विश्वविद्यालय",
+      "applyNow": "अभी आवेदन करें"
     },
     "payments": {
       "title": "लेनदेन इतिहास",
@@ -1757,7 +1781,8 @@
           "आवास + आगमन (रिसेप्शन + SIM + पंजीकरण)",
           "प्राथमिकता गति"
         ]
-      }
+      },
+      "connectionError": "एक कनेक्शन त्रुटि हुई"
     },
     "contracts": {
       "createdAt": "Created At",
@@ -1897,7 +1922,8 @@
         "not_staff": "Not registered as staff",
         "approval_resolution_unavailable": "Approval check unavailable",
         "resolution_error": "Verification check error",
-        "not_teacher_role": "Not a teacher role"
+        "not_teacher_role": "Not a teacher role",
+        "verification_columns_unavailable": "सत्यापन फ़ील्ड CRM में उपलब्ध नहीं हैं"
       },
       "verification": "Verification",
       "verificationCenter": "Verification Center",
@@ -1936,7 +1962,8 @@
         "teacher_identity": "Government-issued ID, passport, or residence permit.",
         "teacher_education": "Teaching certificate, diploma, or degree.",
         "teacher_supporting": "Any additional supporting documents (optional)."
-      }
+      },
+      "avatarUploadFailed": "प्रोफ़ाइल फ़ोटो अपलोड विफल"
     },
     "analysis": {
       "artifact": {
@@ -1975,6 +2002,26 @@
         "pending_review": "समीक्षा लंबित",
         "rejected": "अस्वीकृत",
         "superseded": "प्रतिस्थापित"
+      },
+      "title": "दस्तावेज़ विश्लेषण",
+      "documents_analyzed": "विश्लेषित दस्तावेज़",
+      "accepted": "स्वीकृत",
+      "pending": "लंबित",
+      "rejected": "अस्वीकृत",
+      "no_fields_extracted": "इस दस्तावेज़ से कोई फ़ील्ड नहीं निकाली जा सकीं",
+      "engine": {
+        "title": "इंजन गतिविधि — अभी क्या हो रहा है",
+        "stage": {
+          "reading": "फ़ाइल पढ़ी जा रही है",
+          "ocr": "OCR चल रहा है",
+          "classifying": "दस्तावेज़ वर्गीकृत किया जा रहा है",
+          "mrz": "पासपोर्ट MRZ पढ़ा जा रहा है",
+          "extracting": "फ़ील्ड निकाली जा रही हैं",
+          "transcript_rows": "ट्रांसक्रिप्ट पंक्तियाँ पार्स हो रही हैं",
+          "building_proposals": "प्रस्ताव तैयार किए जा रहे हैं",
+          "completed": "पूरा हुआ",
+          "failed": "विफल"
+        }
       }
     },
     "assembly": {
@@ -1991,7 +2038,13 @@
         "needs_review": "Needs Review",
         "needs_review_desc": "Documents whose lane could not be resolved automatically.",
         "doc_count": "{{count}} documents",
-        "waiting": "Waiting for a matching document…"
+        "waiting": "Waiting for a matching document…",
+        "delete_one": "इस फ़ाइल को हटाएँ",
+        "delete_all": "सभी हटाएँ",
+        "confirm_delete_one": "इस फ़ाइल को स्थायी रूप से हटाएँ?",
+        "confirm_delete_all": "{{count}} फ़ाइल(ें) स्थायी रूप से हटा दी जाएंगी। जारी रखें?",
+        "delete_failed": "फ़ाइल हटाने में विफल",
+        "delete_done": "हटाया गया: {{ok}} सफल / {{fail}} विफल"
       },
       "header": {
         "lane": "Lane",
@@ -2103,19 +2156,46 @@
           "country_of_education": "Country of education",
           "transcript_language": "Transcript language"
         }
+      },
+      "edit": {
+        "edit": "संपादित करें",
+        "save": "सहेजें",
+        "cancel": "रद्द करें",
+        "continue": "जारी रखें",
+        "add_manually": "मैन्युअल रूप से जोड़ें",
+        "placeholder": "सही मान दर्ज करें…",
+        "pending_notice": "लंबित के रूप में सहेजा गया — हमारी टीम पुष्टि से पहले समीक्षा करेगी।",
+        "confirm_title": "पुष्टि की गई फ़ील्ड संपादित करें",
+        "confirm_body": "यह फ़ील्ड पहले पुष्टि की जा चुकी थी। इसे संपादित करने पर यह फिर से \"समीक्षा लंबित\" में चली जाएगी जब तक हमारी टीम नया मान सत्यापित नहीं करती। जारी रखें?"
       }
     },
     "studyFile": {
       "lane_review_reason": {
         "image_ocr_deferred_to_door_3": "इस चरण में चित्रों और स्कैन की गई फ़ाइलों से डेटा स्वतः नहीं निकाला जा सकता। यदि संभव हो तो मूल PDF अपलोड करें, अन्यथा जारी रखें और फ़ाइल समीक्षा के लिए भेजी जाएगी।"
-      }
+      },
+      "quality": "फ़ाइल की गुणवत्ता",
+      "summary": "फ़ाइल सारांश",
+      "identity": "पहचान",
+      "academic": "शैक्षणिक",
+      "language": "भाषा",
+      "targeting": "लक्ष्यीकरण",
+      "filled": "भरा गया",
+      "missing": "अनुपस्थित",
+      "status_incomplete": "अधूरा",
+      "status_partial": "आंशिक",
+      "status_complete": "पूर्ण",
+      "status_verified": "सत्यापित"
     },
     "identity": {
       "title": "खाता सत्यापन",
       "subtitle": "अपनी अध्ययन फ़ाइल अनलॉक करने के लिए पहचान की पुष्टि करें।",
       "doc": {
         "instruction": "दस्तावेज़ का प्रकार चुनें और एक स्पष्ट फ़ोटो या PDF अपलोड करें।",
-        "upload": "दस्तावेज़ अपलोड करें"
+        "upload": "दस्तावेज़ अपलोड करें",
+        "chooseTitle": "दस्तावेज़ का प्रकार चुनें",
+        "dropTitle": "अपना दस्तावेज़ यहाँ छोड़ें",
+        "dropHint": "या अपने डिवाइस से ब्राउज़ करने के लिए क्लिक करें",
+        "formats": "JPG, PNG, WEBP या PDF — 10MB तक"
       },
       "docKind": {
         "passport": "पासपोर्ट",
@@ -2124,12 +2204,24 @@
       },
       "selfie": {
         "instruction": "कैमरे की ओर देखें और एक स्पष्ट सेल्फी लें।",
-        "capture": "सेल्फी लें"
+        "capture": "सेल्फी लें",
+        "title": "एक स्पष्ट सेल्फी लें",
+        "tip": {
+          "lighting": "अच्छी, समान रोशनी का उपयोग करें",
+          "frame": "अपना पूरा चेहरा अंडाकार के अंदर रखें",
+          "noAccessories": "धूप का चश्मा, टोपी और मास्क हटाएँ"
+        }
       },
       "video": {
         "instruction": "कैमरे की ओर देखते हुए 5 सेकंड का वीडियो रिकॉर्ड करें।",
         "start": "रिकॉर्डिंग शुरू करें",
-        "recording": "रिकॉर्ड हो रहा है…"
+        "recording": "रिकॉर्ड हो रहा है…",
+        "title": "5 सेकंड का लाइवनेस वीडियो रिकॉर्ड करें",
+        "tip": {
+          "lookCamera": "सीधे कैमरे की ओर देखें",
+          "turnHead": "धीरे-धीरे अपना सिर बाएँ और दाएँ घुमाएँ",
+          "smile": "प्राकृतिक रूप से मुस्कुराएँ"
+        }
       },
       "reader": {
         "running": "आपका दस्तावेज़ विश्लेषित किया जा रहा है…"
@@ -2201,6 +2293,11 @@
             "driver_license": "ड्राइविंग लाइसेंस संख्या"
           }
         }
+      },
+      "stepper": {
+        "document": "दस्तावेज़",
+        "selfie": "सेल्फी",
+        "video": "वीडियो"
       }
     },
     "support": {
@@ -2227,6 +2324,101 @@
         "bodyTooShort": "कृपया लंबा संदेश लिखें।",
         "submitFailed": "भेजने में विफल। पुनः प्रयास करें।"
       }
+    },
+    "paymentProof": {
+      "title": "भुगतान प्रमाण संलग्न करें",
+      "subtitle": "सत्यापन के लिए अपनी बैंक हस्तांतरण रसीद अपलोड करें",
+      "fileLabel": "भुगतान प्रमाण",
+      "removeFile": "फ़ाइल हटाएँ",
+      "uploading": "अपलोड हो रहा है... {{progress}}%",
+      "amountLabel": "आवश्यक राशि",
+      "checklistTitle": "सुनिश्चित करें कि प्रमाण दिखाता है:",
+      "cancel": "रद्द करें",
+      "submitting": "जमा किया जा रहा है...",
+      "submit": "प्रमाण जमा करें",
+      "dropzone": {
+        "title": "अपनी फ़ाइल यहाँ खींचें",
+        "subtitle": "या चुनने के लिए क्लिक करें",
+        "formats": "JPG, PNG, PDF",
+        "maxSize": "10MB तक"
+      },
+      "reference": {
+        "label": "संदर्भ संख्या",
+        "optional": "वैकल्पिक",
+        "placeholder": "उदाहरण: TXN123456789",
+        "hint": "आपके बैंक या भुगतान ऐप से स्थानांतरण संख्या"
+      },
+      "checklist": {
+        "amount": "राशि",
+        "date": "दिनांक",
+        "sender": "प्रेषक",
+        "currency": "मुद्रा"
+      },
+      "success": {
+        "title": "प्रमाण सफलतापूर्वक जमा हुआ",
+        "description": "आपके प्रमाण की 24-48 घंटों में समीक्षा की जाएगी"
+      },
+      "errors": {
+        "unsupportedTypeTitle": "असमर्थित फ़ाइल प्रकार",
+        "unsupportedTypeDescription": "कृपया एक छवि (JPG, PNG) या PDF फ़ाइल अपलोड करें",
+        "fileTooLargeTitle": "फ़ाइल बहुत बड़ी है",
+        "fileTooLargeDescription": "अधिकतम आकार 10 MB है",
+        "noFileTitle": "कोई फ़ाइल नहीं चुनी गई",
+        "noFileDescription": "कृपया अपना भुगतान प्रमाण अपलोड करें",
+        "loginRequiredTitle": "कृपया साइन इन करें",
+        "uploadFailedTitle": "फ़ाइल अपलोड विफल",
+        "submitFailedFallback": "प्रमाण जमा करने में विफल",
+        "genericTitle": "त्रुटि",
+        "genericDescription": "एक अप्रत्याशित त्रुटि हुई"
+      }
+    },
+    "uploadHub": {
+      "title": "दस्तावेज़ अपलोड करें",
+      "dropzone_title": "फ़ाइलें यहाँ छोड़ें या ब्राउज़ करने के लिए क्लिक करें",
+      "dropzone_subtitle": "PDF, चित्र, Word — एकल या एकाधिक फ़ाइलें",
+      "queue_title": "अपलोड कतार",
+      "in_progress": "अपलोड हो रहा है…",
+      "clear_completed": "पूर्ण साफ़ करें",
+      "status_pending_upload": "कतारबद्ध",
+      "status_uploading": "अपलोड हो रहा है…",
+      "status_confirming": "पुष्टि हो रही है…",
+      "status_registered": "पंजीकृत",
+      "status_upload_failed": "विफल",
+      "status_cancelled": "रद्द",
+      "guidance": {
+        "subtitle": "अपने शैक्षणिक और व्यक्तिगत दस्तावेज़ अपलोड करें ताकि आपका स्मार्ट प्रोफ़ाइल स्वचालित रूप से बने",
+        "secure_badge": "सत्यापित और एन्क्रिप्टेड",
+        "what_to_upload": "आप क्या अपलोड कर सकते हैं",
+        "examples": {
+          "passport": "पासपोर्ट / राष्ट्रीय पहचान पत्र",
+          "transcripts": "प्रमाणपत्र और ट्रांसक्रिप्ट",
+          "language": "भाषा परीक्षण (IELTS, TOEFL...)",
+          "cv": "CV / अनुशंसा पत्र"
+        },
+        "formats_label": "समर्थित प्रारूप",
+        "formats_value": "PDF · JPG · PNG · DOCX",
+        "size_label": "अधिकतम आकार",
+        "size_value": "प्रति फ़ाइल 20MB",
+        "tip": "सुझाव: अधिक सटीक निष्कर्षण के लिए स्कैन की गई छवि के बजाय मूल PDF अपलोड करें"
+      },
+      "after_upload": {
+        "title": "अपलोड के बाद क्या होता है?",
+        "step1_title": "हम दस्तावेज़ पढ़ते हैं",
+        "step1_desc": "स्मार्ट OCR किसी भी प्रारूप को समझता है",
+        "step2_title": "हम आपका डेटा निकालते हैं",
+        "step2_desc": "नाम, तिथियाँ, ग्रेड, मुख्य विषय",
+        "step3_title": "हम आपकी फ़ाइल बनाते हैं",
+        "step3_desc": "विश्वविद्यालयों को भेजी गई एकीकृत प्रोफ़ाइल"
+      }
+    },
+    "saveDocs": {
+      "region_label": "असहेजे गए दस्तावेज़",
+      "title_one": "आपके पास 1 असहेजा दस्तावेज़ है",
+      "title_other": "आपके पास {{count}} असहेजे दस्तावेज़ हैं",
+      "title": "आपके पास {{count}} असहेजे दस्तावेज़ हैं",
+      "warning": "यदि आप सहेजे बिना छोड़ते हैं या रीफ़्रेश करते हैं, तो ये फ़ाइलें स्वचालित रूप से हटा दी जाएंगी।",
+      "consent": "मैं इन दस्तावेज़ों को सहेजने के लिए सहमत हूँ",
+      "save_button": "दस्तावेज़ सहेजें"
     }
   },
   "studio": {
