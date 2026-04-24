@@ -9,37 +9,68 @@ import type {
 import type { ProgramSnapshot, ShortlistSyncResponse } from "@/types/shortlist";
 
 // ============= Base caller (lightweight - uses functions.invoke only) =============
+// In-flight dedupe + short-lived response cache: many components mount in
+// parallel on /account and each independently fires read-only actions
+// (shortlist_list, get_shortlist, uni_shortlist_list, identity_status_get,
+// resolve_staff_authority, support_*_list, ...). Without dedupe these
+// stampede the same edge function on the same cold start, which is the
+// primary cause of slow Home → Account transitions.
+const inflightCalls = new Map<string, Promise<any>>();
+const responseCache = new Map<string, { at: number; value: any }>();
+const READ_ACTIONS = new Set([
+  'shortlist_list',
+  'get_shortlist',
+  'uni_shortlist_list',
+  'identity_status_get',
+  'resolve_staff_authority',
+  'support_ticket_list',
+  'support_case_list',
+  'get_profile',
+  'get_payments',
+  'list_files',
+  'list_wallet_ledger',
+]);
+const CACHE_TTL_MS = 4000;
+
 async function callPortalApi<T = unknown>(
   action: string, 
   params?: Record<string, unknown>
 ): Promise<PortalApiResponse<T> & T> {
-  // ✅ PORTAL-Q1: Log all API calls with timestamp for diagnostics
-  const timestamp = new Date().toISOString();
-  console.log('[PORTAL:API:REQUEST]', {
-    timestamp,
-    action,
-    params_keys: params ? Object.keys(params) : [],
-  });
-  
-  const res = await supabase.functions.invoke('student-portal-api', {
-    body: { action, ...params }  // ✅ FLAT body - no nesting
-  });
+  const dedupeKey = `${action}::${params ? JSON.stringify(params) : ''}`;
+  const isReadAction = READ_ACTIONS.has(action);
 
-  if (res.error) {
-    console.error(`[portalApi] ${action} error:`, res.error);
-    const errorCode = (res.error as any).status === 401 ? 'auth_required' : 'network_error';
-    return { ok: false, error: res.error.message, error_code: errorCode } as PortalApiResponse<T> & T;
+  if (isReadAction) {
+    const cached = responseCache.get(dedupeKey);
+    if (cached && Date.now() - cached.at < CACHE_TTL_MS) {
+      return cached.value;
+    }
+    const existing = inflightCalls.get(dedupeKey);
+    if (existing) return existing;
   }
 
-  // ✅ PORTAL-Q1: Log response for diagnostics
-  console.log('[PORTAL:API:RESPONSE]', {
-    timestamp: new Date().toISOString(),
-    action,
-    ok: res.data?.ok,
-    data_keys: res.data ? Object.keys(res.data) : [],
-  });
+  const exec = (async () => {
+    const res = await supabase.functions.invoke('student-portal-api', {
+      body: { action, ...params }  // ✅ FLAT body - no nesting
+    });
 
-  return res.data as PortalApiResponse<T> & T;
+    if (res.error) {
+      console.error(`[portalApi] ${action} error:`, res.error);
+      const errorCode = (res.error as any).status === 401 ? 'auth_required' : 'network_error';
+      return { ok: false, error: res.error.message, error_code: errorCode } as PortalApiResponse<T> & T;
+    }
+
+    return res.data as PortalApiResponse<T> & T;
+  })();
+
+  if (isReadAction) {
+    inflightCalls.set(dedupeKey, exec);
+    exec
+      .then((value) => { responseCache.set(dedupeKey, { at: Date.now(), value }); })
+      .catch(() => { /* don't cache failures */ })
+      .finally(() => { inflightCalls.delete(dedupeKey); });
+  }
+
+  return exec;
 }
 
 // ============= Wallet =============

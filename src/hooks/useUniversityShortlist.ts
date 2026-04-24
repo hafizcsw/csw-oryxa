@@ -9,15 +9,30 @@ import { toast } from 'sonner';
 import type { Session } from '@supabase/supabase-js';
 
 // ============= API Functions =============
+// In-flight dedupe: collapses concurrent identical calls (e.g. uni shortlist
+// fetched simultaneously by Layout, ShortlistDrawer, ServicesTab) into one
+// network request to avoid stampedes on the edge function.
+const inflightUniCalls = new Map<string, Promise<any>>();
+
 async function callPortalApi<T = unknown>(action: string, params?: Record<string, unknown>): Promise<T> {
-  const res = await supabase.functions.invoke('student-portal-api', {
-    body: { action, ...params }
-  });
-  if (res.error) {
-    const errorCode = (res.error as any).status === 401 ? 'auth_required' : 'network_error';
-    return { ok: false, error: res.error.message, error_code: errorCode } as T;
-  }
-  return res.data as T;
+  const key = `${action}::${params ? JSON.stringify(params) : ''}`;
+  const existing = inflightUniCalls.get(key);
+  if (existing) return existing as Promise<T>;
+
+  const exec = (async () => {
+    const res = await supabase.functions.invoke('student-portal-api', {
+      body: { action, ...params }
+    });
+    if (res.error) {
+      const errorCode = (res.error as any).status === 401 ? 'auth_required' : 'network_error';
+      return { ok: false, error: res.error.message, error_code: errorCode } as T;
+    }
+    return res.data as T;
+  })();
+
+  inflightUniCalls.set(key, exec);
+  exec.finally(() => inflightUniCalls.delete(key));
+  return exec;
 }
 
 export interface UniShortlistItem {
