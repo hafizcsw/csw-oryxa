@@ -85,8 +85,13 @@ const VERT = /* glsl */ `
     gl_PointSize = clamp(ps, 2.0, uSizeClamp);
     gl_Position  = projectionMatrix * mvPosition;
 
-    // Screen-space tangent angle for dash orientation (tangent = d(pos)/d(theta))
-    vec3 tangent = vec3(-sp * st, 0.0, sp * ct);
+    // Tangent via finite difference along theta (after all rotations)
+    float dt = 0.01;
+    float th2 = theta + dt;
+    vec3 pos2 = vec3(aRadius * sp * cos(th2), aRadius * cp, aRadius * sp * sin(th2));
+    pos2 = vec3(pos2.x, cax * pos2.y - sax * pos2.z, sax * pos2.y + cax * pos2.z);
+    pos2 = vec3(caz * pos2.x - saz * pos2.y, saz * pos2.x + caz * pos2.y, pos2.z);
+    vec3 tangent = pos2 - pos;
     vec4 mvTangent = modelViewMatrix * vec4(tangent, 0.0);
     vAngle = atan(mvTangent.y, mvTangent.x);
 
