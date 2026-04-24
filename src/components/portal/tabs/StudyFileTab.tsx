@@ -977,10 +977,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           <div className="mb-3 text-xs font-semibold uppercase text-primary">
             [4] AcademicTruthPanel — لوحة الحقيقة الأكاديمية
           </div>
-          <AcademicTruthPanel
-            truth={academicTruthHook.truth}
-            subjectRows={academicTruthHook.subjectRows}
-          />
+          <AcademicTruthPanel academicTruth={academicTruthHook.academicTruth} />
         </section>
 
         {/* [5] DecisionPanel */}
@@ -988,7 +985,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           <div className="mb-3 text-xs font-semibold uppercase text-primary">
             [5] DecisionPanel — لوحة القرار
           </div>
-          <DecisionPanel decision={decisionHook.decision} />
+          <DecisionPanel decision={decision.decision} />
         </section>
 
         {/* [6] LaneFactsCards */}
@@ -998,7 +995,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           </div>
           <div className="space-y-3">
             {Object.entries(laneFactsByDocId).map(([docId, facts]) => (
-              <LaneFactsCard key={docId} documentId={docId} facts={facts} />
+              <LaneFactsCard key={docId} facts={facts} fileName={documentNames[docId]} />
             ))}
             {Object.keys(laneFactsByDocId).length === 0 && (
               <p className="text-sm text-muted-foreground">لا توجد حقائق مسارات حالياً.</p>
