@@ -4935,6 +4935,103 @@ Deno.serve(async (req) => {
           console.error('[crm_storage] ❌ CRM credentials not configured');
           return Response.json({ ok: false, error: 'CRM_NOT_CONFIGURED', http_status: 500 }, { status: 200, headers: corsHeaders });
         }
+
+        // ═══════════════════════════════════════════════════════════
+        // 🛡️ Phase 1.2 — SERVER-SIDE DRAFT-FIRST FIREWALL
+        // ───────────────────────────────────────────────────────────
+        // Classifies every crm_storage sub-action and blocks sensitive
+        // mutations that arrive without an explicit confirmation contract.
+        // This is server-authoritative — frontend cannot bypass.
+        // ═══════════════════════════════════════════════════════════
+        const SENSITIVE_CONTEXTS = new Set([
+          'study_file','my_files','passport','certificate','transcript',
+          'language_certificate','academic_document','identity_document',
+        ]);
+        const KNOWN_CONTEXTS = new Set([
+          ...SENSITIVE_CONTEXTS,
+          'avatar','payment_proof','operational',
+        ]);
+        // Read-only / safe actions (do not mutate CRM persistence).
+        const READ_ONLY_ACTIONS = new Set(['list_files','sign_file','paddle_structure_proxy']);
+        // Sensitive mutations — REQUIRE post_confirm + confirmation_trace_id
+        // and a sensitive student-document context.
+        const SENSITIVE_MUTATIONS = new Set([
+          'prepare_upload','confirm_upload','mark_files_saved',
+          'clear_pending_files','clear_all_files','delete_file','purge_all_files',
+        ]);
+        // Mutations exempt from confirmation contract (own narrow scope).
+        const EXEMPT_MUTATIONS = new Set(['set_avatar']);
+
+        const ctxEnvelope = (body as any).ctx || {};
+        const upload_context = String(ctxEnvelope.upload_context ?? payload.upload_context ?? 'unknown');
+        const confirmation_state = String(ctxEnvelope.confirmation_state ?? payload.confirmation_state ?? 'pre_confirm');
+        const confirmation_trace_id = ctxEnvelope.confirmation_trace_id ?? payload.confirmation_trace_id;
+        const guardTraceId = `srv_df_${crypto.randomUUID()}`;
+
+        const blockResponse = (errorCode: string, reason: string) => {
+          console.warn('[crm_storage:firewall] ⛔ server_draft_first_blocked_crm_mutation', {
+            marker: 'server_draft_first_blocked_crm_mutation',
+            crm_action,
+            upload_context,
+            confirmation_state,
+            has_trace: !!confirmation_trace_id,
+            error_code: errorCode,
+            reason,
+            trace_id: guardTraceId,
+          });
+          return Response.json({
+            ok: false,
+            error: 'blocked_pre_confirm_crm_mutation',
+            blocked_by: 'draft_first_server_guard',
+            error_code: errorCode,
+            crm_action,
+            upload_context,
+            confirmation_state,
+            trace_id: guardTraceId,
+            http_status: 403,
+          }, { status: 200, headers: corsHeaders });
+        };
+
+        // Read-only actions pass — but still log for audit.
+        if (!READ_ONLY_ACTIONS.has(crm_action)) {
+          // Avatar exempt mutation: must declare upload_context='avatar'.
+          if (EXEMPT_MUTATIONS.has(crm_action)) {
+            if (upload_context !== 'avatar') {
+              return blockResponse('exempt_mutation_wrong_context', `${crm_action} requires upload_context='avatar'`);
+            }
+          } else if (SENSITIVE_MUTATIONS.has(crm_action)) {
+            // Unknown context → block.
+            if (!KNOWN_CONTEXTS.has(upload_context)) {
+              return blockResponse('unknown_upload_context', `unknown upload_context='${upload_context}'`);
+            }
+            // payment_proof is allowed only for its own sub-actions; for any
+            // CRM mutation against student docs it must be sensitive context.
+            if (upload_context === 'payment_proof' || upload_context === 'operational' || upload_context === 'avatar') {
+              return blockResponse('context_not_allowed_for_action', `upload_context='${upload_context}' cannot perform '${crm_action}'`);
+            }
+            // Now upload_context is a sensitive student doc context.
+            if (!SENSITIVE_CONTEXTS.has(upload_context)) {
+              return blockResponse('context_not_sensitive', `expected sensitive context, got '${upload_context}'`);
+            }
+            if (confirmation_state !== 'post_confirm') {
+              return blockResponse('blocked_pre_confirm_crm_mutation', 'sensitive mutation requires confirmation_state=post_confirm');
+            }
+            if (!confirmation_trace_id || typeof confirmation_trace_id !== 'string' || confirmation_trace_id.length < 6) {
+              return blockResponse('post_confirm_missing_trace', 'sensitive mutation requires confirmation_trace_id');
+            }
+            console.log('[crm_storage:firewall] ✅ post_confirm allowed', {
+              crm_action, upload_context, trace_id: guardTraceId,
+              confirmation_trace_id,
+            });
+          } else {
+            // Unknown mutation kind → block by default (fail-closed).
+            return blockResponse('unknown_crm_action_mutation_class', `'${crm_action}' is not classified`);
+          }
+        }
+        // ═══════════════════════════════════════════════════════════
+        // 🛡️ end firewall
+        // ═══════════════════════════════════════════════════════════
+
         
         // Resolve identity for storage actions
         const profileRes = await fetchCrmProfileByAuthUserId(crmClient, authUserId!);

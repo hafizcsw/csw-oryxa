@@ -16,7 +16,29 @@ import {
   evaluateUploadGuard,
   guardErrorEnvelope,
   type UploadGuardContext,
+  type UploadContext,
+  type ConfirmationState,
 } from "@/lib/draftFirstGuard";
+
+/**
+ * Server firewall envelope. Forwarded as `ctx` on every crm_storage request
+ * so the server-side draft-first guard can classify and block sensitive
+ * mutations (Phase 1.2). Frontend cannot bypass — the server fails closed.
+ */
+export interface CrmStorageServerCtx {
+  upload_context: UploadContext | 'operational';
+  confirmation_state: ConfirmationState;
+  confirmation_trace_id?: string;
+}
+
+function ctxToServerEnvelope(ctx?: UploadGuardContext): CrmStorageServerCtx | undefined {
+  if (!ctx) return undefined;
+  return {
+    upload_context: ctx.context,
+    confirmation_state: ctx.confirmationState,
+    ...(ctx.confirmationTraceId ? { confirmation_trace_id: ctx.confirmationTraceId } : {}),
+  };
+}
 
 // ✅ CRM Storage sub-actions
 export type CrmStorageAction =
@@ -60,13 +82,18 @@ export interface FileRecord {
 }
 
 /**
- * Call CRM storage action through Portal proxy
+ * Call CRM storage action through Portal proxy.
+ * Optional `serverCtx` is forwarded as the `ctx` envelope so the server-side
+ * draft-first firewall can authorize the call independently of the frontend.
  */
 export async function callCrmStorage<T = unknown>(
   crm_action: CrmStorageAction,
-  payload: Record<string, unknown> = {}
+  payload: Record<string, unknown> = {},
+  serverCtx?: CrmStorageServerCtx,
 ): Promise<{ ok: boolean; data?: T; error?: string; details?: string; http_status?: number }> {
-  const result = await portalInvoke<T>('crm_storage', { crm_action, payload });
+  const body: Record<string, unknown> = { crm_action, payload };
+  if (serverCtx) body.ctx = serverCtx;
+  const result = await portalInvoke<T>('crm_storage', body);
   
   // ✅ Extract http_status from response body (Edge always returns 200 now)
   const httpStatus = (result.data as any)?.http_status || (result as any)?.http_status;
@@ -93,11 +120,15 @@ export async function prepareUpload(params: {
   if (!decision.allowed) {
     return guardErrorEnvelope(decision);
   }
-  return callCrmStorage<PrepareUploadResult>('prepare_upload', {
-    bucket: params.bucket || 'student-docs',
-    file_kind: params.file_kind,
-    file_name: params.file_name,
-  });
+  return callCrmStorage<PrepareUploadResult>(
+    'prepare_upload',
+    {
+      bucket: params.bucket || 'student-docs',
+      file_kind: params.file_kind,
+      file_name: params.file_name,
+    },
+    ctxToServerEnvelope(params.ctx),
+  );
 }
 
 /**
@@ -119,7 +150,7 @@ export async function confirmUpload(params: {
     return guardErrorEnvelope(decision);
   }
   const { ctx: _ctx, ...rest } = params;
-  return callCrmStorage<ConfirmUploadResult>('confirm_upload', rest);
+  return callCrmStorage<ConfirmUploadResult>('confirm_upload', rest, ctxToServerEnvelope(params.ctx));
 }
 
 /**
@@ -151,7 +182,10 @@ export async function signFile(file_id: string): Promise<{ ok: boolean; signed_u
 export async function setAvatar(params: {
   path: string;
 }): Promise<{ ok: boolean; file_url?: string; error?: string }> {
-  const result = await callCrmStorage<{ file_url: string }>('set_avatar', { path: params.path });
+  const result = await callCrmStorage<{ file_url: string }>('set_avatar', { path: params.path }, {
+    upload_context: 'avatar',
+    confirmation_state: 'post_confirm',
+  });
   if (result.ok && result.data) {
     return { ok: true, file_url: (result.data as any)?.file_url };
   }
@@ -210,7 +244,11 @@ export async function markFilesSaved(
   if (!decision.allowed) {
     return guardErrorEnvelope(decision);
   }
-  const result = await callCrmStorage<{ updated_count: number; updated: string[] }>('mark_files_saved', { file_ids });
+  const result = await callCrmStorage<{ updated_count: number; updated: string[] }>(
+    'mark_files_saved',
+    { file_ids },
+    ctxToServerEnvelope(ctx),
+  );
   if (result.ok && result.data) {
     const data = result.data as any;
     return { ok: true, updated_count: data?.updated_count || 0, updated: data?.updated || [] };
