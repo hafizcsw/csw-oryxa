@@ -11,10 +11,10 @@ interface ActionButtonProps {
 
 export function ActionButton({ label, onClick, disabled, icon: Icon, variant = "default" }: ActionButtonProps) {
   const variants = {
-    default: "bg-card border-border hover:border-primary hover:bg-primary/5 text-foreground hover:shadow-md",
-    primary: "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground border-primary/20 shadow-[0_4px_14px_-2px_hsl(var(--primary)/0.4)] hover:shadow-[0_6px_20px_-2px_hsl(var(--primary)/0.55)] hover:brightness-110",
+    default: "bg-transparent border-[var(--ag-border)] hover:border-[color:color-mix(in_srgb,var(--ag-fg)_30%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--ag-fg)_4%,transparent)] text-[var(--ag-fg)]",
+    primary: "bg-[var(--ag-fg)] text-[var(--ag-bg)] border-[var(--ag-fg)] shadow-[0_4px_14px_-2px_hsl(var(--primary)/0.35)] hover:shadow-[0_6px_22px_-4px_hsl(var(--primary)/0.55)] hover:opacity-95",
     success: "bg-gradient-to-r from-success to-success/85 text-success-foreground border-success/20 shadow-[0_4px_14px_-2px_hsl(var(--success)/0.4)] hover:shadow-[0_6px_20px_-2px_hsl(var(--success)/0.55)] hover:brightness-110",
-    warning: "bg-secondary text-secondary-foreground border-secondary/20 shadow-[0_4px_14px_-2px_hsl(var(--secondary)/0.3)] hover:shadow-[0_6px_20px_-2px_hsl(var(--secondary)/0.45)] hover:brightness-125",
+    warning: "bg-[color:color-mix(in_srgb,var(--ag-fg)_8%,transparent)] text-[var(--ag-fg)] border-[var(--ag-border)] hover:bg-[color:color-mix(in_srgb,var(--ag-fg)_14%,transparent)]",
   };
 
   return (

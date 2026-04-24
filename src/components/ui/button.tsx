@@ -5,22 +5,25 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-bold tracking-wide ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:saturate-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium tracking-wide ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--primary))] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ag-bg)] disabled:pointer-events-none disabled:opacity-50 disabled:saturate-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97]",
   {
     variants: {
       variant: {
+        // AG Primary: ink on paper / paper on ink — flips correctly with theme
         default:
-          "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-[0_4px_14px_-2px_hsl(var(--primary)/0.4)] hover:shadow-[0_6px_20px_-2px_hsl(var(--primary)/0.55)] hover:brightness-110 hover:-translate-y-0.5",
+          "bg-[var(--ag-fg)] text-[var(--ag-bg)] shadow-[0_4px_14px_-2px_hsl(var(--primary)/0.35)] hover:shadow-[0_6px_22px_-4px_hsl(var(--primary)/0.55)] hover:-translate-y-0.5 hover:opacity-95",
         destructive:
           "bg-gradient-to-r from-destructive to-destructive/85 text-destructive-foreground shadow-[0_4px_14px_-2px_hsl(var(--destructive)/0.4)] hover:shadow-[0_6px_20px_-2px_hsl(var(--destructive)/0.55)] hover:brightness-110 hover:-translate-y-0.5",
+        // AG Outline: hairline border on AG bg
         outline:
-          "border-2 border-border bg-background text-foreground hover:border-primary hover:bg-primary/5 hover:-translate-y-0.5 hover:shadow-md",
+          "border border-[var(--ag-border)] bg-transparent text-[var(--ag-fg)] hover:border-[color:color-mix(in_srgb,var(--ag-fg)_30%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--ag-fg)_4%,transparent)] hover:-translate-y-0.5",
+        // AG Secondary: subtle tinted surface
         secondary:
-          "bg-secondary text-secondary-foreground shadow-[0_4px_14px_-2px_hsl(var(--secondary)/0.3)] hover:shadow-[0_6px_20px_-2px_hsl(var(--secondary)/0.45)] hover:brightness-125 hover:-translate-y-0.5",
+          "bg-[color:color-mix(in_srgb,var(--ag-fg)_8%,transparent)] text-[var(--ag-fg)] border border-[var(--ag-border)] hover:bg-[color:color-mix(in_srgb,var(--ag-fg)_12%,transparent)] hover:-translate-y-0.5",
         ghost:
-          "text-foreground hover:bg-muted/80 hover:text-foreground",
+          "text-[var(--ag-fg)] hover:bg-[color:color-mix(in_srgb,var(--ag-fg)_6%,transparent)]",
         link:
-          "text-primary underline-offset-4 hover:underline hover:text-primary/80 px-0",
+          "text-[hsl(var(--primary))] underline-offset-4 hover:underline hover:opacity-80 px-0",
       },
       size: {
         default: "h-11 px-6 py-2.5",
