@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
 import { cn } from '@/lib/utils';
+import { usePageStaffRole } from '@/hooks/usePageStaffRole';
 
 interface ProgramInsightSheetProps {
   programId: string;
