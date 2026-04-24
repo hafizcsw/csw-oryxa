@@ -1211,3 +1211,58 @@ All colors MUST be HSL.
     transition: none !important;
   }
 }
+
+/* ===== AG editorial frame for the World Map section =====
+   Wraps the existing map without touching its internals. Matches the
+   black/white/cobalt language used by the rest of the home page. */
+.ag-map-frame {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--ag-border);
+  border-radius: 24px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, hsl(var(--primary) / 0.06), transparent 60%),
+    linear-gradient(180deg, var(--ag-bg) 0%, var(--ag-bg) 100%);
+  box-shadow:
+    0 1px 0 hsl(var(--foreground) / 0.04) inset,
+    0 30px 80px -40px hsl(var(--foreground) / 0.18);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 800ms var(--ag-ease),
+    transform 800ms var(--ag-ease);
+  transition-delay: 200ms;
+}
+[data-ag-reveal][data-in="true"] .ag-map-frame {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ag-map-frame__inner {
+  position: relative;
+  border-radius: inherit;
+  overflow: hidden;
+  background: var(--ag-bg);
+}
+
+/* Subtle cobalt corner accents echoing the hero particle field */
+.ag-map-corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+  z-index: 2;
+  border-color: hsl(var(--primary) / 0.55);
+  border-style: solid;
+  border-width: 0;
+}
+.ag-map-corner--tl { top: 14px; left: 14px;  border-top-width: 1.5px; border-left-width: 1.5px;  border-top-left-radius: 12px; }
+.ag-map-corner--tr { top: 14px; right: 14px; border-top-width: 1.5px; border-right-width: 1.5px; border-top-right-radius: 12px; }
+.ag-map-corner--bl { bottom: 14px; left: 14px;  border-bottom-width: 1.5px; border-left-width: 1.5px;  border-bottom-left-radius: 12px; }
+.ag-map-corner--br { bottom: 14px; right: 14px; border-bottom-width: 1.5px; border-right-width: 1.5px; border-bottom-right-radius: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-map-frame { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
+
