@@ -208,9 +208,6 @@ export function AntigravityParticleField({ className, theme }: Props) {
       uAlphaBoost:    { value: isDark() ? 1.0 : 3.2 },
       uSizeScale:     { value: isDark() ? 1.0 : 1.05 },
       uSizeClamp:     { value: isDark() ? 14.0 * pixelRatio : 14.0 * pixelRatio },
-      uWhalePos:      { value: new THREE.Vector3(999, 0, 0) },
-      uWhaleRadius:   { value: 1.6 },
-      uWhaleStrength: { value: 0.85 },
     };
 
     // RawShaderMaterial: matches source intent (no THREE-injected prelude).
