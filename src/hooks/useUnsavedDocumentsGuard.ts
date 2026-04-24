@@ -153,10 +153,30 @@ export function useUnsavedDocumentsGuard({
     sync(next);
   }, [sync]);
 
-  const confirmAllSaved = useCallback(async () => {
+  const confirmAllSaved = useCallback(async (opts?: { confirmationTraceId?: string }) => {
     const ids = Array.from(pendingRef.current);
     if (ids.length > 0) {
-      await markFilesSaved(ids);
+      // Phase 1 — Draft-first:
+      //   SaveDocumentsBar click alone does NOT trigger a CRM markFilesSaved.
+      //   A real post_confirm call requires an explicit confirmationTraceId,
+      //   which Phase 1 does not yet emit (Draft layer is Phase 2).
+      //   We log the intent, clear local pending, and skip CRM.
+      const hasTrace = !!opts?.confirmationTraceId;
+      if (!hasTrace) {
+        // eslint-disable-next-line no-console
+        console.warn('[draftFirstGuard] save_docs_bar_confirmation_intent_logged_only', {
+          marker: 'save_docs_bar_confirmation_intent',
+          document_ids: ids,
+          reason: 'phase_1_no_crm_confirmation_trace_yet',
+        });
+      } else {
+        await markFilesSaved(ids, {
+          context: 'study_file',
+          confirmationState: 'post_confirm',
+          confirmationTraceId: opts!.confirmationTraceId,
+          attemptedAction: 'save_documents_bar_confirm',
+        });
+      }
     }
     sync(new Set());
   }, [sync]);
