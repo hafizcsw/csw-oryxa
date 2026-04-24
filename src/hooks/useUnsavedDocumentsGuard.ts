@@ -153,7 +153,11 @@ export function useUnsavedDocumentsGuard({
     sync(next);
   }, [sync]);
 
-  const confirmAllSaved = useCallback(() => {
+  const confirmAllSaved = useCallback(async () => {
+    const ids = Array.from(pendingRef.current);
+    if (ids.length > 0) {
+      await markFilesSaved(ids);
+    }
     sync(new Set());
   }, [sync]);
 
