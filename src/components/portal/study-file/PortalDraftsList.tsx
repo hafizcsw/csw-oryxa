@@ -30,11 +30,11 @@ export function PortalDraftsList({ drafts, pending, onDelete }: PortalDraftsList
   if (total === 0) return null;
 
   const headline = t(
-    "studyFile.drafts.headline",
+    "portal.studyFile.drafts.headline",
     "Draft uploaded — not shared with CSW",
   );
   const subline = t(
-    "studyFile.drafts.subline",
+    "portal.studyFile.drafts.subline",
     "Awaiting your review — not yet sent to CSW.",
   );
 
@@ -64,8 +64,8 @@ export function PortalDraftsList({ drafts, pending, onDelete }: PortalDraftsList
               <p className="text-xs text-muted-foreground">
                 {p.mimeType || "file"} · {formatSize(p.fileSize)} ·{" "}
                 {p.status === "uploading"
-                  ? t("studyFile.drafts.statusUploading", "Uploading draft…")
-                  : t("studyFile.drafts.statusFailed", "Upload failed")}
+                  ? t("portal.studyFile.drafts.statusUploading", "Uploading draft…")
+                  : t("portal.studyFile.drafts.statusFailed", "Upload failed")}
                 {p.error ? ` — ${p.error}` : ""}
               </p>
             </div>
@@ -83,7 +83,7 @@ export function PortalDraftsList({ drafts, pending, onDelete }: PortalDraftsList
               <p className="text-xs text-muted-foreground">
                 {d.mime_type || "file"} · {formatSize(d.file_size)} ·{" "}
                 <span className="font-medium text-foreground">
-                  {t("studyFile.drafts.statusDraft", "Portal draft")}
+                  {t("portal.studyFile.drafts.statusDraft", "Portal draft")}
                 </span>
               </p>
             </div>
@@ -91,7 +91,7 @@ export function PortalDraftsList({ drafts, pending, onDelete }: PortalDraftsList
               variant="ghost"
               size="sm"
               onClick={() => onDelete(d.id)}
-              aria-label={t("studyFile.drafts.delete", "Delete draft")}
+              aria-label={t("portal.studyFile.drafts.delete", "Delete draft")}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
