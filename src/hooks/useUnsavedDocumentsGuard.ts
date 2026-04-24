@@ -16,8 +16,36 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { deleteFile } from '@/api/crmStorage';
+import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEY = 'unsaved_documents_v1';
+
+async function purgePhaseAForDocs(docIds: string[]): Promise<void> {
+  if (docIds.length === 0) return;
+  try {
+    const { error } = await (supabase as any).rpc('phase_a_purge_for_documents', { _doc_ids: docIds });
+    if (error && import.meta.env.DEV) {
+      console.warn('[unsaved-guard] phase_a_purge_for_documents error', error);
+    }
+  } catch (e) {
+    if (import.meta.env.DEV) console.warn('[unsaved-guard] phase_a_purge call failed', e);
+  }
+}
+
+async function discardIds(ids: string[]): Promise<string[]> {
+  if (ids.length === 0) return [];
+  const results = await Promise.allSettled(ids.map(id => deleteFile(id)));
+  const stillFailing: string[] = [];
+  results.forEach((r, i) => {
+    if (r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok)) {
+      stillFailing.push(ids[i]);
+    }
+  });
+  // Always purge Phase A rows for the attempted ids — even if Storage delete
+  // partially failed, the evaluation tables must not retain unsaved truth.
+  await purgePhaseAForDocs(ids);
+  return stillFailing;
+}
 
 function readPending(): string[] {
   try {
