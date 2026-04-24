@@ -449,24 +449,6 @@ const Index = () => {
                 <AboutOryxaSection />
               </div>
 
-              {/* 4. Student journey triptych */}
-              <AGSection
-                eyebrow={t("home.ag.eyebrow.journey")}
-                className="border-t border-[var(--ag-border)]"
-              >
-                <AGTriptych>
-                  {(["discover", "decide", "depart"] as const).map((k, i) => (
-                    <AGCard key={k} index={i}>
-                      <h3 className="text-2xl md:text-[28px] font-semibold tracking-[-0.01em] mb-3">
-                        {t(`home.ag.triptych1.${k}.title`)}
-                      </h3>
-                      <p className="text-[var(--ag-muted)] leading-relaxed text-[15px]">
-                        {t(`home.ag.triptych1.${k}.desc`)}
-                      </p>
-                    </AGCard>
-                  ))}
-                </AGTriptych>
-              </AGSection>
 
 
               {/* 6. World map — AG editorial wrapper, internals untouched */}
