@@ -182,11 +182,32 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     onBatchComplete: handleBatchComplete,
   });
 
+  const activeCrmDocumentIds = useMemo(() => new Set(documents.map((doc) => doc.id)), [documents]);
+  const purgeScopeIdsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    for (const doc of documents) {
+      if (doc.id) purgeScopeIdsRef.current.add(doc.id);
+    }
+    for (const record of registry.records) {
+      const persistedId = record.crm_file_id ?? null;
+      if (persistedId) purgeScopeIdsRef.current.add(persistedId);
+    }
+  }, [documents, registry.records]);
+
+  const activeRegistryRecords = useMemo(() => {
+    return registry.records.filter((record) => {
+      if (record.processing_status !== 'registered') return true;
+      const persistedId = record.crm_file_id ?? record.document_id;
+      return activeCrmDocumentIds.has(persistedId);
+    });
+  }, [activeCrmDocumentIds, registry.records]);
+
   const displayRecords = useMemo<DocumentRecord[]>(() => {
     const now = new Date().toISOString();
     const liveById = new Map<string, DocumentRecord>();
 
-    for (const record of registry.records) {
+    for (const record of activeRegistryRecords) {
       liveById.set(record.document_id, record);
       if (record.crm_file_id) {
         liveById.set(`crm:${record.crm_file_id}`, record);
@@ -219,8 +240,34 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         updated_at: doc.created_at || doc.uploaded_at || now,
       }));
 
-    return [...hydratedFromCrm, ...registry.records];
-  }, [documents, profile?.user_id, registry.records]);
+    return [...hydratedFromCrm, ...activeRegistryRecords];
+  }, [activeRegistryRecords, documents, profile?.user_id]);
+
+  const activeDisplayDocumentIds = useMemo(() => {
+    const ids = new Set<string>(documents.map((doc) => doc.id));
+    for (const record of displayRecords) {
+      const persistedId = record.crm_file_id ?? (record.processing_status === 'registered' ? record.document_id : null);
+      if (persistedId) ids.add(persistedId);
+    }
+    return ids;
+  }, [displayRecords, documents]);
+
+  const visibleAnalyses = useMemo(
+    () => analysisHook.analyses.filter((analysis) => activeDisplayDocumentIds.has(analysis.document_id)),
+    [activeDisplayDocumentIds, analysisHook.analyses],
+  );
+
+  const visibleProposals = useMemo(
+    () => analysisHook.proposals.filter((proposal) => activeDisplayDocumentIds.has(proposal.document_id)),
+    [activeDisplayDocumentIds, analysisHook.proposals],
+  );
+
+  const visibleHydratedArtifactSurfaces = useMemo(
+    () => Object.fromEntries(
+      Object.entries(analysisHook.hydratedArtifactSurfaces).filter(([documentId]) => activeDisplayDocumentIds.has(documentId)),
+    ),
+    [activeDisplayDocumentIds, analysisHook.hydratedArtifactSurfaces],
+  );
 
   // ═══ Auto-purge orphaned Portal-DB rows whose CRM file was deleted ═══
   // Runs whenever the CRM document list changes (including after user deletes
@@ -230,20 +277,16 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   useEffect(() => {
     if (!docsLoadedOnce) return;
     if (!profile?.user_id) return;
+    if (registry.isUploading) return;
 
-    const factIds = Object.keys(laneFactsByDocId);
-    const analysisIds = analysisHook.analyses.map(a => a.document_id);
-    const registryCrmIds = registry.records
-      .map(r => r.crm_file_id)
-      .filter((id): id is string => !!id);
+    const factIds = Object.keys(laneFactsByDocId).filter(id => purgeScopeIdsRef.current.has(id));
+    const analysisIds = analysisHook.analyses
+      .map(a => a.document_id)
+      .filter(id => purgeScopeIdsRef.current.has(id));
     const candidateIds = Array.from(new Set([...factIds, ...analysisIds]));
     if (candidateIds.length === 0) return;
 
-    const validIds = new Set<string>([
-      ...documents.map(d => d.id),
-      // keep rows for uploads still in-flight in the current session
-      ...registryCrmIds,
-    ]);
+    const validIds = new Set<string>(documents.map(d => d.id));
     const orphans = candidateIds.filter(id => !validIds.has(id));
     if (orphans.length === 0) return;
 
@@ -261,6 +304,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           (supabase as any).from('document_review_queue').delete().in('document_id', orphans),
           (supabase as any).from('document_analyses').delete().in('document_id', orphans),
         ]);
+        orphans.forEach(id => purgeScopeIdsRef.current.delete(id));
         console.log('[StudyFileTab] purged orphaned portal-db rows', { count: orphans.length, orphans });
         await refetchLaneFacts();
         await analysisHook.refetch?.();
@@ -268,7 +312,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         console.warn('[StudyFileTab] orphan sweep failed (non-fatal)', e);
       }
     })();
-  }, [docsLoadedOnce, laneFactsByDocId, analysisHook.analyses, documents, registry.records, profile?.user_id, refetchLaneFacts, analysisHook]);
+  }, [docsLoadedOnce, laneFactsByDocId, analysisHook.analyses, documents, registry.isUploading, profile?.user_id, refetchLaneFacts, analysisHook]);
 
   // ═══ Unsaved-documents guard: warn on unload + auto-cleanup orphans ═══
   const guard = useUnsavedDocumentsGuard({
@@ -410,6 +454,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         await Promise.allSettled([
           (supabase as any).from('document_foundation_outputs').delete().in('document_id', ids),
           (supabase as any).from('document_lane_facts').delete().in('document_id', ids),
+          (supabase as any).from('document_review_queue').delete().in('document_id', ids),
           (supabase as any).from('document_analyses').delete().in('document_id', ids),
         ]);
         // eslint-disable-next-line no-console
@@ -458,6 +503,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         await Promise.allSettled([
           (supabase as any).from('document_foundation_outputs').delete().in('document_id', uniq),
           (supabase as any).from('document_lane_facts').delete().in('document_id', uniq),
+          (supabase as any).from('document_review_queue').delete().in('document_id', uniq),
           (supabase as any).from('document_analyses').delete().in('document_id', uniq),
         ]);
         // eslint-disable-next-line no-console
@@ -621,7 +667,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
 
   const issuesByDocId = useMemo<Record<string, { reason: string }>>(() => {
     const map: Record<string, { reason: string }> = {};
-    for (const a of analysisHook.analyses) {
+    for (const a of visibleAnalyses) {
       const mime = docMimeById[a.document_id] ?? '';
       const isImage = isImageLikeMime(mime);
 
@@ -669,14 +715,14 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       map[a.document_id] = { reason };
     }
     return map;
-  }, [analysisHook.analyses, docMimeById, t]);
+  }, [docMimeById, t, visibleAnalyses]);
 
   // ═══ Phase A: Student Evaluation Workspace (persisted) ═══
   const evalDocs = useMemo(
-    () => analysesToEvalInputs(analysisHook.analyses, {
+    () => analysesToEvalInputs(visibleAnalyses, {
       citizenshipCountry: canonicalFile?.identity?.citizenship ?? null,
     }),
-    [analysisHook.analyses, canonicalFile?.identity?.citizenship],
+    [visibleAnalyses, canonicalFile?.identity?.citizenship],
   );
 
   const evaluation = useStudentEvaluation({
@@ -772,10 +818,10 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       {/* ═══ Live Profile Assembly (lower experience) ═══ */}
       <LiveProfileAssembly
         records={displayRecords}
-        analyses={analysisHook.analyses}
-        proposals={analysisHook.proposals}
+        analyses={visibleAnalyses}
+        proposals={visibleProposals}
         artifacts={analysisHook.artifacts}
-        hydratedArtifactSurfaces={analysisHook.hydratedArtifactSurfaces}
+        hydratedArtifactSurfaces={visibleHydratedArtifactSurfaces}
         promotedFields={analysisHook.promotedFields}
         subjectRows={academicTruthHook.subjectRows}
         previewUrls={previewUrls}
