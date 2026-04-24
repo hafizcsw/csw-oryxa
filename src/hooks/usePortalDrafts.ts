@@ -95,7 +95,7 @@ export function usePortalDrafts({ studentUserId }: UsePortalDraftsOptions): UseP
     }
 
     processingRef.current = false;
-  }, [studentUserId]);
+  }, [studentUserId, refresh]);
 
   const enqueueFiles = useCallback(
     (files: File[]) => {
