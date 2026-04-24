@@ -21,11 +21,12 @@ export const GOLDEN_SET: GoldenCase[] = [
   {
     case_id: 'EG.clear.thanaweya_amma_high',
     category: 'clear',
-    notes: 'Standard EG thanaweya amma, Arabic name, total marks reported.',
+    notes: 'Standard EG thanaweya amma — explicit scientific track via award_track_raw.',
     input: {
       student_user_id: 'fixture-student-eg-1',
       source_country_code: 'EG',
       award_name_raw: 'الثانوية العامة',
+      award_track_raw: 'scientific',
       award_year: 2024,
       award_score_raw: '380/410',
     },
@@ -40,11 +41,12 @@ export const GOLDEN_SET: GoldenCase[] = [
   {
     case_id: 'AE.clear.moe_secondary_pct',
     category: 'clear',
-    notes: 'Standard UAE MoE secondary with direct percentage.',
+    notes: 'Standard UAE MoE secondary — explicit advanced stream via award_stream_raw.',
     input: {
       student_user_id: 'fixture-student-ae-1',
       source_country_code: 'AE',
       award_name_raw: 'الثانوية العامة',
+      award_stream_raw: 'advanced',
       award_year: 2024,
       award_score_raw: '88%',
     },
@@ -59,11 +61,12 @@ export const GOLDEN_SET: GoldenCase[] = [
   {
     case_id: 'JO.clear.tawjihi_academic',
     category: 'clear',
-    notes: 'Standard JO tawjihi, English name, percentage scale.',
+    notes: 'Standard JO tawjihi — explicit academic track via award_track_raw.',
     input: {
       student_user_id: 'fixture-student-jo-1',
       source_country_code: 'JO',
       award_name_raw: 'Tawjihi',
+      award_track_raw: 'academic',
       award_year: 2024,
       award_score_raw: '85.5%',
     },
