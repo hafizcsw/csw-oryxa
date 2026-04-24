@@ -103,6 +103,18 @@ export interface NormalizerInput {
   award_year?: number;
   award_grade_raw?: string;
   award_score_raw?: string;
+  /**
+   * Explicit track signal (EG/JO): e.g. 'scientific' | 'literary' | 'academic' | 'vocational'.
+   * Free-text accepted (Arabic or English). When present, ambiguity detectors
+   * for track-based rules (EG.thanaweya_amma, JO.tawjihi) treat the track as resolved.
+   */
+  award_track_raw?: string;
+  /**
+   * Explicit stream signal (AE): e.g. 'advanced' | 'elite' | 'general'.
+   * Free-text accepted (Arabic or English). When present, the AE.moe_secondary
+   * stream-ambiguity detector treats the stream as resolved.
+   */
+  award_stream_raw?: string;
   language_signals?: Array<{
     test_name: string;
     score: number;

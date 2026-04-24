@@ -135,28 +135,24 @@ function detectAmbiguities(
   rule: CredentialMappingRule,
 ): NormalizerReasonCode[] {
   const codes: NormalizerReasonCode[] = [];
-  const name = (input.award_name_raw ?? '').toLowerCase();
+  const trackSignal = `${input.award_name_raw ?? ''} ${input.award_track_raw ?? ''}`;
+  const streamSignal = `${input.award_name_raw ?? ''} ${input.award_stream_raw ?? ''}`;
 
   if (rule.rule_id === 'EG.rule.thanaweya_amma') {
-    // Track (scientific/literary) not specified.
-    const hasTrack =
-      /علمي|أدبي|scientific|literary/i.test(input.award_name_raw ?? '');
+    // Track (scientific/literary) not specified — accepts award_track_raw.
+    const hasTrack = /علمي|أدبي|scientific|literary/i.test(trackSignal);
     if (!hasTrack) codes.push('multiple_streams_detected');
   }
 
   if (rule.rule_id === 'AE.rule.moe_secondary') {
-    // Stream advanced/elite not specified.
-    const hasStream = /advanced|elite|متقدم|نخبة/i.test(
-      input.award_name_raw ?? '',
-    );
+    // Stream advanced/elite not specified — accepts award_stream_raw.
+    const hasStream = /advanced|elite|general|متقدم|نخبة|عام/i.test(streamSignal);
     if (!hasStream) codes.push('stream_advanced_vs_elite_unclear');
   }
 
   if (rule.rule_id === 'JO.rule.tawjihi') {
-    // Track academic/vocational not specified.
-    const hasTrack = /academic|vocational|أكاد|مهني/i.test(
-      input.award_name_raw ?? '',
-    );
+    // Track academic/vocational not specified — accepts award_track_raw.
+    const hasTrack = /academic|vocational|أكاد|مهني/i.test(trackSignal);
     if (!hasTrack) codes.push('track_vocational_vs_academic_unclear');
   }
 
