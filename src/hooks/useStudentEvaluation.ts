@@ -201,14 +201,28 @@ export function useStudentEvaluation({
 
   // Auto-trigger recompute when drift detected.
   // NOTE: runRecompute intentionally NOT in deps — would cause re-entry loop.
+  //
+  // Persistence rule (critical):
+  //   • Existing snapshot must NEVER be overwritten by an empty docs array.
+  //     On reload, `docs` starts empty until Door 1 finishes loading. Without
+  //     this guard, the engine would wipe a perfectly good snapshot every
+  //     refresh. Snapshot is replaced ONLY when the student uploads/changes
+  //     a real document (docs.length > 0 with a different input_hash).
   useEffect(() => {
     if (!enabled || loading) return;
     if (!currentInputHash) return;
     if (currentInputHash === lastRecomputedHashRef.current) return;
-    if (docs.length === 0 && !snapshot) {
-      lastRecomputedHashRef.current = currentInputHash;
+
+    // No docs yet: keep existing snapshot visible, do not recompute.
+    if (docs.length === 0) {
+      if (import.meta.env.DEV) {
+        console.log('[useStudentEvaluation] skip recompute — empty docs, preserving snapshot', {
+          hasSnapshot: !!snapshot,
+        });
+      }
       return;
     }
+
     void runRecompute(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, loading, currentInputHash, docs.length]);
