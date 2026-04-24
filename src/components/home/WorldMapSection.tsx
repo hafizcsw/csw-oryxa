@@ -490,33 +490,9 @@ export const WorldMapSection = memo(function WorldMapSection() {
 
   return (
     <section className="relative">
-      {/* ── Visual Separator + Section Header ── */}
-      <div className="relative z-[1010] bg-gradient-to-b from-muted/60 via-background/80 to-background border-t border-border/50 shadow-[0_-4px_20px_-6px_rgba(0,0,0,0.1)]">
-        <div className="max-w-7xl mx-auto px-4 pt-10 pb-6">
-          <div className="text-center space-y-3 mb-6">
-            {/* Glassmorphism Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 backdrop-blur-sm border border-primary/20 text-primary text-xs font-semibold tracking-wide">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-              </span>
-              {t("home.worldMap.section.exploreWorldwide")}
-            </div>
-
-            {/* Animated Globe Icon */}
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-accent/10 border border-primary/20 flex items-center justify-center shadow-[0_0_30px_-5px_hsl(var(--primary)/0.3)]">
-              <Globe className="h-7 w-7 text-primary animate-[spin_20s_linear_infinite]" />
-            </div>
-
-            {/* Gradient Title */}
-            <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
-              {t("home.worldMap.section.exploreStudyDestinations")}
-            </h2>
-            <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
-              {t("home.worldMap.section.selectCountryOrUseFilters")}
-            </p>
-          </div>
-
+      {/* ── Filter Bar (header removed — provided by AG wrapper in Index.tsx) ── */}
+      <div className="relative z-[1010] bg-transparent">
+        <div className="max-w-7xl mx-auto px-4 pt-2 pb-6">
           {/* ── Filter Bar ── */}
           <div className="relative bg-card/80 backdrop-blur-xl border-2 border-border rounded-xl p-3 shadow-md z-[1100]">
             {/* Top gradient line */}
