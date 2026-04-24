@@ -380,10 +380,11 @@ Deno.serve(async (req: Request) => {
       const pd = perDoc.find(p => p.document_id === d.document_id);
       const out = pd?.output;
 
-      // 2) normalized upsert
+      // 2) normalized insert (FK to award_raw cascades on delete; old rows for
+      //    this user/doc were cleaned above when award_raw was deleted).
       const { data: normRow, error: normErr } = await supabase
         .from('student_credential_normalized')
-        .upsert({
+        .insert({
           student_user_id: userId,
           source_award_raw_id: awardRow.id,
           source_document_id: d.document_id,
@@ -402,10 +403,10 @@ Deno.serve(async (req: Request) => {
           award_year: d.award_year,
           normalizer_version: NORMALIZER_VERSION,
           trace_id: traceId,
-        }, { onConflict: 'student_user_id,source_document_id' })
+        })
         .select('id')
         .single();
-      if (normErr) { console.error('[phase-a-normalize] normalized upsert error', normErr); continue; }
+      if (normErr) { console.error('[phase-a-normalize] normalized insert error', normErr); continue; }
       insertedNormalizedIds[d.document_id] = normRow.id;
 
       // 3) decision_log: append-only audit. Insert each decision.
