@@ -352,8 +352,52 @@ export function AntigravityParticleField({ className, theme }: Props) {
       if (!running) return;
       mouse.x += (targetMouse.x - mouse.x) * 0.05;
       mouse.y += (targetMouse.y - mouse.y) * 0.05;
-      uniforms.uTime.value = clock.getElapsedTime();
+      const t = clock.getElapsedTime();
+      uniforms.uTime.value = t;
       uniforms.uMousePos.value.copy(mouse);
+
+      // ---- Whale traversal (right -> left) ----
+      if (whaleGroup.visible) {
+        const aspect = camera.aspect;
+        const span = 6.0 + aspect * 4.0;          // travel distance in world units
+        const startX =  span * 0.5;
+        const endX   = -span * 0.5;
+        const cyc = whaleState.cycle;
+        const phase = ((t - whaleState.startDelay) % cyc + cyc) % cyc;
+        const p = Math.min(1, Math.max(0, phase / (cyc * 0.65))); // active portion
+        const x = startX + (endX - startX) * p;
+        const y = Math.sin(t * 0.6) * 0.35;       // gentle vertical sway
+        const tailWag = Math.sin(t * 3.2) * 0.35;
+
+        whaleGroup.position.x = x;
+        whaleGroup.position.y = y;
+        // Face direction of travel (head pointing -X) -> flip on Y
+        whaleGroup.rotation.y = Math.PI;
+        // Tail wag
+        flukeT.rotation.z = 0.5 + tailWag;
+        flukeB.rotation.z = -0.5 - tailWag;
+        tailStem.rotation.z = 1.7 + tailWag * 0.3;
+
+        // Fade in/out at edges
+        const edgeFade = Math.min(1, p * 6.0) * Math.min(1, (1 - p) * 6.0);
+        const baseI = isDark() ? 1.0 : 0.85;
+        body.material.uniforms.uIntensity.value     = (isDark() ? 0.9 : 0.7) * edgeFade * baseI;
+        head.material.uniforms.uIntensity.value     = (isDark() ? 1.0 : 0.8) * edgeFade * baseI;
+        dorsal.material.uniforms.uIntensity.value   = (isDark() ? 0.85 : 0.65) * edgeFade * baseI;
+        tailStem.material.uniforms.uIntensity.value = (isDark() ? 0.8 : 0.6) * edgeFade * baseI;
+        flukeT.material.uniforms.uIntensity.value   = (isDark() ? 0.8 : 0.6) * edgeFade * baseI;
+        flukeB.material.uniforms.uIntensity.value   = (isDark() ? 0.8 : 0.6) * edgeFade * baseI;
+        halo.material.uniforms.uIntensity.value     = (isDark() ? 0.18 : 0.12) * edgeFade;
+
+        // Push particles around the whale (head leads ~+0.6 in local -X after flip = world +0.6 toward travel dir)
+        // Use group world position with a slight forward bias toward travel direction.
+        uniforms.uWhalePos.value.set(x - 0.5, y, whaleGroup.position.z);
+        uniforms.uWhaleStrength.value = 0.85 * edgeFade;
+      } else {
+        uniforms.uWhalePos.value.set(999, 0, 0);
+        uniforms.uWhaleStrength.value = 0;
+      }
+
       renderer.render(scene, camera);
       raf = requestAnimationFrame(animate);
     };
