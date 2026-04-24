@@ -34,7 +34,7 @@ export function AGRevealText({
         } as CSSProperties;
         return (
           <span key={i} className="ag-word" style={style}>
-            <span className="ag-word-inner">{w}</span>
+            <span className="ag-word-inner py-[16px]">{w}</span>
           </span>
         );
       })}
