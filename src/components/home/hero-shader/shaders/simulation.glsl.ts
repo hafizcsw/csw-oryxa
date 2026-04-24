@@ -63,16 +63,22 @@ void main(){
     acc += normalize(toOrigin) * ring * decay * 1.6;
   }
 
-  // --- strong spring back to fixed home (particles are anchored) ---
+  // --- spring back to fixed home (critically damped, no oscillation) ---
   vec2 home = vec2(
     (hash11(id * 1.13) - 0.5) * 2.0 * uAspect,
     (hash11(id * 2.71) - 0.5) * 2.0
   );
-  acc += (home - pos) * 4.5;
+  acc += (home - pos) * 12.0 - vel * 6.0;
 
-  // Integrate with heavier damping so they settle quickly when mouse leaves
-  vel = vel * 0.82 + acc * uDelta;
+  // Integrate with heavy damping so they settle instantly when mouse leaves
+  vel = vel * 0.55 + acc * uDelta;
   pos = pos + vel * uDelta;
+
+  // Snap to home when nearly at rest to fully kill drift
+  if (length(home - pos) < 0.0008 && length(vel) < 0.01) {
+    pos = home;
+    vel = vec2(0.0);
+  }
 
   // Soft bounds wrap
   if (pos.x >  uAspect + 0.1) pos.x = -uAspect - 0.1;
