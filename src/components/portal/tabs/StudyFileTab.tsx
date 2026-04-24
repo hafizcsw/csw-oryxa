@@ -263,7 +263,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         ]);
         console.log('[StudyFileTab] purged orphaned portal-db rows', { count: orphans.length, orphans });
         await refetchLaneFacts();
-        await analysisHook.refresh?.();
+        await analysisHook.refetch?.();
       } catch (e) {
         console.warn('[StudyFileTab] orphan sweep failed (non-fatal)', e);
       }
