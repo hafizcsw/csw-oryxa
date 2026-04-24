@@ -11,6 +11,7 @@ import {
   deletePortalDraft,
   type PortalDraft,
 } from "@/features/documents/portalDrafts";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface PortalDraftPending {
   tempId: string;
@@ -53,6 +54,20 @@ export function usePortalDrafts({ studentUserId }: UsePortalDraftsOptions): UseP
     void refresh();
   }, [refresh]);
 
+  // Order 3: poll while any draft is mid-extraction.
+  useEffect(() => {
+    const anyRunning = drafts.some(
+      (d) =>
+        d.extraction_status === "extraction_running" ||
+        d.extraction_status === "extraction_pending",
+    );
+    if (!anyRunning) return;
+    const id = setInterval(() => {
+      void refresh();
+    }, 4000);
+    return () => clearInterval(id);
+  }, [drafts, refresh]);
+
   const processQueue = useCallback(async () => {
     if (processingRef.current || !studentUserId) return;
     processingRef.current = true;
@@ -70,6 +85,18 @@ export function usePortalDrafts({ studentUserId }: UsePortalDraftsOptions): UseP
       if (result.ok && result.draft) {
         setDrafts((prev) => [result.draft as PortalDraft, ...prev]);
         setPending((prev) => prev.filter((p) => p.tempId !== tempId));
+        // Order 3: kick off draft-scoped extraction. Fire-and-forget; refresh on completion.
+        void (async () => {
+          try {
+            await supabase.functions.invoke("portal-draft-extract", {
+              body: { draft_id: (result.draft as PortalDraft).id },
+            });
+          } catch {
+            // ignore — status is persisted on the draft row
+          } finally {
+            void refresh();
+          }
+        })();
       } else {
         setPending((prev) =>
           prev.map((p) =>
@@ -82,7 +109,7 @@ export function usePortalDrafts({ studentUserId }: UsePortalDraftsOptions): UseP
     }
 
     processingRef.current = false;
-  }, [studentUserId]);
+  }, [studentUserId, refresh]);
 
   const enqueueFiles = useCallback(
     (files: File[]) => {

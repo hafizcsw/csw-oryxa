@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { Button } from "@/components/ui/button";
-import { Trash2, FileText, Loader2, AlertTriangle } from "lucide-react";
+import { Trash2, FileText, Loader2, AlertTriangle, CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import type { PortalDraft } from "@/features/documents/portalDrafts";
 import type { PortalDraftPending } from "@/hooks/usePortalDrafts";
 import { useTranslation } from "react-i18next";
@@ -72,31 +72,61 @@ export function PortalDraftsList({ drafts, pending, onDelete }: PortalDraftsList
           </li>
         ))}
 
-        {drafts.map((d) => (
-          <li
-            key={d.id}
-            className="flex items-center gap-3 p-3 text-sm"
-          >
-            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="truncate font-medium">{d.original_file_name}</p>
-              <p className="text-xs text-muted-foreground">
-                {d.mime_type || "file"} · {formatSize(d.file_size)} ·{" "}
-                <span className="font-medium text-foreground">
-                  {t("portal.studyFile.drafts.statusDraft", "Portal draft")}
-                </span>
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(d.id)}
-              aria-label={t("portal.studyFile.drafts.delete", "Delete draft")}
+        {drafts.map((d) => {
+          const ext = d.extraction_status ?? "extraction_pending";
+          const extLabel =
+            ext === "extraction_running"
+              ? t("portal.studyFile.drafts.extractionRunning", "Extracting…")
+              : ext === "extraction_completed"
+              ? t("portal.studyFile.drafts.extractionCompleted", "Extraction completed")
+              : ext === "extraction_failed"
+              ? t("portal.studyFile.drafts.extractionFailed", "Extraction failed")
+              : t("portal.studyFile.drafts.extractionPending", "Extraction pending");
+          const ExtIcon =
+            ext === "extraction_completed"
+              ? CheckCircle2
+              : ext === "extraction_failed"
+              ? XCircle
+              : ext === "extraction_running"
+              ? Loader2
+              : Sparkles;
+          const extColor =
+            ext === "extraction_completed"
+              ? "text-emerald-600"
+              : ext === "extraction_failed"
+              ? "text-destructive"
+              : "text-muted-foreground";
+
+          return (
+            <li
+              key={d.id}
+              className="flex items-center gap-3 p-3 text-sm"
             >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </li>
-        ))}
+              <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="truncate font-medium">{d.original_file_name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {d.mime_type || "file"} · {formatSize(d.file_size)} ·{" "}
+                  <span className="font-medium text-foreground">
+                    {t("portal.studyFile.drafts.statusDraft", "Portal draft")}
+                  </span>
+                </p>
+                <p className={`mt-1 inline-flex items-center gap-1 text-xs ${extColor}`}>
+                  <ExtIcon className={`h-3 w-3 ${ext === "extraction_running" ? "animate-spin" : ""}`} />
+                  {extLabel}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(d.id)}
+                aria-label={t("portal.studyFile.drafts.delete", "Delete draft")}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

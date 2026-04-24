@@ -9285,6 +9285,71 @@ export type Database = {
         }
         Relationships: []
       }
+      portal_document_draft_extractions: {
+        Row: {
+          created_at: string
+          draft_id: string
+          engine_metadata: Json
+          facts: Json
+          family: string | null
+          family_confidence: number | null
+          id: string
+          is_recognized: boolean
+          lane_confidence: number | null
+          ocr_chars: number | null
+          ocr_pages: number | null
+          rejection_reason: string | null
+          student_user_id: string
+          trace_id: string | null
+          truth_state: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          draft_id: string
+          engine_metadata?: Json
+          facts?: Json
+          family?: string | null
+          family_confidence?: number | null
+          id?: string
+          is_recognized?: boolean
+          lane_confidence?: number | null
+          ocr_chars?: number | null
+          ocr_pages?: number | null
+          rejection_reason?: string | null
+          student_user_id: string
+          trace_id?: string | null
+          truth_state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          draft_id?: string
+          engine_metadata?: Json
+          facts?: Json
+          family?: string | null
+          family_confidence?: number | null
+          id?: string
+          is_recognized?: boolean
+          lane_confidence?: number | null
+          ocr_chars?: number | null
+          ocr_pages?: number | null
+          rejection_reason?: string | null
+          student_user_id?: string
+          trace_id?: string | null
+          truth_state?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_document_draft_extractions_draft_id_fkey"
+            columns: ["draft_id"]
+            isOneToOne: false
+            referencedRelation: "portal_document_drafts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portal_document_drafts: {
         Row: {
           confirmed_at: string | null
@@ -9295,7 +9360,11 @@ export type Database = {
           draft_storage_path: string
           evaluation_status: string
           expires_at: string | null
+          extraction_completed_at: string | null
+          extraction_error: string | null
+          extraction_started_at: string | null
           extraction_status: string
+          extraction_trace_id: string | null
           file_sha256: string | null
           file_size: number | null
           id: string
@@ -9318,7 +9387,11 @@ export type Database = {
           draft_storage_path: string
           evaluation_status?: string
           expires_at?: string | null
+          extraction_completed_at?: string | null
+          extraction_error?: string | null
+          extraction_started_at?: string | null
           extraction_status?: string
+          extraction_trace_id?: string | null
           file_sha256?: string | null
           file_size?: number | null
           id?: string
@@ -9341,7 +9414,11 @@ export type Database = {
           draft_storage_path?: string
           evaluation_status?: string
           expires_at?: string | null
+          extraction_completed_at?: string | null
+          extraction_error?: string | null
+          extraction_started_at?: string | null
           extraction_status?: string
+          extraction_trace_id?: string | null
           file_sha256?: string | null
           file_size?: number | null
           id?: string

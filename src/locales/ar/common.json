@@ -1550,7 +1550,11 @@
         "statusUploading": "جارٍ رفع المسودة…",
         "statusFailed": "فشل الرفع",
         "statusDraft": "مسودة داخل البوابة",
-        "delete": "حذف المسودة"
+        "delete": "حذف المسودة",
+        "extractionPending": "استخراج قيد الانتظار",
+        "extractionRunning": "جارٍ الاستخراج…",
+        "extractionCompleted": "تم الاستخراج",
+        "extractionFailed": "فشل الاستخراج"
       }
     },
     "uploadHub": {
