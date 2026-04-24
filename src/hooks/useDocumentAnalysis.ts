@@ -608,6 +608,7 @@ export function useDocumentAnalysis(
     getAnalysis,
     dismissAnalysis,
     clearAllAnalyses,
+    refetch,
     editFieldValue: noop,
   };
 }
