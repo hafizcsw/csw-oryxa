@@ -81,7 +81,7 @@ export default function HeroParticleField({
           vAngle = atan(vel.y, vel.x);
 
           vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-          gl_PointSize = (11.0 * uPixelRatio) * (1.0 / -mvPosition.z);
+          gl_PointSize = min((11.0 * uPixelRatio) * (1.0 / -mvPosition.z), 14.0 * uPixelRatio);
           gl_Position = projectionMatrix * mvPosition;
 
           vAlpha = smoothstep(0.0, 1.0, force * 0.5 + 0.2);
