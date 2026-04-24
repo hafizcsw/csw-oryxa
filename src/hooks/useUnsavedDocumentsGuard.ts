@@ -15,7 +15,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { deleteFile } from '@/api/crmStorage';
+import { deleteFile, clearPendingFiles, markFilesSaved } from '@/api/crmStorage';
 import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEY = 'unsaved_documents_v1';
