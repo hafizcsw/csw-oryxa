@@ -184,6 +184,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     onBatchComplete: handleBatchComplete,
   });
 
+  // ═══ Order 2: Portal Draft Layer ═══
+  // Study File uploads now land in the private `portal-drafts` bucket
+  // and a row is created in `portal_document_drafts`. NO CRM contact
+  // happens here — confirmation/CRM packaging is a later phase.
+  const drafts = usePortalDrafts({ studentId: profile?.user_id ?? null } as never);
+
   const activeCrmDocumentIds = useMemo(() => new Set(documents.map((doc) => doc.id)), [documents]);
   const purgeScopeIdsRef = useRef<Set<string>>(new Set());
 
