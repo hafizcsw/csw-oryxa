@@ -10,19 +10,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 
-// ── Mock supabase BEFORE importing the hook ──
-const invokeMock = vi.fn();
-const credSelectChain = { eq: vi.fn().mockResolvedValue({ data: [], error: null }) };
-const snapSelectChain = { eq: vi.fn().mockReturnValue({ maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) }) };
+// ── Mock supabase BEFORE importing the hook (hoisted-safe) ──
+vi.mock('@/integrations/supabase/client', () => {
+  const invokeMock = vi.fn();
+  const credSelectChain = { eq: vi.fn().mockResolvedValue({ data: [], error: null }) };
+  const snapSelectChain = { eq: vi.fn().mockReturnValue({ maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) }) };
+  (globalThis as any).__phaseAMocks = { invokeMock, credSelectChain, snapSelectChain };
+  return {
+    supabase: {
+      from: (table: string) => ({
+        select: () => (table === 'student_evaluation_snapshots' ? snapSelectChain : credSelectChain),
+      }),
+      functions: { invoke: invokeMock },
+    },
+  };
+});
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    from: (table: string) => ({
-      select: () => (table === 'student_evaluation_snapshots' ? snapSelectChain : credSelectChain),
-    }),
-    functions: { invoke: invokeMock },
-  },
-}));
+const { invokeMock, credSelectChain, snapSelectChain } = (globalThis as any).__phaseAMocks;
 
 import { useStudentEvaluation, type EvaluationDocInput } from '@/hooks/useStudentEvaluation';
 
