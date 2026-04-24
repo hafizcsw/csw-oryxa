@@ -75,20 +75,26 @@ export function LiveProfileAssembly({
   const queueRef = useRef<QueueEntry[]>([]);
   const seenCompletedRef = useRef<Set<string>>(new Set());
 
-  // Hydrated doc IDs render immediately as settled (no animation, no queue)
-  const hydratedIds = useMemo(() => {
+  // Hydrated doc IDs render immediately as settled (no animation, no queue).
+  // A doc is considered "already known" (and therefore rendered instantly on
+  // refresh) if it has a hydrated surface OR an artifact already loaded —
+  // either signal means the data came from the DB rather than a fresh upload.
+  const settledIds = useMemo(() => {
     const s = new Set<string>();
     for (const k of Object.keys(hydratedArtifactSurfaces)) s.add(k);
+    for (const k of Object.keys(artifacts)) s.add(k);
     return s;
-  }, [hydratedArtifactSurfaces]);
+  }, [hydratedArtifactSurfaces, artifacts]);
 
   // Ingest newly-completed analyses into the queue
   useEffect(() => {
     for (const a of analyses) {
       if (a.analysis_status !== 'completed' && a.analysis_status !== 'failed' && a.analysis_status !== 'skipped') continue;
       if (seenCompletedRef.current.has(a.document_id)) continue;
-      // If hydrated → mark revealed immediately, no queue
-      if (hydratedIds.has(a.document_id)) {
+      // If already settled (hydrated / artifact loaded) → reveal immediately, no queue.
+      // This is the refresh path: persisted docs must re-appear instantly,
+      // not replay the drop animation one by one.
+      if (settledIds.has(a.document_id)) {
         seenCompletedRef.current.add(a.document_id);
         setRevealedIds(prev => {
           if (prev.has(a.document_id)) return prev;
@@ -103,7 +109,22 @@ export function LiveProfileAssembly({
     }
     // Kick the queue if nothing is currently animating
     setQueueHead(prev => prev ?? queueRef.current.shift() ?? null);
-  }, [analyses, hydratedIds]);
+  }, [analyses, settledIds]);
+
+  // Safety net: if an analysis becomes "settled" AFTER it was queued
+  // (hydrated surface / artifact arrived late on refresh), promote it
+  // straight into revealedIds so it renders immediately.
+  useEffect(() => {
+    if (settledIds.size === 0) return;
+    setRevealedIds(prev => {
+      let changed = false;
+      const next = new Set(prev);
+      for (const id of settledIds) {
+        if (!next.has(id)) { next.add(id); changed = true; }
+      }
+      return changed ? next : prev;
+    });
+  }, [settledIds]);
 
   // Drive the queue: head → reveal after delay → next
   useEffect(() => {
@@ -213,7 +234,7 @@ export function LiveProfileAssembly({
         proposals: proposalsByDoc.get(a.document_id) ?? [],
         subMode,
         routeReason: reason,
-        animate: !hydratedIds.has(a.document_id),
+        animate: !settledIds.has(a.document_id),
         subjectRows: subjectRowsByDoc.get(a.document_id),
       });
     }
@@ -250,7 +271,7 @@ export function LiveProfileAssembly({
     };
   }, [
     analyses, revealedIds, records, proposals, artifacts,
-    hydratedArtifactSurfaces, hydratedIds, previewUrls, subjectRows, crmDocuments,
+    hydratedArtifactSurfaces, settledIds, previewUrls, subjectRows, crmDocuments,
   ]);
 
   const totalRevealed =
