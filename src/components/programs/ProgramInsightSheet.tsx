@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
 import { cn } from '@/lib/utils';
+import { usePageStaffRole } from '@/hooks/usePageStaffRole';
 
 interface ProgramInsightSheetProps {
   programId: string;
@@ -52,6 +53,8 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
   const [snapshot, setSnapshot] = useState<AiSnapshot | null>(null);
   const [orx, setOrx] = useState<OrxSignals | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { role, isSuperAdmin } = usePageStaffRole(open ? universityId ?? null : null);
+  const canGenerate = isSuperAdmin || role === 'full_control' || role === 'page_admin';
 
   useEffect(() => {
     if (!open) return;
@@ -248,9 +251,11 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
                 <Sparkles className="w-5 h-5 text-muted-foreground mx-auto" />
                 <p className="text-[11px] font-medium">{t('insight.noData')}</p>
                 <p className="text-[11px] text-muted-foreground">{t('insight.noDataDesc')}</p>
-                <Button size="sm" onClick={requestGeneration} disabled={!universityId} className="gap-1 text-[11px] h-8 px-3">
-                  <RefreshCw className="w-3 h-3" /> {t('insight.generate')}
-                </Button>
+                {canGenerate && (
+                  <Button size="sm" onClick={requestGeneration} disabled={!universityId} className="gap-1 text-[11px] h-8 px-3">
+                    <RefreshCw className="w-3 h-3" /> {t('insight.generate')}
+                  </Button>
+                )}
               </div>
             )}
 
