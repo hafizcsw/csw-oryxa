@@ -62,8 +62,9 @@ const FRAG = /* glsl */ `
     float dist = distance(gl_PointCoord, vec2(0.5));
     if (dist > 0.5) discard;
 
-    float alpha = smoothstep(0.5, 0.0, dist) * vAlpha;
-    gl_FragColor = vec4(uColor, alpha * 0.6 * uAlphaBoost);
+    // Tighter falloff → crisp pinpoint instead of soft blob
+    float core = smoothstep(0.5, 0.15, dist);
+    gl_FragColor = vec4(uColor, core * vAlpha * 0.45 * uAlphaBoost);
   }
 `;
 
