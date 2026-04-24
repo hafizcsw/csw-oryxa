@@ -79,17 +79,71 @@ const EXEMPT_CONTEXTS: ReadonlySet<UploadContext> = new Set([
   'payment_proof',
 ]);
 
+/** True if the given upload context is a sensitive student document context. */
+export function isSensitiveUploadContext(ctx: UploadContext | undefined | null): boolean {
+  if (!ctx) return false;
+  return SENSITIVE_CONTEXTS.has(ctx);
+}
+
 /**
- * Is the Draft-first guard active?
- * Default: ON. Disable only via VITE_DRAFT_FIRST_UPLOADS="false".
+ * Detect production environment. In production, Draft-first is FORCED ON.
+ * Checks Vite's import.meta.env.PROD and MODE === 'production'. Any attempt
+ * to disable via VITE_DRAFT_FIRST_UPLOADS in production is rejected and logged.
  */
-export function isDraftFirstEnabled(): boolean {
+function isProductionEnv(): boolean {
   try {
-    const v = (import.meta as any)?.env?.VITE_DRAFT_FIRST_UPLOADS;
-    if (v === false || v === 'false' || v === '0') return false;
+    const env = (import.meta as any)?.env;
+    if (env?.PROD === true) return true;
+    if (env?.MODE === 'production') return true;
+    if (typeof window !== 'undefined') {
+      const host = window.location?.hostname ?? '';
+      // Production domains per project URLs.
+      if (
+        host === 'orxya.org' ||
+        host === 'www.cswworld.com' ||
+        host === 'cswworld.com' ||
+        host.endsWith('.lovable.app') // published lovable domains
+      ) {
+        // preview subdomain is still preview — keep it disable-able there.
+        if (host.startsWith('id-preview--')) return false;
+        return true;
+      }
+    }
   } catch {
     /* noop */
   }
+  return false;
+}
+
+/**
+ * Is the Draft-first guard active?
+ *
+ * Rules:
+ *  • Production → FORCED ON. Any disable attempt is logged and ignored.
+ *  • Dev / preview → ON by default. Disable via VITE_DRAFT_FIRST_UPLOADS="false".
+ */
+export function isDraftFirstEnabled(): boolean {
+  const prod = isProductionEnv();
+  let envWantsOff = false;
+  try {
+    const v = (import.meta as any)?.env?.VITE_DRAFT_FIRST_UPLOADS;
+    if (v === false || v === 'false' || v === '0') envWantsOff = true;
+  } catch {
+    /* noop */
+  }
+
+  if (prod && envWantsOff) {
+    // eslint-disable-next-line no-console
+    console.error('[draftFirstGuard] draft_first_disable_attempt_rejected', {
+      marker: 'draft_first_disable_attempt_rejected',
+      env_value: 'false',
+      environment: 'production',
+      effective_state: 'ON',
+    });
+    return true;
+  }
+
+  if (envWantsOff) return false;
   return true;
 }
 
@@ -133,8 +187,39 @@ export function evaluateUploadGuard(
 ): GuardDecision {
   const traceId = newTraceId();
 
-  // Guard disabled → pass through, but still log sensitive attempts for visibility.
+  // Guard disabled (dev/preview only) → pass through, EXCEPT for sensitive
+  // contexts in pre_confirm. Sensitive student documents can never auto-save
+  // or upload pre-confirm, even with the flag OFF (belt + suspenders).
   if (!isDraftFirstEnabled()) {
+    if (
+      ctx &&
+      SENSITIVE_CONTEXTS.has(ctx.context) &&
+      ctx.confirmationState !== 'post_confirm'
+    ) {
+      const decision: GuardDecision = {
+        allowed: false,
+        reason: 'blocked_pre_confirm_crm_upload',
+        errorCode: 'blocked_pre_confirm_crm_upload',
+        errorMessage:
+          'Sensitive student document cannot reach CRM pre-confirm, even with Draft-first flag disabled.',
+        traceId,
+      };
+      logGuard(
+        {
+          marker: 'blocked_pre_confirm_crm_upload',
+          crm_action: action,
+          upload_context: ctx.context,
+          confirmation_state: ctx.confirmationState,
+          confirmation_trace_id: ctx.confirmationTraceId,
+          trace_id: traceId,
+          attempted_action: ctx.attemptedAction,
+          decision_reason: decision.reason,
+          error_code: 'sensitive_context_hard_block',
+        },
+        'warn',
+      );
+      return decision;
+    }
     return { allowed: true, reason: 'draft_first_disabled', traceId };
   }
 
