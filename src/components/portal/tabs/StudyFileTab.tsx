@@ -676,7 +676,10 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       existing.push(key);
       fileNameToKeysRef.current.set(file.name, existing);
     }
-    registry.enqueueFiles(filesToUpload, 'upload_hub');
+    // Order 2: route Study File uploads through the Portal Draft Layer.
+    // No CRM mutation. Files land in the private `portal-drafts` bucket
+    // and a row appears in `portal_document_drafts`.
+    drafts.enqueueFiles(filesToUpload);
   }, [registry, documents, analysisHook.analyses, analysisHook.hydratedArtifactSurfaces, handleDeleteDoc, refetchDocs]);
 
   // ⛔ TEMPORARILY DISABLED — auto-passport-cleanup is paused while we
