@@ -268,6 +268,54 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     guard.reconcileWithValidIds(documents.map(d => d.id));
   }, [documents, guard]);
 
+  // ═══ Auto-save on analysis completion ═══
+  // Once a document's analysis reaches a terminal state (completed / failed /
+  // skipped), the extracted facts are already persisted in DB. We commit the
+  // CRM file immediately so it survives a refresh — no manual "Save" needed.
+  const autoSavedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (guard.pendingCount === 0) return;
+    const pending = new Set(guard.pendingIds);
+
+    // Map document_id → crm_file_id via registry records
+    const crmIdByDocId = new Map<string, string>();
+    for (const r of registry.records) {
+      if (r.crm_file_id) crmIdByDocId.set(r.document_id, r.crm_file_id);
+    }
+
+    const toSave: string[] = [];
+    for (const a of analysisHook.analyses) {
+      const isTerminal =
+        a.analysis_status === 'completed' ||
+        a.analysis_status === 'failed' ||
+        a.analysis_status === 'skipped';
+      if (!isTerminal) continue;
+      const crmId = crmIdByDocId.get(a.document_id);
+      if (!crmId) continue;
+      if (!pending.has(crmId)) continue;
+      if (autoSavedRef.current.has(crmId)) continue;
+      toSave.push(crmId);
+    }
+
+    if (toSave.length === 0) return;
+    toSave.forEach(id => autoSavedRef.current.add(id));
+
+    void (async () => {
+      try {
+        const { markFilesSaved } = await import('@/api/crmStorage');
+        await markFilesSaved(toSave);
+        toSave.forEach(id => guard.untrackDocument(id));
+        if (import.meta.env.DEV) {
+          console.log('[StudyFileTab] auto-saved analyzed docs', { count: toSave.length });
+        }
+      } catch (e) {
+        // Un-mark so a later pass can retry
+        toSave.forEach(id => autoSavedRef.current.delete(id));
+        if (import.meta.env.DEV) console.warn('[StudyFileTab] auto-save failed', e);
+      }
+    })();
+  }, [analysisHook.analyses, registry.records, guard]);
+
   const handleSaveDocuments = useCallback(async () => {
     await guard.confirmAllSaved();
     await refetchDocs({ silent: true });
