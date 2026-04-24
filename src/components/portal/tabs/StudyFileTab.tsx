@@ -962,8 +962,13 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           <DocumentAnalysisPanel
             analyses={visibleAnalyses}
             proposals={visibleProposals}
-            liveStages={analysisHook.liveStages}
-            onEditField={analysisHook.editFieldValue}
+            promotedFields={analysisHook.promotedFields}
+            artifacts={analysisHook.artifacts}
+            isAnalyzing={analysisHook.liveStages && Object.keys(analysisHook.liveStages).length > 0}
+            onAcceptProposal={analysisHook.acceptProposal}
+            onRejectProposal={analysisHook.rejectProposal}
+            onReanalyze={analysisHook.reanalyzeFile}
+            onDismissAnalysis={analysisHook.dismissAnalysis}
           />
         </section>
 
