@@ -31,7 +31,11 @@ import { useShortlistRequirementsContext } from "@/hooks/useShortlistRequirement
 import { useUnsavedDocumentsGuard } from "@/hooks/useUnsavedDocumentsGuard";
 import type { FileQualityResult } from "@/features/file-quality/types";
 import type { DocumentTypeFilter } from "./DocumentsTab";
-import { guessSlotFromFileName } from "@/features/documents/document-registry-model";
+import {
+  guessSlotFromFileName,
+  mapLegacyKindToSlot,
+  type DocumentRecord,
+} from "@/features/documents/document-registry-model";
 import { useDocumentLaneFacts } from "@/hooks/useDocumentLaneFacts";
 import { LaneFactsCard } from "@/components/student-file/LaneFactsCard";
 import { useStudentEvaluation } from "@/hooks/useStudentEvaluation";
@@ -173,6 +177,46 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     studentId: profile?.user_id ?? null,
     onBatchComplete: handleBatchComplete,
   });
+
+  const displayRecords = useMemo<DocumentRecord[]>(() => {
+    const now = new Date().toISOString();
+    const liveById = new Map<string, DocumentRecord>();
+
+    for (const record of registry.records) {
+      liveById.set(record.document_id, record);
+      if (record.crm_file_id) {
+        liveById.set(`crm:${record.crm_file_id}`, record);
+      }
+    }
+
+    const hydratedFromCrm = documents
+      .filter((doc) => !liveById.has(doc.id) && !liveById.has(`crm:${doc.id}`))
+      .map((doc): DocumentRecord => ({
+        document_id: doc.id,
+        crm_file_id: doc.id,
+        student_id: profile?.user_id ?? '',
+        uploaded_by_role: 'student',
+        source_surface: 'legacy',
+        original_file_name: doc.file_name,
+        mime_type: doc.file_type || 'application/octet-stream',
+        file_size_bytes: doc.file_size ?? 0,
+        storage_path: doc.storage_path || null,
+        slot_hint: mapLegacyKindToSlot(doc.document_category),
+        processing_status: 'registered',
+        readability_status: 'unknown',
+        usefulness_status: 'unknown',
+        duplicate_status: 'unknown',
+        rejection_reason: doc.rejection_reason ?? null,
+        file_url: doc.file_path || null,
+        signed_url: doc.signed_url ?? null,
+        error_message: null,
+        upload_progress: 100,
+        created_at: doc.created_at || doc.uploaded_at || now,
+        updated_at: doc.created_at || doc.uploaded_at || now,
+      }));
+
+    return [...hydratedFromCrm, ...registry.records];
+  }, [documents, profile?.user_id, registry.records]);
 
   // ═══ Auto-purge orphaned lane facts ═══
   // Lane facts whose source CRM document has been deleted are stale.
@@ -419,11 +463,16 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   const handleDismissUploadHub = useCallback((documentId: string) => {
     const record = registry.records.find((r) => r.document_id === documentId);
     if (!record) {
+      const crmDoc = documents.find((d) => d.id === documentId);
+      if (crmDoc) {
+        void handleDeleteDoc(crmDoc.id, crmDoc.id);
+        return;
+      }
       registry.dismissRecord(documentId);
       return;
     }
     void handleDeleteDoc(record.crm_file_id, documentId);
-  }, [handleDeleteDoc, registry]);
+  }, [documents, handleDeleteDoc, registry]);
 
   const autoPassportCleanupRef = useRef(new Set<string>());
 
@@ -686,7 +735,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         <UploadGuidanceCard />
         <div className="border-t border-border bg-background/40 px-4 py-4">
           <CentralUploadHub
-            records={registry.records}
+            records={displayRecords}
             isUploading={registry.isUploading}
             disabled={crmProfile?.docs_locked}
             onFilesSelected={handleFilesSelected}
@@ -707,7 +756,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
 
       {/* ═══ Live Profile Assembly (lower experience) ═══ */}
       <LiveProfileAssembly
-        records={registry.records}
+        records={displayRecords}
         analyses={analysisHook.analyses}
         proposals={analysisHook.proposals}
         artifacts={analysisHook.artifacts}
