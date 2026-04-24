@@ -227,10 +227,13 @@ export function useStudentEvaluation({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, loading, currentInputHash, docs.length]);
 
-  const isUpToDate = useMemo(
-    () => !!currentInputHash && currentInputHash === lastRecomputedHashRef.current,
-    [currentInputHash, snapshot?.input_hash],
-  );
+  const isUpToDate = useMemo(() => {
+    // Snapshot is "up to date" if either:
+    //   (a) the current docs match what was last computed, OR
+    //   (b) docs are empty (still loading) but a persisted snapshot exists.
+    if (snapshot && docs.length === 0) return true;
+    return !!currentInputHash && currentInputHash === lastRecomputedHashRef.current;
+  }, [currentInputHash, snapshot, docs.length]);
 
   return {
     loading,
