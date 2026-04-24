@@ -5198,10 +5198,16 @@ Deno.serve(async (req) => {
             console.log('[crm_storage:list_files] 🔎 DIAG breakdown:', diag);
 
             // The canonical filter the UI should see
+            // ✅ FIX: include 'pending' (freshly uploaded) and 'saved'.
+            // Freshly uploaded CRM files land as 'pending' and must be scannable by the portal.
+            const ACCEPTED_STATUSES = new Set(['saved', 'pending', 'uploaded', 'ready', 'active', null, undefined]);
             const files = rawAll.filter((r: any) =>
               r.deleted_at == null &&
               r.visibility === 'student_visible' &&
-              r.status === 'saved'
+              (ACCEPTED_STATUSES.has(r.status) || r.status == null)
+            );
+            console.log('[crm_storage:list_files] 🔎 status histogram of not_deleted:',
+              Object.entries(rawAll.filter((r:any)=>r.deleted_at==null).reduce((acc:any,r:any)=>{acc[r.status||'null']=(acc[r.status||'null']||0)+1;return acc;},{}))
             );
 
             // Log first 10 IDs so we can match them against the UI bubble
