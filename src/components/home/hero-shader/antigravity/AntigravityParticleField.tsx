@@ -31,6 +31,8 @@ const VERT = /* glsl */ `
   attribute float aOffset;
 
   varying float vAlpha;
+  varying float vAngle;
+  varying float vSeed;
 
   void main() {
     vec3 pos = position;
@@ -42,12 +44,15 @@ const VERT = /* glsl */ `
     pos.z += smoothstep(1.5, 0.0, dist) * 1.5;
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    // Tinier pinpoint dots — closer to Antigravity reference
-    float ps = (2.2 * uPixelRatio * uSizeScale) * (1.0 / -mvPosition.z);
-    gl_PointSize = clamp(ps, 1.0, uSizeClamp);
+    // Bigger sprite to host the dash shape (oriented capsule rendered in frag)
+    float ps = (7.0 * uPixelRatio * uSizeScale) * (1.0 / -mvPosition.z);
+    gl_PointSize = clamp(ps, 2.0, uSizeClamp);
     gl_Position  = projectionMatrix * mvPosition;
 
     vAlpha = smoothstep(0.0, 1.0, 1.0 - length(pos) / 12.0);
+    // Stable per-particle orientation + seed
+    vAngle = aOffset * 6.28318;
+    vSeed  = aOffset;
   }
 `;
 
@@ -57,14 +62,34 @@ const FRAG = /* glsl */ `
   uniform vec3  uColor;
   uniform float uAlphaBoost;
   varying float vAlpha;
+  varying float vAngle;
+  varying float vSeed;
+
+  // Signed-distance to a rounded capsule, oriented along x
+  float sdCapsule(vec2 p, float halfLen, float r) {
+    p.x -= clamp(p.x, -halfLen, halfLen);
+    return length(p) - r;
+  }
 
   void main() {
-    float dist = distance(gl_PointCoord, vec2(0.5));
-    if (dist > 0.5) discard;
+    // Remap point coord to [-1,1] and rotate by particle angle
+    vec2 uv = gl_PointCoord * 2.0 - 1.0;
+    uv.y = -uv.y;
+    float ca = cos(vAngle);
+    float sa = sin(vAngle);
+    vec2 ruv = mat2(ca, -sa, sa, ca) * uv;
 
-    // Tighter falloff → crisp pinpoint instead of soft blob
-    float core = smoothstep(0.5, 0.15, dist);
-    gl_FragColor = vec4(uColor, core * vAlpha * 0.45 * uAlphaBoost);
+    // Capsule (dash): long on x, very thin on y
+    float halfLen = 0.62;
+    float r       = 0.13;
+    float d = sdCapsule(ruv, halfLen, r);
+
+    // Smooth edge
+    float edge = 0.05;
+    float shape = 1.0 - smoothstep(-edge, edge, d);
+    if (shape <= 0.001) discard;
+
+    gl_FragColor = vec4(uColor, shape * vAlpha * 0.55 * uAlphaBoost);
   }
 `;
 
