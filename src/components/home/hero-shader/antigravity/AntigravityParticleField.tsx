@@ -26,6 +26,9 @@ const VERT = /* glsl */ `
   uniform float uPixelRatio;
   uniform float uSizeScale;
   uniform float uSizeClamp;
+  uniform vec3  uWhalePos;     // world-space whale head position
+  uniform float uWhaleRadius;  // influence radius
+  uniform float uWhaleStrength;
 
   // Placeholder position attribute (unused; required for draw count)
   attribute vec3  position;
