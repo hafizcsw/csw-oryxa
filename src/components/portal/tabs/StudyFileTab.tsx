@@ -680,7 +680,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     // No CRM mutation. Files land in the private `portal-drafts` bucket
     // and a row appears in `portal_document_drafts`.
     drafts.enqueueFiles(filesToUpload);
-  }, [registry, documents, analysisHook.analyses, analysisHook.hydratedArtifactSurfaces, handleDeleteDoc, refetchDocs]);
+  }, [drafts, documents, analysisHook.analyses, analysisHook.hydratedArtifactSurfaces, handleDeleteDoc, refetchDocs]);
 
   // ⛔ TEMPORARILY DISABLED — auto-passport-cleanup is paused while we
   // collect runtime proof of the Paddle cutover. It was deleting real
