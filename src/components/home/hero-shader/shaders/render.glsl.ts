@@ -97,8 +97,11 @@ void main(){
   float twk   = pow(0.5 + 0.5 * sin(uTime * (0.6 + vSeed * 0.9) + phase * 1.7), 6.0);
   float bright = mix(0.55, 1.0, flick) + twk * 0.45;
 
+  // Depth-based fade — far particles dim, near particles pop
+  float depthBoost = mix(0.45, 1.25, vDepth);
+
   vec3 col = palette(vSeed);
-  float a = shape * clamp(bright, 0.0, 2.0) * uIntensity;
+  float a = shape * clamp(bright, 0.0, 2.0) * uIntensity * depthBoost;
 
   gl_FragColor = vec4(col * a, a);
 }
