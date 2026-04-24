@@ -1269,6 +1269,34 @@
     "chooseVerificationMethod": "Choose verification method"
   },
   "portal": {
+    "evaluation": {
+      "region_label": "Student evaluation workspace",
+      "title": "Evaluation snapshot",
+      "headline": "Headline credential",
+      "loading": "Loading evaluation…",
+      "empty": "No evaluation yet. Upload a credential to get started.",
+      "computing": "Recomputing…",
+      "saved": "Saved · up to date",
+      "pending": "Pending recompute",
+      "recompute": "Recompute",
+      "docs_evaluated": "Documents",
+      "docs_passing": "Passing",
+      "docs_review": "Need review",
+      "last_computed": "Last computed",
+      "reason": "Reason",
+      "per_document": "Per-document normalization",
+      "needs_review": "Needs review",
+      "ok": "OK",
+      "rules": "Rules",
+      "recompute_reason": {
+        "first_compute": "First compute",
+        "document_added": "Document added",
+        "document_removed": "Document removed",
+        "document_changed": "Document changed",
+        "manual": "Manual recompute",
+        "input_changed": "Input changed"
+      }
+    },
     "login": {
       "title": "Student Portal",
       "description": "Sign in to access your account and track your applications",
