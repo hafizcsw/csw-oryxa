@@ -16,6 +16,7 @@ uniform float uAspect;
 
 varying vec2  vVel;
 varying float vSeed;
+varying float vDepth;
 
 void main(){
   vec4 p = texture2D(uPositionTex, aRef);
@@ -24,13 +25,18 @@ void main(){
   gl_Position = vec4(ndc, 0.0, 1.0);
 
   float speed = length(p.zw);
-  // size variation per particle, slight expansion with speed
+  // depth in [0,1] — 0 = far, 1 = near (closer to viewer)
+  float depth = fract(sin(dot(aRef, vec2(12.989, 78.233))) * 43758.5);
+  // size variation per particle, scaled strongly by depth for 3D pop
   float r = fract(sin(dot(aRef, vec2(91.13, 47.31))) * 43758.5);
-  float size = uPointSize * mix(0.55, 1.45, r) * (1.0 + speed * 0.6);
+  float sizeBase = uPointSize * mix(0.45, 1.55, r);
+  float depthScale = mix(0.55, 1.85, depth);
+  float size = sizeBase * depthScale * (1.0 + speed * 0.4);
   gl_PointSize = size * uDpr;
 
   vVel = p.zw;
   vSeed = r;
+  vDepth = depth;
 }
 `;
 
@@ -39,6 +45,7 @@ precision highp float;
 
 varying vec2  vVel;
 varying float vSeed;
+varying float vDepth;
 
 uniform float uTime;
 uniform float uIntensity;
