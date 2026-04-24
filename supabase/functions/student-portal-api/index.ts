@@ -5167,14 +5167,16 @@ Deno.serve(async (req) => {
           case 'list_files': {
             console.log('[crm_storage] list_files for customer:', customerId);
             
-            // ✅ CUTOVER STRICT: Only student_visible files (NO null), active status only
+            // Only truly saved files should survive a fresh page load.
+            // Unsaved files are shown optimistically in the current session,
+            // but must disappear after leave/refresh and be purged on next mount.
             const { data: files, error: listErr } = await crmStorageClient
               .from('customer_files')
               .select('id, file_kind, file_name, file_url, storage_bucket, storage_path, mime_type, size_bytes, status, admin_notes, created_at, visibility, review_status, student_visible_note, rejection_reason')
               .eq('customer_id', customerId)
               .is('deleted_at', null)
-              .eq('visibility', 'student_visible')  // ✅ STRICT: Only student_visible (NO null/legacy)
-              .not('status', 'in', '(deleted,superseded)')  // ✅ Exclude deleted & superseded
+              .eq('visibility', 'student_visible')
+              .eq('status', 'saved')
               .order('created_at', { ascending: false });
             
             if (listErr) {
@@ -5653,10 +5655,10 @@ Deno.serve(async (req) => {
 
             const { data: pendingFiles, error: listPendingErr } = await crmStorageClient
               .from('customer_files')
-              .select('id, storage_bucket, storage_path')
+              .select('id, storage_bucket, storage_path, status')
               .eq('customer_id', customerId)
               .is('deleted_at', null)
-              .eq('status', 'pending');
+              .or('status.is.null,status.neq.saved');
 
             if (listPendingErr) {
               console.error('[crm_storage] ❌ clear_pending_files list error:', listPendingErr);

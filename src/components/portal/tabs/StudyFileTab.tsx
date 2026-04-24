@@ -269,7 +269,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   }, [documents, guard]);
 
   const handleSaveDocuments = useCallback(async () => {
-    guard.confirmAllSaved();
+    await guard.confirmAllSaved();
     await refetchDocs({ silent: true });
   }, [guard, refetchDocs]);
 

@@ -282,8 +282,9 @@ export function useStudentDocuments(options?: { enabled?: boolean }) {
       window.dispatchEvent(new CustomEvent('crm-refresh-data'));
     }
     
-    // Background sync
-    loadDocuments({ silent: true });
+    // Do NOT background-refetch here: unsaved uploads are shown optimistically
+    // in the current session and should not be pulled from server truth until
+    // the user explicitly saves them.
     
     // Success toast is shown by component layer with t() function
     
