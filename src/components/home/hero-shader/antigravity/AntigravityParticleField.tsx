@@ -289,6 +289,7 @@ export function AntigravityParticleField({ className, theme }: Props) {
         transparent: true,
         depthTest: false,
         depthWrite: false,
+        side: THREE.DoubleSide,
         blending: isDark() ? THREE.AdditiveBlending : THREE.NormalBlending,
       });
       const m = new THREE.Mesh(geo, mat);
@@ -373,8 +374,9 @@ export function AntigravityParticleField({ className, theme }: Props) {
 
         whaleGroup.position.x = x;
         whaleGroup.position.y = y;
-        // Face direction of travel (head pointing -X) -> flip on Y
-        whaleGroup.rotation.y = Math.PI;
+        // Whale moves right→left so head should face -X.
+        // Build is head=+X, so flip via negative scale on X (keeps planes facing camera).
+        whaleGroup.scale.x = -1;
         // Tail wag
         flukeT.rotation.z = 0.5 + tailWag;
         flukeB.rotation.z = -0.5 - tailWag;
