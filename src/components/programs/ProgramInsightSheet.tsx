@@ -53,6 +53,8 @@ export function ProgramInsightSheet({ programId, programName, universityId, chil
   const [snapshot, setSnapshot] = useState<AiSnapshot | null>(null);
   const [orx, setOrx] = useState<OrxSignals | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { role, isSuperAdmin } = usePageStaffRole(open ? universityId ?? null : null);
+  const canGenerate = isSuperAdmin || role === 'full_control' || role === 'page_admin';
 
   useEffect(() => {
     if (!open) return;
