@@ -8986,7 +8986,7 @@ Deno.serve(async (req) => {
         if (!resolvedCustomerId) {
           return Response.json(
             { ok: false, error: 'no_crm_customer_link' },
-            { status: 409, headers: corsHeaders },
+            { status: 200, headers: corsHeaders },
           );
         }
 
