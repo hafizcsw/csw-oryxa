@@ -1,42 +1,89 @@
 # Evidence Pack — Order 2: Portal Draft Layer
 
-**Status:** `Order 2 = code-ready only / runtime proof missing`
+**Status:** `Order 2 = code-ready / runtime proof missing`
 **Scope:** Portal Draft Layer for Study File uploads. NO CRM contact.
-**Date:** 2026-04-24
+**Date:** 2026-04-24 (revised after blockers fix)
+
+---
+
+## 0. Blockers raised by reviewer — RESOLVED
+
+| Blocker | Status | Fix |
+|---|---|---|
+| Passport replacement still called `handleDeleteDoc` (CRM delete) before draft upload | **FIXED** | `handleFilesSelected` now contains zero CRM calls. The dedup/replace branch and the `window.confirm("…سيتم حذف الجواز القديم")` prompt were removed entirely. New passports land as draft "replacement candidates"; actual CRM deletion is deferred to Phase 6 (Confirm & Share). |
+| i18n keys for `studyFile.drafts.*` not present in locale files | **FIXED** | Added `studyFile.drafts` block to `src/locales/en/common.json` (lines 1545–1552) and `src/locales/ar/common.json` (lines 1547–1554) with: `headline`, `subline`, `statusUploading`, `statusFailed`, `statusDraft`, `delete`. UI no longer relies on English fallback. |
+| Migration file proof not provided | **PROVIDED** | See section 1.1 below. |
+
+### Diff summary — `src/components/portal/tabs/StudyFileTab.tsx`
+
+`handleFilesSelected` was reduced from 60 lines (including a CRM-delete branch
+guarded by `window.confirm`) to 19 lines. The new body:
+
+```
+const filesToUpload = files;
+for (const file of filesToUpload) {
+  const key = uniqueFileKey(file);
+  pendingFilesRef.current.set(key, { file, fileKey: key });
+  const existing = fileNameToKeysRef.current.get(file.name) || [];
+  existing.push(key);
+  fileNameToKeysRef.current.set(file.name, existing);
+}
+drafts.enqueueFiles(filesToUpload);
+```
+
+Dependency array now `[drafts]` only — no `handleDeleteDoc`, no `documents`,
+no `analysisHook.*`, no `refetchDocs`. The function cannot mutate CRM.
+
+`bunx tsc --noEmit -p tsconfig.app.json` → **0 errors** after fix.
 
 ---
 
 ## 1. Code evidence
 
-### Migration
-- Bucket created: **`portal-drafts`** (private, `public = false`).
-- Table created: **`public.portal_document_drafts`** with columns matching the Order 2 spec
-  (id, student_user_id, document_type, original_file_name, mime_type, file_size, file_sha256,
-  draft_storage_bucket, draft_storage_path, status, extraction_status, identity_match_status,
-  evaluation_status, source_surface, trace_id, created_at, updated_at, expires_at,
-  confirmed_at, discarded_at, shared_to_crm_at).
-- CHECK constraint on `status` allows the full reserved set
+### 1.1 Migration file proof
+
+**File:** `supabase/migrations/20260424165833_3e58da8c-297f-4e42-a133-2c43c3887005.sql`
+
+Verified contents (grep):
+
+```
+7:  insert into storage.buckets values ('portal-drafts', 'portal-drafts', false)
+11: create table if not exists public.portal_document_drafts (...)
+19:    draft_storage_bucket text not null default 'portal-drafts',
+33:    constraint portal_document_drafts_status_check check (...)
+45: create index portal_document_drafts_student_idx on public.portal_document_drafts (student_user_id, created_at desc);
+48: create index portal_document_drafts_active_idx on public.portal_document_drafts (student_user_id) where ...
+53: create or replace function public.tg_portal_document_drafts_touch() ...
+65: create trigger portal_document_drafts_touch before update on public.portal_document_drafts ...
+71: alter table public.portal_document_drafts enable row level security;
+75: policy "drafts_owner_select" on public.portal_document_drafts (auth.uid() = student_user_id)
+82: policy "drafts_owner_insert" on public.portal_document_drafts (auth.uid() = student_user_id)
+89: policy "drafts_owner_update" on public.portal_document_drafts (auth.uid() = student_user_id)
+97: policy "drafts_owner_delete" on public.portal_document_drafts (auth.uid() = student_user_id)
+102: -- Storage RLS for portal-drafts bucket
+112,123,134,145: bucket_id = 'portal-drafts' AND foldername[1] = 'study-file' AND foldername[2] = auth.uid()::text
+```
+
+- Bucket: **`portal-drafts`** (private, `public = false`).
+- Table: **`public.portal_document_drafts`** with full Order 2 column set.
+- CHECK constraint on `status` allows the reserved set
   (`selected_local`, `portal_draft_uploaded`, `awaiting_extraction`,
-   `discarded_by_student`, `expired_draft`, `shared_to_crm`).
-  Phase 2 only writes: `selected_local` (transient) → `portal_draft_uploaded` →
-  `discarded_by_student`. The other values are reserved for later phases.
+  `discarded_by_student`, `expired_draft`, `shared_to_crm`).
+  Phase 2 only writes: `selected_local` (transient) → `portal_draft_uploaded`
+  → `discarded_by_student`. The remaining values are reserved.
 - Trigger `portal_document_drafts_touch` keeps `updated_at` fresh.
 - Indexes on `(student_user_id, created_at desc)` and a partial active-drafts index.
 
-### RLS — table `public.portal_document_drafts`
-Verified via `pg_policy`:
+### 1.2 RLS — table `public.portal_document_drafts`
 
-| polname                   | command |
-|---------------------------|---------|
-| drafts_owner_select       | SELECT  |
-| drafts_owner_insert       | INSERT  |
-| drafts_owner_update       | UPDATE  |
-| drafts_owner_delete       | DELETE  |
+| polname                   | command | qual                                |
+|---------------------------|---------|-------------------------------------|
+| drafts_owner_select       | SELECT  | auth.uid() = student_user_id        |
+| drafts_owner_insert       | INSERT  | auth.uid() = student_user_id        |
+| drafts_owner_update       | UPDATE  | auth.uid() = student_user_id        |
+| drafts_owner_delete       | DELETE  | auth.uid() = student_user_id        |
 
-All four policies require `auth.uid() = student_user_id`.
-
-### RLS — `storage.objects` for bucket `portal-drafts`
-Verified via `pg_policy`:
+### 1.3 RLS — `storage.objects` for bucket `portal-drafts`
 
 | polname                       | command |
 |-------------------------------|---------|
@@ -45,7 +92,7 @@ Verified via `pg_policy`:
 | portal_drafts_owner_update    | UPDATE  |
 | portal_drafts_owner_delete    | DELETE  |
 
-All four require:
+All four enforce:
 ```
 bucket_id = 'portal-drafts'
 AND (storage.foldername(name))[1] = 'study-file'
@@ -54,7 +101,7 @@ AND (storage.foldername(name))[2] = auth.uid()::text
 => path layout enforced as `study-file/{auth.uid}/{draft_id}/{filename}`.
 No public read. No service-role usage on the client.
 
-### Files added
+### 1.4 Files added
 - `src/features/documents/portalDrafts.ts` — `uploadPortalDraft`,
   `listActivePortalDrafts`, `deletePortalDraft`. NO calls to
   `prepareUpload` / `confirmUpload` / `markFilesSaved` / `crm_storage` /
@@ -62,17 +109,20 @@ No public read. No service-role usage on the client.
 - `src/hooks/usePortalDrafts.ts` — local queue + drafts state, refresh on mount.
 - `src/components/portal/study-file/PortalDraftsList.tsx` — minimal UI:
   banner *"Draft uploaded — not shared with CSW"*, file name, MIME, size,
-  status, **Delete Draft** button.
+  status, **Delete Draft** button. Uses `studyFile.drafts.*` i18n keys.
 
-### Files modified
+### 1.5 Files modified
 - `src/components/portal/tabs/StudyFileTab.tsx`
   - Imports added: `usePortalDrafts`, `PortalDraftsList`.
   - Hook `usePortalDrafts({ studentUserId: profile?.user_id ?? null })`.
-  - `handleFilesSelected` now calls `drafts.enqueueFiles(filesToUpload)`
-    instead of `registry.enqueueFiles(filesToUpload, 'upload_hub')`.
+  - `handleFilesSelected` rewritten — **no CRM mutation, no passport
+    replacement delete, no `handleDeleteDoc` call**. Routes all selected
+    files to `drafts.enqueueFiles(...)`.
   - `<PortalDraftsList />` rendered immediately under `<CentralUploadHub />`.
+- `src/locales/en/common.json` — added `studyFile.drafts` block.
+- `src/locales/ar/common.json` — added `studyFile.drafts` block.
 
-### Negative-proof grep (no CRM mutation in the new path)
+### 1.6 Negative-proof grep
 The new portal-draft path imports only `@/integrations/supabase/client` and
 calls only:
 - `supabase.from('portal_document_drafts')`
@@ -81,14 +131,17 @@ calls only:
 It does NOT import or call:
 - `prepareUpload` / `confirmUpload` / `markFilesSaved` / `clear_pending_files`
 - `crm_storage` / `student-portal-api` / `student-docs` / `customer_files`
-- `uploadAndRegisterFile`
+- `uploadAndRegisterFile` / `deleteFile`
 
-### Type-check
+`handleFilesSelected` after fix does NOT reference `handleDeleteDoc`,
+`existing.crmFileId`, `customer_files`, `student-docs`, `crm_storage`.
+
+### 1.7 Type-check
 `bunx tsc --noEmit -p tsconfig.app.json` → **0 errors**.
 
 ---
 
-## 2. Runtime evidence — REQUIRED
+## 2. Runtime evidence — REQUIRED (now unblocked)
 
 The user must perform the following in the live preview while signed in as a
 student. Each test must be captured with HAR/network logs and a SQL snapshot.
@@ -133,8 +186,7 @@ For each test capture:
   where student_user_id = auth.uid()
   order by created_at desc;
   ```
-- Storage path proof (Supabase Storage browser screenshot or
-  `select name from storage.objects where bucket_id='portal-drafts'`).
+- Storage path proof.
 - CRM negative proof:
   ```sql
   select count(*) from customer_files where created_at > '<test_start>';
@@ -147,7 +199,8 @@ For each test capture:
 
 ## 3. Final status
 
-`Order 2 = code-ready only / runtime proof missing`
+`Order 2 = code-ready / runtime proof missing`
 
-Awaiting the user's runtime capture (Tests 2A / 2B / 2C) to upgrade to
-`Order 2 = runtime-proven`.
+All three reviewer blockers (CRM-delete in passport replacement, missing i18n
+keys, missing migration proof) are now resolved. Awaiting the user's runtime
+capture (Tests 2A / 2B / 2C) to upgrade to `Order 2 = runtime-proven`.
