@@ -273,11 +273,11 @@ Deno.serve(async (req: Request) => {
     );
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(token);
-    if (claimsErr || !claimsData?.claims?.sub) {
+    const { data: userData, error: userErr } = await supabase.auth.getUser(token);
+    if (userErr || !userData?.user?.id) {
       return new Response(JSON.stringify({ ok: false, error: 'invalid_token' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
-    const userId: string = claimsData.claims.sub;
+    const userId: string = userData.user.id;
 
     const body = await req.json();
     const docs: DocInput[] = Array.isArray(body?.docs) ? body.docs : [];
