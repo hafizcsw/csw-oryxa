@@ -182,9 +182,13 @@ describe('useStudentEvaluation — Phase A Round 2 wiring', () => {
     const v1 = [makeDoc('doc-1', 'hash-v1')];
     const v2 = [makeDoc('doc-1', 'hash-v1'), makeDoc('doc-2', 'hash-v2', 'AE')];
 
-    invokeMock
-      .mockResolvedValueOnce(mockEdgeResponse('first_compute', v1, 'h-1'))
-      .mockResolvedValueOnce(mockEdgeResponse('document_added', v2, 'h-2'));
+    let callCount = 0;
+    invokeMock.mockImplementation((_name: string, opts: any) => {
+      callCount++;
+      const docsArg = opts?.body?.docs ?? [];
+      if (callCount === 1) return Promise.resolve(mockEdgeResponse('first_compute', docsArg, 'h-1'));
+      return Promise.resolve(mockEdgeResponse('document_added', docsArg, 'h-2'));
+    });
 
     const { result, rerender } = renderHook(
       ({ docs }: { docs: EvaluationDocInput[] }) => useStudentEvaluation({ userId: USER_ID, docs }),
