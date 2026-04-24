@@ -9,19 +9,14 @@
 // No business logic here — pure presentation of useStudentEvaluation.
 // ═══════════════════════════════════════════════════════════════
 
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  CheckCircle2,
-  AlertTriangle,
   Loader2,
   ShieldCheck,
   Clock,
   RefreshCw,
-  FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type {
   EvaluationSnapshotResult,
@@ -72,10 +67,7 @@ export function StudentEvaluationWorkspace({
 }: StudentEvaluationWorkspaceProps) {
   const { t } = useTranslation('common');
 
-  const credentialsList = useMemo(
-    () => Object.values(credentialsByDocId),
-    [credentialsByDocId],
-  );
+  const hasCredentials = Object.keys(credentialsByDocId).length > 0;
 
   // Don't render anything before the first load completes.
   if (loading) {
@@ -90,7 +82,7 @@ export function StudentEvaluationWorkspace({
   }
 
   // No documents yet — render a passive placeholder so the workspace exists in the layout.
-  if (!snapshot && credentialsList.length === 0 && !computing) {
+  if (!snapshot && !hasCredentials && !computing) {
     return (
       <section
         className="rounded-2xl border border-dashed border-border bg-muted/20 p-6 text-center text-sm text-muted-foreground"
@@ -210,23 +202,6 @@ export function StudentEvaluationWorkspace({
         </div>
       </div>
 
-      {/* ─── Per-document credentials ─────────────────────────────── */}
-      {credentialsList.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="px-1 text-sm font-semibold text-foreground">
-            {t('portal.evaluation.per_document', 'Per-document normalization')}
-          </h4>
-          <div className="space-y-2">
-            {credentialsList.map((c) => (
-              <CredentialRow
-                key={c.document_id}
-                credential={c}
-                docName={documentNames[c.document_id]}
-              />
-            ))}
-          </div>
-        </div>
-      )}
     </section>
   );
 }
@@ -252,73 +227,6 @@ function Stat({
     <div className="rounded-xl border border-border bg-background/40 p-3">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className={cn('mt-1 text-xl font-semibold', toneClass)}>{value}</p>
-    </div>
-  );
-}
-
-function CredentialRow({
-  credential,
-  docName,
-}: {
-  credential: PersistedNormalizedCredential;
-  docName?: string;
-}) {
-  const { t } = useTranslation('common');
-  const reasonCodes = Array.from(
-    new Set(
-      credential.decisions
-        .map((d) => d.reason_code)
-        .filter((c) => c !== 'pattern_matched' && c !== 'grade_normalized'),
-    ),
-  );
-
-  return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="flex items-start gap-2">
-          <FileText className="mt-0.5 h-4 w-4 text-muted-foreground" />
-          <div>
-            <p className="text-sm font-medium text-foreground">
-              {docName ?? credential.document_id.slice(0, 8)}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {credential.normalized_credential_subtype ?? credential.normalized_credential_kind}
-              {credential.normalized_grade_pct != null && (
-                <> · {credential.normalized_grade_pct}%</>
-              )}
-              {credential.award_year && <> · {credential.award_year}</>}
-              {credential.source_country && <> · {credential.source_country}</>}
-            </p>
-          </div>
-        </div>
-        {credential.needs_manual_review ? (
-          <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400">
-            <AlertTriangle className="me-1 h-3 w-3" />
-            {t('portal.evaluation.needs_review', 'Needs review')}
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="border-primary/40 text-primary">
-            <CheckCircle2 className="me-1 h-3 w-3" />
-            {t('portal.evaluation.ok', 'OK')}
-          </Badge>
-        )}
-      </div>
-
-      {reasonCodes.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
-          {reasonCodes.map((rc) => (
-            <Badge key={rc} variant="secondary" className="text-[10px] font-normal">
-              {rc}
-            </Badge>
-          ))}
-        </div>
-      )}
-
-      {credential.matched_rule_ids.length > 0 && (
-        <p className="mt-2 text-[11px] text-muted-foreground">
-          {t('portal.evaluation.rules', 'Rules')}: {credential.matched_rule_ids.join(', ')}
-        </p>
-      )}
     </div>
   );
 }
