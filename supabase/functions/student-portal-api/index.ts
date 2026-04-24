@@ -5165,34 +5165,61 @@ Deno.serve(async (req) => {
           
           // ============= LIST FILES =============
           case 'list_files': {
-            console.log('[crm_storage] list_files for customer:', customerId);
-            
-            // Only truly saved files should survive a fresh page load.
-            // Unsaved files are shown optimistically in the current session,
-            // but must disappear after leave/refresh and be purged on next mount.
-            const { data: files, error: listErr } = await crmStorageClient
+            // 🔎 DIAGNOSTIC — prove exactly which CRM customer we are reading for
+            console.log('[crm_storage:list_files] 🔎 DIAG', {
+              authUserId,
+              resolvedCustomerId: customerId,
+              crm_url_hint: CRM_SUPABASE_URL?.slice(0, 40) + '...',
+            });
+
+            // Query WITHOUT status/visibility filter first so we can see the full truth
+            const { data: rawFiles, error: rawErr } = await crmStorageClient
               .from('customer_files')
-              .select('id, file_kind, file_name, file_url, storage_bucket, storage_path, mime_type, size_bytes, status, admin_notes, created_at, visibility, review_status, student_visible_note, rejection_reason')
+              .select('id, file_kind, file_name, file_url, storage_bucket, storage_path, mime_type, size_bytes, status, admin_notes, created_at, visibility, review_status, student_visible_note, rejection_reason, deleted_at, customer_id')
               .eq('customer_id', customerId)
-              .is('deleted_at', null)
-              .eq('visibility', 'student_visible')
-              .eq('status', 'saved')
               .order('created_at', { ascending: false });
-            
-            if (listErr) {
-              console.error('[crm_storage] ❌ list_files error:', listErr);
-              return Response.json({ ok: false, error: listErr.message, http_status: 500 }, { status: 200, headers: corsHeaders });
+
+            if (rawErr) {
+              console.error('[crm_storage:list_files] ❌ raw query error:', rawErr);
+              return Response.json({ ok: false, error: rawErr.message, http_status: 500 }, { status: 200, headers: corsHeaders });
             }
 
-            // ✅ Orphan detection: verify each file exists in Storage.
-            // If the DB row exists but the underlying object is missing (404),
-            // soft-delete the row and omit it from the response.
-            // This prevents "ghost files" from appearing in the UI after
-            // storage-side purges or bucket rotations.
+            const rawAll = rawFiles || [];
+            // Truth breakdown
+            const diag = {
+              total_rows_for_customer: rawAll.length,
+              not_deleted: rawAll.filter((r: any) => r.deleted_at == null).length,
+              status_saved: rawAll.filter((r: any) => r.status === 'saved').length,
+              status_pending: rawAll.filter((r: any) => r.status === 'pending').length,
+              status_other: rawAll.filter((r: any) => r.status !== 'saved' && r.status !== 'pending').length,
+              visibility_student_visible: rawAll.filter((r: any) => r.visibility === 'student_visible').length,
+              deleted_at_set: rawAll.filter((r: any) => r.deleted_at != null).length,
+            };
+            console.log('[crm_storage:list_files] 🔎 DIAG breakdown:', diag);
+
+            // The canonical filter the UI should see
+            const files = rawAll.filter((r: any) =>
+              r.deleted_at == null &&
+              r.visibility === 'student_visible' &&
+              r.status === 'saved'
+            );
+
+            // Log first 10 IDs so we can match them against the UI bubble
+            const first10 = files.slice(0, 10).map((f: any) => ({
+              id: f.id,
+              kind: f.file_kind,
+              name: f.file_name,
+              status: f.status,
+              visibility: f.visibility,
+              deleted_at: f.deleted_at,
+            }));
+            console.log('[crm_storage:list_files] 🔎 DIAG canonical first_10:', first10);
+
+            // ✅ Orphan detection — unchanged, but only on canonical set
             const liveFiles: any[] = [];
             const orphanIds: string[] = [];
 
-            for (const f of files || []) {
+            for (const f of files) {
               try {
                 const signPromise = crmStorageClient.storage
                   .from(f.storage_bucket)
@@ -5210,16 +5237,14 @@ Deno.serve(async (req) => {
                   orphanIds.push(f.id);
                   continue;
                 }
-                // Keep file (either signed OK, or a transient error we don't treat as orphan)
                 liveFiles.push(f);
-              } catch (e) {
-                // On unexpected error, keep the file visible — don't nuke user data on a transient glitch
+              } catch {
                 liveFiles.push(f);
               }
             }
 
             if (orphanIds.length > 0) {
-              console.warn('[crm_storage] 🧹 Soft-deleting orphan rows (missing in Storage):', orphanIds);
+              console.warn('[crm_storage:list_files] 🧹 Soft-deleting orphan rows (missing in Storage):', orphanIds);
               const nowIso = new Date().toISOString();
               await crmStorageClient
                 .from('customer_files')
@@ -5227,15 +5252,13 @@ Deno.serve(async (req) => {
                 .in('id', orphanIds);
             }
 
-            // ✅ Debug: Log first 5 IDs for cutover verification
-            const first5 = liveFiles.slice(0, 5).map((f: any) => ({ id: f.id, kind: f.file_kind, bucket: f.storage_bucket }));
-            console.log('[crm_storage] ✅ list_files:', {
-              count: liveFiles.length,
+            console.log('[crm_storage:list_files] ✅ returning', {
+              count_returned: liveFiles.length,
               orphans_removed: orphanIds.length,
-              first_5: first5,
+              diag,
             });
 
-            return Response.json({ ok: true, files: liveFiles, orphans_removed: orphanIds.length }, { headers: corsHeaders });
+            return Response.json({ ok: true, files: liveFiles, orphans_removed: orphanIds.length, diag }, { headers: corsHeaders });
           }
           
           // ============= SIGN FILE =============

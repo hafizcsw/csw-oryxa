@@ -174,7 +174,20 @@ export function useStudentDocuments(options?: { enabled?: boolean }) {
       }
 
       const files = res.files || [];
-      
+
+      // 🔎 DIAG — prove exactly what CRM returned to the UI
+      console.log('[useStudentDocuments] 🔎 DIAG list_files result', {
+        count: files.length,
+        diag: (res as any).diag ?? null,
+        first_10: files.slice(0, 10).map((f: any) => ({
+          id: f.id,
+          kind: f.file_kind,
+          name: f.file_name,
+          status: f.status,
+          visibility: (f as any).visibility,
+        })),
+      });
+
       // Map CRM format to StudentDocument (includes rejection/visibility fields)
       const docs: StudentDocument[] = files.map((f: FileRecord) => ({
         id: f.id,
