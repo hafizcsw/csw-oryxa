@@ -1,3 +1,19 @@
+// ═══════════════════════════════════════════════════════════════════════
+// DRAFT-FIRST AUDIT NOTE (Phase 1)
+// ───────────────────────────────────────────────────────────────────────
+// PaymentProofModal is INTENTIONALLY EXEMPT from the Study File Draft-first
+// guard. It uploads payment receipts only — NOT academic or identity
+// documents. It is declared `context: 'payment_proof'` in the guard contract
+// (see src/lib/draftFirstGuard.ts → EXEMPT_CONTEXTS).
+//
+// ⚠️ This component MUST NOT be reused for any sensitive student document
+//    (passport, certificate, transcript, IELTS, identity photo, etc.).
+//    Reusing it for those types would bypass Draft-first and is forbidden.
+//
+// If payment-proof handling ever needs to touch student academic data, it
+// must first be migrated through uploadAndRegisterFile with an appropriate
+// sensitive UploadContext — never by extending this modal.
+// ═══════════════════════════════════════════════════════════════════════
 import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
