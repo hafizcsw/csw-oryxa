@@ -153,33 +153,62 @@ export function useUnsavedDocumentsGuard({
     sync(next);
   }, [sync]);
 
-  const confirmAllSaved = useCallback(async (opts?: { confirmationTraceId?: string }) => {
-    const ids = Array.from(pendingRef.current);
-    if (ids.length > 0) {
-      // Phase 1 — Draft-first:
-      //   SaveDocumentsBar click alone does NOT trigger a CRM markFilesSaved.
-      //   A real post_confirm call requires an explicit confirmationTraceId,
-      //   which Phase 1 does not yet emit (Draft layer is Phase 2).
-      //   We log the intent, clear local pending, and skip CRM.
+  const confirmAllSaved = useCallback(
+    async (opts?: { confirmationTraceId?: string }): Promise<{
+      ok: boolean;
+      status:
+        | 'noop'
+        | 'confirmation_trace_required'
+        | 'shared'
+        | 'share_failed';
+      error?: string;
+    }> => {
+      const ids = Array.from(pendingRef.current);
+      if (ids.length === 0) {
+        return { ok: true, status: 'noop' };
+      }
+
+      // ── Phase 1 — Draft-first guard ──
+      // Without an explicit confirmationTraceId produced by a real share/confirm
+      // event, we MUST NOT: call markFilesSaved, mutate saved status, or clear
+      // the local pending set. UI stays in `awaiting_student_confirmation`.
       const hasTrace = !!opts?.confirmationTraceId;
       if (!hasTrace) {
         // eslint-disable-next-line no-console
         console.warn('[draftFirstGuard] save_docs_bar_confirmation_intent_logged_only', {
-          marker: 'save_docs_bar_confirmation_intent',
+          marker: 'save_docs_bar_confirmation_intent_logged_only',
           document_ids: ids,
-          reason: 'phase_1_no_crm_confirmation_trace_yet',
+          reason: 'confirmation_trace_required',
         });
-      } else {
-        await markFilesSaved(ids, {
-          context: 'study_file',
-          confirmationState: 'post_confirm',
-          confirmationTraceId: opts!.confirmationTraceId,
-          attemptedAction: 'save_documents_bar_confirm',
-        });
+        // NOTE: intentionally NO sync(new Set()) here. Pending stays.
+        return { ok: false, status: 'confirmation_trace_required' };
       }
-    }
-    sync(new Set());
-  }, [sync]);
+
+      // Real post-confirm path (Phase 2+ will produce the trace).
+      const result = await markFilesSaved(ids, {
+        context: 'study_file',
+        confirmationState: 'post_confirm',
+        confirmationTraceId: opts!.confirmationTraceId,
+        attemptedAction: 'save_documents_bar_confirm',
+      });
+
+      if (!result.ok) {
+        // Share failed → keep pending, do NOT clear.
+        // eslint-disable-next-line no-console
+        console.warn('[draftFirstGuard] save_docs_bar_share_failed', {
+          marker: 'save_docs_bar_share_failed',
+          document_ids: ids,
+          error: result.error,
+        });
+        return { ok: false, status: 'share_failed', error: result.error };
+      }
+
+      // Share succeeded → NOW it is safe to clear local pending.
+      sync(new Set());
+      return { ok: true, status: 'shared' };
+    },
+    [sync],
+  );
 
   const discardAll = useCallback(async (): Promise<{ ok: boolean; failed: string[] }> => {
     const ids = Array.from(pendingRef.current);
