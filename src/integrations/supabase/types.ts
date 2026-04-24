@@ -9285,6 +9285,78 @@ export type Database = {
         }
         Relationships: []
       }
+      portal_document_drafts: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string
+          discarded_at: string | null
+          document_type: string | null
+          draft_storage_bucket: string
+          draft_storage_path: string
+          evaluation_status: string
+          expires_at: string | null
+          extraction_status: string
+          file_sha256: string | null
+          file_size: number | null
+          id: string
+          identity_match_status: string
+          mime_type: string | null
+          original_file_name: string
+          shared_to_crm_at: string | null
+          source_surface: string | null
+          status: string
+          student_user_id: string
+          trace_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string
+          discarded_at?: string | null
+          document_type?: string | null
+          draft_storage_bucket?: string
+          draft_storage_path: string
+          evaluation_status?: string
+          expires_at?: string | null
+          extraction_status?: string
+          file_sha256?: string | null
+          file_size?: number | null
+          id?: string
+          identity_match_status?: string
+          mime_type?: string | null
+          original_file_name: string
+          shared_to_crm_at?: string | null
+          source_surface?: string | null
+          status: string
+          student_user_id: string
+          trace_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string
+          discarded_at?: string | null
+          document_type?: string | null
+          draft_storage_bucket?: string
+          draft_storage_path?: string
+          evaluation_status?: string
+          expires_at?: string | null
+          extraction_status?: string
+          file_sha256?: string | null
+          file_size?: number | null
+          id?: string
+          identity_match_status?: string
+          mime_type?: string | null
+          original_file_name?: string
+          shared_to_crm_at?: string | null
+          source_surface?: string | null
+          status?: string
+          student_user_id?: string
+          trace_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       portal_files_v1: {
         Row: {
           admin_notes: string | null

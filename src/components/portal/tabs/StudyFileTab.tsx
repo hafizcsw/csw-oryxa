@@ -23,6 +23,8 @@ import { Lock, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStudentDocuments } from "@/hooks/useStudentDocuments";
 import { useDocumentRegistry } from "@/hooks/useDocumentRegistry";
+import { usePortalDrafts } from "@/hooks/usePortalDrafts";
+import { PortalDraftsList } from "@/components/portal/study-file/PortalDraftsList";
 import { useDocumentAnalysis } from "@/hooks/useDocumentAnalysis";
 import { useAcademicTruth } from "@/hooks/useAcademicTruth";
 import { useDecisionEngine } from "@/hooks/useDecisionEngine";
@@ -181,6 +183,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     studentId: profile?.user_id ?? null,
     onBatchComplete: handleBatchComplete,
   });
+
+  // ═══ Order 2: Portal Draft Layer ═══
+  // Study File uploads now land in the private `portal-drafts` bucket
+  // and a row is created in `portal_document_drafts`. NO CRM contact
+  // happens here — confirmation/CRM packaging is a later phase.
+  const drafts = usePortalDrafts({ studentUserId: profile?.user_id ?? null });
 
   const activeCrmDocumentIds = useMemo(() => new Set(documents.map((doc) => doc.id)), [documents]);
   const purgeScopeIdsRef = useRef<Set<string>>(new Set());
@@ -668,8 +676,11 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       existing.push(key);
       fileNameToKeysRef.current.set(file.name, existing);
     }
-    registry.enqueueFiles(filesToUpload, 'upload_hub');
-  }, [registry, documents, analysisHook.analyses, analysisHook.hydratedArtifactSurfaces, handleDeleteDoc, refetchDocs]);
+    // Order 2: route Study File uploads through the Portal Draft Layer.
+    // No CRM mutation. Files land in the private `portal-drafts` bucket
+    // and a row appears in `portal_document_drafts`.
+    drafts.enqueueFiles(filesToUpload);
+  }, [drafts, documents, analysisHook.analyses, analysisHook.hydratedArtifactSurfaces, handleDeleteDoc, refetchDocs]);
 
   // ⛔ TEMPORARILY DISABLED — auto-passport-cleanup is paused while we
   // collect runtime proof of the Paddle cutover. It was deleting real
@@ -881,6 +892,14 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
             onClearCompleted={registry.clearCompleted}
             onPreviewsReady={handlePreviewsReady}
             issuesByDocId={issuesByDocId}
+          />
+        </div>
+        {/* ═══ Order 2: Portal Draft Layer — visible drafts list ═══ */}
+        <div className="border-t border-border bg-background/40 px-4 py-4">
+          <PortalDraftsList
+            drafts={drafts.drafts}
+            pending={drafts.pending}
+            onDelete={(id) => { void drafts.removeDraft(id); }}
           />
         </div>
         <div className="border-t border-border">
