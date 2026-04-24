@@ -175,6 +175,24 @@ export async function clearAllFiles(): Promise<{ ok: boolean; deleted_count?: nu
   return { ok: false, error: result.error };
 }
 
+export async function clearPendingFiles(): Promise<{ ok: boolean; deleted_count?: number; deleted?: string[]; error?: string }> {
+  const result = await callCrmStorage<{ deleted_count: number; deleted: string[]; errors?: string[] }>('clear_pending_files');
+  if (result.ok && result.data) {
+    const data = result.data as any;
+    return { ok: true, deleted_count: data?.deleted_count || 0, deleted: data?.deleted || [] };
+  }
+  return { ok: false, error: result.error };
+}
+
+export async function markFilesSaved(file_ids: string[]): Promise<{ ok: boolean; updated_count?: number; updated?: string[]; error?: string }> {
+  const result = await callCrmStorage<{ updated_count: number; updated: string[] }>('mark_files_saved', { file_ids });
+  if (result.ok && result.data) {
+    const data = result.data as any;
+    return { ok: true, updated_count: data?.updated_count || 0, updated: data?.updated || [] };
+  }
+  return { ok: false, error: result.error };
+}
+
 /**
  * ✅ Purge ALL student documents (Soft delete) - for clean cutover
  * Sets deleted_at = now() and status = 'deleted' for ALL customer_files
