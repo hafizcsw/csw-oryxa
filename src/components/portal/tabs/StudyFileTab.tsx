@@ -941,7 +941,17 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           <div className="mb-3 text-xs font-semibold uppercase text-primary">
             [2] CanonicalFileSummary — ملخص الملف الموحد
           </div>
-          <CanonicalFileSummary canonicalFile={canonicalFile} />
+          {canonicalFile ? (
+            <CanonicalFileSummary
+              canonicalFile={canonicalFile}
+              hasIdentity={hasIdentity}
+              hasAcademic={hasAcademic}
+              hasLanguage={hasLanguage}
+              hasTargeting={hasTargeting}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">لا يوجد ملف موحد بعد.</p>
+          )}
         </section>
 
         {/* [3] DocumentAnalysisPanel */}
