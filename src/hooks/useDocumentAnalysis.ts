@@ -331,6 +331,7 @@ export function useDocumentAnalysis(
   const [artifacts] = useState<Record<string, ReadingArtifact>>({});
   const [hydratedArtifactSurfaces, setHydratedArtifactSurfaces] = useState<Record<string, HydratedArtifactSurface>>({});
   const [liveStages, setLiveStages] = useState<Record<string, LiveStageState>>({});
+  const [authReady, setAuthReady] = useState(false);
   const startTimesRef = useRef<Record<string, number>>({});
 
   const upsertStage = useCallback((state: LiveStageState) => {
@@ -348,10 +349,30 @@ export function useDocumentAnalysis(
     }, ms);
   }, []);
 
+  useEffect(() => {
+    let active = true;
+
+    void supabase.auth.getSession().then(() => {
+      if (active) setAuthReady(true);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      if (active) setAuthReady(true);
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
   const refetch = useCallback(async () => {
+    if (!authReady) return;
+
     if (!opts.studentId) {
       setAnalyses([]);
       setHydratedArtifactSurfaces({});
+      setProposals([]);
       return;
     }
 
@@ -376,6 +397,17 @@ export function useDocumentAnalysis(
     if (reviewRes.error) {
       // eslint-disable-next-line no-console
       console.warn('[useDocumentAnalysis] review_queue query failed', reviewRes.error);
+    }
+
+    const hasBlockingReadError = Boolean(
+      (laneRes.error && !laneRes.data) ||
+      (reviewRes.error && !reviewRes.data)
+    );
+
+    if (hasBlockingReadError) {
+      // eslint-disable-next-line no-console
+      console.warn('[useDocumentAnalysis] preserving hydrated analysis state after transient read failure');
+      return;
     }
 
     const nextAnalyses = new Map<string, DocumentAnalysis>();
@@ -403,7 +435,7 @@ export function useDocumentAnalysis(
     setAnalyses(list);
     setHydratedArtifactSurfaces(nextHydrated);
     setProposals(nextProposals);
-  }, [opts.studentId]);
+  }, [authReady, opts.studentId]);
 
   const pollForDocument = useCallback(async (documentId: string, filename: string) => {
     const startedAt = startTimesRef.current[documentId] ?? Date.now();
@@ -461,6 +493,8 @@ export function useDocumentAnalysis(
   }, [clearStageLater, refetch, upsertStage]);
 
   useEffect(() => {
+    if (!authReady) return;
+
     void refetch();
 
     const handleRefresh = () => {
@@ -469,7 +503,7 @@ export function useDocumentAnalysis(
 
     window.addEventListener('crm-refresh-data', handleRefresh);
     return () => window.removeEventListener('crm-refresh-data', handleRefresh);
-  }, [refetch]);
+  }, [authReady, refetch]);
 
   const analyzeFile = useCallback(async (
     file: File,
