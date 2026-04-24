@@ -35,12 +35,16 @@ export function AGCard({
   );
 
   const cls = cn(
-    "ag-card group block w-full text-left",
+    "ag-card group relative block w-full text-left",
     "bg-[var(--ag-bg)] text-[var(--ag-fg)]",
-    "border border-[var(--ag-border)]",
-    "rounded-[var(--ag-radius)] overflow-hidden",
-    "transition-all duration-500 ease-[cubic-bezier(.2,.8,.2,1)]",
-    "hover:-translate-y-1 hover:shadow-[0_18px_48px_-24px_rgba(15,15,15,0.18)]",
+    // hairline border, AG-style — no heavy outline
+    "border border-[color:color-mix(in_srgb,var(--ag-fg)_8%,transparent)]",
+    "rounded-[20px] overflow-hidden",
+    "shadow-[0_1px_0_0_color-mix(in_srgb,var(--ag-fg)_4%,transparent)_inset]",
+    "transition-[transform,border-color,box-shadow] duration-[600ms] ease-[cubic-bezier(.2,.8,.2,1)]",
+    "hover:-translate-y-[3px]",
+    "hover:border-[color:color-mix(in_srgb,var(--ag-fg)_16%,transparent)]",
+    "hover:shadow-[0_24px_60px_-32px_color-mix(in_srgb,var(--ag-fg)_28%,transparent)]",
     className
   );
 
