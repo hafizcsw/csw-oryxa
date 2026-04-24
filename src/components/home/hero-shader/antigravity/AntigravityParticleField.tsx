@@ -45,8 +45,8 @@ const VERT = /* glsl */ `
     // Reference position so the attribute isn't stripped (drives draw count).
     float _keep = position.x * 0.0;
 
-    // Slow global rotation around Y axis -> coherent swirl
-    float theta = aSphere.x + uTime * 0.08 + _keep;
+    // Coherent swirl: rotate around Y, then tilt/precess around X for true dome motion
+    float theta = aSphere.x + uTime * 0.10 + _keep;
     float phi   = aSphere.y;
 
     float sp = sin(phi);
@@ -55,6 +55,16 @@ const VERT = /* glsl */ `
     float ct = cos(theta);
 
     vec3 pos = vec3(aRadius * sp * ct, aRadius * cp, aRadius * sp * st);
+
+    // Secondary rotation around X axis (precession) — gives the dome a 3D spin
+    float ax = uTime * 0.045;
+    float cax = cos(ax), sax = sin(ax);
+    pos = vec3(pos.x, cax * pos.y - sax * pos.z, sax * pos.y + cax * pos.z);
+
+    // Tertiary slow tilt around Z for organic, non-linear flow
+    float az = sin(uTime * 0.13) * 0.35;
+    float caz = cos(az), saz = sin(az);
+    pos = vec3(caz * pos.x - saz * pos.y, saz * pos.x + caz * pos.y, pos.z);
 
     // Subtle organic breathing (very small, keeps coherence)
     float breath = sin(uTime * 0.4 + aOffset * 6.2831) * 0.04;
