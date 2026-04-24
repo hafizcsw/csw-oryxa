@@ -100,6 +100,7 @@ export async function uploadAndRegisterFile(params: {
     mime_type: file.type || 'application/octet-stream',
     size_bytes: file.size,
     description: description || null,
+    ctx: guardCtx,
   });
 
   if (!confirmRes.ok) {
