@@ -985,7 +985,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
           <div className="mb-3 text-xs font-semibold uppercase text-primary">
             [5] DecisionPanel — لوحة القرار
           </div>
-          <DecisionPanel decision={decision.decision} />
+          <DecisionPanel decision={decision} />
         </section>
 
         {/* [6] LaneFactsCards */}
@@ -1075,7 +1075,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
             [11] ReadinessTab — الجاهزية للتقديم
           </div>
           <Suspense fallback={<SectionSkeleton />}>
-            <ReadinessTab profile={profile} crmProfile={crmProfile} />
+            <ReadinessTab onTabChange={onTabChange} />
           </Suspense>
         </section>
       </div>
