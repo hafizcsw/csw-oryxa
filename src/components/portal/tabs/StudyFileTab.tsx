@@ -476,44 +476,23 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
 
     if (toSave.length === 0) return;
 
-    // ── Draft-first: suppress auto-save entirely. ──
-    // Check flag dynamically to allow emergency rollback via env.
-    let draftFirstOn = true;
-    try {
-      const v = (import.meta as any)?.env?.VITE_DRAFT_FIRST_UPLOADS;
-      if (v === false || v === 'false' || v === '0') draftFirstOn = false;
-    } catch { /* noop */ }
-
-    if (draftFirstOn) {
-      // Mark as "already handled" so we don't loop on the same analyses.
-      toSave.forEach(id => autoSavedRef.current.add(id));
-      // Structured log for evidence.
-      // eslint-disable-next-line no-console
-      console.warn('[draftFirstGuard] auto_mark_files_saved_suppressed', {
-        marker: 'auto_mark_files_saved_suppressed',
-        upload_context: 'study_file',
-        document_ids: toSave,
-        analysis_terminal_state: terminalStates.join(','),
-        reason: 'draft_first_guard_active',
-      });
-      return;
-    }
-
-    // ── LEGACY (flag OFF) — kept for rollback only. ──
+    // ── Draft-first guard (Phase 1) ──
+    // Study File context is SENSITIVE. Auto-save is permanently suppressed
+    // here regardless of VITE_DRAFT_FIRST_UPLOADS. markFilesSaved for a
+    // sensitive context must only run from an explicit post-confirmation
+    // share event carrying a confirmationTraceId.
+    //
+    // We intentionally DO NOT keep a legacy branch — even with the flag OFF,
+    // a sensitive student document must never auto-transition to saved.
     toSave.forEach(id => autoSavedRef.current.add(id));
-    void (async () => {
-      try {
-        const { markFilesSaved } = await import('@/api/crmStorage');
-        await markFilesSaved(toSave);
-        toSave.forEach(id => guard.untrackDocument(id));
-        if (import.meta.env.DEV) {
-          console.log('[StudyFileTab] auto-saved analyzed docs (legacy)', { count: toSave.length });
-        }
-      } catch (e) {
-        toSave.forEach(id => autoSavedRef.current.delete(id));
-        if (import.meta.env.DEV) console.warn('[StudyFileTab] auto-save failed', e);
-      }
-    })();
+    // eslint-disable-next-line no-console
+    console.warn('[draftFirstGuard] auto_mark_files_saved_suppressed', {
+      marker: 'auto_mark_files_saved_suppressed',
+      upload_context: 'study_file',
+      document_ids: toSave,
+      analysis_terminal_state: terminalStates.join(','),
+      reason: 'sensitive_context_auto_save_forbidden',
+    });
   }, [analysisHook.analyses, registry.records, guard]);
 
   const handleSaveDocuments = useCallback(async () => {
