@@ -39,8 +39,11 @@ const VERT = /* glsl */ `
   varying float vSeed;
 
   void main() {
+    // Reference position so the attribute isn't stripped (drives draw count).
+    float _keep = position.x * 0.0;
+
     // Slow global rotation around Y axis -> coherent swirl
-    float theta = aSphere.x + uTime * 0.08;
+    float theta = aSphere.x + uTime * 0.08 + _keep;
     float phi   = aSphere.y;
 
     float sp = sin(phi);
@@ -51,28 +54,26 @@ const VERT = /* glsl */ `
     vec3 pos = vec3(aRadius * sp * ct, aRadius * cp, aRadius * sp * st);
 
     // Subtle organic breathing (very small, keeps coherence)
-    float breath = sin(uTime * 0.4 + aOffset * 6.2831) * 0.05;
+    float breath = sin(uTime * 0.4 + aOffset * 6.2831) * 0.04;
     pos *= 1.0 + breath;
 
     // Mouse parallax: gentle push along z based on screen distance
     float dist = distance(uMousePos * 3.0, pos.xy);
-    pos.z += smoothstep(2.5, 0.0, dist) * 0.6;
+    pos.z += smoothstep(2.5, 0.0, dist) * 0.5;
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
     float ps = (7.0 * uPixelRatio * uSizeScale) * (1.0 / -mvPosition.z);
     gl_PointSize = clamp(ps, 2.0, uSizeClamp);
     gl_Position  = projectionMatrix * mvPosition;
 
-    // Tangent direction in world space (derivative of pos w.r.t. theta), projected to screen.
-    // tangent = d(pos)/d(theta) = radius * (-sp*st, 0, sp*ct)
+    // Screen-space tangent angle for dash orientation (tangent = d(pos)/d(theta))
     vec3 tangent = vec3(-sp * st, 0.0, sp * ct);
     vec4 mvTangent = modelViewMatrix * vec4(tangent, 0.0);
-    // Project tangent to screen-space angle (use x,y of view-space tangent)
     vAngle = atan(mvTangent.y, mvTangent.x);
 
     // Front-of-sphere fade so back hemisphere is dimmer (depth feel)
-    float depthFade = smoothstep(-1.0, 1.0, -mvPosition.z * 0.0 + pos.z * 0.15 + 0.6);
-    vAlpha = depthFade;
+    // Camera looks down -Z, so larger pos.z (toward camera) = brighter.
+    vAlpha = smoothstep(-1.0, 1.0, pos.z / max(aRadius, 0.001));
     vSeed  = aOffset;
   }
 `;
