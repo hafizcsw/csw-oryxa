@@ -271,7 +271,7 @@ export function LiveProfileAssembly({
     };
   }, [
     analyses, revealedIds, records, proposals, artifacts,
-    hydratedArtifactSurfaces, hydratedIds, previewUrls, subjectRows, crmDocuments,
+    hydratedArtifactSurfaces, settledIds, previewUrls, subjectRows, crmDocuments,
   ]);
 
   const totalRevealed =
