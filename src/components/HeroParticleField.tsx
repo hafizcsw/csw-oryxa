@@ -62,10 +62,12 @@ export default function HeroParticleField({
         uniform float uPixelRatio;
         attribute float aOffset;
         varying float vAlpha;
+        varying float vAngle;
 
         void main() {
           vec3 pos = position;
           float time = uTime * 0.2 + aOffset * 10.0;
+          vec3 prev = pos;
           pos.x += sin(time) * 0.5;
           pos.y += cos(time * 0.8) * 0.5;
           pos.z += sin(time * 1.2) * 0.5;
@@ -74,8 +76,12 @@ export default function HeroParticleField({
           float force = 1.0 - smoothstep(0.0, 3.0, dist);
           pos.xy += normalize(pos.xy - uMousePos * 5.0) * force * 1.5;
 
+          // Direction of motion for capsule orientation
+          vec2 vel = pos.xy - prev.xy;
+          vAngle = atan(vel.y, vel.x);
+
           vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-          gl_PointSize = (15.0 * uPixelRatio) * (1.0 / -mvPosition.z);
+          gl_PointSize = (22.0 * uPixelRatio) * (1.0 / -mvPosition.z);
           gl_Position = projectionMatrix * mvPosition;
 
           vAlpha = smoothstep(0.0, 1.0, force * 0.5 + 0.2);
@@ -83,12 +89,27 @@ export default function HeroParticleField({
       `,
       fragmentShader: `
         varying float vAlpha;
+        varying float vAngle;
         void main() {
-          float dist = distance(gl_PointCoord, vec2(0.5));
-          if (dist > 0.5) discard;
-          float strength = 1.0 - smoothstep(0.0, 0.5, dist);
+          // Map gl_PointCoord to [-1, 1]
+          vec2 uv = gl_PointCoord * 2.0 - 1.0;
+          // Rotate to align capsule with motion direction
+          float ca = cos(-vAngle);
+          float sa = sin(-vAngle);
+          vec2 ruv = mat2(ca, -sa, sa, ca) * uv;
+
+          // Capsule SDF: long on x, thin on y
+          float len = 0.78;
+          float thick = 0.28;
+          vec2 q = abs(ruv) - vec2(len, 0.0);
+          float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - thick;
+
+          float aa = 0.08;
+          float shape = 1.0 - smoothstep(-aa, aa, d);
+          if (shape <= 0.001) discard;
+
           vec3 color = vec3(${tint[0]}, ${tint[1]}, ${tint[2]});
-          gl_FragColor = vec4(color, strength * vAlpha * ${alphaMul});
+          gl_FragColor = vec4(color, shape * vAlpha * ${alphaMul});
         }
       `,
       transparent: true,
