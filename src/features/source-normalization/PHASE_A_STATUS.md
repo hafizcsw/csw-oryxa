@@ -53,15 +53,15 @@ Supabase under RLS.
 | 4 reference packs (EG/AE/JO) | code-ready (data drafted, awaiting review) |
 | Engine logic | code-ready — pattern match, grade norm, ambiguity detect, decision log |
 | Golden Set 9/9 | **PASS** (3 clear · 3 ambiguous · 3 noisy) — runner-verified |
-| Persistence wiring (DB write) | code-ready via `phase-a-normalize` edge function — **DB write proof PENDING (no live read_query yet)** |
+| Persistence wiring (DB write) | **CLOSED** — live `read_query` proof on all 4 tables (10/10/10/1 rows for live session) |
 | UI wiring (LiveProfileAssembly) | code-ready — `useStudentEvaluation` reads from official Phase A tables |
-| Snapshot recompute / hash gating | logic-proven via Vitest (Session A/B/C) — DB-side gating proof PENDING |
+| Snapshot recompute / hash gating | logic-proven (Vitest A/B/C) + DB-observed (single snapshot row updated on doc add, not duplicated) |
 | 4th-country data-only proof | NOT ATTEMPTED |
 
 > **Phase A status: PARTIAL.**
-> Engine + Golden Set are **logic-verified** (Vitest + golden runner).
-> Persistence is **code-ready, DB write proof PENDING** (no live `read_query` against the 4 official tables yet).
-> Do **not** describe Phase A as runtime-proven end-to-end until a live student session has been observed in the DB.
+> **Persistence path = CLOSED** (live DB write proof observed on the 4 official tables).
+> **Phase A overall = PARTIAL** — open items: (1) write path is NOT a real atomic transaction, (2) engine duplication between `src/features/source-normalization/*` and the inline mirror in `phase-a-normalize` edge function, (3) 4th-country data-only proof not executed.
+> Do **not** widen the claim beyond "Persistence path CLOSED / Phase A overall PARTIAL".
 
 ## Write-path honesty (atomicity)
 
@@ -123,7 +123,7 @@ Until a true file checksum is wired, do not call this field a "file hash".
 - [x] migrations applied
 - [x] source-side normalizer runs on EG, AE, JO
 - [x] 9/9 golden set cases pass with expected outputs
-- [ ] live `read_query` proof against the 4 Phase A tables (Session A/B/C)
+- [x] live `read_query` proof against the 4 Phase A tables (persistence path CLOSED)
 - [ ] write path moved to a real DB transaction (or accepted as non-atomic in writing)
 - [ ] engine duplication removed (single source for src + edge)
 - [ ] 4th country added via data-only (no code edits to engine/types/registry)
