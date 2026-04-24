@@ -79,6 +79,12 @@ const EXEMPT_CONTEXTS: ReadonlySet<UploadContext> = new Set([
   'payment_proof',
 ]);
 
+/** True if the given upload context is a sensitive student document context. */
+export function isSensitiveUploadContext(ctx: UploadContext | undefined | null): boolean {
+  if (!ctx) return false;
+  return SENSITIVE_CONTEXTS.has(ctx);
+}
+
 /**
  * Detect production environment. In production, Draft-first is FORCED ON.
  * Checks Vite's import.meta.env.PROD and MODE === 'production'. Any attempt
