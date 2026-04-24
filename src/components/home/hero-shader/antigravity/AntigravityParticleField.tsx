@@ -193,13 +193,16 @@ export function AntigravityParticleField({ className, theme }: Props) {
       isDark() ? new THREE.Color(0.42, 0.55, 1.0) : new THREE.Color(0.16, 0.30, 0.85);
 
     const uniforms = {
-      uTime:       { value: 0 },
-      uMousePos:   { value: new THREE.Vector2(0, 0) },
-      uPixelRatio: { value: pixelRatio },
-      uColor:      { value: colorFor() },
-      uAlphaBoost: { value: isDark() ? 1.0 : 3.2 },
-      uSizeScale:  { value: isDark() ? 1.0 : 1.05 },
-      uSizeClamp:  { value: isDark() ? 14.0 * pixelRatio : 14.0 * pixelRatio },
+      uTime:          { value: 0 },
+      uMousePos:      { value: new THREE.Vector2(0, 0) },
+      uPixelRatio:    { value: pixelRatio },
+      uColor:         { value: colorFor() },
+      uAlphaBoost:    { value: isDark() ? 1.0 : 3.2 },
+      uSizeScale:     { value: isDark() ? 1.0 : 1.05 },
+      uSizeClamp:     { value: isDark() ? 14.0 * pixelRatio : 14.0 * pixelRatio },
+      uWhalePos:      { value: new THREE.Vector3(999, 0, 0) },
+      uWhaleRadius:   { value: 1.6 },
+      uWhaleStrength: { value: 0.85 },
     };
 
     // RawShaderMaterial: matches source intent (no THREE-injected prelude).
