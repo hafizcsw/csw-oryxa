@@ -243,6 +243,11 @@ export function useStudentDocuments(options?: { enabled?: boolean }) {
         file,
         file_kind: normalizedCategory,
         description: `Uploaded via Portal: ${category}`,
+        ctx: {
+          context: 'my_files',
+          confirmationState: 'pre_confirm',
+          attemptedAction: `my_files:${normalizedCategory}`,
+        },
         onProgress: (stage, percent) => {
           setProg(key, { fileName: file.name, percent, stage });
         },
