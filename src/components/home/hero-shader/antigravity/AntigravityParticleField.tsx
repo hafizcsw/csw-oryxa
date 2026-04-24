@@ -45,8 +45,8 @@ const VERT = /* glsl */ `
     // Reference position so the attribute isn't stripped (drives draw count).
     float _keep = position.x * 0.0;
 
-    // Slow global rotation around Y axis -> coherent swirl
-    float theta = aSphere.x + uTime * 0.08 + _keep;
+    // Coherent swirl: rotate around Y, then tilt/precess around X for true dome motion
+    float theta = aSphere.x + uTime * 0.10 + _keep;
     float phi   = aSphere.y;
 
     float sp = sin(phi);
@@ -55,6 +55,16 @@ const VERT = /* glsl */ `
     float ct = cos(theta);
 
     vec3 pos = vec3(aRadius * sp * ct, aRadius * cp, aRadius * sp * st);
+
+    // Secondary rotation around X axis (precession) — gives the dome a 3D spin
+    float ax = uTime * 0.045;
+    float cax = cos(ax), sax = sin(ax);
+    pos = vec3(pos.x, cax * pos.y - sax * pos.z, sax * pos.y + cax * pos.z);
+
+    // Tertiary slow tilt around Z for organic, non-linear flow
+    float az = sin(uTime * 0.13) * 0.35;
+    float caz = cos(az), saz = sin(az);
+    pos = vec3(caz * pos.x - saz * pos.y, saz * pos.x + caz * pos.y, pos.z);
 
     // Subtle organic breathing (very small, keeps coherence)
     float breath = sin(uTime * 0.4 + aOffset * 6.2831) * 0.04;
@@ -75,8 +85,13 @@ const VERT = /* glsl */ `
     gl_PointSize = clamp(ps, 2.0, uSizeClamp);
     gl_Position  = projectionMatrix * mvPosition;
 
-    // Screen-space tangent angle for dash orientation (tangent = d(pos)/d(theta))
-    vec3 tangent = vec3(-sp * st, 0.0, sp * ct);
+    // Tangent via finite difference along theta (after all rotations)
+    float dt = 0.01;
+    float th2 = theta + dt;
+    vec3 pos2 = vec3(aRadius * sp * cos(th2), aRadius * cp, aRadius * sp * sin(th2));
+    pos2 = vec3(pos2.x, cax * pos2.y - sax * pos2.z, sax * pos2.y + cax * pos2.z);
+    pos2 = vec3(caz * pos2.x - saz * pos2.y, saz * pos2.x + caz * pos2.y, pos2.z);
+    vec3 tangent = pos2 - pos;
     vec4 mvTangent = modelViewMatrix * vec4(tangent, 0.0);
     vAngle = atan(mvTangent.y, mvTangent.x);
 
