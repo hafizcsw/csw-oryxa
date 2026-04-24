@@ -187,8 +187,39 @@ export function evaluateUploadGuard(
 ): GuardDecision {
   const traceId = newTraceId();
 
-  // Guard disabled → pass through, but still log sensitive attempts for visibility.
+  // Guard disabled (dev/preview only) → pass through, EXCEPT for sensitive
+  // contexts in pre_confirm. Sensitive student documents can never auto-save
+  // or upload pre-confirm, even with the flag OFF (belt + suspenders).
   if (!isDraftFirstEnabled()) {
+    if (
+      ctx &&
+      SENSITIVE_CONTEXTS.has(ctx.context) &&
+      ctx.confirmationState !== 'post_confirm'
+    ) {
+      const decision: GuardDecision = {
+        allowed: false,
+        reason: 'blocked_pre_confirm_crm_upload',
+        errorCode: 'blocked_pre_confirm_crm_upload',
+        errorMessage:
+          'Sensitive student document cannot reach CRM pre-confirm, even with Draft-first flag disabled.',
+        traceId,
+      };
+      logGuard(
+        {
+          marker: 'blocked_pre_confirm_crm_upload',
+          crm_action: action,
+          upload_context: ctx.context,
+          confirmation_state: ctx.confirmationState,
+          confirmation_trace_id: ctx.confirmationTraceId,
+          trace_id: traceId,
+          attempted_action: ctx.attemptedAction,
+          decision_reason: decision.reason,
+          error_code: 'sensitive_context_hard_block',
+        },
+        'warn',
+      );
+      return decision;
+    }
     return { allowed: true, reason: 'draft_first_disabled', traceId };
   }
 
