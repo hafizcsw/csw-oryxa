@@ -1,16 +1,24 @@
+/* ============================================================
+   Universities Hero — Antigravity (AG) editorial language
+   Aligned with the home page: AG canvas, cobalt accents,
+   editorial frame with corner marks.
+   No internal logic touched — visual layer only.
+   ============================================================ */
+
 .uni-hero {
   position: relative;
-  padding: clamp(32px, 5vw, 64px) 0;
+  padding: clamp(40px, 6vw, 80px) 0 clamp(32px, 5vw, 56px);
   overflow: visible;
-  background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted) / 0.1) 100%);
+  background: var(--ag-bg);
+  color: var(--ag-fg);
 }
 
 .uni-hero__bg {
   position: absolute;
   inset: 0;
-  background: 
-    radial-gradient(circle at 20% 50%, hsl(var(--primary) / 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, hsl(var(--accent) / 0.03) 0%, transparent 50%);
+  background:
+    radial-gradient(circle at 18% 30%, hsl(var(--primary) / 0.05) 0%, transparent 55%),
+    radial-gradient(circle at 82% 75%, hsl(var(--primary) / 0.04) 0%, transparent 55%);
   pointer-events: none;
   z-index: 0;
 }
@@ -23,77 +31,120 @@
   padding: 0 24px;
 }
 
-/* Tabs inside hero */
+/* ── Tabs — minimal AG strip ── */
 .uni-hero__tabs {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   justify-content: flex-start;
   flex-wrap: wrap;
-  background: hsl(var(--card));
-  border-radius: 16px;
-  padding: 6px;
+  background: var(--ag-bg);
+  border: 1px solid var(--ag-border);
+  border-radius: 999px;
+  padding: 5px;
   width: fit-content;
-  margin-bottom: 32px;
-  box-shadow: 0 2px 12px hsl(var(--foreground) / 0.05);
-  border: 1px solid hsl(var(--border) / 0.5);
+  margin: 0 auto 28px;
+  box-shadow: 0 1px 0 0 var(--ag-border) inset;
 }
 
 .uni-tab-btn {
-  padding: 12px 28px;
-  border-radius: 12px;
+  padding: 10px 22px;
+  border-radius: 999px;
   border: none;
   background: transparent;
-  color: hsl(var(--foreground) / 0.7);
+  color: color-mix(in srgb, var(--ag-fg) 65%, transparent);
   cursor: pointer;
-  font-weight: 700;
-  font-size: 15px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  transition: color .25s ease, background-color .25s ease, transform .25s ease;
   white-space: nowrap;
   position: relative;
-  letter-spacing: -0.01em;
-  will-change: transform, background-color;
 }
 
 .uni-tab-btn:hover {
-  background: hsl(var(--muted) / 0.5);
-  color: hsl(var(--foreground));
-  transform: translateY(-1px);
+  color: var(--ag-fg);
+  background: color-mix(in srgb, var(--ag-fg) 5%, transparent);
 }
 
 .uni-tab-btn.is-active {
-  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
-  color: white;
-  box-shadow: 
-    0 4px 12px hsl(var(--primary) / 0.3),
-    0 1px 3px hsl(var(--primary) / 0.2);
-  transform: translateY(-2px);
+  background: var(--ag-fg);
+  color: var(--ag-bg);
+  box-shadow:
+    0 6px 18px -8px hsl(var(--primary) / 0.55),
+    inset 0 0 0 1px color-mix(in srgb, var(--ag-fg) 100%, transparent);
 }
 
-/* Filter Card inside hero */
+/* ── Filter card — AG editorial frame with cobalt corner marks ── */
 .uni-hero__filterCard {
-  backdrop-filter: blur(12px);
-  background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.98) 100%);
-  border: 1px solid hsl(var(--border) / 0.6);
-  border-radius: 24px;
-  padding: 28px 32px;
-  box-shadow: 
-    0 8px 32px hsl(var(--foreground) / 0.08),
-    0 1px 3px hsl(var(--foreground) / 0.05);
-  max-width: 1120px;
-  margin: 0 auto;
   position: relative;
-  overflow: hidden;
+  isolation: isolate;
+  background: var(--ag-bg);
+  border: 1px solid var(--ag-border);
+  border-radius: 24px;
+  padding: 32px 36px;
+  max-width: 1180px;
+  margin: 0 auto;
+  box-shadow:
+    0 1px 0 0 color-mix(in srgb, var(--ag-fg) 4%, transparent) inset,
+    0 24px 60px -40px color-mix(in srgb, var(--ag-fg) 35%, transparent);
 }
 
-.uni-hero__filterCard::before {
-  content: '';
+/* Subtle radial wash inside the frame */
+.uni-hero__filterCard::after {
+  content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
-  opacity: 0.8;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(120% 80% at 50% 0%, hsl(var(--primary) / 0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Cobalt corner accents (echo of ag-map-frame) */
+.uni-hero__filterCard::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  pointer-events: none;
+  border-radius: 14px;
+  background:
+    /* top-left */
+    linear-gradient(to right,  hsl(var(--primary) / 0.55) 0 28px, transparent 28px) top    left  / 100% 1.5px no-repeat,
+    linear-gradient(to bottom, hsl(var(--primary) / 0.55) 0 28px, transparent 28px) top    left  / 1.5px 100% no-repeat,
+    /* top-right */
+    linear-gradient(to left,   hsl(var(--primary) / 0.55) 0 28px, transparent 28px) top    right / 100% 1.5px no-repeat,
+    linear-gradient(to bottom, hsl(var(--primary) / 0.55) 0 28px, transparent 28px) top    right / 1.5px 100% no-repeat,
+    /* bottom-left */
+    linear-gradient(to right,  hsl(var(--primary) / 0.55) 0 28px, transparent 28px) bottom left  / 100% 1.5px no-repeat,
+    linear-gradient(to top,    hsl(var(--primary) / 0.55) 0 28px, transparent 28px) bottom left  / 1.5px 100% no-repeat,
+    /* bottom-right */
+    linear-gradient(to left,   hsl(var(--primary) / 0.55) 0 28px, transparent 28px) bottom right / 100% 1.5px no-repeat,
+    linear-gradient(to top,    hsl(var(--primary) / 0.55) 0 28px, transparent 28px) bottom right / 1.5px 100% no-repeat;
+}
+
+/* Soften inner shadcn select/input chrome to match AG */
+.uni-hero__filterCard [data-radix-select-trigger],
+.uni-hero__filterCard input,
+.uni-hero__filterCard button[role="combobox"] {
+  background: var(--ag-bg) !important;
+  border-color: var(--ag-border) !important;
+  color: var(--ag-fg) !important;
+  border-radius: 12px !important;
+}
+
+.uni-hero__filterCard [data-radix-select-trigger]:hover,
+.uni-hero__filterCard input:hover,
+.uni-hero__filterCard button[role="combobox"]:hover {
+  border-color: color-mix(in srgb, var(--ag-fg) 25%, var(--ag-border)) !important;
+}
+
+.uni-hero__filterCard [data-radix-select-trigger]:focus,
+.uni-hero__filterCard input:focus,
+.uni-hero__filterCard button[role="combobox"]:focus {
+  outline: none !important;
+  border-color: hsl(var(--primary) / 0.55) !important;
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12) !important;
 }
 
 /* Content transitions */
@@ -112,8 +163,16 @@
   }
 }
 
+@media (max-width: 640px) {
+  .uni-hero__filterCard { padding: 22px 18px; }
+  .uni-hero__filterCard::before { inset: 10px; }
+  .uni-tab-btn { padding: 9px 16px; font-size: 13px; }
+}
+
 @media (min-width: 1024px) {
-  .uni-hero__filterCard {
-    padding: 32px 36px;
-  }
+  .uni-hero__filterCard { padding: 36px 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .uni-content-enter { animation: none; }
 }
