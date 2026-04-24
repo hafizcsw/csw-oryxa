@@ -1271,6 +1271,34 @@
     "chooseVerificationMethod": "اختر طريقة التحقق"
   },
   "portal": {
+    "evaluation": {
+      "region_label": "مساحة تقييم الطالب",
+      "title": "لقطة التقييم",
+      "headline": "المؤهل الأساسي",
+      "loading": "جارٍ تحميل التقييم…",
+      "empty": "لا يوجد تقييم بعد. ارفع مؤهلًا للبدء.",
+      "computing": "إعادة الحساب…",
+      "saved": "محفوظ · محدّث",
+      "pending": "بانتظار إعادة الحساب",
+      "recompute": "إعادة الحساب",
+      "docs_evaluated": "المستندات",
+      "docs_passing": "مقبولة",
+      "docs_review": "تحتاج مراجعة",
+      "last_computed": "آخر حساب",
+      "reason": "السبب",
+      "per_document": "التطبيع لكل مستند",
+      "needs_review": "تحتاج مراجعة",
+      "ok": "سليم",
+      "rules": "القواعد",
+      "recompute_reason": {
+        "first_compute": "أول حساب",
+        "document_added": "تمت إضافة مستند",
+        "document_removed": "تم حذف مستند",
+        "document_changed": "تم تغيير مستند",
+        "manual": "إعادة حساب يدوية",
+        "input_changed": "تغيّر المدخل"
+      }
+    },
     "login": {
       "title": "بوابة الطالب",
       "description": "سجّل الدخول للوصول إلى حسابك ومتابعة طلباتك",
