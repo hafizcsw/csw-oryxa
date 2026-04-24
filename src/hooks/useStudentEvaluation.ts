@@ -159,14 +159,12 @@ export function useStudentEvaluation({
       if (!currentInputHash) return;
       if (!forced && currentInputHash === lastRecomputedHashRef.current) return;
 
+      // Claim the hash IMMEDIATELY to prevent re-entry from effect re-runs.
+      lastRecomputedHashRef.current = currentInputHash;
       setComputing(true);
       try {
         const { data, error } = await supabase.functions.invoke('phase-a-normalize', {
-          body: {
-            docs,
-            input_hash: currentInputHash,
-            force: forced,
-          },
+          body: { docs, input_hash: currentInputHash, force: forced },
         });
 
         if (error || !data?.ok) {
@@ -174,7 +172,6 @@ export function useStudentEvaluation({
           return;
         }
 
-        // Hydrate from server response (already-canonical rows).
         const credsMap: Record<string, PersistedNormalizedCredential> = {};
         for (const row of data.credentials ?? []) {
           if (!row.source_document_id) continue;
@@ -203,6 +200,7 @@ export function useStudentEvaluation({
   );
 
   // Auto-trigger recompute when drift detected.
+  // NOTE: runRecompute intentionally NOT in deps — would cause re-entry loop.
   useEffect(() => {
     if (!enabled || loading) return;
     if (!currentInputHash) return;
@@ -212,7 +210,8 @@ export function useStudentEvaluation({
       return;
     }
     void runRecompute(false);
-  }, [enabled, loading, currentInputHash, runRecompute, docs.length, snapshot]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, loading, currentInputHash, docs.length]);
 
   const isUpToDate = useMemo(
     () => !!currentInputHash && currentInputHash === lastRecomputedHashRef.current,
