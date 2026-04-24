@@ -22,6 +22,8 @@ export type CrmStorageAction =
   | 'set_avatar'
   | 'delete_file'
   | 'clear_all_files'
+  | 'clear_pending_files'
+  | 'mark_files_saved'
   | 'purge_all_files'         // ✅ Added for clean cutover
   | 'paddle_structure_proxy'; // ✅ CRM-aware Paddle OCR/Structure proxy
 
