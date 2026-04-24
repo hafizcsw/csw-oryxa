@@ -114,22 +114,22 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Binance Gold — Clean & Bright like binance.com (#F0B90B) */
+    /* Antigravity Cobalt — clean editorial palette */
     --background: 0 0% 100%;
     --foreground: 0 0% 5%;
 
-    /* Primary: Binance Yellow #F0B90B = hsl(45, 93%, 49%) */
-    --primary: 45 93% 49%;
-    --primary-foreground: 0 0% 8%;
-    --primary-glow: 45 93% 55%;
+    /* Primary: Antigravity Cobalt Blue */
+    --primary: 220 90% 56%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 220 95% 65%;
     
     /* Secondary: Dark */
     --secondary: 220 20% 8%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Accent: Same Binance Gold */
-    --accent: 45 93% 49%;
-    --accent-foreground: 0 0% 8%;
+    /* Accent: Same cobalt */
+    --accent: 220 90% 56%;
+    --accent-foreground: 0 0% 100%;
 
     /* Muted backgrounds */
     --muted: 220 12% 95%;
@@ -139,7 +139,7 @@ All colors MUST be HSL.
     --success: 152 72% 34%;
     --success-foreground: 0 0% 100%;
 
-    /* Warning — same gold */
+    /* Warning — gold kept semantic */
     --warning: 45 93% 49%;
     --warning-foreground: 0 0% 8%;
 
@@ -163,40 +163,40 @@ All colors MUST be HSL.
     /* Borders & inputs */
     --border: 220 15% 88%;
     --input: 220 15% 88%;
-    --ring: 45 93% 49%;
+    --ring: 220 90% 56%;
 
     /* Radius */
     --radius: 0.5rem;
 
-    /* Gradients — subtle, not heavy */
-    --gradient-primary: linear-gradient(135deg, hsl(45 93% 49%) 0%, hsl(43 90% 55%) 100%);
+    /* Gradients — cobalt-tinted */
+    --gradient-primary: linear-gradient(135deg, hsl(220 90% 56%) 0%, hsl(220 95% 65%) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(220 20% 8%) 0%, hsl(220 20% 16%) 100%);
     --gradient-success: linear-gradient(135deg, hsl(152 72% 34%) 0%, hsl(152 72% 44%) 100%);
     --gradient-info: linear-gradient(135deg, hsl(220 75% 50%) 0%, hsl(220 75% 65%) 100%);
     --gradient-warning: linear-gradient(135deg, hsl(45 93% 49%) 0%, hsl(43 90% 55%) 100%);
     --gradient-dark: linear-gradient(135deg, hsl(220 20% 8%) 0%, hsl(220 20% 16%) 100%);
     --gradient-overlay: linear-gradient(180deg, hsla(0, 0%, 0%, 0.3) 0%, hsla(0, 0%, 0%, 0.7) 100%);
-    --gradient-mesh: radial-gradient(at 40% 20%, hsla(45, 93%, 49%, 0.05) 0px, transparent 50%),
+    --gradient-mesh: radial-gradient(at 40% 20%, hsla(220, 90%, 56%, 0.05) 0px, transparent 50%),
                      radial-gradient(at 80% 0%, hsla(220, 20%, 8%, 0.03) 0px, transparent 50%),
-                     radial-gradient(at 0% 50%, hsla(45, 93%, 49%, 0.03) 0px, transparent 50%);
+                     radial-gradient(at 0% 50%, hsla(220, 90%, 56%, 0.03) 0px, transparent 50%);
     
-    /* Shadows — clean, minimal gold tint */
+    /* Shadows — clean, cobalt tint */
     --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    --shadow-colored: 0 8px 24px -4px hsla(45, 93%, 49%, 0.15);
+    --shadow-colored: 0 8px 24px -4px hsla(220, 90%, 56%, 0.18);
     --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
     --shadow-hero: 0 25px 80px rgba(0, 0, 0, 0.12);
     --shadow-float: 0 8px 30px rgba(0, 0, 0, 0.1);
-    --shadow-elegant: 0 10px 30px -10px hsla(45, 93%, 49%, 0.15);
-    --shadow-glow: 0 0 30px hsla(45, 93%, 49%, 0.15);
+    --shadow-elegant: 0 10px 30px -10px hsla(220, 90%, 56%, 0.20);
+    --shadow-glow: 0 0 30px hsla(220, 90%, 56%, 0.20);
     
     /* AI Scan Effect Colors */
-    --ai-scan: 45 93% 49%;
-    --ai-scan-glow: 45 93% 60%;
+    --ai-scan: 220 90% 56%;
+    --ai-scan-glow: 220 95% 65%;
 
     /* Transitions */
     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -206,31 +206,31 @@ All colors MUST be HSL.
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 220 13% 10%;
-    --sidebar-primary: 43 91% 51%;
-    --sidebar-primary-foreground: 220 13% 10%;
+    --sidebar-primary: 220 90% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 10% 96%;
-    --sidebar-accent-foreground: 43 91% 51%;
+    --sidebar-accent-foreground: 220 90% 56%;
     --sidebar-border: 220 13% 90%;
-    --sidebar-ring: 43 91% 51%;
+    --sidebar-ring: 220 90% 56%;
   }
 
   .dark {
-    /* Binance Dark Mode */
+    /* Antigravity Dark Mode */
     --background: 225 14% 7%;
     --foreground: 210 15% 90%;
 
-    /* Primary: Binance Gold */
-    --primary: 43 91% 51%;
-    --primary-foreground: 220 13% 10%;
-    --primary-glow: 43 91% 60%;
+    /* Primary: Cobalt */
+    --primary: 220 95% 62%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 220 95% 70%;
 
     /* Secondary: Lighter dark */
     --secondary: 225 10% 14%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Accent: Gold */
-    --accent: 43 91% 51%;
-    --accent-foreground: 220 13% 10%;
+    /* Accent: Cobalt */
+    --accent: 220 95% 62%;
+    --accent-foreground: 0 0% 100%;
 
     /* Muted */
     --muted: 225 12% 12%;
@@ -253,29 +253,29 @@ All colors MUST be HSL.
     /* Borders */
     --border: 225 10% 18%;
     --input: 225 10% 18%;
-    --ring: 43 91% 51%;
+    --ring: 220 95% 62%;
 
     /* Gradients */
     --gradient-hero: linear-gradient(135deg, hsl(225 14% 7%) 0%, hsl(225 12% 14%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(225 12% 10%) 0%, hsl(225 12% 13%) 100%);
-    --gradient-mesh: radial-gradient(at 40% 20%, hsla(43, 91%, 51%, 0.1) 0, transparent 50%), 
-                     radial-gradient(at 80% 0%, hsla(225, 14%, 7%, 0.1) 0, transparent 50%);
+    --gradient-mesh: radial-gradient(at 40% 20%, hsla(220, 95%, 62%, 0.10) 0, transparent 50%), 
+                     radial-gradient(at 80% 0%, hsla(225, 14%, 7%, 0.10) 0, transparent 50%);
 
-    --shadow-glow: 0 0 30px hsla(43, 91%, 51%, 0.2);
+    --shadow-glow: 0 0 30px hsla(220, 95%, 62%, 0.25);
     
     /* AI Scan */
-    --ai-scan: 43 91% 55%;
-    --ai-scan-glow: 43 91% 65%;
+    --ai-scan: 220 95% 62%;
+    --ai-scan-glow: 220 95% 72%;
 
     /* Sidebar */
     --sidebar-background: 225 14% 6%;
     --sidebar-foreground: 210 15% 85%;
-    --sidebar-primary: 43 91% 51%;
-    --sidebar-primary-foreground: 220 13% 10%;
+    --sidebar-primary: 220 95% 62%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 225 12% 12%;
     --sidebar-accent-foreground: 210 15% 85%;
     --sidebar-border: 225 10% 14%;
-    --sidebar-ring: 43 91% 51%;
+    --sidebar-ring: 220 95% 62%;
   }
 }
 
