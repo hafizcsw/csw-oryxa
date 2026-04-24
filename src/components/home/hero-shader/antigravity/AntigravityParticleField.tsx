@@ -424,6 +424,13 @@ export function AntigravityParticleField({ className, theme }: Props) {
       themeObserver?.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('mousemove', onMouseMove);
+      whaleGroup.traverse((obj) => {
+        const mesh = obj as THREE.Mesh;
+        if (mesh.geometry) mesh.geometry.dispose();
+        const mat = mesh.material as THREE.Material | THREE.Material[] | undefined;
+        if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
+        else if (mat) mat.dispose();
+      });
       geometry.dispose();
       material.dispose();
       renderer.dispose();
