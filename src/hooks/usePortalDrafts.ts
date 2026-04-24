@@ -54,6 +54,20 @@ export function usePortalDrafts({ studentUserId }: UsePortalDraftsOptions): UseP
     void refresh();
   }, [refresh]);
 
+  // Order 3: poll while any draft is mid-extraction.
+  useEffect(() => {
+    const anyRunning = drafts.some(
+      (d) =>
+        d.extraction_status === "extraction_running" ||
+        d.extraction_status === "extraction_pending",
+    );
+    if (!anyRunning) return;
+    const id = setInterval(() => {
+      void refresh();
+    }, 4000);
+    return () => clearInterval(id);
+  }, [drafts, refresh]);
+
   const processQueue = useCallback(async () => {
     if (processingRef.current || !studentUserId) return;
     processingRef.current = true;
