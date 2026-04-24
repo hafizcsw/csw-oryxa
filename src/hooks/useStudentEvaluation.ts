@@ -95,6 +95,7 @@ export function useStudentEvaluation({
   docs,
   enabled = true,
 }: UseStudentEvaluationOptions): UseStudentEvaluationReturn {
+  const [authReady, setAuthReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [computing, setComputing] = useState(false);
   const [credentialsByDocId, setCredentialsByDocId] = useState<Record<string, PersistedNormalizedCredential>>({});
@@ -103,9 +104,27 @@ export function useStudentEvaluation({
 
   const lastRecomputedHashRef = useRef<string | null>(null);
 
+  // ─── 0. Auth readiness: wait for session restore before any RLS reads ───
+  useEffect(() => {
+    let active = true;
+
+    void supabase.auth.getSession().then(() => {
+      if (active) setAuthReady(true);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      if (active) setAuthReady(true);
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
   // ─── 1. Initial load: pull from OFFICIAL Phase A tables ─────
   useEffect(() => {
-    if (!userId || !enabled) return;
+    if (!userId || !enabled || !authReady) return;
     let cancelled = false;
     setLoading(true);
 
@@ -119,6 +138,8 @@ export function useStudentEvaluation({
           .from('student_evaluation_snapshots')
           .select('*')
           .eq('student_user_id', userId)
+          .order('updated_at', { ascending: false })
+          .limit(1)
           .maybeSingle(),
       ]);
 
@@ -140,7 +161,7 @@ export function useStudentEvaluation({
     })();
 
     return () => { cancelled = true; };
-  }, [userId, enabled]);
+  }, [userId, enabled, authReady]);
 
   // ─── 2. Compute current input hash (cheap, async) ───────────
   useEffect(() => {
@@ -155,7 +176,7 @@ export function useStudentEvaluation({
   // ─── 3. Recompute via edge function ─────────────────────────
   const runRecompute = useCallback(
     async (forced = false) => {
-      if (!userId || loading || computing) return;
+      if (!userId || !authReady || loading || computing) return;
       if (!currentInputHash) return;
       if (!forced && currentInputHash === lastRecomputedHashRef.current) return;
 
@@ -196,7 +217,7 @@ export function useStudentEvaluation({
         setComputing(false);
       }
     },
-    [userId, loading, computing, currentInputHash, docs],
+    [userId, authReady, loading, computing, currentInputHash, docs],
   );
 
   // Auto-trigger recompute when drift detected.
@@ -209,7 +230,7 @@ export function useStudentEvaluation({
   //     refresh. Snapshot is replaced ONLY when the student uploads/changes
   //     a real document (docs.length > 0 with a different input_hash).
   useEffect(() => {
-    if (!enabled || loading) return;
+    if (!enabled || !authReady || loading) return;
     if (!currentInputHash) return;
     if (currentInputHash === lastRecomputedHashRef.current) return;
 
@@ -225,7 +246,7 @@ export function useStudentEvaluation({
 
     void runRecompute(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, loading, currentInputHash, docs.length]);
+  }, [enabled, authReady, loading, currentInputHash, docs.length]);
 
   const isUpToDate = useMemo(() => {
     // Snapshot is "up to date" if either:
