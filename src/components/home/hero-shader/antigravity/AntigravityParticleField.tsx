@@ -42,8 +42,9 @@ const VERT = /* glsl */ `
     pos.z += smoothstep(1.5, 0.0, dist) * 1.5;
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    float ps = (4.0 * uPixelRatio * uSizeScale) * (1.0 / -mvPosition.z);
-    gl_PointSize = min(ps, uSizeClamp);
+    // Tinier pinpoint dots — closer to Antigravity reference
+    float ps = (2.2 * uPixelRatio * uSizeScale) * (1.0 / -mvPosition.z);
+    gl_PointSize = clamp(ps, 1.0, uSizeClamp);
     gl_Position  = projectionMatrix * mvPosition;
 
     vAlpha = smoothstep(0.0, 1.0, 1.0 - length(pos) / 12.0);
@@ -61,8 +62,9 @@ const FRAG = /* glsl */ `
     float dist = distance(gl_PointCoord, vec2(0.5));
     if (dist > 0.5) discard;
 
-    float alpha = smoothstep(0.5, 0.0, dist) * vAlpha;
-    gl_FragColor = vec4(uColor, alpha * 0.6 * uAlphaBoost);
+    // Tighter falloff → crisp pinpoint instead of soft blob
+    float core = smoothstep(0.5, 0.15, dist);
+    gl_FragColor = vec4(uColor, core * vAlpha * 0.45 * uAlphaBoost);
   }
 `;
 
@@ -120,19 +122,18 @@ export function AntigravityParticleField({ className, theme }: Props) {
     // Theme: explicit prop wins; otherwise read <html class="dark"> + observe.
     const isDark = () =>
       theme ? theme === 'dark' : document.documentElement.classList.contains('dark');
-    // Light mode = deep navy/blue dots, larger + much higher alpha so they read on white.
-    // Dark mode = white, original size, original alpha.
+    // Light mode = muted slate-blue pinpoints; Dark mode = soft white pinpoints.
     const colorFor = () =>
-      isDark() ? new THREE.Color(1, 1, 1) : new THREE.Color(0.04, 0.16, 0.45);
+      isDark() ? new THREE.Color(0.85, 0.88, 0.95) : new THREE.Color(0.18, 0.26, 0.48);
 
     const uniforms = {
       uTime:       { value: 0 },
       uMousePos:   { value: new THREE.Vector2(0, 0) },
       uPixelRatio: { value: pixelRatio },
       uColor:      { value: colorFor() },
-      uAlphaBoost: { value: isDark() ? 1.0 : 14.0 },
-      uSizeScale:  { value: isDark() ? 1.0 : 1.4 },
-      uSizeClamp:  { value: isDark() ? 9999.0 : 12.0 * pixelRatio },
+      uAlphaBoost: { value: isDark() ? 0.85 : 6.5 },
+      uSizeScale:  { value: isDark() ? 1.0 : 1.15 },
+      uSizeClamp:  { value: isDark() ? 4.0 * pixelRatio : 5.0 * pixelRatio },
     };
 
     // RawShaderMaterial: matches source intent (no THREE-injected prelude).
@@ -151,9 +152,9 @@ export function AntigravityParticleField({ className, theme }: Props) {
     const themeObserver = !theme
       ? new MutationObserver(() => {
           uniforms.uColor.value = colorFor();
-          uniforms.uAlphaBoost.value = isDark() ? 1.0 : 14.0;
-          uniforms.uSizeScale.value = isDark() ? 1.0 : 1.4;
-          uniforms.uSizeClamp.value = isDark() ? 9999.0 : 12.0 * pixelRatio;
+          uniforms.uAlphaBoost.value = isDark() ? 0.85 : 6.5;
+          uniforms.uSizeScale.value = isDark() ? 1.0 : 1.15;
+          uniforms.uSizeClamp.value = isDark() ? 4.0 * pixelRatio : 5.0 * pixelRatio;
           material.blending = isDark() ? THREE.AdditiveBlending : THREE.NormalBlending;
           material.needsUpdate = true;
         })
