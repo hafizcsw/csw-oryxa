@@ -166,11 +166,11 @@ export function AntigravityParticleField({ className, theme }: Props) {
       offsets[a] = Math.random();
     }
     const geometry = new THREE.BufferGeometry();
+    // Placeholder position attribute so three derives draw count (shader ignores it).
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(PARTICLE_COUNT * 3), 3));
     geometry.setAttribute('aSphere', new THREE.BufferAttribute(aSphere, 2));
     geometry.setAttribute('aRadius', new THREE.BufferAttribute(aRadius, 1));
     geometry.setAttribute('aOffset', new THREE.BufferAttribute(offsets, 1));
-    // Required so three computes a draw count
-    geometry.setDrawRange(0, PARTICLE_COUNT);
 
     // Theme: explicit prop wins; otherwise read <html class="dark"> + observe.
     const isDark = () =>
