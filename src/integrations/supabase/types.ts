@@ -27187,6 +27187,10 @@ export type Database = {
         Returns: Json
       }
       osc_auto_tick: { Args: never; Returns: undefined }
+      phase_a_purge_for_documents: {
+        Args: { _doc_ids: string[] }
+        Returns: Json
+      }
       populate_review_queue_from_job: {
         Args: { p_job_id: number }
         Returns: number
