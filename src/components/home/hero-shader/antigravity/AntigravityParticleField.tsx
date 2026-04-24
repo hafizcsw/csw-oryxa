@@ -220,7 +220,9 @@ export function AntigravityParticleField({ className, theme }: Props) {
     // Fallback observer only when no explicit theme prop is provided.
     const themeObserver = !theme
       ? new MutationObserver(() => {
-          uniforms.uColor.value = colorFor();
+          const c = colorFor();
+          uniforms.uColor.value.copy(c);
+          whaleColor.copy(c);
           uniforms.uAlphaBoost.value = isDark() ? 1.0 : 3.2;
           uniforms.uSizeScale.value = isDark() ? 1.0 : 1.05;
           uniforms.uSizeClamp.value = 14.0 * pixelRatio;
