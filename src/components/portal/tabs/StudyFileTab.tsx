@@ -622,52 +622,15 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   const autoPassportCleanupRef = useRef(new Set<string>());
 
   const handleFilesSelected = useCallback(async (files: File[]) => {
-    // ─── Passport de-duplication gate ───────────────────────────
-    // Use both CRM category + prior analysis truth so we do not rely only
-    // on filename heuristics or legacy file_kind correctness.
-    const incomingPassports = files.filter(
-      f => guessSlotFromFileName(f.name) === 'passport'
-    );
-
-    const existingPassportMap = new Map<string, { crmFileId: string | null; documentId: string | null }>();
-
-    for (const d of documents || []) {
-      if ((d.document_category || (d as any).file_kind) === 'passport') {
-        existingPassportMap.set(`crm:${d.id}`, { crmFileId: d.id, documentId: null });
-      }
-    }
-
-    for (const a of analysisHook.analyses) {
-      if (a.classification_result !== 'passport') continue;
-      const rec = registry.records.find(r => r.document_id === a.document_id);
-      const filename = rec?.original_file_name ?? analysisHook.hydratedArtifactSurfaces[a.document_id]?.documentFilename ?? null;
-      const crmDoc = filename ? (documents || []).find(d => d.file_name === filename) : null;
-      const crmFileId = rec?.crm_file_id ?? crmDoc?.id ?? null;
-      const key = crmFileId ? `crm:${crmFileId}` : `analysis:${a.document_id}`;
-      existingPassportMap.set(key, { crmFileId, documentId: a.document_id });
-    }
-
-    const existingPassports = Array.from(existingPassportMap.values());
-    let filesToUpload = files;
-
-    if (incomingPassports.length > 0 && existingPassports.length > 0) {
-      const confirmReplace = window.confirm(
-        'يوجد جواز سفر مرفوع مسبقًا. هل تريد استبداله بالملف الجديد؟ (سيتم حذف الجواز القديم)'
-      );
-
-      if (!confirmReplace) {
-        const passportNames = new Set(incomingPassports.map(f => f.name));
-        filesToUpload = files.filter(f => !passportNames.has(f.name));
-        if (filesToUpload.length === 0) return;
-      } else {
-        for (const existing of existingPassports) {
-          if (existing.crmFileId || existing.documentId) {
-            await handleDeleteDoc(existing.crmFileId, existing.documentId ?? `passport-replaced:${existing.crmFileId}`);
-          }
-        }
-        await refetchDocs({ silent: true });
-      }
-    }
+    // ─── Order 2: Portal Draft Layer ONLY ───────────────────────
+    // Study File uploads land as DRAFTS in the private `portal-drafts`
+    // bucket. NO CRM mutation. NO deleteFile. NO customer_files write.
+    //
+    // Passport "replacement" is treated as a draft-level concept here:
+    // the new passport draft simply appears alongside the existing CRM
+    // record as a "replacement candidate". Actual replacement / deletion
+    // of the old CRM file is deferred to Phase 6 (Confirm & Share).
+    const filesToUpload = files;
 
     for (const file of filesToUpload) {
       const key = uniqueFileKey(file);
@@ -676,11 +639,8 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       existing.push(key);
       fileNameToKeysRef.current.set(file.name, existing);
     }
-    // Order 2: route Study File uploads through the Portal Draft Layer.
-    // No CRM mutation. Files land in the private `portal-drafts` bucket
-    // and a row appears in `portal_document_drafts`.
     drafts.enqueueFiles(filesToUpload);
-  }, [drafts, documents, analysisHook.analyses, analysisHook.hydratedArtifactSurfaces, handleDeleteDoc, refetchDocs]);
+  }, [drafts]);
 
   // ⛔ TEMPORARILY DISABLED — auto-passport-cleanup is paused while we
   // collect runtime proof of the Paddle cutover. It was deleting real
