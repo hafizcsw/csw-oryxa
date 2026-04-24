@@ -47,9 +47,13 @@ async function discardIds(ids: string[]): Promise<string[]> {
   return stillFailing;
 }
 
+// We use localStorage (not sessionStorage) so a hard refresh / tab close
+// still leaves a breadcrumb the NEXT mount can clean up. Without this, a
+// real refresh wipes sessionStorage before cleanup ever runs, leaving
+// orphan CRM files + Phase A rows behind.
 function readPending(): string[] {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
@@ -60,8 +64,8 @@ function readPending(): string[] {
 
 function writePending(ids: string[]) {
   try {
-    if (ids.length === 0) sessionStorage.removeItem(STORAGE_KEY);
-    else sessionStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+    if (ids.length === 0) localStorage.removeItem(STORAGE_KEY);
+    else localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
   } catch {
     /* noop */
   }
