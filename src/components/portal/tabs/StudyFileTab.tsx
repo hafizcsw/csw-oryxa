@@ -365,6 +365,34 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     }
   }, [registry.records, analysisHook, guard]);
 
+  // ═══ Auto-scan CRM files that have no analysis yet ═══
+  // Files that arrive from CRM (uploaded elsewhere, or surviving a refresh)
+  // never pass through the registry's "registered" → analyzeFile path because
+  // there is no local File object. We trigger `reanalyzeFile` for them so the
+  // engine runs on storage_path + crm_file_id directly.
+  const autoScanTriggeredRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!docsLoadedOnce) return;
+    if (!profile?.user_id) return;
+    if (documents.length === 0) return;
+
+    const analyzedIds = new Set(analysisHook.analyses.map(a => a.document_id));
+    const registeredIds = new Set(registry.records.map(r => r.document_id));
+
+    for (const doc of documents) {
+      if (analyzedIds.has(doc.id)) continue;
+      if (registeredIds.has(doc.id)) continue; // handled by the registered-path above
+      if (autoScanTriggeredRef.current.has(doc.id)) continue;
+
+      autoScanTriggeredRef.current.add(doc.id);
+      console.log('[StudyFileTab] 🚀 auto-scan CRM file (no analysis yet)', {
+        document_id: doc.id,
+        file_name: (doc as any).file_name,
+      });
+      void analysisHook.reanalyzeFile(doc.id);
+    }
+  }, [docsLoadedOnce, documents, analysisHook, registry.records, profile?.user_id]);
+
   // Reconcile pending IDs against actual CRM documents — drops stale entries
   // (files deleted in another tab/session, or that never finished saving server-side).
   useEffect(() => {
