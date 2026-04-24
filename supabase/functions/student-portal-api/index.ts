@@ -5183,12 +5183,59 @@ Deno.serve(async (req) => {
               console.error('[crm_storage] ❌ list_files error:', listErr);
               return Response.json({ ok: false, error: listErr.message, http_status: 500 }, { status: 200, headers: corsHeaders });
             }
-            
+
+            // ✅ Orphan detection: verify each file exists in Storage.
+            // If the DB row exists but the underlying object is missing (404),
+            // soft-delete the row and omit it from the response.
+            // This prevents "ghost files" from appearing in the UI after
+            // storage-side purges or bucket rotations.
+            const liveFiles: any[] = [];
+            const orphanIds: string[] = [];
+
+            for (const f of files || []) {
+              try {
+                const signPromise = crmStorageClient.storage
+                  .from(f.storage_bucket)
+                  .createSignedUrl(f.storage_path, 60);
+                const timeoutPromise = new Promise<{ data: null; error: { message: string } }>((resolve) =>
+                  setTimeout(() => resolve({ data: null, error: { message: 'SIGN_TIMEOUT_4S' } }), 4000)
+                );
+                const { data: signed, error: signErr } = await Promise.race([signPromise, timeoutPromise]) as any;
+                const isNotFound = signErr && (
+                  String(signErr.message || '').toLowerCase().includes('not found') ||
+                  String(signErr.statusCode || '') === '404' ||
+                  String((signErr as any).status || '') === '404'
+                );
+                if (isNotFound) {
+                  orphanIds.push(f.id);
+                  continue;
+                }
+                // Keep file (either signed OK, or a transient error we don't treat as orphan)
+                liveFiles.push(f);
+              } catch (e) {
+                // On unexpected error, keep the file visible — don't nuke user data on a transient glitch
+                liveFiles.push(f);
+              }
+            }
+
+            if (orphanIds.length > 0) {
+              console.warn('[crm_storage] 🧹 Soft-deleting orphan rows (missing in Storage):', orphanIds);
+              const nowIso = new Date().toISOString();
+              await crmStorageClient
+                .from('customer_files')
+                .update({ deleted_at: nowIso })
+                .in('id', orphanIds);
+            }
+
             // ✅ Debug: Log first 5 IDs for cutover verification
-            const first5 = (files || []).slice(0, 5).map((f: any) => ({ id: f.id, kind: f.file_kind, bucket: f.storage_bucket }));
-            console.log('[crm_storage] ✅ list_files:', { count: files?.length || 0, first_5: first5 });
-            
-            return Response.json({ ok: true, files: files || [] }, { headers: corsHeaders });
+            const first5 = liveFiles.slice(0, 5).map((f: any) => ({ id: f.id, kind: f.file_kind, bucket: f.storage_bucket }));
+            console.log('[crm_storage] ✅ list_files:', {
+              count: liveFiles.length,
+              orphans_removed: orphanIds.length,
+              first_5: first5,
+            });
+
+            return Response.json({ ok: true, files: liveFiles, orphans_removed: orphanIds.length }, { headers: corsHeaders });
           }
           
           // ============= SIGN FILE =============
