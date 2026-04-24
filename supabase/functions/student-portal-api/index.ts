@@ -8432,7 +8432,7 @@ Deno.serve(async (req) => {
         }
         const { crmCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!crmCustomerId) {
-          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
+          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 200, headers: corsHeaders });
         }
         const fileKind =
           slot === 'doc' ? 'identity_doc' :
@@ -8480,7 +8480,7 @@ Deno.serve(async (req) => {
         }
         const { crmCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!crmCustomerId) {
-          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
+          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 200, headers: corsHeaders });
         }
         if (!path.startsWith(`${crmCustomerId}/`)) {
           return Response.json({ ok: false, error: 'path_ownership_violation' }, { status: 403, headers: corsHeaders });
@@ -8577,7 +8577,7 @@ Deno.serve(async (req) => {
         }
         const { crmCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!crmCustomerId) {
-          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
+          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 200, headers: corsHeaders });
         }
         const crmStorage = createClient(CRM_SUPABASE_URL, CRM_SERVICE_ROLE_KEY);
         const { data: fileRow, error: fileErr } = await crmStorage
@@ -8728,7 +8728,7 @@ Deno.serve(async (req) => {
         }
         const { crmCustomerId: resolvedCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!resolvedCustomerId) {
-          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
+          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 200, headers: corsHeaders });
         }
         // Verify all three CRM files exist and belong to this customer.
         const crmStorage = createClient(CRM_SUPABASE_URL, CRM_SERVICE_ROLE_KEY);
@@ -8880,7 +8880,7 @@ Deno.serve(async (req) => {
         }
         const { crmCustomerId: resolvedCustomerId } = await resolveCrmCustomerId(portalAdmin, authUserId!);
         if (!resolvedCustomerId) {
-          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 409, headers: corsHeaders });
+          return Response.json({ ok: false, error: 'no_crm_customer_link' }, { status: 200, headers: corsHeaders });
         }
         const r = await fetch(`${CRM_FUNCTIONS_URL}/web-sync-support-request`, {
           method: 'POST',
