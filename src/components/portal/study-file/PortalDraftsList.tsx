@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { Button } from "@/components/ui/button";
-import { Trash2, FileText, Loader2, AlertTriangle } from "lucide-react";
+import { Trash2, FileText, Loader2, AlertTriangle, CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import type { PortalDraft } from "@/features/documents/portalDrafts";
 import type { PortalDraftPending } from "@/hooks/usePortalDrafts";
 import { useTranslation } from "react-i18next";
