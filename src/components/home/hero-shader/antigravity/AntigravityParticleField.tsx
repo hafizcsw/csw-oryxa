@@ -27,31 +27,53 @@ const VERT = /* glsl */ `
   uniform float uSizeScale;
   uniform float uSizeClamp;
 
+  // Placeholder position attribute (unused; required for draw count)
   attribute vec3  position;
-  attribute float aOffset;
+  // Spherical coordinates per particle
+  attribute vec2  aSphere;   // x = theta (azimuth), y = phi (polar)
+  attribute float aRadius;   // radius around base sphere
+  attribute float aOffset;   // 0..1 stable seed
 
   varying float vAlpha;
   varying float vAngle;
   varying float vSeed;
 
   void main() {
-    vec3 pos = position;
+    // Reference position so the attribute isn't stripped (drives draw count).
+    float _keep = position.x * 0.0;
 
-    pos.y += sin(uTime * 0.3 + aOffset * 15.0) * 0.4;
-    pos.x += cos(uTime * 0.2 + aOffset * 15.0) * 0.4;
+    // Slow global rotation around Y axis -> coherent swirl
+    float theta = aSphere.x + uTime * 0.08 + _keep;
+    float phi   = aSphere.y;
 
-    float dist = distance(uMousePos, pos.xy * 0.3);
-    pos.z += smoothstep(1.5, 0.0, dist) * 1.5;
+    float sp = sin(phi);
+    float cp = cos(phi);
+    float st = sin(theta);
+    float ct = cos(theta);
+
+    vec3 pos = vec3(aRadius * sp * ct, aRadius * cp, aRadius * sp * st);
+
+    // Subtle organic breathing (very small, keeps coherence)
+    float breath = sin(uTime * 0.4 + aOffset * 6.2831) * 0.04;
+    pos *= 1.0 + breath;
+
+    // Mouse parallax: gentle push along z based on screen distance
+    float dist = distance(uMousePos * 3.0, pos.xy);
+    pos.z += smoothstep(2.5, 0.0, dist) * 0.5;
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    // Bigger sprite to host the dash shape (oriented capsule rendered in frag)
     float ps = (7.0 * uPixelRatio * uSizeScale) * (1.0 / -mvPosition.z);
     gl_PointSize = clamp(ps, 2.0, uSizeClamp);
     gl_Position  = projectionMatrix * mvPosition;
 
-    vAlpha = smoothstep(0.0, 1.0, 1.0 - length(pos) / 12.0);
-    // Stable per-particle orientation + seed
-    vAngle = aOffset * 6.28318;
+    // Screen-space tangent angle for dash orientation (tangent = d(pos)/d(theta))
+    vec3 tangent = vec3(-sp * st, 0.0, sp * ct);
+    vec4 mvTangent = modelViewMatrix * vec4(tangent, 0.0);
+    vAngle = atan(mvTangent.y, mvTangent.x);
+
+    // Front-of-sphere fade so back hemisphere is dimmer (depth feel)
+    // Camera looks down -Z, so larger pos.z (toward camera) = brighter.
+    vAlpha = smoothstep(-1.0, 1.0, pos.z / max(aRadius, 0.001));
     vSeed  = aOffset;
   }
 `;
@@ -130,18 +152,27 @@ export function AntigravityParticleField({ className, theme }: Props) {
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
     camera.position.z = 5;
 
-    // ---- Geometry: 50k random in (20, 20, 10) ----
-    const positions = new Float32Array(PARTICLE_COUNT * 3);
+    // ---- Geometry: spherical-shell distribution for coherent swirl ----
+    const aSphere = new Float32Array(PARTICLE_COUNT * 2);
+    const aRadius = new Float32Array(PARTICLE_COUNT);
     const offsets = new Float32Array(PARTICLE_COUNT);
     for (let a = 0; a < PARTICLE_COUNT; a++) {
-      const l = a * 3;
-      positions[l]     = (Math.random() - 0.5) * 20;
-      positions[l + 1] = (Math.random() - 0.5) * 20;
-      positions[l + 2] = (Math.random() - 0.5) * 10;
+      // Uniform distribution on sphere via inverse CDF
+      const u = Math.random();
+      const v = Math.random();
+      const theta = u * Math.PI * 2.0;            // azimuth 0..2π
+      const phi   = Math.acos(2.0 * v - 1.0);     // polar 0..π
+      aSphere[a * 2]     = theta;
+      aSphere[a * 2 + 1] = phi;
+      // Thin shell with slight thickness for depth richness
+      aRadius[a] = 4.2 + (Math.random() - 0.5) * 0.9;
       offsets[a] = Math.random();
     }
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    // Placeholder position attribute so three derives draw count (shader ignores it).
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(PARTICLE_COUNT * 3), 3));
+    geometry.setAttribute('aSphere', new THREE.BufferAttribute(aSphere, 2));
+    geometry.setAttribute('aRadius', new THREE.BufferAttribute(aRadius, 1));
     geometry.setAttribute('aOffset', new THREE.BufferAttribute(offsets, 1));
 
     // Theme: explicit prop wins; otherwise read <html class="dark"> + observe.
