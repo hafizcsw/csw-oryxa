@@ -43,9 +43,8 @@ void main(){
   // Stable per-particle id from texel coord
   float id = vUv.x * 131.7 + vUv.y * 311.3 + uSeed;
 
-  // --- curl-noise flow (organic drift) ---
-  vec2 flow = curl2(pos * 1.4 + vec2(uTime * 0.15 * uSpeed, -uTime * 0.10 * uSpeed));
-  vec2 acc = flow * uFlowStrength;
+  // No autonomous drift — particles are at rest and only react to input.
+  vec2 acc = vec2(0.0);
 
   // --- mouse repulsion (radial displacement field) ---
   vec2 toMouse = pos - uMousePos;
@@ -64,15 +63,15 @@ void main(){
     acc += normalize(toOrigin) * ring * decay * 1.6;
   }
 
-  // --- soft return-to-home (prevents drifting off-screen forever) ---
+  // --- strong spring back to fixed home (particles are anchored) ---
   vec2 home = vec2(
     (hash11(id * 1.13) - 0.5) * 2.0 * uAspect,
     (hash11(id * 2.71) - 0.5) * 2.0
   );
-  acc += (home - pos) * 0.35;
+  acc += (home - pos) * 4.5;
 
-  // Integrate
-  vel = vel * 0.90 + acc * uDelta;
+  // Integrate with heavier damping so they settle quickly when mouse leaves
+  vel = vel * 0.82 + acc * uDelta;
   pos = pos + vel * uDelta;
 
   // Soft bounds wrap
