@@ -75,7 +75,11 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   // ═══ CANONICAL IDENTITY GATE — single lock point for the academic file ═══
   const { status: identityStatus, refetch: refetchIdentity, loading: identityLoading } = useIdentityStatus();
   const [identityDialogOpen, setIdentityDialogOpen] = useState(false);
-  const { documents, refetch: refetchDocs } = useStudentDocuments();
+  const { documents, loading: documentsLoading, refetch: refetchDocs } = useStudentDocuments();
+  const [docsLoadedOnce, setDocsLoadedOnce] = useState(false);
+  useEffect(() => {
+    if (!documentsLoading) setDocsLoadedOnce(true);
+  }, [documentsLoading]);
   // ═══ Door 2: Lane Facts truth surface ═══
   const { byDocId: laneFactsByDocId, refetch: refetchLaneFacts } = useDocumentLaneFacts();
 
