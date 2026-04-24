@@ -53,13 +53,54 @@ Supabase under RLS.
 | 4 reference packs (EG/AE/JO) | code-ready (data drafted, awaiting review) |
 | Engine logic | code-ready — pattern match, grade norm, ambiguity detect, decision log |
 | Golden Set 9/9 | **PASS** (3 clear · 3 ambiguous · 3 noisy) — runner-verified |
-| Persistence wiring (DB write) | NOT WIRED |
-| UI wiring (LiveProfileAssembly) | NOT WIRED |
-| Snapshot recompute / hash gating | NOT WIRED |
+| Persistence wiring (DB write) | code-ready via `phase-a-normalize` edge function — **DB write proof PENDING (no live read_query yet)** |
+| UI wiring (LiveProfileAssembly) | code-ready — `useStudentEvaluation` reads from official Phase A tables |
+| Snapshot recompute / hash gating | logic-proven via Vitest (Session A/B/C) — DB-side gating proof PENDING |
 | 4th-country data-only proof | NOT ATTEMPTED |
 
-> **Phase A status: PARTIAL.** Engine + Golden Set are runtime-verified.
-> Persistence, UI wiring, and runtime sessions A/B/C are still pending.
+> **Phase A status: PARTIAL.**
+> Engine + Golden Set are **logic-verified** (Vitest + golden runner).
+> Persistence is **code-ready, DB write proof PENDING** (no live `read_query` against the 4 official tables yet).
+> Do **not** describe Phase A as runtime-proven end-to-end until a live student session has been observed in the DB.
+
+## Write-path honesty (atomicity)
+
+The current `phase-a-normalize` edge function performs **sequential best-effort
+writes** inside one HTTP request to the four official tables
+(`student_award_raw` → `student_credential_normalized` →
+`credential_mapping_decision_log` → `student_evaluation_snapshots`).
+This is **NOT a real database transaction**:
+
+- there is no `BEGIN` / `COMMIT` boundary
+- a failure mid-way leaves partial rows; no automatic rollback
+- the four tables can drift if the function is interrupted
+
+If true atomicity is required later, the four writes should be moved into
+a single Postgres `SECURITY DEFINER` function called from the edge function,
+so they execute inside one transaction. Until then, do not call this path
+"atomic" anywhere in docs, commit messages, or status updates.
+
+## Engine duplication (intentional, temporary)
+
+There are currently **two normalization implementations**:
+
+1. `src/features/source-normalization/engine.ts` + `packs/*` — source of
+   truth, covered by Golden Set 9/9.
+2. An **inline mirror** inside `supabase/functions/phase-a-normalize/index.ts`
+   — required because Deno edge functions cannot import from `src/`.
+
+This is accepted drift for the current round. Plan to remove drift (not
+yet executed, not part of any closure claim):
+
+- move engine + packs to `supabase/functions/_shared/normalization/` as
+  Deno-compatible modules
+- re-export them into `src/features/source-normalization/` so both
+  runtimes load the same code
+- re-run Golden Set against the unified module before claiming the edge
+  function is "Golden-Set-verified"
+
+Until unification lands, the edge function's behavior is **not** covered
+by the Golden Set, even though it implements the same logic.
 
 ## Hash truth (honest naming)
 
@@ -82,7 +123,9 @@ Until a true file checksum is wired, do not call this field a "file hash".
 - [x] migrations applied
 - [x] source-side normalizer runs on EG, AE, JO
 - [x] 9/9 golden set cases pass with expected outputs
-- [ ] persistence + UI wiring proven via runtime sessions A/B/C
+- [ ] live `read_query` proof against the 4 Phase A tables (Session A/B/C)
+- [ ] write path moved to a real DB transaction (or accepted as non-atomic in writing)
+- [ ] engine duplication removed (single source for src + edge)
 - [ ] 4th country added via data-only (no code edits to engine/types/registry)
 - [ ] normalized output is shaped to be consumable as truth source for Door 2/3 *if* later wired
 
