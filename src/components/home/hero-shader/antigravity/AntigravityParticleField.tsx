@@ -152,9 +152,9 @@ export function AntigravityParticleField({ className, theme }: Props) {
     const themeObserver = !theme
       ? new MutationObserver(() => {
           uniforms.uColor.value = colorFor();
-          uniforms.uAlphaBoost.value = isDark() ? 1.0 : 14.0;
-          uniforms.uSizeScale.value = isDark() ? 1.0 : 1.4;
-          uniforms.uSizeClamp.value = isDark() ? 9999.0 : 12.0 * pixelRatio;
+          uniforms.uAlphaBoost.value = isDark() ? 0.85 : 6.5;
+          uniforms.uSizeScale.value = isDark() ? 1.0 : 1.15;
+          uniforms.uSizeClamp.value = isDark() ? 4.0 * pixelRatio : 5.0 * pixelRatio;
           material.blending = isDark() ? THREE.AdditiveBlending : THREE.NormalBlending;
           material.needsUpdate = true;
         })
