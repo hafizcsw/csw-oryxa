@@ -452,17 +452,28 @@ const Index = () => {
 
 
               {/* 6. World map — AG editorial wrapper, internals untouched */}
-              <section className="relative w-full bg-[var(--ag-bg)] text-[var(--ag-fg)] border-t border-[var(--ag-border)] py-20 md:py-24">
-                <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-                  <div className="flex items-center gap-3 mb-8">
-                    <span className="h-px w-10 bg-[var(--ag-border)]" />
-                    <span className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[var(--ag-muted)]">
-                      {t("home.ag.eyebrow.global")}
-                    </span>
+              <AGSection
+                eyebrow={t("home.ag.eyebrow.global", { defaultValue: "GLOBAL REACH" })}
+                className="border-t border-[var(--ag-border)]"
+              >
+                <AGStatement
+                  headline={t("home.ag.mapHeadline", { defaultValue: "Explore the world, one campus at a time." })}
+                  description={t("home.ag.mapDesc", {
+                    defaultValue:
+                      "203 countries, 25,000+ universities, 41,000+ programs. Pan the globe, filter by region or level, and open any pin to dive deeper.",
+                  })}
+                />
+
+                <div className="ag-map-frame mt-14 md:mt-20">
+                  <span aria-hidden className="ag-map-corner ag-map-corner--tl" />
+                  <span aria-hidden className="ag-map-corner ag-map-corner--tr" />
+                  <span aria-hidden className="ag-map-corner ag-map-corner--bl" />
+                  <span aria-hidden className="ag-map-corner ag-map-corner--br" />
+                  <div className="ag-map-frame__inner">
+                    <LazyMount minHeight={400}><WorldMapSection /></LazyMount>
                   </div>
-                  <LazyMount minHeight={400}><WorldMapSection /></LazyMount>
                 </div>
-              </section>
+              </AGSection>
 
 
               {/* 8. Institutions — partner with us */}
