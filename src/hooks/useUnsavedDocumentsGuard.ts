@@ -146,6 +146,14 @@ export function useUnsavedDocumentsGuard({
     sync(new Set());
   }, [sync]);
 
+  const discardAll = useCallback(async (): Promise<{ ok: boolean; failed: string[] }> => {
+    const ids = Array.from(pendingRef.current);
+    if (ids.length === 0) return { ok: true, failed: [] };
+    const stillFailing = await discardIds(ids);
+    sync(new Set(stillFailing));
+    return { ok: stillFailing.length === 0, failed: stillFailing };
+  }, [sync]);
+
   // Reconcile pending IDs against a known-valid set (e.g. current CRM docs).
   // Any tracked ID that is NOT in validIds will be dropped — prevents stale
   // counts when a file was deleted outside the normal untrack flow.
@@ -167,6 +175,7 @@ export function useUnsavedDocumentsGuard({
     trackDocument,
     untrackDocument,
     confirmAllSaved,
+    discardAll,
     reconcileWithValidIds,
   };
 }
