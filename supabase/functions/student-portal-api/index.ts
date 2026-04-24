@@ -299,6 +299,8 @@ type CrmStorageAction =
   | 'set_avatar'             // Update avatar
   | 'delete_file'            // Delete file from CRM
   | 'clear_all_files'        // Delete ALL files for student
+  | 'clear_pending_files'    // Delete only unsaved/pending files for student
+  | 'mark_files_saved'       // Mark selected pending files as saved
   | 'purge_all_files'        // ✅ Soft delete ALL for clean cutover
   | 'paddle_structure_proxy';// ✅ CRM-aware Paddle OCR/Structure proxy
 
