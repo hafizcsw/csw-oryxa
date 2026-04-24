@@ -77,7 +77,7 @@ export default function UniversitiesHero({
                     const lang = (language || 'ar').toLowerCase();
                     navigate(`/${lang}?ai_assist=1`);
                   }}
-                  className="group flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+                  className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--ag-fg)] text-[var(--ag-bg)] font-semibold shadow-[0_10px_30px_-12px_hsl(var(--primary)/0.55)] ring-1 ring-[var(--ag-border)] hover:shadow-[0_14px_36px_-10px_hsl(var(--primary)/0.6)] hover:-translate-y-0.5 transition-all duration-300"
                 >
                   <Sparkles className="w-5 h-5 group-hover:animate-pulse" />
                   <span>{t('hero.letOryxa')}</span>
