@@ -41,10 +41,17 @@ async function discardIds(ids: string[]): Promise<string[]> {
       stillFailing.push(ids[i]);
     }
   });
-  // Always purge Phase A rows for the attempted ids — even if Storage delete
-  // partially failed, the evaluation tables must not retain unsaved truth.
   await purgePhaseAForDocs(ids);
   return stillFailing;
+}
+
+async function cleanupServerPending(): Promise<string[]> {
+  const res = await clearPendingFiles();
+  const deleted = res.ok ? (res.deleted || []) : [];
+  if (deleted.length > 0) {
+    await purgePhaseAForDocs(deleted);
+  }
+  return [];
 }
 
 // We use localStorage (not sessionStorage) so a hard refresh / tab close
