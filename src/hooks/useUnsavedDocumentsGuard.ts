@@ -98,23 +98,23 @@ export function useUnsavedDocumentsGuard({
     setPendingIds(arr);
   }, []);
 
-  // ─── 1. On mount: clean up any orphans from a previous session ───
+  // ─── 1. On mount: clear any server-side pending files from prior abandoned sessions ───
   useEffect(() => {
     if (!enabled || cleanupRanRef.current) return;
     cleanupRanRef.current = true;
 
-    const orphans = readPending();
-    if (orphans.length === 0) return;
-
     let cancelled = false;
     (async () => {
+      await cleanupServerPending();
+
+      const orphans = readPending();
       const stillFailing = await discardIds(orphans);
       if (cancelled) return;
       sync(new Set(stillFailing));
       if (import.meta.env.DEV) {
         console.log('[unsaved-guard] orphan cleanup', {
-          attempted: orphans.length,
-          failed: stillFailing.length,
+          attempted_local: orphans.length,
+          failed_local: stillFailing.length,
         });
       }
       onCleanupComplete?.();
