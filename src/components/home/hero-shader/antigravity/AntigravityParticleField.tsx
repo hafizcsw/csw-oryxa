@@ -149,19 +149,28 @@ export function AntigravityParticleField({ className, theme }: Props) {
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
     camera.position.z = 5;
 
-    // ---- Geometry: 50k random in (20, 20, 10) ----
-    const positions = new Float32Array(PARTICLE_COUNT * 3);
+    // ---- Geometry: spherical-shell distribution for coherent swirl ----
+    const aSphere = new Float32Array(PARTICLE_COUNT * 2);
+    const aRadius = new Float32Array(PARTICLE_COUNT);
     const offsets = new Float32Array(PARTICLE_COUNT);
     for (let a = 0; a < PARTICLE_COUNT; a++) {
-      const l = a * 3;
-      positions[l]     = (Math.random() - 0.5) * 20;
-      positions[l + 1] = (Math.random() - 0.5) * 20;
-      positions[l + 2] = (Math.random() - 0.5) * 10;
+      // Uniform distribution on sphere via inverse CDF
+      const u = Math.random();
+      const v = Math.random();
+      const theta = u * Math.PI * 2.0;            // azimuth 0..2π
+      const phi   = Math.acos(2.0 * v - 1.0);     // polar 0..π
+      aSphere[a * 2]     = theta;
+      aSphere[a * 2 + 1] = phi;
+      // Thin shell with slight thickness for depth richness
+      aRadius[a] = 4.2 + (Math.random() - 0.5) * 0.9;
       offsets[a] = Math.random();
     }
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('aSphere', new THREE.BufferAttribute(aSphere, 2));
+    geometry.setAttribute('aRadius', new THREE.BufferAttribute(aRadius, 1));
     geometry.setAttribute('aOffset', new THREE.BufferAttribute(offsets, 1));
+    // Required so three computes a draw count
+    geometry.setDrawRange(0, PARTICLE_COUNT);
 
     // Theme: explicit prop wins; otherwise read <html class="dark"> + observe.
     const isDark = () =>
