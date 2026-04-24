@@ -16,8 +16,36 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { deleteFile } from '@/api/crmStorage';
+import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEY = 'unsaved_documents_v1';
+
+async function purgePhaseAForDocs(docIds: string[]): Promise<void> {
+  if (docIds.length === 0) return;
+  try {
+    const { error } = await (supabase as any).rpc('phase_a_purge_for_documents', { _doc_ids: docIds });
+    if (error && import.meta.env.DEV) {
+      console.warn('[unsaved-guard] phase_a_purge_for_documents error', error);
+    }
+  } catch (e) {
+    if (import.meta.env.DEV) console.warn('[unsaved-guard] phase_a_purge call failed', e);
+  }
+}
+
+async function discardIds(ids: string[]): Promise<string[]> {
+  if (ids.length === 0) return [];
+  const results = await Promise.allSettled(ids.map(id => deleteFile(id)));
+  const stillFailing: string[] = [];
+  results.forEach((r, i) => {
+    if (r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok)) {
+      stillFailing.push(ids[i]);
+    }
+  });
+  // Always purge Phase A rows for the attempted ids — even if Storage delete
+  // partially failed, the evaluation tables must not retain unsaved truth.
+  await purgePhaseAForDocs(ids);
+  return stillFailing;
+}
 
 function readPending(): string[] {
   try {
@@ -69,14 +97,8 @@ export function useUnsavedDocumentsGuard({
 
     let cancelled = false;
     (async () => {
-      const results = await Promise.allSettled(orphans.map(id => deleteFile(id)));
+      const stillFailing = await discardIds(orphans);
       if (cancelled) return;
-      const stillFailing: string[] = [];
-      results.forEach((r, i) => {
-        if (r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok)) {
-          stillFailing.push(orphans[i]);
-        }
-      });
       sync(new Set(stillFailing));
       if (import.meta.env.DEV) {
         console.log('[unsaved-guard] orphan cleanup', {
@@ -124,6 +146,14 @@ export function useUnsavedDocumentsGuard({
     sync(new Set());
   }, [sync]);
 
+  const discardAll = useCallback(async (): Promise<{ ok: boolean; failed: string[] }> => {
+    const ids = Array.from(pendingRef.current);
+    if (ids.length === 0) return { ok: true, failed: [] };
+    const stillFailing = await discardIds(ids);
+    sync(new Set(stillFailing));
+    return { ok: stillFailing.length === 0, failed: stillFailing };
+  }, [sync]);
+
   // Reconcile pending IDs against a known-valid set (e.g. current CRM docs).
   // Any tracked ID that is NOT in validIds will be dropped — prevents stale
   // counts when a file was deleted outside the normal untrack flow.
@@ -145,6 +175,7 @@ export function useUnsavedDocumentsGuard({
     trackDocument,
     untrackDocument,
     confirmAllSaved,
+    discardAll,
     reconcileWithValidIds,
   };
 }
