@@ -441,9 +441,12 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   }, [documents, guard]);
 
   // ═══ Auto-save on analysis completion ═══
-  // Once a document's analysis reaches a terminal state (completed / failed /
-  // skipped), the extracted facts are already persisted in DB. We commit the
-  // CRM file immediately so it survives a refresh — no manual "Save" needed.
+  // Phase 1 — Draft-first guard:
+  //   When VITE_DRAFT_FIRST_UPLOADS is enabled (default), any automatic call
+  //   to markFilesSaved triggered by analysis completion/failure/skip is
+  //   SUPPRESSED. The legacy code is kept behind the flag for quick rollback.
+  //   markFilesSaved may only be invoked from an explicit student action
+  //   (SaveDocumentsBar → handleSaveDocuments, post-confirmation only).
   const autoSavedRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (guard.pendingCount === 0) return;
@@ -455,6 +458,7 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       if (r.crm_file_id) crmIdByDocId.set(r.document_id, r.crm_file_id);
     }
 
+    const terminalStates: string[] = [];
     const toSave: string[] = [];
     for (const a of analysisHook.analyses) {
       const isTerminal =
@@ -467,21 +471,45 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
       if (!pending.has(crmId)) continue;
       if (autoSavedRef.current.has(crmId)) continue;
       toSave.push(crmId);
+      terminalStates.push(a.analysis_status);
     }
 
     if (toSave.length === 0) return;
-    toSave.forEach(id => autoSavedRef.current.add(id));
 
+    // ── Draft-first: suppress auto-save entirely. ──
+    // Check flag dynamically to allow emergency rollback via env.
+    let draftFirstOn = true;
+    try {
+      const v = (import.meta as any)?.env?.VITE_DRAFT_FIRST_UPLOADS;
+      if (v === false || v === 'false' || v === '0') draftFirstOn = false;
+    } catch { /* noop */ }
+
+    if (draftFirstOn) {
+      // Mark as "already handled" so we don't loop on the same analyses.
+      toSave.forEach(id => autoSavedRef.current.add(id));
+      // Structured log for evidence.
+      // eslint-disable-next-line no-console
+      console.warn('[draftFirstGuard] auto_mark_files_saved_suppressed', {
+        marker: 'auto_mark_files_saved_suppressed',
+        upload_context: 'study_file',
+        document_ids: toSave,
+        analysis_terminal_state: terminalStates.join(','),
+        reason: 'draft_first_guard_active',
+      });
+      return;
+    }
+
+    // ── LEGACY (flag OFF) — kept for rollback only. ──
+    toSave.forEach(id => autoSavedRef.current.add(id));
     void (async () => {
       try {
         const { markFilesSaved } = await import('@/api/crmStorage');
         await markFilesSaved(toSave);
         toSave.forEach(id => guard.untrackDocument(id));
         if (import.meta.env.DEV) {
-          console.log('[StudyFileTab] auto-saved analyzed docs', { count: toSave.length });
+          console.log('[StudyFileTab] auto-saved analyzed docs (legacy)', { count: toSave.length });
         }
       } catch (e) {
-        // Un-mark so a later pass can retry
         toSave.forEach(id => autoSavedRef.current.delete(id));
         if (import.meta.env.DEV) console.warn('[StudyFileTab] auto-save failed', e);
       }

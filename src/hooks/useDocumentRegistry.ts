@@ -71,14 +71,25 @@ export function useDocumentRegistry({
         upload_progress: 10,
       });
 
+      const resolvedKind = record.slot_hint === 'unknown' || !record.slot_hint
+        ? 'additional'
+        : record.slot_hint === 'graduation_certificate'
+          ? 'certificate'
+          : record.slot_hint;
+
+      // Draft-first context: upload hub drives Study File + My Files.
+      // All uploads here are pre-confirm and must be blocked from CRM.
+      const draftCtx = {
+        context: 'study_file' as const,
+        confirmationState: 'pre_confirm' as const,
+        attemptedAction: `upload_hub:${resolvedKind}`,
+      };
+
       const result = await uploadAndRegisterFile({
         file,
-        file_kind: record.slot_hint === 'unknown' || !record.slot_hint
-          ? 'additional'
-          : record.slot_hint === 'graduation_certificate'
-            ? 'certificate'
-            : record.slot_hint,
+        file_kind: resolvedKind,
         description: `Uploaded via upload hub: ${file.name}`,
+        ctx: draftCtx,
         onProgress: (stage, percent) => {
           const statusMap: Record<string, DocumentRecord['processing_status']> = {
             prepare: 'uploading',

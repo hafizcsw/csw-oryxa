@@ -12,6 +12,11 @@
  * 3. set_avatar → Update customer avatar
  */
 import { portalInvoke } from "./portalInvoke";
+import {
+  evaluateUploadGuard,
+  guardErrorEnvelope,
+  type UploadGuardContext,
+} from "@/lib/draftFirstGuard";
 
 // ✅ CRM Storage sub-actions
 export type CrmStorageAction =
@@ -81,7 +86,13 @@ export async function prepareUpload(params: {
   bucket?: string;
   file_kind: string;
   file_name: string;
-}): Promise<{ ok: boolean; data?: PrepareUploadResult; error?: string; details?: string }> {
+  /** Draft-first guard context. Required for sensitive student document contexts. */
+  ctx?: UploadGuardContext;
+}): Promise<{ ok: boolean; data?: PrepareUploadResult; error?: string; details?: string; trace_id?: string }> {
+  const decision = evaluateUploadGuard('prepare_upload', params.ctx);
+  if (!decision.allowed) {
+    return guardErrorEnvelope(decision);
+  }
   return callCrmStorage<PrepareUploadResult>('prepare_upload', {
     bucket: params.bucket || 'student-docs',
     file_kind: params.file_kind,
@@ -100,8 +111,15 @@ export async function confirmUpload(params: {
   mime_type?: string;
   size_bytes?: number;
   description?: string | null;
-}): Promise<{ ok: boolean; data?: ConfirmUploadResult; error?: string; details?: string }> {
-  return callCrmStorage<ConfirmUploadResult>('confirm_upload', params);
+  /** Draft-first guard context. Required for sensitive student document contexts. */
+  ctx?: UploadGuardContext;
+}): Promise<{ ok: boolean; data?: ConfirmUploadResult; error?: string; details?: string; trace_id?: string }> {
+  const decision = evaluateUploadGuard('confirm_upload', params.ctx);
+  if (!decision.allowed) {
+    return guardErrorEnvelope(decision);
+  }
+  const { ctx: _ctx, ...rest } = params;
+  return callCrmStorage<ConfirmUploadResult>('confirm_upload', rest);
 }
 
 /**
@@ -184,7 +202,14 @@ export async function clearPendingFiles(): Promise<{ ok: boolean; deleted_count?
   return { ok: false, error: result.error };
 }
 
-export async function markFilesSaved(file_ids: string[]): Promise<{ ok: boolean; updated_count?: number; updated?: string[]; error?: string }> {
+export async function markFilesSaved(
+  file_ids: string[],
+  ctx?: UploadGuardContext,
+): Promise<{ ok: boolean; updated_count?: number; updated?: string[]; error?: string; trace_id?: string }> {
+  const decision = evaluateUploadGuard('mark_files_saved', ctx);
+  if (!decision.allowed) {
+    return guardErrorEnvelope(decision);
+  }
   const result = await callCrmStorage<{ updated_count: number; updated: string[] }>('mark_files_saved', { file_ids });
   if (result.ok && result.data) {
     const data = result.data as any;
