@@ -27,31 +27,50 @@ const VERT = /* glsl */ `
   uniform float uSizeScale;
   uniform float uSizeClamp;
 
-  attribute vec3  position;
-  attribute float aOffset;
+  // Spherical coordinates per particle
+  attribute vec2  aSphere;   // x = theta (azimuth), y = phi (polar)
+  attribute float aRadius;   // radius around base sphere
+  attribute float aOffset;   // 0..1 stable seed
 
   varying float vAlpha;
   varying float vAngle;
   varying float vSeed;
 
   void main() {
-    vec3 pos = position;
+    // Slow global rotation around Y axis -> coherent swirl
+    float theta = aSphere.x + uTime * 0.08;
+    float phi   = aSphere.y;
 
-    pos.y += sin(uTime * 0.3 + aOffset * 15.0) * 0.4;
-    pos.x += cos(uTime * 0.2 + aOffset * 15.0) * 0.4;
+    float sp = sin(phi);
+    float cp = cos(phi);
+    float st = sin(theta);
+    float ct = cos(theta);
 
-    float dist = distance(uMousePos, pos.xy * 0.3);
-    pos.z += smoothstep(1.5, 0.0, dist) * 1.5;
+    vec3 pos = vec3(aRadius * sp * ct, aRadius * cp, aRadius * sp * st);
+
+    // Subtle organic breathing (very small, keeps coherence)
+    float breath = sin(uTime * 0.4 + aOffset * 6.2831) * 0.05;
+    pos *= 1.0 + breath;
+
+    // Mouse parallax: gentle push along z based on screen distance
+    float dist = distance(uMousePos * 3.0, pos.xy);
+    pos.z += smoothstep(2.5, 0.0, dist) * 0.6;
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    // Bigger sprite to host the dash shape (oriented capsule rendered in frag)
     float ps = (7.0 * uPixelRatio * uSizeScale) * (1.0 / -mvPosition.z);
     gl_PointSize = clamp(ps, 2.0, uSizeClamp);
     gl_Position  = projectionMatrix * mvPosition;
 
-    vAlpha = smoothstep(0.0, 1.0, 1.0 - length(pos) / 12.0);
-    // Stable per-particle orientation + seed
-    vAngle = aOffset * 6.28318;
+    // Tangent direction in world space (derivative of pos w.r.t. theta), projected to screen.
+    // tangent = d(pos)/d(theta) = radius * (-sp*st, 0, sp*ct)
+    vec3 tangent = vec3(-sp * st, 0.0, sp * ct);
+    vec4 mvTangent = modelViewMatrix * vec4(tangent, 0.0);
+    // Project tangent to screen-space angle (use x,y of view-space tangent)
+    vAngle = atan(mvTangent.y, mvTangent.x);
+
+    // Front-of-sphere fade so back hemisphere is dimmer (depth feel)
+    float depthFade = smoothstep(-1.0, 1.0, -mvPosition.z * 0.0 + pos.z * 0.15 + 0.6);
+    vAlpha = depthFade;
     vSeed  = aOffset;
   }
 `;
