@@ -71,6 +71,18 @@ export function usePortalDrafts({ studentUserId }: UsePortalDraftsOptions): UseP
       if (result.ok && result.draft) {
         setDrafts((prev) => [result.draft as PortalDraft, ...prev]);
         setPending((prev) => prev.filter((p) => p.tempId !== tempId));
+        // Order 3: kick off draft-scoped extraction. Fire-and-forget; refresh on completion.
+        void (async () => {
+          try {
+            await supabase.functions.invoke("portal-draft-extract", {
+              body: { draft_id: (result.draft as PortalDraft).id },
+            });
+          } catch {
+            // ignore — status is persisted on the draft row
+          } finally {
+            void refresh();
+          }
+        })();
       } else {
         setPending((prev) =>
           prev.map((p) =>
