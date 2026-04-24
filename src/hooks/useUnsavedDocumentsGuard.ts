@@ -97,14 +97,8 @@ export function useUnsavedDocumentsGuard({
 
     let cancelled = false;
     (async () => {
-      const results = await Promise.allSettled(orphans.map(id => deleteFile(id)));
+      const stillFailing = await discardIds(orphans);
       if (cancelled) return;
-      const stillFailing: string[] = [];
-      results.forEach((r, i) => {
-        if (r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok)) {
-          stillFailing.push(orphans[i]);
-        }
-      });
       sync(new Set(stillFailing));
       if (import.meta.env.DEV) {
         console.log('[unsaved-guard] orphan cleanup', {
