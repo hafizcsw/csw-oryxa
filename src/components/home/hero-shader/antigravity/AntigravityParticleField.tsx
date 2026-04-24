@@ -234,6 +234,91 @@ export function AntigravityParticleField({ className, theme }: Props) {
     points.frustumCulled = false;
     scene.add(points);
 
+    // ---- Luminous orca whale (right -> left) ----
+    // Built from a small set of additive ellipsoid sprites that read as
+    // body + head + dorsal fin + tail fluke. Color matches the particles.
+    const whaleGroup = new THREE.Group();
+    whaleGroup.frustumCulled = false;
+
+    const whaleVert = /* glsl */ `
+      precision highp float;
+      uniform mat4 modelViewMatrix;
+      uniform mat4 projectionMatrix;
+      attribute vec3 position;
+      attribute vec2 uv;
+      varying vec2 vUv;
+      void main(){
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `;
+    const whaleFrag = /* glsl */ `
+      precision highp float;
+      uniform vec3  uColor;
+      uniform float uIntensity;
+      uniform float uSoftness;
+      varying vec2 vUv;
+      void main(){
+        vec2 p = vUv * 2.0 - 1.0;
+        float d = length(p);
+        // Soft elliptical falloff
+        float a = pow(1.0 - smoothstep(0.0, 1.0, d), uSoftness);
+        if (a <= 0.001) discard;
+        gl_FragColor = vec4(uColor, a * uIntensity);
+      }
+    `;
+
+    const whaleColor = colorFor().clone();
+    const makeBlob = (
+      w: number, h: number,
+      x: number, y: number, z: number,
+      intensity: number, softness: number,
+      rotZ = 0,
+    ) => {
+      const geo = new THREE.PlaneGeometry(w, h);
+      const mat = new THREE.RawShaderMaterial({
+        uniforms: {
+          uColor:     { value: whaleColor },
+          uIntensity: { value: intensity },
+          uSoftness:  { value: softness },
+        },
+        vertexShader: whaleVert,
+        fragmentShader: whaleFrag,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false,
+        blending: isDark() ? THREE.AdditiveBlending : THREE.NormalBlending,
+      });
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      m.rotation.z = rotZ;
+      m.frustumCulled = false;
+      whaleGroup.add(m);
+      return m;
+    };
+
+    // Body parts (local space, head points to +X, body extends to -X)
+    const body     = makeBlob(2.6, 0.85, -0.1, 0.0,  0.0, isDark() ? 0.9 : 0.7, 1.6);
+    const head     = makeBlob(1.1, 0.8,   1.0, 0.05, 0.05, isDark() ? 1.0 : 0.8, 1.4);
+    const dorsal   = makeBlob(0.55, 0.9,  0.05, 0.55, 0.0, isDark() ? 0.85 : 0.65, 1.8, 0.15);
+    const tailStem = makeBlob(0.9, 0.35, -1.25, 0.0, 0.0, isDark() ? 0.8 : 0.6, 1.7);
+    const flukeT   = makeBlob(0.7, 0.45, -1.85, 0.25, 0.0, isDark() ? 0.8 : 0.6, 1.6, 0.5);
+    const flukeB   = makeBlob(0.7, 0.45, -1.85,-0.25, 0.0, isDark() ? 0.8 : 0.6, 1.6, -0.5);
+    // Faint outer glow halo so it reads as luminous
+    const halo     = makeBlob(4.5, 1.8,  -0.2, 0.05, -0.05, isDark() ? 0.18 : 0.12, 2.6);
+
+    // Position whale in scene (matches particle sphere depth)
+    whaleGroup.position.set(0, 0, 1.5);
+    scene.add(whaleGroup);
+
+    // Drives whale traversal — single right→left sweep, then long pause, repeat.
+    const whaleState = { t: 0, cycle: 9.0 /* seconds */, startDelay: 1.5 };
+
+    if (reduceMotion) {
+      whaleGroup.visible = false;
+    }
+
+
     // ---- Resize ----
     const resize = () => {
       const rect = container.getBoundingClientRect();
