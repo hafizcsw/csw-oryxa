@@ -15,7 +15,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { deleteFile, clearPendingFiles, markFilesSaved } from '@/api/crmStorage';
+import { deleteFile, markFilesSaved } from '@/api/crmStorage';
 import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEY = 'unsaved_documents_v1';
@@ -45,14 +45,13 @@ async function discardIds(ids: string[]): Promise<string[]> {
   return stillFailing;
 }
 
-async function cleanupServerPending(): Promise<string[]> {
-  const res = await clearPendingFiles();
-  const deleted = res.ok ? (res.deleted || []) : [];
-  if (deleted.length > 0) {
-    await purgePhaseAForDocs(deleted);
-  }
-  return [];
-}
+// ⛔ Phase 1.2: cleanupServerPending() REMOVED.
+// Calling clear_pending_files automatically on mount caused unconfirmed CRM
+// deletes on every portal page load (runtime-observed: deleted_count=2 with
+// no user action). CRM mutations must never run without explicit user
+// confirmation. Cleanup of stale pending files now belongs to either:
+//   (a) an explicit user action (Save / Discard bar), or
+//   (b) an admin-side job — never page-load.
 
 // We use localStorage (not sessionStorage) so a hard refresh / tab close
 // still leaves a breadcrumb the NEXT mount can clean up. Without this, a
@@ -98,23 +97,32 @@ export function useUnsavedDocumentsGuard({
     setPendingIds(arr);
   }, []);
 
-  // ─── 1. On mount: clear any server-side pending files from prior abandoned sessions ───
+  // ─── 1. On mount: LOCAL-ONLY orphan reconciliation ───
+  // Phase 1.2: We no longer call clear_pending_files on mount. We only
+  // discard files that THIS browser already tracked locally as unsaved
+  // (i.e. the user uploaded then closed the tab without saving). This
+  // still requires per-file deleteFile() calls — those go through the
+  // server-side firewall and require post_confirm context, so they will
+  // be blocked unless explicitly authorized. That is the correct outcome:
+  // page load alone must not mutate CRM.
   useEffect(() => {
     if (!enabled || cleanupRanRef.current) return;
     cleanupRanRef.current = true;
 
     let cancelled = false;
     (async () => {
-      await cleanupServerPending();
-
       const orphans = readPending();
-      const stillFailing = await discardIds(orphans);
+      if (orphans.length === 0) {
+        onCleanupComplete?.();
+        return;
+      }
+      // Local-only: do NOT auto-call CRM. Just surface the orphan IDs to
+      // the UI and let the user decide via SaveDocumentsBar.
       if (cancelled) return;
-      sync(new Set(stillFailing));
+      sync(new Set(orphans));
       if (import.meta.env.DEV) {
-        console.log('[unsaved-guard] orphan cleanup', {
-          attempted_local: orphans.length,
-          failed_local: stillFailing.length,
+        console.log('[unsaved-guard] local orphan surface (no CRM mutation)', {
+          surfaced_local: orphans.length,
         });
       }
       onCleanupComplete?.();
