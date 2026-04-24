@@ -11,6 +11,7 @@ import {
   deletePortalDraft,
   type PortalDraft,
 } from "@/features/documents/portalDrafts";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface PortalDraftPending {
   tempId: string;
