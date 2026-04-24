@@ -75,7 +75,11 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   // ═══ CANONICAL IDENTITY GATE — single lock point for the academic file ═══
   const { status: identityStatus, refetch: refetchIdentity, loading: identityLoading } = useIdentityStatus();
   const [identityDialogOpen, setIdentityDialogOpen] = useState(false);
-  const { documents, refetch: refetchDocs } = useStudentDocuments();
+  const { documents, loading: documentsLoading, refetch: refetchDocs } = useStudentDocuments();
+  const [docsLoadedOnce, setDocsLoadedOnce] = useState(false);
+  useEffect(() => {
+    if (!documentsLoading) setDocsLoadedOnce(true);
+  }, [documentsLoading]);
   // ═══ Door 2: Lane Facts truth surface ═══
   const { byDocId: laneFactsByDocId, refetch: refetchLaneFacts } = useDocumentLaneFacts();
 
@@ -218,42 +222,53 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     return [...hydratedFromCrm, ...registry.records];
   }, [documents, profile?.user_id, registry.records]);
 
-  // ═══ Auto-purge orphaned lane facts ═══
-  // Lane facts whose source CRM document has been deleted are stale.
-  // We sweep them once after documents + facts have loaded.
-  const orphanSweepRef = useRef(false);
+  // ═══ Auto-purge orphaned Portal-DB rows whose CRM file was deleted ═══
+  // Runs whenever the CRM document list changes (including after user deletes
+  // files in CRM). Protected by `docsLoadedOnce` to avoid wiping fresh rows
+  // while the initial listFiles() is still in flight.
+  const orphanSweepSignatureRef = useRef<string>('');
   useEffect(() => {
-    if (orphanSweepRef.current) return;
+    if (!docsLoadedOnce) return;
+    if (!profile?.user_id) return;
+
     const factIds = Object.keys(laneFactsByDocId);
-    if (factIds.length === 0) return;
-    // Wait until documents have actually loaded at least once
-    const validIds = new Set(documents.map(d => d.id));
-    const orphans = factIds.filter(id => !validIds.has(id));
-    if (orphans.length === 0) {
-      orphanSweepRef.current = true;
-      return;
-    }
-    orphanSweepRef.current = true;
+    const analysisIds = analysisHook.analyses.map(a => a.document_id);
+    const registryCrmIds = registry.records
+      .map(r => r.crm_file_id)
+      .filter((id): id is string => !!id);
+    const candidateIds = Array.from(new Set([...factIds, ...analysisIds]));
+    if (candidateIds.length === 0) return;
+
+    const validIds = new Set<string>([
+      ...documents.map(d => d.id),
+      // keep rows for uploads still in-flight in the current session
+      ...registryCrmIds,
+    ]);
+    const orphans = candidateIds.filter(id => !validIds.has(id));
+    if (orphans.length === 0) return;
+
+    // Signature guard: don't re-run purge for the same orphan set
+    const sig = orphans.slice().sort().join('|');
+    if (orphanSweepSignatureRef.current === sig) return;
+    orphanSweepSignatureRef.current = sig;
+
     void (async () => {
       try {
-        // ⛔ Door-1 closure: orphan auto-purge of document_lane_facts is DISABLED.
-        // The live pipeline writes lane facts immediately, but the local snapshot
-        // used to compute "orphans" lags by one refresh cycle, so this sweep was
-        // deleting fresh rows (pg_stat: 92 inserted / 92 deleted / 0 live).
-        // Foundation + analyses orphan cleanup is left untouched.
         const { supabase } = await import('@/integrations/supabase/client');
         await Promise.allSettled([
           (supabase as any).from('document_foundation_outputs').delete().in('document_id', orphans),
-          // (supabase as any).from('document_lane_facts').delete().in('document_id', orphans), // DISABLED — Door-1 truth-table
+          (supabase as any).from('document_lane_facts').delete().in('document_id', orphans),
+          (supabase as any).from('document_review_queue').delete().in('document_id', orphans),
           (supabase as any).from('document_analyses').delete().in('document_id', orphans),
         ]);
-        console.log('[StudyFileTab] purged orphaned foundation/analyses (lane_facts skipped)', { count: orphans.length });
+        console.log('[StudyFileTab] purged orphaned portal-db rows', { count: orphans.length, orphans });
         await refetchLaneFacts();
+        await analysisHook.refetch?.();
       } catch (e) {
         console.warn('[StudyFileTab] orphan sweep failed (non-fatal)', e);
       }
     })();
-  }, [laneFactsByDocId, documents, refetchLaneFacts]);
+  }, [docsLoadedOnce, laneFactsByDocId, analysisHook.analyses, documents, registry.records, profile?.user_id, refetchLaneFacts, analysisHook]);
 
   // ═══ Unsaved-documents guard: warn on unload + auto-cleanup orphans ═══
   const guard = useUnsavedDocumentsGuard({
