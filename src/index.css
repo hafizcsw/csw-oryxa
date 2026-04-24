@@ -118,8 +118,8 @@ All colors MUST be HSL.
     --background: 0 0% 100%;
     --foreground: 0 0% 5%;
 
-    /* Primary: Antigravity Cobalt Blue */
-    --primary: 220 90% 56%;
+    /* Primary: Antigravity black pill (light mode) */
+    --primary: 0 0% 8%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 220 95% 65%;
     
@@ -219,9 +219,9 @@ All colors MUST be HSL.
     --background: 225 14% 7%;
     --foreground: 210 15% 90%;
 
-    /* Primary: Cobalt */
-    --primary: 220 95% 62%;
-    --primary-foreground: 0 0% 100%;
+    /* Primary: Antigravity white pill (dark mode) */
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 8%;
     --primary-glow: 220 95% 70%;
 
     /* Secondary: Lighter dark */
