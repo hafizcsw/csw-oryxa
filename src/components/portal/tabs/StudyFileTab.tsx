@@ -894,6 +894,14 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
             issuesByDocId={issuesByDocId}
           />
         </div>
+        {/* ═══ Order 2: Portal Draft Layer — visible drafts list ═══ */}
+        <div className="border-t border-border bg-background/40 px-4 py-4">
+          <PortalDraftsList
+            drafts={drafts.drafts}
+            pending={drafts.pending}
+            onDelete={(id) => { void drafts.removeDraft(id); }}
+          />
+        </div>
         <div className="border-t border-border">
           <PostUploadSteps />
         </div>
