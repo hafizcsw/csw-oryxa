@@ -123,7 +123,7 @@ Until a true file checksum is wired, do not call this field a "file hash".
 - [x] migrations applied
 - [x] source-side normalizer runs on EG, AE, JO
 - [x] 9/9 golden set cases pass with expected outputs
-- [ ] live `read_query` proof against the 4 Phase A tables (Session A/B/C)
+- [x] live `read_query` proof against the 4 Phase A tables (persistence path CLOSED)
 - [ ] write path moved to a real DB transaction (or accepted as non-atomic in writing)
 - [ ] engine duplication removed (single source for src + edge)
 - [ ] 4th country added via data-only (no code edits to engine/types/registry)
