@@ -914,6 +914,172 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
         onRecompute={evaluation.recompute}
       />
 
+      {/* ═══════════════════════════════════════════════════════════════════
+          🔍 وضع المراجعة — جميع الأقسام المخفية معروضة الآن
+          راجع كل قسم واتخذ قراراً (إبقاء / حذف / إعادة تصميم).
+          ═══════════════════════════════════════════════════════════════════ */}
+      <div className="mt-12 space-y-8 border-t-4 border-dashed border-warning pt-8">
+        <div className="rounded-lg bg-warning/10 border border-warning/40 p-4">
+          <h2 className="text-lg font-bold">🔍 وضع المراجعة — الأقسام المخفية</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            كل قسم معروض بعنوان مرقّم. أخبرني بالرقم والقرار (إبقاء/حذف/تعديل).
+          </p>
+        </div>
+
+        {/* [1] FileQualityCard */}
+        {fileQuality && (
+          <section className="rounded-lg border-2 border-primary/30 p-4">
+            <div className="mb-3 text-xs font-semibold uppercase text-primary">
+              [1] FileQualityCard — بطاقة جودة الملف
+            </div>
+            <FileQualityCard result={fileQuality} />
+          </section>
+        )}
+
+        {/* [2] CanonicalFileSummary */}
+        <section className="rounded-lg border-2 border-primary/30 p-4">
+          <div className="mb-3 text-xs font-semibold uppercase text-primary">
+            [2] CanonicalFileSummary — ملخص الملف الموحد
+          </div>
+          {canonicalFile ? (
+            <CanonicalFileSummary
+              canonicalFile={canonicalFile}
+              hasIdentity={hasIdentity}
+              hasAcademic={hasAcademic}
+              hasLanguage={hasLanguage}
+              hasTargeting={hasTargeting}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">لا يوجد ملف موحد بعد.</p>
+          )}
+        </section>
+
+        {/* [3] DocumentAnalysisPanel */}
+        <section className="rounded-lg border-2 border-primary/30 p-4">
+          <div className="mb-3 text-xs font-semibold uppercase text-primary">
+            [3] DocumentAnalysisPanel — لوحة تحليل المستندات
+          </div>
+          <DocumentAnalysisPanel
+            analyses={visibleAnalyses}
+            proposals={visibleProposals}
+            promotedFields={analysisHook.promotedFields}
+            artifacts={analysisHook.artifacts}
+            isAnalyzing={analysisHook.liveStages && Object.keys(analysisHook.liveStages).length > 0}
+            onAcceptProposal={analysisHook.acceptProposal}
+            onRejectProposal={analysisHook.rejectProposal}
+            onReanalyze={analysisHook.reanalyzeFile}
+            onDismissAnalysis={analysisHook.dismissAnalysis}
+          />
+        </section>
+
+        {/* [4] AcademicTruthPanel */}
+        <section className="rounded-lg border-2 border-primary/30 p-4">
+          <div className="mb-3 text-xs font-semibold uppercase text-primary">
+            [4] AcademicTruthPanel — لوحة الحقيقة الأكاديمية
+          </div>
+          <AcademicTruthPanel academicTruth={academicTruthHook.academicTruth} />
+        </section>
+
+        {/* [5] DecisionPanel */}
+        <section className="rounded-lg border-2 border-primary/30 p-4">
+          <div className="mb-3 text-xs font-semibold uppercase text-primary">
+            [5] DecisionPanel — لوحة القرار
+          </div>
+          <DecisionPanel decision={decision} />
+        </section>
+
+        {/* [6] LaneFactsCards */}
+        <section className="rounded-lg border-2 border-primary/30 p-4">
+          <div className="mb-3 text-xs font-semibold uppercase text-primary">
+            [6] LaneFactsCard — بطاقات حقائق المسارات ({Object.keys(laneFactsByDocId).length})
+          </div>
+          <div className="space-y-3">
+            {Object.entries(laneFactsByDocId).map(([docId, facts]) => (
+              <LaneFactsCard key={docId} facts={facts} fileName={documentNames[docId]} />
+            ))}
+            {Object.keys(laneFactsByDocId).length === 0 && (
+              <p className="text-sm text-muted-foreground">لا توجد حقائق مسارات حالياً.</p>
+            )}
+          </div>
+        </section>
+
+        {/* [7] DocumentsTab — Passport */}
+        <section className="rounded-lg border-2 border-primary/30 p-4">
+          <div className="mb-3 text-xs font-semibold uppercase text-primary">
+            [7] DocumentsTab (PASSPORT) — قسم رفع جواز السفر
+          </div>
+          <Suspense fallback={<SectionSkeleton />}>
+            <DocumentsTab
+              profile={profile}
+              crmProfile={crmProfile}
+              onUpdate={onUpdate}
+              onTabChange={onTabChange}
+              docTypesFilter={PASSPORT_FILTER}
+              compact
+            />
+          </Suspense>
+        </section>
+
+        {/* [8] DocumentsTab — Certificate */}
+        <section className="rounded-lg border-2 border-primary/30 p-4">
+          <div className="mb-3 text-xs font-semibold uppercase text-primary">
+            [8] DocumentsTab (CERTIFICATE) — قسم رفع الشهادة
+          </div>
+          <Suspense fallback={<SectionSkeleton />}>
+            <DocumentsTab
+              profile={profile}
+              crmProfile={crmProfile}
+              onUpdate={onUpdate}
+              onTabChange={onTabChange}
+              docTypesFilter={CERTIFICATE_FILTER}
+              compact
+            />
+          </Suspense>
+        </section>
+
+        {/* [9] DocumentsTab — Additional */}
+        <section className="rounded-lg border-2 border-primary/30 p-4">
+          <div className="mb-3 text-xs font-semibold uppercase text-primary">
+            [9] DocumentsTab (ADDITIONAL) — المستندات الإضافية
+          </div>
+          <Suspense fallback={<SectionSkeleton />}>
+            <DocumentsTab
+              profile={profile}
+              crmProfile={crmProfile}
+              onUpdate={onUpdate}
+              onTabChange={onTabChange}
+              docTypesFilter={ADDITIONAL_FILTER}
+              compact
+            />
+          </Suspense>
+        </section>
+
+        {/* [10] ProfileTab — الحالة التعليمية */}
+        <section className="rounded-lg border-2 border-primary/30 p-4">
+          <div className="mb-3 text-xs font-semibold uppercase text-primary">
+            [10] ProfileTab — الملف الشخصي / الحالة التعليمية
+          </div>
+          <Suspense fallback={<SectionSkeleton />}>
+            <ProfileTab
+              profile={profile}
+              crmProfile={crmProfile}
+              onUpdate={onUpdate}
+              onRefetch={onRefetch}
+            />
+          </Suspense>
+        </section>
+
+        {/* [11] ReadinessTab */}
+        <section className="rounded-lg border-2 border-primary/30 p-4">
+          <div className="mb-3 text-xs font-semibold uppercase text-primary">
+            [11] ReadinessTab — الجاهزية للتقديم
+          </div>
+          <Suspense fallback={<SectionSkeleton />}>
+            <ReadinessTab onTabChange={onTabChange} />
+          </Suspense>
+        </section>
+      </div>
+
     </div>
   );
 }
