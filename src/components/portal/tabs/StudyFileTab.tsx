@@ -368,8 +368,8 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
   // ═══ Auto-scan CRM files that have no analysis yet ═══
   // Files that arrive from CRM (uploaded elsewhere, or surviving a refresh)
   // never pass through the registry's "registered" → analyzeFile path because
-  // there is no local File object. We trigger `reanalyzeFile` for them so the
-  // engine runs on storage_path + crm_file_id directly.
+  // there is no local File object. We invoke mistral-document-pipeline directly
+  // using bucket/path/signed_url from the CRM so the scan actually runs.
   const autoScanTriggeredRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (!docsLoadedOnce) return;
@@ -379,18 +379,59 @@ export function StudyFileTab({ profile, crmProfile, onUpdate, onRefetch, onTabCh
     const analyzedIds = new Set(analysisHook.analyses.map(a => a.document_id));
     const registeredIds = new Set(registry.records.map(r => r.document_id));
 
-    for (const doc of documents) {
-      if (analyzedIds.has(doc.id)) continue;
-      if (registeredIds.has(doc.id)) continue; // handled by the registered-path above
-      if (autoScanTriggeredRef.current.has(doc.id)) continue;
+    const toScan = (documents as any[]).filter((doc) => {
+      if (analyzedIds.has(doc.id)) return false;
+      if (registeredIds.has(doc.id)) return false; // handled by the registered-path above
+      if (autoScanTriggeredRef.current.has(doc.id)) return false;
+      return true;
+    });
+    if (toScan.length === 0) return;
 
-      autoScanTriggeredRef.current.add(doc.id);
-      console.log('[StudyFileTab] 🚀 auto-scan CRM file (no analysis yet)', {
-        document_id: doc.id,
-        file_name: (doc as any).file_name,
-      });
-      void analysisHook.reanalyzeFile(doc.id);
-    }
+    void (async () => {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { signFile } = await import('@/api/crmStorage');
+      for (const doc of toScan) {
+        autoScanTriggeredRef.current.add(doc.id);
+        const bucket = doc.storage_bucket || doc.bucket || 'customer-files';
+        const path = doc.storage_path || doc.path;
+        if (!path) {
+          console.warn('[StudyFileTab] auto-scan skip: missing storage_path', doc.id);
+          continue;
+        }
+        console.log('[StudyFileTab] 🚀 auto-scan CRM file', {
+          document_id: doc.id,
+          file_name: doc.file_name,
+          bucket,
+          path,
+        });
+        try {
+          const signRes = await signFile(doc.id);
+          const signedUrl = signRes.ok ? signRes.signed_url : null;
+          if (!signedUrl) {
+            console.warn('[StudyFileTab] auto-scan sign failed', doc.id, signRes.error);
+            continue;
+          }
+          const { data, error } = await supabase.functions.invoke('mistral-document-pipeline', {
+            body: {
+              document_id: doc.id,
+              bucket,
+              path,
+              file_kind: doc.file_kind || 'additional',
+              declared_family: 'unknown',
+              signed_url: signedUrl,
+            },
+          });
+          if (error) {
+            console.warn('[StudyFileTab] auto-scan pipeline error', doc.id, error);
+          } else {
+            console.log('[StudyFileTab] ✅ auto-scan pipeline ran', doc.id, data);
+          }
+          void analysisHook.refetch?.();
+        } catch (e) {
+          console.warn('[StudyFileTab] auto-scan threw', doc.id, e);
+        }
+      }
+    })();
   }, [docsLoadedOnce, documents, analysisHook, registry.records, profile?.user_id]);
 
   // Reconcile pending IDs against actual CRM documents — drops stale entries
