@@ -1548,7 +1548,11 @@
         "statusUploading": "Uploading draft…",
         "statusFailed": "Upload failed",
         "statusDraft": "Portal draft",
-        "delete": "Delete draft"
+        "delete": "Delete draft",
+        "extractionPending": "Extraction pending",
+        "extractionRunning": "Extracting…",
+        "extractionCompleted": "Extraction completed",
+        "extractionFailed": "Extraction failed"
       }
     },
     "uploadHub": {
