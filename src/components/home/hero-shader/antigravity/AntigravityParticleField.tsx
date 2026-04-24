@@ -42,8 +42,9 @@ const VERT = /* glsl */ `
     pos.z += smoothstep(1.5, 0.0, dist) * 1.5;
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    float ps = (4.0 * uPixelRatio * uSizeScale) * (1.0 / -mvPosition.z);
-    gl_PointSize = min(ps, uSizeClamp);
+    // Tinier pinpoint dots — closer to Antigravity reference
+    float ps = (2.2 * uPixelRatio * uSizeScale) * (1.0 / -mvPosition.z);
+    gl_PointSize = clamp(ps, 1.0, uSizeClamp);
     gl_Position  = projectionMatrix * mvPosition;
 
     vAlpha = smoothstep(0.0, 1.0, 1.0 - length(pos) / 12.0);
