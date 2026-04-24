@@ -289,6 +289,7 @@ export function AntigravityParticleField({ className, theme }: Props) {
         transparent: true,
         depthTest: false,
         depthWrite: false,
+        side: THREE.DoubleSide,
         blending: isDark() ? THREE.AdditiveBlending : THREE.NormalBlending,
       });
       const m = new THREE.Mesh(geo, mat);
