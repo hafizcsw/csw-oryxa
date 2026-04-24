@@ -15,18 +15,25 @@ vi.mock('@/integrations/supabase/client', () => {
   const invokeMock = vi.fn();
   const credSelectChain = { eq: vi.fn().mockResolvedValue({ data: [], error: null }) };
   const snapSelectChain = { eq: vi.fn().mockReturnValue({ maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) }) };
-  (globalThis as any).__phaseAMocks = { invokeMock, credSelectChain, snapSelectChain };
+  const authSubscription = { unsubscribe: vi.fn() };
+  const getSessionMock = vi.fn().mockResolvedValue({ data: { session: { user: { id: 'test-user' } } }, error: null });
+  const onAuthStateChangeMock = vi.fn().mockReturnValue({ data: { subscription: authSubscription } });
+  (globalThis as any).__phaseAMocks = { invokeMock, credSelectChain, snapSelectChain, getSessionMock, onAuthStateChangeMock, authSubscription };
   return {
     supabase: {
       from: (table: string) => ({
         select: () => (table === 'student_evaluation_snapshots' ? snapSelectChain : credSelectChain),
       }),
+      auth: {
+        getSession: getSessionMock,
+        onAuthStateChange: onAuthStateChangeMock,
+      },
       functions: { invoke: invokeMock },
     },
   };
 });
 
-const { invokeMock, credSelectChain, snapSelectChain } = (globalThis as any).__phaseAMocks;
+const { invokeMock, credSelectChain, snapSelectChain, getSessionMock, onAuthStateChangeMock, authSubscription } = (globalThis as any).__phaseAMocks;
 
 import { useStudentEvaluation, type EvaluationDocInput } from '@/hooks/useStudentEvaluation';
 
@@ -87,8 +94,10 @@ function mockEdgeResponse(reason: string, docs: EvaluationDocInput[], inputHash:
 
 beforeEach(() => {
   invokeMock.mockReset();
+  getSessionMock.mockReset().mockResolvedValue({ data: { session: { user: { id: 'test-user' } } }, error: null });
+  onAuthStateChangeMock.mockReset().mockReturnValue({ data: { subscription: authSubscription } });
   credSelectChain.eq.mockReset().mockResolvedValue({ data: [], error: null });
-  snapSelectChain.eq.mockReset().mockReturnValue({ maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) });
+  snapSelectChain.eq.mockReset().mockReturnValue({ order: vi.fn().mockReturnValue({ limit: vi.fn().mockReturnValue({ maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) }) }) });
 });
 
 describe('useStudentEvaluation — Phase A Round 2 wiring', () => {
@@ -113,7 +122,7 @@ describe('useStudentEvaluation — Phase A Round 2 wiring', () => {
     const docs = [makeDoc('doc-1', 'hash-v1')];
     // Initial load returns the existing snapshot — no edge fn call expected.
     snapSelectChain.eq.mockReturnValue({
-      maybeSingle: vi.fn().mockResolvedValue({
+      order: vi.fn().mockReturnValue({ limit: vi.fn().mockReturnValue({ maybeSingle: vi.fn().mockResolvedValue({
         data: {
           student_user_id: USER_ID,
           input_hash: 'PRECOMPUTED', // will be overwritten below
@@ -125,7 +134,7 @@ describe('useStudentEvaluation — Phase A Round 2 wiring', () => {
           recompute_reason: 'first_compute',
         },
         error: null,
-      }),
+      }) }) }),
     });
     credSelectChain.eq.mockResolvedValue({
       data: [{
@@ -151,7 +160,7 @@ describe('useStudentEvaluation — Phase A Round 2 wiring', () => {
       'phase-a.logic.0.1',
     );
     snapSelectChain.eq.mockReturnValue({
-      maybeSingle: vi.fn().mockResolvedValue({
+      order: vi.fn().mockReturnValue({ limit: vi.fn().mockReturnValue({ maybeSingle: vi.fn().mockResolvedValue({
         data: {
           student_user_id: USER_ID,
           input_hash: expectedHash,
@@ -163,7 +172,7 @@ describe('useStudentEvaluation — Phase A Round 2 wiring', () => {
           recompute_reason: 'first_compute',
         },
         error: null,
-      }),
+      }) }) }),
     });
 
     const { result } = renderHook(() => useStudentEvaluation({ userId: USER_ID, docs }));
