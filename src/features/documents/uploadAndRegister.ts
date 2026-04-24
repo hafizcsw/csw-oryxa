@@ -8,6 +8,7 @@ import { prepareUpload, confirmUpload } from "@/api/crmStorage";
 import { uploadToCrmStorage } from "@/lib/crmStorageClient";
 import { runFoundation, type FoundationOutput } from "./foundation";
 import type { LaneFactsOutput } from "./lanes";
+import type { UploadGuardContext } from "@/lib/draftFirstGuard";
 
 export interface UploadResult {
   success: boolean;
@@ -36,16 +37,26 @@ export async function uploadAndRegisterFile(params: {
   file_kind: string;
   description?: string | null;
   onProgress?: (stage: 'prepare' | 'upload' | 'confirm' | 'done' | 'error', percent: number) => void;
+  /** Draft-first guard context. If omitted, defaults to 'my_files' pre_confirm. */
+  ctx?: UploadGuardContext;
 }): Promise<UploadResult> {
-  const { file, file_kind, description, onProgress } = params;
+  const { file, file_kind, description, onProgress, ctx } = params;
+
+  // Draft-first guard — safe default if caller did not pass ctx.
+  const guardCtx: UploadGuardContext = ctx ?? {
+    context: 'my_files',
+    confirmationState: 'pre_confirm',
+    attemptedAction: `uploadAndRegisterFile:${file_kind}`,
+  };
 
   // ========== STAGE 1: PREPARE ==========
   onProgress?.('prepare', 10);
-  
+
   const prepareRes = await prepareUpload({
     bucket: 'student-docs',
     file_kind,
     file_name: file.name,
+    ctx: guardCtx,
   });
 
   if (!prepareRes.ok || !prepareRes.data?.signed_url || !prepareRes.data?.path) {
