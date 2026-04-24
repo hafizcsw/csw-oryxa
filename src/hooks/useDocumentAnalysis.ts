@@ -75,6 +75,7 @@ interface UseDocumentAnalysisResult {
   getAnalysis: (documentId: string) => DocumentAnalysis | undefined;
   dismissAnalysis: (documentId: string) => void;
   clearAllAnalyses: () => void;
+  refetch: () => Promise<void>;
   editFieldValue: (params: { documentId: string; fieldKey: string; newValue: string }) => void;
 }
 
