@@ -80,16 +80,64 @@ const EXEMPT_CONTEXTS: ReadonlySet<UploadContext> = new Set([
 ]);
 
 /**
- * Is the Draft-first guard active?
- * Default: ON. Disable only via VITE_DRAFT_FIRST_UPLOADS="false".
+ * Detect production environment. In production, Draft-first is FORCED ON.
+ * Checks Vite's import.meta.env.PROD and MODE === 'production'. Any attempt
+ * to disable via VITE_DRAFT_FIRST_UPLOADS in production is rejected and logged.
  */
-export function isDraftFirstEnabled(): boolean {
+function isProductionEnv(): boolean {
   try {
-    const v = (import.meta as any)?.env?.VITE_DRAFT_FIRST_UPLOADS;
-    if (v === false || v === 'false' || v === '0') return false;
+    const env = (import.meta as any)?.env;
+    if (env?.PROD === true) return true;
+    if (env?.MODE === 'production') return true;
+    if (typeof window !== 'undefined') {
+      const host = window.location?.hostname ?? '';
+      // Production domains per project URLs.
+      if (
+        host === 'orxya.org' ||
+        host === 'www.cswworld.com' ||
+        host === 'cswworld.com' ||
+        host.endsWith('.lovable.app') // published lovable domains
+      ) {
+        // preview subdomain is still preview — keep it disable-able there.
+        if (host.startsWith('id-preview--')) return false;
+        return true;
+      }
+    }
   } catch {
     /* noop */
   }
+  return false;
+}
+
+/**
+ * Is the Draft-first guard active?
+ *
+ * Rules:
+ *  • Production → FORCED ON. Any disable attempt is logged and ignored.
+ *  • Dev / preview → ON by default. Disable via VITE_DRAFT_FIRST_UPLOADS="false".
+ */
+export function isDraftFirstEnabled(): boolean {
+  const prod = isProductionEnv();
+  let envWantsOff = false;
+  try {
+    const v = (import.meta as any)?.env?.VITE_DRAFT_FIRST_UPLOADS;
+    if (v === false || v === 'false' || v === '0') envWantsOff = true;
+  } catch {
+    /* noop */
+  }
+
+  if (prod && envWantsOff) {
+    // eslint-disable-next-line no-console
+    console.error('[draftFirstGuard] draft_first_disable_attempt_rejected', {
+      marker: 'draft_first_disable_attempt_rejected',
+      env_value: 'false',
+      environment: 'production',
+      effective_state: 'ON',
+    });
+    return true;
+  }
+
+  if (envWantsOff) return false;
   return true;
 }
 
