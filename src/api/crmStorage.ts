@@ -150,7 +150,7 @@ export async function confirmUpload(params: {
     return guardErrorEnvelope(decision);
   }
   const { ctx: _ctx, ...rest } = params;
-  return callCrmStorage<ConfirmUploadResult>('confirm_upload', rest);
+  return callCrmStorage<ConfirmUploadResult>('confirm_upload', rest, ctxToServerEnvelope(params.ctx));
 }
 
 /**
@@ -182,7 +182,10 @@ export async function signFile(file_id: string): Promise<{ ok: boolean; signed_u
 export async function setAvatar(params: {
   path: string;
 }): Promise<{ ok: boolean; file_url?: string; error?: string }> {
-  const result = await callCrmStorage<{ file_url: string }>('set_avatar', { path: params.path });
+  const result = await callCrmStorage<{ file_url: string }>('set_avatar', { path: params.path }, {
+    upload_context: 'avatar',
+    confirmation_state: 'post_confirm',
+  });
   if (result.ok && result.data) {
     return { ok: true, file_url: (result.data as any)?.file_url };
   }
@@ -241,7 +244,11 @@ export async function markFilesSaved(
   if (!decision.allowed) {
     return guardErrorEnvelope(decision);
   }
-  const result = await callCrmStorage<{ updated_count: number; updated: string[] }>('mark_files_saved', { file_ids });
+  const result = await callCrmStorage<{ updated_count: number; updated: string[] }>(
+    'mark_files_saved',
+    { file_ids },
+    ctxToServerEnvelope(ctx),
+  );
   if (result.ok && result.data) {
     const data = result.data as any;
     return { ok: true, updated_count: data?.updated_count || 0, updated: data?.updated || [] };
