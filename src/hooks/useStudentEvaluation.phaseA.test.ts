@@ -94,7 +94,7 @@ beforeEach(() => {
 describe('useStudentEvaluation — Phase A Round 2 wiring', () => {
   it('Session A: first compute triggers exactly one edge fn call', async () => {
     const docs = [makeDoc('doc-1', 'hash-v1')];
-    invokeMock.mockResolvedValueOnce(mockEdgeResponse('first_compute', docs, 'h-A'));
+    invokeMock.mockResolvedValue(mockEdgeResponse('first_compute', docs, 'h-A'));
 
     const { result } = renderHook(() => useStudentEvaluation({ userId: USER_ID, docs }));
 
