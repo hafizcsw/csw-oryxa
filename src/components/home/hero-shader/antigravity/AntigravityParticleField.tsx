@@ -27,6 +27,8 @@ const VERT = /* glsl */ `
   uniform float uSizeScale;
   uniform float uSizeClamp;
 
+  // Placeholder position attribute (unused; required for draw count)
+  attribute vec3  position;
   // Spherical coordinates per particle
   attribute vec2  aSphere;   // x = theta (azimuth), y = phi (polar)
   attribute float aRadius;   // radius around base sphere
