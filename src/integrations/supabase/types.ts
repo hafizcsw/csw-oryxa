@@ -16915,6 +16915,7 @@ export type Database = {
           id: string
           source_country_code: string
           source_document_canonical_id: string | null
+          source_document_id: string | null
           student_user_id: string
           trace_id: string | null
         }
@@ -16927,6 +16928,7 @@ export type Database = {
           id?: string
           source_country_code: string
           source_document_canonical_id?: string | null
+          source_document_id?: string | null
           student_user_id: string
           trace_id?: string | null
         }
@@ -16939,6 +16941,7 @@ export type Database = {
           id?: string
           source_country_code?: string
           source_document_canonical_id?: string | null
+          source_document_id?: string | null
           student_user_id?: string
           trace_id?: string | null
         }
@@ -17105,8 +17108,11 @@ export type Database = {
       }
       student_credential_normalized: {
         Row: {
+          award_year: number | null
           confidence: number
+          content_hash: string | null
           created_at: string
+          decisions: Json
           evidence_ids: string[]
           id: string
           matched_rule_ids: string[]
@@ -17119,12 +17125,17 @@ export type Database = {
           normalizer_version: string
           source_award_raw_id: string | null
           source_country_code: string
+          source_document_id: string | null
           student_user_id: string
           trace_id: string | null
+          updated_at: string
         }
         Insert: {
+          award_year?: number | null
           confidence?: number
+          content_hash?: string | null
           created_at?: string
+          decisions?: Json
           evidence_ids?: string[]
           id?: string
           matched_rule_ids?: string[]
@@ -17137,12 +17148,17 @@ export type Database = {
           normalizer_version: string
           source_award_raw_id?: string | null
           source_country_code: string
+          source_document_id?: string | null
           student_user_id: string
           trace_id?: string | null
+          updated_at?: string
         }
         Update: {
+          award_year?: number | null
           confidence?: number
+          content_hash?: string | null
           created_at?: string
+          decisions?: Json
           evidence_ids?: string[]
           id?: string
           matched_rule_ids?: string[]
@@ -17155,8 +17171,10 @@ export type Database = {
           normalizer_version?: string
           source_award_raw_id?: string | null
           source_country_code?: string
+          source_document_id?: string | null
           student_user_id?: string
           trace_id?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -17226,8 +17244,9 @@ export type Database = {
           recompute_reason: string | null
           result: Json
           rules_version: string
+          student_user_id: string
+          trace_id: string | null
           updated_at: string
-          user_id: string
         }
         Insert: {
           created_at?: string
@@ -17239,8 +17258,9 @@ export type Database = {
           recompute_reason?: string | null
           result: Json
           rules_version: string
+          student_user_id: string
+          trace_id?: string | null
           updated_at?: string
-          user_id: string
         }
         Update: {
           created_at?: string
@@ -17252,8 +17272,9 @@ export type Database = {
           recompute_reason?: string | null
           result?: Json
           rules_version?: string
+          student_user_id?: string
+          trace_id?: string | null
           updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -17332,66 +17353,6 @@ export type Database = {
           student_user_id?: string
           teacher_notes?: string | null
           updated_at?: string
-        }
-        Relationships: []
-      }
-      student_normalized_credentials: {
-        Row: {
-          award_year: number | null
-          content_hash: string | null
-          created_at: string
-          decisions: Json
-          document_id: string
-          id: string
-          matched_rule_ids: Json
-          needs_manual_review: boolean
-          normalized_credential_kind: string | null
-          normalized_credential_subtype: string | null
-          normalized_grade_pct: number | null
-          raw_input: Json | null
-          raw_output: Json | null
-          rules_version: string
-          source_country: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          award_year?: number | null
-          content_hash?: string | null
-          created_at?: string
-          decisions?: Json
-          document_id: string
-          id?: string
-          matched_rule_ids?: Json
-          needs_manual_review?: boolean
-          normalized_credential_kind?: string | null
-          normalized_credential_subtype?: string | null
-          normalized_grade_pct?: number | null
-          raw_input?: Json | null
-          raw_output?: Json | null
-          rules_version: string
-          source_country?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          award_year?: number | null
-          content_hash?: string | null
-          created_at?: string
-          decisions?: Json
-          document_id?: string
-          id?: string
-          matched_rule_ids?: Json
-          needs_manual_review?: boolean
-          normalized_credential_kind?: string | null
-          normalized_credential_subtype?: string | null
-          normalized_grade_pct?: number | null
-          raw_input?: Json | null
-          raw_output?: Json | null
-          rules_version?: string
-          source_country?: string | null
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
