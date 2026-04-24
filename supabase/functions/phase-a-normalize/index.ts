@@ -354,10 +354,16 @@ Deno.serve(async (req: Request) => {
     // ── Write award_raw + normalized + decision_log ─
     const insertedNormalizedIds: Record<string, string> = {};
     for (const d of docs) {
-      // 1) award_raw upsert
+      // 1) award_raw insert (old rows for this user/doc were deleted above,
+      //    so a plain insert is safe — and avoids needing a DB unique index).
+      await supabase.from('student_award_raw')
+        .delete()
+        .eq('student_user_id', userId)
+        .eq('source_document_id', d.document_id);
+
       const { data: awardRow, error: awardErr } = await supabase
         .from('student_award_raw')
-        .upsert({
+        .insert({
           student_user_id: userId,
           source_country_code: d.source_country ?? 'XX',
           award_name_raw: d.award_name_raw ?? '',
@@ -366,10 +372,10 @@ Deno.serve(async (req: Request) => {
           award_score_raw: d.award_score_raw,
           source_document_id: d.document_id,
           trace_id: traceId,
-        }, { onConflict: 'student_user_id,source_document_id' })
+        })
         .select('id')
         .single();
-      if (awardErr) { console.error('[phase-a-normalize] award_raw upsert error', awardErr); continue; }
+      if (awardErr) { console.error('[phase-a-normalize] award_raw insert error', awardErr); continue; }
 
       const pd = perDoc.find(p => p.document_id === d.document_id);
       const out = pd?.output;
