@@ -231,19 +231,13 @@ export default function FloatingChat() {
           }}
           className="ai-fab"
         >
-          <svg width="28" height="28" viewBox="0 0 24 24" role="img" aria-hidden="true">
-            <defs>
-              <linearGradient id="gemini-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style={{ stopColor: '#4285F4', stopOpacity: 1 }} />
-                <stop offset="33%" style={{ stopColor: '#9B72F2', stopOpacity: 1 }} />
-                <stop offset="66%" style={{ stopColor: '#F538A0', stopOpacity: 1 }} />
-                <stop offset="100%" style={{ stopColor: '#FF9C27', stopOpacity: 1 }} />
-              </linearGradient>
-            </defs>
-            <path 
-              fill="url(#gemini-gradient)" 
-              d="M12 2L15.5 8.5L22 12L15.5 15.5L12 22L8.5 15.5L2 12L8.5 8.5L12 2Z"
+          <svg width="26" height="26" viewBox="0 0 32 32" role="img" aria-hidden="true" fill="none">
+            {/* Antigravity-style apex mark — minimal, editorial */}
+            <path
+              d="M16 4 L28 27 L21.5 27 L16 16 L10.5 27 L4 27 Z"
+              fill="currentColor"
             />
+            <circle cx="16" cy="9.5" r="1.6" fill="currentColor" />
           </svg>
         </motion.button>
       )}
