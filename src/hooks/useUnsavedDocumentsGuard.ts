@@ -15,7 +15,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { deleteFile } from '@/api/crmStorage';
+import { deleteFile, clearPendingFiles, markFilesSaved } from '@/api/crmStorage';
 import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEY = 'unsaved_documents_v1';
@@ -41,10 +41,17 @@ async function discardIds(ids: string[]): Promise<string[]> {
       stillFailing.push(ids[i]);
     }
   });
-  // Always purge Phase A rows for the attempted ids — even if Storage delete
-  // partially failed, the evaluation tables must not retain unsaved truth.
   await purgePhaseAForDocs(ids);
   return stillFailing;
+}
+
+async function cleanupServerPending(): Promise<string[]> {
+  const res = await clearPendingFiles();
+  const deleted = res.ok ? (res.deleted || []) : [];
+  if (deleted.length > 0) {
+    await purgePhaseAForDocs(deleted);
+  }
+  return [];
 }
 
 // We use localStorage (not sessionStorage) so a hard refresh / tab close
@@ -91,23 +98,23 @@ export function useUnsavedDocumentsGuard({
     setPendingIds(arr);
   }, []);
 
-  // ─── 1. On mount: clean up any orphans from a previous session ───
+  // ─── 1. On mount: clear any server-side pending files from prior abandoned sessions ───
   useEffect(() => {
     if (!enabled || cleanupRanRef.current) return;
     cleanupRanRef.current = true;
 
-    const orphans = readPending();
-    if (orphans.length === 0) return;
-
     let cancelled = false;
     (async () => {
+      await cleanupServerPending();
+
+      const orphans = readPending();
       const stillFailing = await discardIds(orphans);
       if (cancelled) return;
       sync(new Set(stillFailing));
       if (import.meta.env.DEV) {
         console.log('[unsaved-guard] orphan cleanup', {
-          attempted: orphans.length,
-          failed: stillFailing.length,
+          attempted_local: orphans.length,
+          failed_local: stillFailing.length,
         });
       }
       onCleanupComplete?.();
@@ -146,7 +153,11 @@ export function useUnsavedDocumentsGuard({
     sync(next);
   }, [sync]);
 
-  const confirmAllSaved = useCallback(() => {
+  const confirmAllSaved = useCallback(async () => {
+    const ids = Array.from(pendingRef.current);
+    if (ids.length > 0) {
+      await markFilesSaved(ids);
+    }
     sync(new Set());
   }, [sync]);
 

@@ -299,6 +299,8 @@ type CrmStorageAction =
   | 'set_avatar'             // Update avatar
   | 'delete_file'            // Delete file from CRM
   | 'clear_all_files'        // Delete ALL files for student
+  | 'clear_pending_files'    // Delete only unsaved/pending files for student
+  | 'mark_files_saved'       // Mark selected pending files as saved
   | 'purge_all_files'        // ✅ Soft delete ALL for clean cutover
   | 'paddle_structure_proxy';// ✅ CRM-aware Paddle OCR/Structure proxy
 
@@ -5635,7 +5637,99 @@ Deno.serve(async (req) => {
               errors: errors.length > 0 ? errors : undefined
             }, { headers: corsHeaders });
           }
-          
+
+          // ============= CLEAR PENDING FILES =============
+          case 'clear_pending_files': {
+            const isDocsLockedClearPending = profileRes.profile?.docs_locked === true;
+            if (isDocsLockedClearPending) {
+              const lockReasonClearPending = String(profileRes.profile?.docs_lock_reason || 'المستندات مقفولة');
+              return Response.json({
+                ok: false,
+                error: 'DOCS_LOCKED',
+                message: lockReasonClearPending,
+                http_status: 403,
+              }, { status: 200, headers: corsHeaders });
+            }
+
+            const { data: pendingFiles, error: listPendingErr } = await crmStorageClient
+              .from('customer_files')
+              .select('id, storage_bucket, storage_path')
+              .eq('customer_id', customerId)
+              .is('deleted_at', null)
+              .eq('status', 'pending');
+
+            if (listPendingErr) {
+              console.error('[crm_storage] ❌ clear_pending_files list error:', listPendingErr);
+              return Response.json({ ok: false, error: listPendingErr.message, http_status: 500 }, { status: 200, headers: corsHeaders });
+            }
+
+            if (!pendingFiles || pendingFiles.length === 0) {
+              return Response.json({ ok: true, deleted_count: 0, deleted: [] }, { headers: corsHeaders });
+            }
+
+            const deleted: string[] = [];
+            const errors: string[] = [];
+
+            for (const file of pendingFiles) {
+              const { error: rmErr } = await crmStorageClient.storage
+                .from(file.storage_bucket)
+                .remove([file.storage_path]);
+
+              if (rmErr) {
+                console.error('[crm_storage] ⚠️ clear_pending_files storage warning for', file.id, rmErr);
+                errors.push(`${file.id}: ${rmErr.message}`);
+              }
+
+              const { error: dbErr } = await crmStorageClient
+                .from('customer_files')
+                .update({ deleted_at: new Date().toISOString() })
+                .eq('id', file.id);
+
+              if (dbErr) {
+                console.error('[crm_storage] ❌ clear_pending_files DB error for', file.id, dbErr);
+                errors.push(`${file.id}: ${dbErr.message}`);
+              } else {
+                deleted.push(file.id);
+              }
+            }
+
+            return Response.json({
+              ok: true,
+              deleted_count: deleted.length,
+              deleted,
+              errors: errors.length > 0 ? errors : undefined,
+            }, { headers: corsHeaders });
+          }
+
+          // ============= MARK FILES SAVED =============
+          case 'mark_files_saved': {
+            const { file_ids } = payload as { file_ids?: string[] };
+            const ids = Array.isArray(file_ids) ? file_ids.filter(Boolean) : [];
+
+            if (ids.length === 0) {
+              return Response.json({ ok: true, updated_count: 0, updated: [] }, { headers: corsHeaders });
+            }
+
+            const { data: updatedRows, error: saveErr } = await crmStorageClient
+              .from('customer_files')
+              .update({ status: 'saved' })
+              .eq('customer_id', customerId)
+              .is('deleted_at', null)
+              .in('id', ids)
+              .select('id');
+
+            if (saveErr) {
+              console.error('[crm_storage] ❌ mark_files_saved error:', saveErr);
+              return Response.json({ ok: false, error: saveErr.message, http_status: 500 }, { status: 200, headers: corsHeaders });
+            }
+
+            return Response.json({
+              ok: true,
+              updated_count: updatedRows?.length || 0,
+              updated: (updatedRows || []).map((r: any) => r.id),
+            }, { headers: corsHeaders });
+          }
+
           // ============= PURGE ALL FILES (Admin/Staff ONLY - clean cutover) =============
           case 'purge_all_files': {
             // ❌ SECURITY: This action is Admin/Staff only - students cannot purge their files

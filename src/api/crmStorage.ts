@@ -22,6 +22,8 @@ export type CrmStorageAction =
   | 'set_avatar'
   | 'delete_file'
   | 'clear_all_files'
+  | 'clear_pending_files'
+  | 'mark_files_saved'
   | 'purge_all_files'         // ✅ Added for clean cutover
   | 'paddle_structure_proxy'; // ✅ CRM-aware Paddle OCR/Structure proxy
 
@@ -169,6 +171,24 @@ export async function clearAllFiles(): Promise<{ ok: boolean; deleted_count?: nu
   const result = await callCrmStorage<{ deleted_count: number; deleted: string[]; errors?: string[] }>('clear_all_files');
   if (result.ok && result.data) {
     return { ok: true, deleted_count: (result.data as any)?.deleted_count || 0 };
+  }
+  return { ok: false, error: result.error };
+}
+
+export async function clearPendingFiles(): Promise<{ ok: boolean; deleted_count?: number; deleted?: string[]; error?: string }> {
+  const result = await callCrmStorage<{ deleted_count: number; deleted: string[]; errors?: string[] }>('clear_pending_files');
+  if (result.ok && result.data) {
+    const data = result.data as any;
+    return { ok: true, deleted_count: data?.deleted_count || 0, deleted: data?.deleted || [] };
+  }
+  return { ok: false, error: result.error };
+}
+
+export async function markFilesSaved(file_ids: string[]): Promise<{ ok: boolean; updated_count?: number; updated?: string[]; error?: string }> {
+  const result = await callCrmStorage<{ updated_count: number; updated: string[] }>('mark_files_saved', { file_ids });
+  if (result.ok && result.data) {
+    const data = result.data as any;
+    return { ok: true, updated_count: data?.updated_count || 0, updated: data?.updated || [] };
   }
   return { ok: false, error: result.error };
 }
