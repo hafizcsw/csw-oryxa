@@ -64,6 +64,12 @@ const VERT = /* glsl */ `
     float dist = distance(uMousePos * 3.0, pos.xy);
     pos.z += smoothstep(2.5, 0.0, dist) * 0.5;
 
+    // Whale displacement: push particles outward from whale's path (radial in 3D)
+    vec3 toWhale = pos - uWhalePos;
+    float wd = length(toWhale);
+    float wInfluence = smoothstep(uWhaleRadius, 0.0, wd) * uWhaleStrength;
+    pos += normalize(toWhale + vec3(0.0001)) * wInfluence;
+
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
     float ps = (7.0 * uPixelRatio * uSizeScale) * (1.0 / -mvPosition.z);
     gl_PointSize = clamp(ps, 2.0, uSizeClamp);
