@@ -234,7 +234,7 @@ export function LiveProfileAssembly({
         proposals: proposalsByDoc.get(a.document_id) ?? [],
         subMode,
         routeReason: reason,
-        animate: !hydratedIds.has(a.document_id),
+        animate: !settledIds.has(a.document_id),
         subjectRows: subjectRowsByDoc.get(a.document_id),
       });
     }
