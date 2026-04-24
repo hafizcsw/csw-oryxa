@@ -23,6 +23,8 @@ import { Lock, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStudentDocuments } from "@/hooks/useStudentDocuments";
 import { useDocumentRegistry } from "@/hooks/useDocumentRegistry";
+import { usePortalDrafts } from "@/hooks/usePortalDrafts";
+import { PortalDraftsList } from "@/components/portal/study-file/PortalDraftsList";
 import { useDocumentAnalysis } from "@/hooks/useDocumentAnalysis";
 import { useAcademicTruth } from "@/hooks/useAcademicTruth";
 import { useDecisionEngine } from "@/hooks/useDecisionEngine";
