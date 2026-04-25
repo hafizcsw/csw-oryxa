@@ -37,6 +37,50 @@ function normLang(input: string | undefined): string {
   return LANG_NAME[k] ? k : "en";
 }
 
+function buildVoiceChatInstructions(langCode: string, ctx: StudentContext | undefined): string {
+  const langName = LANG_NAME[langCode];
+
+  const ctxLines: string[] = [];
+  if (ctx?.displayName) ctxLines.push(`- Student name: ${ctx.displayName}`);
+  if (ctx?.educationLevel) ctxLines.push(`- Current education level: ${ctx.educationLevel}`);
+  if (ctx?.interestedFields?.length)
+    ctxLines.push(`- Fields of interest: ${ctx.interestedFields.slice(0, 5).join(", ")}`);
+  if (ctx?.interestedCountries?.length)
+    ctxLines.push(`- Countries of interest: ${ctx.interestedCountries.slice(0, 5).join(", ")}`);
+  const studentBlock = ctxLines.length
+    ? `Known about this student (use naturally, do NOT recite back):\n${ctxLines.join("\n")}`
+    : ``;
+
+  return [
+    `You are Oryxa, the live voice assistant of CSW World — a global platform that helps students explore universities and programs across 12 supported countries (worldwide, not biased to any one country).`,
+    ``,
+    `This is a LIVE, free-form VOICE conversation, like a phone call. There is NO camera, NO assessment, NO structured phases. Behave like a friendly, knowledgeable advisor having a natural spoken conversation — similar in feel to ChatGPT Voice Mode.`,
+    ``,
+    `LANGUAGE — STRICT: Speak ONLY in ${langName} unless the student switches first. Then follow them, but default back to ${langName} when natural.`,
+    ``,
+    `STYLE:`,
+    `  - Warm, concise, natural spoken phrasing. Short sentences. No long monologues.`,
+    `  - Pause after questions. Let the student talk.`,
+    `  - Never read URLs, never spell out long lists, never dump structured data — speak like a human.`,
+    `  - If the student asks something you don't know specifically (exact tuition, current deadlines, current ranks), say so honestly and suggest they explore it on CSW World.`,
+    ``,
+    studentBlock,
+    ``,
+    `CAPABILITIES:`,
+    `  - Help the student think about countries, fields, programs, scholarships, language requirements, application steps.`,
+    `  - Give general guidance about studying abroad.`,
+    `  - Encourage them to use the CSW World website for deep search, comparisons, and applications.`,
+    ``,
+    `HARD CONSTRAINTS:`,
+    `  - Never collect: passport numbers, ID numbers, addresses, payment info, parent contact info.`,
+    `  - Never promise admission, scholarships, visas, or specific outcomes.`,
+    `  - Never invent CSW World prices, ranks, or guarantees.`,
+    `  - If asked something clearly off-topic (politics, medical advice, etc.), gently steer back.`,
+    ``,
+    `Start by greeting the student briefly in ${langName} and asking how you can help today.`,
+  ].filter(Boolean).join("\n");
+}
+
 function buildInstructions(langCode: string, ctx: StudentContext | undefined): string {
   const langName = LANG_NAME[langCode];
 
@@ -162,7 +206,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    let body: { language?: string; voice?: string; studentContext?: StudentContext } = {};
+    let body: {
+      language?: string;
+      voice?: string;
+      studentContext?: StudentContext;
+      mode?: "assessment" | "voice_chat";
+    } = {};
     try {
       if (req.method === "POST") body = await req.json();
     } catch {
@@ -171,7 +220,31 @@ Deno.serve(async (req) => {
 
     const langCode = normLang(body.language);
     const voice = body.voice || VOICE_BY_LANG[langCode] || "alloy";
-    const instructions = buildInstructions(langCode, body.studentContext);
+    const mode = body.mode === "voice_chat" ? "voice_chat" : "assessment";
+
+    const instructions =
+      mode === "voice_chat"
+        ? buildVoiceChatInstructions(langCode, body.studentContext)
+        : buildInstructions(langCode, body.studentContext);
+
+    const sessionPayload: Record<string, unknown> = {
+      model: REALTIME_MODEL,
+      voice,
+      modalities: ["audio", "text"],
+      instructions,
+      input_audio_transcription: { model: "whisper-1" },
+      turn_detection: {
+        type: "server_vad",
+        threshold: 0.5,
+        prefix_padding_ms: 300,
+        silence_duration_ms: 700,
+      },
+    };
+
+    if (mode === "assessment") {
+      sessionPayload.tools = [ASSESSMENT_TOOL];
+      sessionPayload.tool_choice = "auto";
+    }
 
     const openaiRes = await fetch("https://api.openai.com/v1/realtime/sessions", {
       method: "POST",
@@ -179,21 +252,7 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model: REALTIME_MODEL,
-        voice,
-        modalities: ["audio", "text"],
-        instructions,
-        tools: [ASSESSMENT_TOOL],
-        tool_choice: "auto",
-        input_audio_transcription: { model: "whisper-1" },
-        turn_detection: {
-          type: "server_vad",
-          threshold: 0.5,
-          prefix_padding_ms: 300,
-          silence_duration_ms: 700,
-        },
-      }),
+      body: JSON.stringify(sessionPayload),
     });
 
     if (!openaiRes.ok) {

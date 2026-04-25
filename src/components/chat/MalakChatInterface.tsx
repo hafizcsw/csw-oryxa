@@ -9,6 +9,7 @@ import { useChat } from '@/contexts/ChatContext';
 import { useMalakAssistant } from '@/hooks/useMalakAssistant';
 import { useBotTelemetry } from '@/hooks/useBotTelemetry';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
+import { useVoiceChat } from '@/hooks/useVoiceChat';
 import { useStudentTour } from '@/contexts/StudentTourContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCRMEventExecutor } from '@/hooks/useCRMEventExecutor';
@@ -287,6 +288,13 @@ export function MalakChatInterface({
     stopRecording,
     cancelRecording
   } = useVoiceRecorder();
+
+  // 🆕 Live voice chat (ChatGPT-style) — runs INSIDE the chat box, transcripts become messages
+  const voiceChat = useVoiceChat();
+  const isVoiceLive =
+    voiceChat.status === 'connected' ||
+    voiceChat.status === 'connecting' ||
+    voiceChat.status === 'requesting_token';
 
   // 🆕 دالة حساب حالة التوقيت للضيف
   const getGuestTimingState = useCallback(() => {
@@ -1156,13 +1164,48 @@ export function MalakChatInterface({
   }, [handleSend]);
   
   const handleVoiceRecording = async () => {
-    if (isRecording) {
-      const transcribedText = await stopRecording();
-      if (transcribedText) {
-        setInputValue(transcribedText);
-      }
-    } else {
-      await startRecording();
+    // If a live voice session is already on, stop it.
+    if (isVoiceLive) {
+      voiceChat.stop();
+      return;
+    }
+
+    // Start a ChatGPT-style live voice conversation inside the chat box.
+    try {
+      await voiceChat.start({
+        language,
+        onUserTranscript: (text) => {
+          if (!text.trim()) return;
+          setMessages((prev) => [
+            ...prev,
+            {
+              from: 'user',
+              type: 'text',
+              content: text,
+              timestamp: new Date(),
+            } as WebChatMessage,
+          ]);
+        },
+        onAssistantTranscript: (text) => {
+          if (!text.trim()) return;
+          setMessages((prev) => [
+            ...prev,
+            {
+              from: 'bot',
+              type: 'text',
+              content: text,
+              timestamp: new Date(),
+            } as WebChatMessage,
+          ]);
+        },
+      });
+    } catch (e) {
+      console.error('[MalakChat] voice chat failed', e);
+      toast.error(
+        t('portal.chat.voice.startFailed', {
+          defaultValue: 'Could not start voice chat. Check your microphone permissions.',
+        }),
+      );
     }
   };
 
@@ -1448,6 +1491,52 @@ export function MalakChatInterface({
                 />
               </div>
             )}
+
+            {/* 🆕 Live voice chat status banner (ChatGPT-style) */}
+            {(isVoiceLive || voiceChat.status === 'error') && (
+              <div
+                className={cn(
+                  "mb-2 flex items-center gap-2 rounded-full px-3 py-1.5 text-xs border",
+                  voiceChat.status === 'error'
+                    ? "bg-destructive/10 border-destructive/30 text-destructive"
+                    : "bg-primary/10 border-primary/30 text-primary"
+                )}
+                role="status"
+                aria-live="polite"
+              >
+                <span
+                  className={cn(
+                    "h-2 w-2 rounded-full",
+                    voiceChat.status === 'connected'
+                      ? voiceChat.isAISpeaking
+                        ? "bg-primary animate-pulse"
+                        : "bg-emerald-500 animate-pulse"
+                      : voiceChat.status === 'error'
+                        ? "bg-destructive"
+                        : "bg-amber-500 animate-pulse"
+                  )}
+                />
+                <span className="flex-1 truncate">
+                  {voiceChat.status === 'requesting_token' || voiceChat.status === 'connecting'
+                    ? t('portal.chat.voice.connecting', { defaultValue: 'Connecting voice…' })
+                    : voiceChat.status === 'error'
+                      ? voiceChat.error || t('portal.chat.voice.errorLabel', { defaultValue: 'Voice error' })
+                      : voiceChat.isAISpeaking
+                        ? (voiceChat.livePartial || t('portal.chat.voice.speaking', { defaultValue: 'Oryxa is speaking…' }))
+                        : t('portal.chat.voice.listening', { defaultValue: 'Listening — speak naturally' })}
+                </span>
+                {isVoiceLive && (
+                  <button
+                    type="button"
+                    onClick={() => voiceChat.stop()}
+                    className="text-[11px] underline-offset-2 hover:underline"
+                  >
+                    {t('portal.chat.voice.stop', { defaultValue: 'Stop' })}
+                  </button>
+                )}
+              </div>
+            )}
+
             <Textarea 
               ref={textareaRef} 
               value={inputValue} 
@@ -1586,17 +1675,41 @@ export function MalakChatInterface({
                   size="icon" 
                   variant="ghost" 
                   onClick={handleVoiceRecording} 
-                  disabled={state === 'thinking' || state === 'searching' || isRecording || isGuestLocked} 
-                  title={t('portal.chat.controls.voice')}
-                  aria-label={t('portal.chat.controls.voice')}
+                  disabled={state === 'thinking' || state === 'searching' || isRecording || isGuestLocked || voiceChat.status === 'requesting_token' || voiceChat.status === 'connecting'} 
+                  title={
+                    isVoiceLive
+                      ? t('portal.chat.voice.stop', { defaultValue: 'Stop voice chat' })
+                      : t('portal.chat.voice.start', { defaultValue: 'Start live voice chat' })
+                  }
+                  aria-label={
+                    isVoiceLive
+                      ? t('portal.chat.voice.stop', { defaultValue: 'Stop voice chat' })
+                      : t('portal.chat.voice.start', { defaultValue: 'Start live voice chat' })
+                  }
                   className={cn(
-                    "rounded-full text-muted-foreground hover:text-foreground hover:bg-muted", 
+                    "rounded-full text-muted-foreground hover:text-foreground hover:bg-muted relative", 
                     isFloating ? "h-7 w-7" : "h-8 w-8", 
-                    isRecording && "bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 animate-pulse"
+                    isRecording && "bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 animate-pulse",
+                    isVoiceLive && "bg-primary/15 text-primary",
+                    voiceChat.status === 'connected' && voiceChat.isAISpeaking && "ring-2 ring-primary/60 animate-pulse"
                   )}
                 >
-                  {isRecording ? <Square className="w-4 h-4" /> : <Mic className="w-5 h-5" />}
+                  {voiceChat.status === 'requesting_token' || voiceChat.status === 'connecting' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : isVoiceLive ? (
+                    <MicOff className="w-5 h-5" />
+                  ) : isRecording ? (
+                    <Square className="w-4 h-4" />
+                  ) : (
+                    <Mic className="w-5 h-5" />
+                  )}
+                  {voiceChat.status === 'connected' && (
+                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  )}
                 </Button>
+
+                {/* Hidden audio sink for the live voice session */}
+                <audio ref={voiceChat.remoteAudioRef} autoPlay className="hidden" />
 
                 <div className="w-px h-5 bg-border/60" aria-hidden="true" />
 
