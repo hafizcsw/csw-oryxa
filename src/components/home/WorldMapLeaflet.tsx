@@ -64,8 +64,13 @@ const TILES = {
   topo: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
 };
 
-/* ── World GeoJSON URL ── */
-const WORLD_GEOJSON_URL = "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson";
+/* ── World GeoJSON URLs ──
+ * Primary: locally bundled, simplified file (fast, no CORS, no third-party).
+ * Fallback: original CDN — only used if the local file is missing.
+ */
+const WORLD_GEOJSON_URL_LOCAL = "/data/world-countries.geojson";
+const WORLD_GEOJSON_URL_REMOTE = "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson";
+const WORLD_GEOJSON_URL = WORLD_GEOJSON_URL_LOCAL;
 const USE_TOPOJSON = false;
 
 const GOLD = {
