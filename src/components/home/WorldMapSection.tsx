@@ -99,6 +99,11 @@ export const WorldMapSection = memo(function WorldMapSection() {
   const [hoveredCountryCode, setHoveredCountryCode] = useState<string | null>(null);
   const hoverClearTimer = useRef<number | null>(null);
 
+  // Pull filter params early so prefetch-on-hover can use them.
+  const {
+    filters, rpcParams, setRegion, setDegreeSlug, setFeesMax, DEFAULT_FEES_MAX,
+  } = useMapFilters();
+
   const handleCountryHover = useCallback((code: string | null) => {
     if (code) {
       if (hoverClearTimer.current) { clearTimeout(hoverClearTimer.current); hoverClearTimer.current = null; }
