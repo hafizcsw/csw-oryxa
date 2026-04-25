@@ -11,7 +11,7 @@ import { MapUniversitySearch } from "./MapUniversitySearch";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   MapPin, GraduationCap, Search, Globe, X,
   Building2, DollarSign, ChevronRight, Loader2,
@@ -85,6 +85,7 @@ type DrillLevel = "world" | "country" | "city";
 export const WorldMapSection = memo(function WorldMapSection() {
   const { language, t } = useLanguage();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const isRtl = ["ar", "fa", "ur", "he"].includes(language);
 
   // ── State ──
@@ -102,11 +103,30 @@ export const WorldMapSection = memo(function WorldMapSection() {
     if (code) {
       if (hoverClearTimer.current) { clearTimeout(hoverClearTimer.current); hoverClearTimer.current = null; }
       setHoveredCountryCode(code);
+      // Prefetch country universities so click feels instant.
+      const canonical = code === "IL" ? "PS" : code;
+      queryClient.prefetchQuery({
+        queryKey: ["map-country-universities", canonical, rpcParams.p_degree_slug, rpcParams.p_fees_max],
+        queryFn: async () => {
+          const { data, error } = await supabase.rpc("rpc_map_country_universities", {
+            p_country_code: canonical,
+            p_degree_slug: rpcParams.p_degree_slug,
+            p_fees_max: rpcParams.p_fees_max,
+          });
+          if (error) throw error;
+          return data || [];
+        },
+        staleTime: 30 * 60_000,
+      });
+      // Also warm up subdivision geodata if we have it locally.
+      if (hasCountryGeodata(canonical) && !getCachedCountryGeodata(canonical)) {
+        loadCountryGeodata(canonical).catch(() => {});
+      }
     } else {
       if (hoverClearTimer.current) clearTimeout(hoverClearTimer.current);
       hoverClearTimer.current = window.setTimeout(() => setHoveredCountryCode(null), 80);
     }
-  }, []);
+  }, [queryClient, rpcParams.p_degree_slug, rpcParams.p_fees_max]);
 
   useEffect(() => () => {
     if (hoverClearTimer.current) clearTimeout(hoverClearTimer.current);
