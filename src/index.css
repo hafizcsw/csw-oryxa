@@ -330,6 +330,22 @@ All colors MUST be HSL.
 @layer utilities {
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+}
+
+/* When the Social shell is mounted, hide global app chrome / floaters
+   so the X+TikTok+Instagram experience stays clean and isolated. */
+body[data-social-active="true"] > #root > * > header,
+body[data-social-active="true"] > #root > * > footer,
+body[data-social-active="true"] [data-portal-floater],
+body[data-social-active="true"] [data-malak-chat],
+body[data-social-active="true"] [data-news-ticker],
+body[data-social-active="true"] [data-app-tour] {
+  display: none !important;
+}
+
+@layer utilities {
+  /* placeholder to keep the layer block balanced */
+  .social-shell-active { isolation: isolate; }
 
   /* Animations */
   .animate-fade-in {
