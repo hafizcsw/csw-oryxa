@@ -52,7 +52,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 // Native scroll used instead of ScrollArea for better compatibility
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Send, Trash2, AlertCircle, Sparkles, Search, Loader2, Mic, MicOff, Square, User, ChevronDown, Clock, X, Plus, Check, ArrowUp, History, PanelLeftClose, PanelLeft, Maximize2, Minimize2 } from 'lucide-react';
+import { Send, Trash2, AlertCircle, Sparkles, Search, Loader2, Mic, MicOff, Square, User, ChevronDown, Clock, X, Plus, Check, ArrowUp, History, PanelLeftClose, PanelLeft, Maximize2, Minimize2, Radio, Video } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { LiveSessionPanel } from './LiveSessionPanel';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -230,6 +232,7 @@ export function MalakChatInterface({
   const [inputValue, setInputValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [searchMode, setSearchMode] = useState<'normal' | 'deep'>('normal');
+  const [isLiveOpen, setIsLiveOpen] = useState(false);
   const [ctaDismissed, setCtaDismissed] = useState(false);
   const [guestLimitReached, setGuestLimitReached] = useState(false);
   const [showStatusBar, setShowStatusBar] = useState(false); // 🆕 شريط الحالة مخفي افتراضياً
@@ -1562,6 +1565,22 @@ export function MalakChatInterface({
 
               {/* Right side: Voice + Send buttons */}
               <div className="flex items-center gap-2.5">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setIsLiveOpen(true)}
+                  disabled={state === 'thinking' || state === 'searching' || isGuestLocked}
+                  title={t('portal.chat.live.start', { defaultValue: 'Start live session' })}
+                  aria-label={t('portal.chat.live.start', { defaultValue: 'Start live session' })}
+                  className={cn(
+                    "rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10",
+                    isFloating ? "h-7 w-7" : "h-8 w-8"
+                  )}
+                >
+                  <Video className="w-5 h-5" />
+                </Button>
+
                 <Button 
                   type="button" 
                   size="icon" 
@@ -1631,6 +1650,20 @@ export function MalakChatInterface({
           </div>
         )}
       </div>
+
+      <Dialog open={isLiveOpen} onOpenChange={setIsLiveOpen}>
+        <DialogContent className="max-w-3xl h-[85vh] p-0 flex flex-col gap-0 overflow-hidden">
+          <DialogHeader className="px-4 py-3 border-b">
+            <DialogTitle className="text-base flex items-center gap-2">
+              <Radio className="w-4 h-4 text-primary" />
+              {t('portal.chat.live.title', { defaultValue: 'Live assessment session' })}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <LiveSessionPanel onBack={() => setIsLiveOpen(false)} />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
