@@ -113,17 +113,48 @@ export function AIChatPanel() {
         className="h-[85vh] sm:h-[70vh] p-0 flex flex-col"
       >
         <SheetHeader className="px-6 py-4 border-b">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-              <AIIcon className="w-5 h-5 text-primary-foreground" />
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
+                <AIIcon className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div>
+                <SheetTitle className="text-lg">{t('bot.name')}</SheetTitle>
+                <p className="text-xs text-muted-foreground">{t('bot.intro')}</p>
+              </div>
             </div>
-            <div>
-              <SheetTitle className="text-lg">{t('bot.name')}</SheetTitle>
-              <p className="text-xs text-muted-foreground">{t('bot.intro')}</p>
+            <div className="inline-flex rounded-full bg-muted/50 p-0.5 text-[11px] flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setMode('text')}
+                className={cn(
+                  'h-7 px-3 rounded-full inline-flex items-center gap-1 transition-colors',
+                  mode === 'text' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <MessageSquare className="h-3 w-3" />
+                {t('portal.chat.live.tabText', { defaultValue: 'Text' })}
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('live')}
+                className={cn(
+                  'h-7 px-3 rounded-full inline-flex items-center gap-1 transition-colors',
+                  mode === 'live' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Radio className="h-3 w-3" />
+                {t('portal.chat.live.tabLive', { defaultValue: 'Live' })}
+              </button>
             </div>
           </div>
         </SheetHeader>
 
+        {mode === 'live' ? (
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <LiveSessionPanel />
+          </div>
+        ) : (
         <div className="flex-1 overflow-hidden flex flex-col">
           <ScrollArea className="flex-1 px-6" onScrollCapture={handleScroll}>
             <div ref={scrollRef} className="space-y-4 py-4">
