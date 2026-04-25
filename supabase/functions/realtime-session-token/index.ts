@@ -243,12 +243,19 @@ Deno.serve(async (req) => {
       voice,
       modalities: ["audio", "text"],
       instructions,
+      // Tuned for snappy, ChatGPT-Voice-like turn-taking + accurate multilingual transcription.
+      // No `language` hint → Whisper auto-detects per turn so EN/AR/etc. all transcribe correctly.
       input_audio_transcription: { model: "whisper-1" },
+      input_audio_format: "pcm16",
+      output_audio_format: "pcm16",
+      temperature: 0.8,
       turn_detection: {
         type: "server_vad",
-        threshold: 0.5,
-        prefix_padding_ms: 300,
-        silence_duration_ms: 700,
+        threshold: 0.55,
+        prefix_padding_ms: 250,
+        silence_duration_ms: 380,
+        create_response: true,
+        interrupt_response: true,
       },
     };
 
