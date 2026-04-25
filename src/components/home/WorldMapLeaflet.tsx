@@ -1220,6 +1220,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         } as GeoJSON.FeatureCollection,
         {
           pane: "bordersPane",
+          ...({ smoothFactor: 1.4 } as any),
           style: {
             fillOpacity: 0.14,
             fillColor: isDark ? GOLD.fillDark : GOLD.fillLight,
