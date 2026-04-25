@@ -53,7 +53,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 // Native scroll used instead of ScrollArea for better compatibility
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Send, Trash2, AlertCircle, Sparkles, Search, Loader2, Mic, MicOff, Square, User, ChevronDown, Clock, X, Plus, Check, ArrowUp, History, PanelLeftClose, PanelLeft, Maximize2, Minimize2, Radio, Video } from 'lucide-react';
+import { Send, Trash2, AlertCircle, Sparkles, Search, Loader2, Mic, MicOff, Square, User, ChevronDown, Clock, X, Plus, Check, ArrowUp, History, PanelLeftClose, PanelLeft, Maximize2, Minimize2, Radio, Video, AudioLines, Headphones } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { LiveSessionPanel } from './LiveSessionPanel';
 import {
@@ -1653,33 +1653,38 @@ export function MalakChatInterface({
               </div>
 
               {/* Right side: Voice + Send buttons */}
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
+                {/* Live session (video + screen) */}
                 <Button
                   type="button"
-                  size="icon"
+                  size="sm"
                   variant="ghost"
                   onClick={() => setIsLiveOpen(true)}
                   disabled={state === 'thinking' || state === 'searching' || isGuestLocked}
-                  title={t('portal.chat.live.start', { defaultValue: 'Start live session' })}
+                  title={t('portal.chat.live.tooltip', { defaultValue: 'Live session with video' })}
                   aria-label={t('portal.chat.live.start', { defaultValue: 'Start live session' })}
                   className={cn(
-                    "rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10",
-                    isFloating ? "h-7 w-7" : "h-8 w-8"
+                    "rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 gap-1.5 px-2.5",
+                    isFloating ? "h-7" : "h-8"
                   )}
                 >
-                  <Video className="w-5 h-5" />
+                  <Headphones className="w-4 h-4" />
+                  <span className="text-xs font-medium hidden sm:inline">
+                    {t('portal.chat.live.label', { defaultValue: 'Live' })}
+                  </span>
                 </Button>
 
-                <Button 
-                  type="button" 
-                  size="icon" 
-                  variant="ghost" 
-                  onClick={handleVoiceRecording} 
-                  disabled={state === 'thinking' || state === 'searching' || isRecording || isGuestLocked || voiceChat.status === 'requesting_token' || voiceChat.status === 'connecting'} 
+                {/* Voice chat (ChatGPT-style audio mode) */}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleVoiceRecording}
+                  disabled={state === 'thinking' || state === 'searching' || isRecording || isGuestLocked || voiceChat.status === 'requesting_token' || voiceChat.status === 'connecting'}
                   title={
                     isVoiceLive
                       ? t('portal.chat.voice.stop', { defaultValue: 'Stop voice chat' })
-                      : t('portal.chat.voice.start', { defaultValue: 'Start live voice chat' })
+                      : t('portal.chat.voice.tooltip', { defaultValue: 'Talk with Oryxa by voice' })
                   }
                   aria-label={
                     isVoiceLive
@@ -1687,22 +1692,27 @@ export function MalakChatInterface({
                       : t('portal.chat.voice.start', { defaultValue: 'Start live voice chat' })
                   }
                   className={cn(
-                    "rounded-full text-muted-foreground hover:text-foreground hover:bg-muted relative", 
-                    isFloating ? "h-7 w-7" : "h-8 w-8", 
+                    "rounded-full text-muted-foreground hover:text-foreground hover:bg-muted relative gap-1.5 px-2.5",
+                    isFloating ? "h-7" : "h-8",
                     isRecording && "bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 animate-pulse",
                     isVoiceLive && "bg-primary/15 text-primary",
-                    voiceChat.status === 'connected' && voiceChat.isAISpeaking && "ring-2 ring-primary/60 animate-pulse"
+                    voiceChat.status === 'connected' && voiceChat.isAISpeaking && "ring-2 ring-primary/60"
                   )}
                 >
                   {voiceChat.status === 'requesting_token' || voiceChat.status === 'connecting' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : isVoiceLive ? (
-                    <MicOff className="w-5 h-5" />
+                    <MicOff className="w-4 h-4" />
                   ) : isRecording ? (
                     <Square className="w-4 h-4" />
                   ) : (
-                    <Mic className="w-5 h-5" />
+                    <AudioLines className={cn("w-4 h-4", voiceChat.status === 'connected' && voiceChat.isAISpeaking && "animate-pulse")} />
                   )}
+                  <span className="text-xs font-medium hidden sm:inline">
+                    {isVoiceLive
+                      ? t('portal.chat.voice.labelActive', { defaultValue: 'Stop' })
+                      : t('portal.chat.voice.label', { defaultValue: 'Voice' })}
+                  </span>
                   {voiceChat.status === 'connected' && (
                     <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                   )}
