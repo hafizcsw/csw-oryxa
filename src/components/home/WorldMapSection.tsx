@@ -689,7 +689,14 @@ export const WorldMapSection = memo(function WorldMapSection() {
                 subdivisionGeodata={subdivisionGeodata}
                 regionSummaries={regionSummaries}
                 visibleCountryCodes={filteredCodes}
-                citySummaries={geoEnrichedCities.length > 0 ? geoEnrichedCities : undefined}
+                citySummaries={
+                  // Only reveal city dots once the user has zoomed in deep enough on the country.
+                  // Below this threshold the country stays as a single highlighted shape so panning
+                  // between neighbors stays fluid without dots flickering on every adjacent country.
+                  geoEnrichedCities.length > 0 && (mapViewport?.zoom ?? 0) >= 5.2
+                    ? geoEnrichedCities
+                    : undefined
+                }
                 cityUniversities={countryUniversities || undefined}
                 regionCities={selectedCity ? [selectedCity] : selectedRegionForCity?.cities}
                  osmOverlay={osmOverlay}
