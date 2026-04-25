@@ -3,6 +3,7 @@ import { useSmartScroll } from '@/hooks/useSmartScroll';
 import { useMalakChat } from '@/contexts/MalakChatContext';
 import { ChatMessage } from './ChatMessage';
 import { UniversityResults } from './UniversityResults';
+import { LiveSessionPanel } from './LiveSessionPanel';
 import { AIIcon } from '@/components/icons/AIIcon';
 import {
   Sheet,
@@ -13,8 +14,9 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Radio, MessageSquare } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { cn } from '@/lib/utils';
 
 export function AIChatPanel() {
   const { t } = useLanguage();
@@ -28,6 +30,7 @@ export function AIChatPanel() {
   } = useMalakChat();
 
   const [input, setInput] = useState('');
+  const [mode, setMode] = useState<'text' | 'live'>('text');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // ✅ Smart Auto-scroll with typewriter support
