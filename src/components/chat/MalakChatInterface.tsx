@@ -1565,6 +1565,22 @@ export function MalakChatInterface({
 
               {/* Right side: Voice + Send buttons */}
               <div className="flex items-center gap-2.5">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setIsLiveOpen(true)}
+                  disabled={state === 'thinking' || state === 'searching' || isGuestLocked}
+                  title={t('portal.chat.live.start', { defaultValue: 'Start live session' })}
+                  aria-label={t('portal.chat.live.start', { defaultValue: 'Start live session' })}
+                  className={cn(
+                    "rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10",
+                    isFloating ? "h-7 w-7" : "h-8 w-8"
+                  )}
+                >
+                  <Video className="w-5 h-5" />
+                </Button>
+
                 <Button 
                   type="button" 
                   size="icon" 
