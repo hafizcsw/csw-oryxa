@@ -34,7 +34,9 @@ export function useGeoCacheResolver(
   useEffect(() => {
     if (!citySummaries || !countryCode || citySummaries.length === 0) return;
 
+    let cancelled = false;
     const run = async () => {
+      if (cancelled) return;
       // 1. Find cities missing coordinates
       const missingCities = citySummaries.filter(
         c => c.city && c.city !== '__unknown__' && (c.city_lat == null || c.city_lon == null)
