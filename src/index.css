@@ -332,15 +332,35 @@ All colors MUST be HSL.
   .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
 }
 
-/* When the Social shell is mounted, hide global app chrome / floaters
-   so the X+TikTok+Instagram experience stays clean and isolated. */
-body[data-social-active="true"] > #root > * > header,
-body[data-social-active="true"] > #root > * > footer,
+/* When the Social shell is mounted, hide ALL global app chrome / floaters
+   so the X+TikTok+Instagram experience stays clean and isolated.
+   Strategy: hide every direct child of <body> except the Social shell itself
+   (which is portaled via data-social-shell), plus known floaters anywhere. */
+body[data-social-active="true"] header,
+body[data-social-active="true"] footer,
 body[data-social-active="true"] [data-portal-floater],
 body[data-social-active="true"] [data-malak-chat],
 body[data-social-active="true"] [data-news-ticker],
-body[data-social-active="true"] [data-app-tour] {
+body[data-social-active="true"] [data-app-tour],
+body[data-social-active="true"] [data-floating-widget],
+body[data-social-active="true"] .malak-chat-root,
+body[data-social-active="true"] .portal-auth-floater {
   display: none !important;
+}
+
+/* Make sure the Social shell itself (and Radix portals it spawns) stay visible */
+body[data-social-active="true"] [data-social-shell],
+body[data-social-active="true"] [data-radix-portal],
+body[data-social-active="true"] [data-radix-popper-content-wrapper],
+body[data-social-active="true"] [role="dialog"],
+body[data-social-active="true"] [role="menu"],
+body[data-social-active="true"] [data-sonner-toaster] {
+  display: revert !important;
+}
+
+/* Also lock background scroll */
+body[data-social-active="true"] {
+  overflow: hidden;
 }
 
 @layer utilities {
