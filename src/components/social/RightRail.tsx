@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 const trending = [
   { topic: "#الجامعات_العالمية", posts: "12.4K منشور" },
   { topic: "#منح_دراسية", posts: "8.1K منشور" },
-  { topic: "#ORX", posts: "3.2K منشور" },
+  { topic: "#Oryxa", posts: "3.2K منشور" },
   { topic: "#طلاب_دوليون", posts: "5.7K منشور" },
 ];
 
@@ -48,7 +48,7 @@ export function RightRail() {
       </section>
 
       <div className="text-xs text-[hsl(var(--social-muted))] px-2 leading-relaxed">
-        © {new Date().getFullYear()} ORX Social · الشروط · الخصوصية · ملفات الارتباط
+        © {new Date().getFullYear()} Oryxa Social · الشروط · الخصوصية · ملفات الارتباط
       </div>
     </aside>
   );

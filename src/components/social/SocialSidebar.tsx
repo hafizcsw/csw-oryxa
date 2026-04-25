@@ -24,7 +24,7 @@ export function SocialSidebar({ onCompose }: { onCompose: () => void }) {
         className="px-3 py-2 mb-2 text-2xl font-black tracking-tight cursor-pointer"
         onClick={() => navigate("/social")}
       >
-        ORX<span className="text-[hsl(var(--social-accent))]">·</span>
+        Oryxa<span className="text-[hsl(var(--social-accent))]">·</span>
       </div>
 
       <nav className="flex flex-col gap-1">
