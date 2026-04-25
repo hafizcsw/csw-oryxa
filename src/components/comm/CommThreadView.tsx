@@ -1,15 +1,17 @@
 /**
  * CommThreadView — Shared message thread view for the canonical communication backbone.
  */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Paperclip, Loader2 } from 'lucide-react';
+import { Send, Paperclip, Loader2, Phone, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useCommMessages, commSendMessage, commMarkRead, type CommMessage } from '@/hooks/useCommApi';
+import { useCommCall } from '@/contexts/CommCallContext';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 interface CommThreadViewProps {
   threadId: string;
@@ -33,6 +35,43 @@ export function CommThreadView({ threadId, threadType, subject, className }: Com
   const [sending, setSending] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const msgsEndRef = useRef<HTMLDivElement>(null);
+  const { startCall, call: activeCall } = useCommCall();
+
+  // Derive remote participant from messages (first message not sent by me)
+  const remoteParticipant = useMemo(() => {
+    if (!userId) return null;
+    const other = messages.find((m) => m.sender_id !== userId);
+    if (!other) return null;
+    return {
+      userId: other.sender_id,
+      name: other.sender_name || undefined,
+      avatar: other.sender_avatar || undefined,
+    };
+  }, [messages, userId]);
+
+  const canCall = !!remoteParticipant && !activeCall && threadType !== 'security_notice' && threadType !== 'system_notice';
+
+  const handleStartCall = async (callType: 'audio' | 'video') => {
+    if (!remoteParticipant) {
+      toast({ title: t('comm.call.noRecipient'), variant: 'destructive' });
+      return;
+    }
+    try {
+      await startCall({
+        threadId,
+        calleeId: remoteParticipant.userId,
+        callType,
+        remoteName: remoteParticipant.name,
+        remoteAvatar: remoteParticipant.avatar,
+      });
+    } catch (e: any) {
+      toast({
+        title: t('comm.call.failed'),
+        description: e?.message,
+        variant: 'destructive',
+      });
+    }
+  };
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id || null));
@@ -89,6 +128,47 @@ export function CommThreadView({ threadId, threadType, subject, className }: Com
 
   return (
     <div className={`flex flex-col h-full ${className || ''}`}>
+      {/* Header with call actions */}
+      {canCall && (
+        <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-card/50 flex-shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            {remoteParticipant?.avatar ? (
+              <Avatar className="w-7 h-7 flex-shrink-0">
+                <AvatarImage src={remoteParticipant.avatar} />
+                <AvatarFallback className="text-xs">
+                  {(remoteParticipant.name || '?')[0]}
+                </AvatarFallback>
+              </Avatar>
+            ) : null}
+            <span className="text-sm font-medium truncate">
+              {remoteParticipant?.name || subject || t('comm.conversation')}
+            </span>
+          </div>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => handleStartCall('audio')}
+              className="h-8 w-8 rounded-full"
+              aria-label={t('comm.call.startAudio')}
+              title={t('comm.call.startAudio')}
+            >
+              <Phone className="w-4 h-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => handleStartCall('video')}
+              className="h-8 w-8 rounded-full"
+              aria-label={t('comm.call.startVideo')}
+              title={t('comm.call.startVideo')}
+            >
+              <Video className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
         {groupedMessages.map((group, gi) => {

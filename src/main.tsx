@@ -4,6 +4,8 @@ import { Suspense } from 'react';
 import { createRoot } from "react-dom/client";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { ChatProvider } from "./contexts/ChatContext";
+import { CommCallProvider } from "./contexts/CommCallContext";
+import { CommCallWindow } from "./components/comm/CommCallWindow";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { PageLoader } from "./components/ui/PageLoader";
 import App from "./App.tsx";
@@ -38,7 +40,10 @@ createRoot(document.getElementById("root")!).render(
     <Suspense fallback={<PageLoader />}>
       <LanguageProvider>
         <ChatProvider>
-          <App />
+          <CommCallProvider>
+            <App />
+            <CommCallWindow />
+          </CommCallProvider>
         </ChatProvider>
       </LanguageProvider>
     </Suspense>
