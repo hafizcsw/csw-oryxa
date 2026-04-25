@@ -85,10 +85,11 @@ export function usePortalDrafts({ studentUserId }: UsePortalDraftsOptions): UseP
       if (result.ok && result.draft) {
         setDrafts((prev) => [result.draft as PortalDraft, ...prev]);
         setPending((prev) => prev.filter((p) => p.tempId !== tempId));
-        // Order 3: kick off draft-scoped extraction. Fire-and-forget; refresh on completion.
+        // Order 3R.1: CSW-controlled OCR pre-processing → DeepSeek (oryxa-ai-provider).
+        // The raw file never leaves Supabase storage / our VPS — only OCR text reaches DeepSeek.
         void (async () => {
           try {
-            await supabase.functions.invoke("portal-draft-extract", {
+            await supabase.functions.invoke("oryxa-ocr-worker", {
               body: { draft_id: (result.draft as PortalDraft).id },
             });
           } catch {
