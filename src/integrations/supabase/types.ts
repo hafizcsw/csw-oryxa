@@ -1480,6 +1480,98 @@ export type Database = {
         }
         Relationships: []
       }
+      comm_call_signals: {
+        Row: {
+          call_id: string
+          created_at: string
+          from_user: string
+          id: string
+          payload: Json
+          signal_type: string
+          to_user: string
+        }
+        Insert: {
+          call_id: string
+          created_at?: string
+          from_user: string
+          id?: string
+          payload: Json
+          signal_type: string
+          to_user: string
+        }
+        Update: {
+          call_id?: string
+          created_at?: string
+          from_user?: string
+          id?: string
+          payload?: Json
+          signal_type?: string
+          to_user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comm_call_signals_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "comm_calls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comm_calls: {
+        Row: {
+          answered_at: string | null
+          call_type: string
+          callee_id: string
+          caller_id: string
+          created_at: string
+          duration_seconds: number | null
+          end_reason: string | null
+          ended_at: string | null
+          has_screen_share: boolean
+          id: string
+          recording_url: string | null
+          started_at: string
+          status: string
+          thread_id: string
+          updated_at: string
+        }
+        Insert: {
+          answered_at?: string | null
+          call_type: string
+          callee_id: string
+          caller_id: string
+          created_at?: string
+          duration_seconds?: number | null
+          end_reason?: string | null
+          ended_at?: string | null
+          has_screen_share?: boolean
+          id?: string
+          recording_url?: string | null
+          started_at?: string
+          status?: string
+          thread_id: string
+          updated_at?: string
+        }
+        Update: {
+          answered_at?: string | null
+          call_type?: string
+          callee_id?: string
+          caller_id?: string
+          created_at?: string
+          duration_seconds?: number | null
+          end_reason?: string | null
+          ended_at?: string | null
+          has_screen_share?: boolean
+          id?: string
+          recording_url?: string | null
+          started_at?: string
+          status?: string
+          thread_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       comm_messages: {
         Row: {
           attachment_name: string | null
