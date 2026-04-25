@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.oryxa-ocr-worker]
 verify_jwt = false
+
+[functions.deepseek-ocr-service]
+verify_jwt = false

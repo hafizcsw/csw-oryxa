@@ -1,22 +1,40 @@
 // ═══════════════════════════════════════════════════════════════
 // oryxa-ocr-worker — CSW-controlled OCR pre-processing
 // ───────────────────────────────────────────────────────────────
-// Order 3R.1.
+// Order 3R.1 (architectural update).
+//
+// Primary OCR engine = DeepSeek-OCR (DeepSeek-OCR-2) via the
+// CSW-controlled `deepseek-ocr-service` adapter.
+// PaddleOCR is now a deprecated fallback, DISABLED by default.
+// It is only used if env ORYXA_OCR_ALLOW_PADDLE_FALLBACK=true.
 //
 // Pipeline per draft:
 //   1. Verify caller owns draft_id.
 //   2. Mark portal_document_drafts.extraction_status = 'ocr_running'.
-//   3. Try PDF text-layer extraction (unpdf, runs in-Deno, no
-//      external call). If it yields enough characters → done.
-//   4. Otherwise call paddle-structure (our VPS PaddleOCR proxy)
-//      for image / scanned / low-text PDFs.
-//   5. On OCR success → mark 'ocr_completed', invoke
+//   3. If file is a PDF → try PDF text-layer extraction (unpdf,
+//      runs in-Deno, no external call). If it yields enough
+//      characters → engine_path = 'pdf_text', done.
+//   4. Otherwise (scanned PDF / image / passport / certificate /
+//      IELTS / transcript) → call deepseek-ocr-service.
+//      engine_path = 'deepseek_ocr'.
+//   5. PaddleOCR is only attempted if explicitly opted-in via
+//      ORYXA_OCR_ALLOW_PADDLE_FALLBACK=true. Otherwise the worker
+//      surfaces 'deepseek_ocr_service_not_configured' or
+//      'deepseek_ocr_failed' as visible extraction errors — no
+//      silent pending.
+//   6. On OCR success → mark 'ocr_completed', invoke
 //      oryxa-ai-provider with task_type=document_extraction and
-//      the OCR text (NOT the raw file).
-//   6. Persist OCR audit row in oryxa_ocr_runs.
+//      the OCR text/markdown (NEVER the raw file).
+//   7. Persist OCR audit row in oryxa_ocr_runs.
 //
-// Hard prohibitions enforced:
-//   • Never sends the raw file to DeepSeek or any external API.
+// Privacy
+//   Raw student files are NOT sent to DeepSeek V4 API or to any
+//   third-party OCR/AI APIs. For OCR fallback, a short-lived
+//   signed URL may be fetched only by a CSW-controlled
+//   DeepSeek-OCR service.
+//
+// Hard prohibitions enforced
+//   • Never sends the raw file to DeepSeek V4 / any third-party.
 //   • Never calls Mistral, Google Vision, AWS Textract, OpenAI.
 //   • Never writes to CRM tables (customer_files, student-docs,
 //     crm_storage, document_lane_facts, document_review_queue).
@@ -53,24 +71,32 @@ interface ReqBody {
   draft_id?: string;
   trace_id?: string;
   document_type_hint?: string | null;
-  /** if true, skip the DeepSeek call; useful for OCR-only smoke tests */
+  /** if true, skip the DeepSeek V4 extraction call; OCR-only smoke test */
   skip_extraction?: boolean;
 }
+
+type EnginePath =
+  | "pdf_text"
+  | "deepseek_ocr"
+  | "paddle_structure"
+  | "failed";
 
 interface OcrPage {
   page: number;
   text: string;
+  markdown?: string;
   confidence: number | null;
-  method: "pdf_text" | "paddle_structure" | "none";
+  method: "pdf_text" | "deepseek_ocr_2" | "paddle_structure" | "none";
 }
 
 interface OcrResult {
   ocr_text: string;
+  markdown: string;
   pages: OcrPage[];
-  engine_path: "pdf_text" | "paddle_structure" | "mixed" | "failed";
+  engine_path: EnginePath;
   quality_flags: string[];
   avg_confidence: number | null;
-  status: "ok" | "no_endpoint_configured" | "unreadable_document" | "failed";
+  status: "ok" | "service_not_configured" | "unreadable_document" | "failed";
   error?: string;
 }
 
@@ -91,6 +117,7 @@ async function tryPdfTextLayer(bytes: Uint8Array, trace_id: string): Promise<Ocr
       tlog(trace_id, "pdf_text_ok", { pages: totalPages, chars: joined.length });
       return {
         ocr_text: joined,
+        markdown: joined,
         pages,
         engine_path: "pdf_text",
         quality_flags: [],
@@ -101,6 +128,7 @@ async function tryPdfTextLayer(bytes: Uint8Array, trace_id: string): Promise<Ocr
     tlog(trace_id, "pdf_text_too_short", { chars: joined.length });
     return {
       ocr_text: joined,
+      markdown: joined,
       pages,
       engine_path: "failed",
       quality_flags: ["pdf_text_too_short"],
@@ -112,6 +140,7 @@ async function tryPdfTextLayer(bytes: Uint8Array, trace_id: string): Promise<Ocr
     tlog(trace_id, "pdf_text_err", { error: (e as Error).message });
     return {
       ocr_text: "",
+      markdown: "",
       pages: [],
       engine_path: "failed",
       quality_flags: ["pdf_text_failed"],
@@ -122,9 +151,124 @@ async function tryPdfTextLayer(bytes: Uint8Array, trace_id: string): Promise<Ocr
   }
 }
 
-// ─── PaddleOCR via our VPS proxy ────────────────────────────────
+// ─── DeepSeek-OCR (primary) via deepseek-ocr-service ────────────
 
-async function tryPaddleStructure(args: {
+async function tryDeepSeekOcr(args: {
+  draft_id: string;
+  document_type_hint: string | null;
+  authHeader: string;
+  trace_id: string;
+  supabaseUrl: string;
+  anonKey: string;
+}): Promise<OcrResult> {
+  let upstream: Response;
+  try {
+    upstream = await fetch(`${args.supabaseUrl}/functions/v1/deepseek-ocr-service`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: args.authHeader,
+        apikey: args.anonKey,
+        "x-portal-trace-id": args.trace_id,
+      },
+      body: JSON.stringify({
+        draft_id: args.draft_id,
+        document_type_hint: args.document_type_hint,
+        trace_id: args.trace_id,
+      }),
+    });
+  } catch (e) {
+    return {
+      ocr_text: "",
+      markdown: "",
+      pages: [],
+      engine_path: "failed",
+      quality_flags: ["deepseek_ocr_unreachable"],
+      avg_confidence: null,
+      status: "failed",
+      error: "deepseek_ocr_failed",
+    };
+  }
+
+  const text = await upstream.text();
+  let body: any;
+  try {
+    body = JSON.parse(text);
+  } catch {
+    return {
+      ocr_text: "",
+      markdown: "",
+      pages: [],
+      engine_path: "failed",
+      quality_flags: ["deepseek_ocr_bad_json"],
+      avg_confidence: null,
+      status: "failed",
+      error: "deepseek_ocr_failed",
+    };
+  }
+
+  if (!body?.ok) {
+    const reason = body?.reason ?? "deepseek_ocr_failed";
+    const status: OcrResult["status"] =
+      reason === "deepseek_ocr_service_not_configured"
+        ? "service_not_configured"
+        : "failed";
+    return {
+      ocr_text: "",
+      markdown: "",
+      pages: [],
+      engine_path: "failed",
+      quality_flags: [reason],
+      avg_confidence: null,
+      status,
+      error: reason,
+    };
+  }
+
+  const upstreamPages: any[] = Array.isArray(body.pages) ? body.pages : [];
+  const pages: OcrPage[] = upstreamPages.map((p, i) => ({
+    page: typeof p?.page === "number" ? p.page : i + 1,
+    text: typeof p?.text === "string" ? p.text : "",
+    markdown: typeof p?.markdown === "string" ? p.markdown : undefined,
+    confidence: typeof p?.confidence === "number" ? p.confidence : null,
+    method: "deepseek_ocr_2",
+  }));
+  const ocr_text = typeof body.ocr_text === "string" && body.ocr_text.length
+    ? body.ocr_text
+    : pages.map((p) => p.text).join("\n\n").trim();
+  const markdown = typeof body.markdown === "string" && body.markdown.length
+    ? body.markdown
+    : ocr_text;
+  const confs = pages.map((p) => p.confidence).filter((c): c is number => typeof c === "number");
+  const avg = confs.length ? confs.reduce((a, b) => a + b, 0) / confs.length : null;
+
+  if (!ocr_text) {
+    return {
+      ocr_text: "",
+      markdown: "",
+      pages,
+      engine_path: "failed",
+      quality_flags: ["deepseek_ocr_empty_text"],
+      avg_confidence: avg,
+      status: "unreadable_document",
+      error: "unreadable_document",
+    };
+  }
+
+  return {
+    ocr_text,
+    markdown,
+    pages,
+    engine_path: "deepseek_ocr",
+    quality_flags: Array.isArray(body.quality_flags) ? body.quality_flags : [],
+    avg_confidence: avg,
+    status: "ok",
+  };
+}
+
+// ─── PaddleOCR (DEPRECATED fallback, disabled by default) ───────
+
+async function tryPaddleStructureFallback(args: {
   draft_id: string;
   authHeader: string;
   trace_id: string;
@@ -143,35 +287,22 @@ async function tryPaddleStructure(args: {
   });
   const text = await r.text();
   let body: any;
-  try {
-    body = JSON.parse(text);
-  } catch {
+  try { body = JSON.parse(text); } catch {
     return {
-      ocr_text: "",
-      pages: [],
+      ocr_text: "", markdown: "", pages: [],
       engine_path: "failed",
-      quality_flags: ["paddle_bad_json"],
-      avg_confidence: null,
-      status: "failed",
-      error: "paddle_bad_json",
+      quality_flags: ["paddle_bad_json", "deprecated_fallback"],
+      avg_confidence: null, status: "failed", error: "paddle_bad_json",
     };
   }
-
   if (!body?.ok) {
-    const reason = body?.reason ?? "paddle_error";
-    const status: OcrResult["status"] =
-      reason === "no_endpoint_configured" ? "no_endpoint_configured" : "failed";
     return {
-      ocr_text: "",
-      pages: [],
+      ocr_text: "", markdown: "", pages: [],
       engine_path: "failed",
-      quality_flags: [reason],
-      avg_confidence: null,
-      status,
-      error: reason,
+      quality_flags: [body?.reason ?? "paddle_error", "deprecated_fallback"],
+      avg_confidence: null, status: "failed", error: body?.reason ?? "paddle_error",
     };
   }
-
   const upstreamPages: any[] = Array.isArray(body.pages) ? body.pages : [];
   const pages: OcrPage[] = upstreamPages.map((p, i) => ({
     page: typeof p?.page_number === "number" ? p.page_number : i + 1,
@@ -182,26 +313,19 @@ async function tryPaddleStructure(args: {
   const joined = pages.map((p) => p.text).join("\n\n").trim();
   const confs = pages.map((p) => p.confidence).filter((c): c is number => typeof c === "number");
   const avg = confs.length ? confs.reduce((a, b) => a + b, 0) / confs.length : null;
-
   if (!joined) {
     return {
-      ocr_text: "",
-      pages,
+      ocr_text: "", markdown: "", pages,
       engine_path: "failed",
-      quality_flags: ["paddle_empty_text"],
-      avg_confidence: avg,
-      status: "unreadable_document",
-      error: "paddle_returned_empty_text",
+      quality_flags: ["paddle_empty_text", "deprecated_fallback"],
+      avg_confidence: avg, status: "unreadable_document", error: "unreadable_document",
     };
   }
-
   return {
-    ocr_text: joined,
-    pages,
+    ocr_text: joined, markdown: joined, pages,
     engine_path: "paddle_structure",
-    quality_flags: avg !== null && avg < 0.5 ? ["low_ocr_confidence"] : [],
-    avg_confidence: avg,
-    status: "ok",
+    quality_flags: ["deprecated_fallback"],
+    avg_confidence: avg, status: "ok",
   };
 }
 
@@ -218,17 +342,17 @@ Deno.serve(async (req) => {
     return jsonRes({ ok: false, reason: "supabase_env_missing" }, 500);
   }
 
+  const ALLOW_PADDLE_FALLBACK =
+    (Deno.env.get("ORYXA_OCR_ALLOW_PADDLE_FALLBACK") ?? "").toLowerCase() === "true";
+
   let body: ReqBody;
-  try {
-    body = await req.json();
-  } catch {
+  try { body = await req.json(); } catch {
     return jsonRes({ ok: false, reason: "bad_json" }, 400);
   }
 
   const trace_id = body.trace_id || crypto.randomUUID();
   if (!body.draft_id) return jsonRes({ ok: false, reason: "draft_id_required", trace_id }, 400);
 
-  // Caller JWT
   const authHeader = req.headers.get("Authorization") ?? "";
   const token = authHeader.replace(/^Bearer\s+/i, "");
   if (!token) return jsonRes({ ok: false, reason: "no_auth", trace_id }, 401);
@@ -244,7 +368,6 @@ Deno.serve(async (req) => {
 
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
 
-  // Ownership + draft fetch
   const { data: draft, error: dErr } = await admin
     .from("portal_document_drafts")
     .select("id,student_user_id,draft_storage_bucket,draft_storage_path,mime_type,original_file_name,document_type")
@@ -257,7 +380,6 @@ Deno.serve(async (req) => {
   const isPdf = (draft.mime_type ?? "").toLowerCase().includes("pdf") ||
     (draft.original_file_name ?? "").toLowerCase().endsWith(".pdf");
 
-  // Mark OCR running
   await admin
     .from("portal_document_drafts")
     .update({
@@ -268,16 +390,13 @@ Deno.serve(async (req) => {
     })
     .eq("id", draft.id);
 
-  // ── Step 1: PDF text-layer (if PDF) ──
   let ocr: OcrResult = {
-    ocr_text: "",
-    pages: [],
-    engine_path: "failed",
-    quality_flags: [],
-    avg_confidence: null,
+    ocr_text: "", markdown: "", pages: [],
+    engine_path: "failed", quality_flags: [], avg_confidence: null,
     status: "failed",
   };
 
+  // ── Step 1: PDF text-layer (in-Deno) ──
   if (isPdf) {
     const dl = await admin.storage
       .from(draft.draft_storage_bucket || "portal-drafts")
@@ -290,27 +409,38 @@ Deno.serve(async (req) => {
     }
   }
 
-  // ── Step 2: PaddleOCR fallback for images / scanned PDFs ──
+  // ── Step 2: DeepSeek-OCR (primary) for scanned PDFs / images ──
   if (ocr.status !== "ok") {
-    const prevFlags = ocr.quality_flags;
-    const paddle = await tryPaddleStructure({
+    const ds = await tryDeepSeekOcr({
       draft_id: draft.id,
+      document_type_hint: body.document_type_hint ?? draft.document_type ?? null,
       authHeader,
       trace_id,
       supabaseUrl: SUPABASE_URL,
       anonKey: ANON_KEY,
     });
-    if (paddle.status === "ok" && isPdf) {
-      ocr = { ...paddle, engine_path: "mixed", quality_flags: [...prevFlags, ...paddle.quality_flags] };
+
+    if (ds.status === "ok") {
+      ocr = ds;
+    } else if (ALLOW_PADDLE_FALLBACK) {
+      // Deprecated fallback, opt-in only.
+      tlog(trace_id, "paddle_fallback_attempt", { reason: ds.error });
+      const paddle = await tryPaddleStructureFallback({
+        draft_id: draft.id,
+        authHeader,
+        trace_id,
+        supabaseUrl: SUPABASE_URL,
+        anonKey: ANON_KEY,
+      });
+      ocr = paddle.status === "ok" ? paddle : ds; // surface DS error if both fail
     } else {
-      ocr = paddle;
+      ocr = ds;
     }
   }
 
   const ocr_latency_ms = Date.now() - t0;
   const chars_total = ocr.ocr_text.length;
 
-  // Persist OCR run
   await admin.from("oryxa_ocr_runs").insert({
     student_user_id: user_id,
     draft_id: draft.id,
@@ -327,11 +457,14 @@ Deno.serve(async (req) => {
   });
 
   if (ocr.status !== "ok") {
-    const ext_error = ocr.status === "no_endpoint_configured"
-      ? "ocr_endpoint_not_configured"
-      : ocr.status === "unreadable_document"
-      ? "unreadable_document"
-      : "ocr_failed";
+    const ext_error =
+      ocr.error === "deepseek_ocr_service_not_configured"
+        ? "deepseek_ocr_service_not_configured"
+        : ocr.status === "unreadable_document"
+        ? "unreadable_document"
+        : ocr.error === "deepseek_ocr_failed"
+        ? "deepseek_ocr_failed"
+        : "ocr_failed";
     await admin
       .from("portal_document_drafts")
       .update({
@@ -350,7 +483,6 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Mark OCR completed
   await admin
     .from("portal_document_drafts")
     .update({ extraction_status: "ocr_completed" })
@@ -369,7 +501,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  // ── Step 3: hand off OCR text (NOT the raw file) to DeepSeek ──
+  // ── Step 3: hand off OCR text (NOT the raw file) to DeepSeek V4 ──
   await admin
     .from("portal_document_drafts")
     .update({ extraction_status: "deepseek_extraction_running" })
@@ -413,7 +545,6 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Decorate the extraction row with which OCR engine fed it
   await admin
     .from("portal_document_draft_extractions")
     .update({
