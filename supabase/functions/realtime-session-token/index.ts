@@ -9,7 +9,9 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const REALTIME_MODEL = "gpt-4o-realtime-preview-2024-12-17";
+// Latest production realtime model — significantly better understanding,
+// faster turn-taking, and proper multilingual handling vs the 2024-12 preview.
+const REALTIME_MODEL = "gpt-4o-realtime-preview-2025-06-03";
 
 // 12-locale baseline for CSW World
 const LANG_NAME: Record<string, string> = {
