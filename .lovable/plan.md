@@ -1,144 +1,121 @@
-# إعادة بناء جلسة Oryxa الحية لتليق بـ CSW World
+# تطوير قائمة الأفاتار: تصميم جديد + إجراءات سريعة مدمجة
 
-## التشخيص الصريح لما فشل في الجلسة الحالية
+## الهدف
+تحويل قائمة الأفاتار الحالية في `HeaderAuth.tsx` من مجرد قائمة روابط تنقل إلى **مركز تحكم سريع (Quick Actions Hub)** بتصميم عصري أنيق مستوحى من القائمة المرجعية (فيسبوك)، بحيث يستطيع المستخدم تنفيذ المهام الأكثر استخداماً مباشرة من القائمة دون مغادرة الصفحة الحالية.
 
-1. **الشخصية عامة وسطحية**: "friendly educational assessor" بدون أي إدراك أن هذا منتج CSW World لـ **استكشاف الجامعات والبرامج عالمياً**. لا تعرف أنها أمام طالب يبحث عن دراسة في الخارج.
+---
 
-2. **اللغة ثنائية بدائية**: `isArabicSession` فقط — يخالف قاعدة المشروع (12 لغة). بقية الـ 10 لغات تنزل قسراً للإنجليزية.
+## أولاً: التصميم الجديد (Design)
 
-3. **القياس وهمي**: تطلب من النموذج "اطرح سؤال لغة" بدون أي rubric، بدون مقاييس CEFR، بدون قياس فعلي. النموذج يرتجل أسئلة عشوائية.
-
-4. **الكاميرا بلا غرض حقيقي**: تُرسل frames لكن النموذج لا يستخدمها لأي شيء قياسي (هل الطالب موجود؟ هل يكتب؟ هل يُظهر ورقة؟ هل يحل مسألة هندسية على ورقة؟).
-
-5. **الصوت/الإلقاء سيء**: `voice: alloy` ثابت. لا اختيار صوت يناسب لغة الطالب. لا تعليمات لإيقاع/نبرة.
-
-6. **لا سياق طالب**: لا تعرف مستواه، عمره، البلد المستهدف، التخصص المهتم به — رغم أن كل هذا موجود في portal/CRM context.
-
-7. **لا مخرج منظَّم**: تنتهي بـ "ملخص شفهي" يضيع. لا JSON قابل للاستفادة لاحقاً.
-
-## ما سنبنيه (هذا الباب فقط — Live Session Rebuild)
-
-### A. شخصية Oryxa صحيحة لـ CSW World
-
-System prompt جديد (في edge function) يتضمّن:
-- هويتها: مرشدة CSW World المتخصصة في توجيه الطلاب لدراسة في الخارج (12 دولة مدعومة)
-- مهمتها في هذه الجلسة: قياس **مبدئي موثَّق** قبل ترشيح برامج/جامعات
-- تتكلم بلغة الطالب الـ 12 الأصلية، ليس فقط ar/en
-- تعرف أن CSW World منصة عالمية — تتجنب التحيز لبلد واحد
-
-### B. دعم الـ 12 لغة بشكل صحيح
-
-استبدال `isArabicSession` بـ map كامل:
-```ts
-const VOICE_BY_LANG = {
-  ar: "shimmer", en: "alloy", es: "nova", fr: "nova",
-  de: "echo", pt: "nova", ru: "echo", zh: "shimmer",
-  ja: "shimmer", ko: "shimmer", hi: "nova", bn: "nova"
-};
-const LANG_NAME = { ar:"Arabic", en:"English", es:"Spanish", ... };
-```
-النموذج يتلقى تعليمات صريحة: "Conduct the entire session in {LANG_NAME}. If the student switches language, follow them but note it."
-
-### C. قياس حقيقي مُهيكل (Structured Assessment)
-
-تعليمات داخلية للنموذج تتبع rubric واضح:
-
-1. **Language proficiency** — مقياس CEFR تقريبي (A1→C2):
-   - 3 prompts متدرجة الصعوبة بلغة الطالب
-   - يقيس: نطق، استيعاب، طلاقة، مفردات
-2. **Quantitative reasoning** — 2 أسئلة:
-   - حسابية بسيطة (نسبة، نسبة مئوية)
-   - هندسية (مساحة/محيط أو زاوية)
-   - **يطلب من الطالب رفع الورقة للكاميرا** ليرى حله
-3. **Logical reasoning** — سؤال واحد (تسلسل أو منطق بسيط)
-4. **Background & goals** — تخصص مهتم، مستوى دراسي حالي، دول مهتم بها
-
-### D. استخدام الكاميرا بهدف
-
-تحديث الـ system prompt ليطلب من النموذج صراحةً:
-- التحقق من حضور الطالب (ليس صورة ثابتة)
-- طلب رؤية ورقة الحل في أسئلة الرياضيات
-- ملاحظة بيئة الجلسة (هل الطالب في مكان مناسب؟)
-
-تحديث `useRealtimeSession.ts`:
-- خفض `FRAME_INTERVAL_MS` من 2500 → 3500 (أقل ضوضاء)
-- إضافة `text` hint مع كل frame: `"[camera_frame_t={timestamp}]"` ليعرف النموذج أنها صورة سياق وليست input مستقل
-
-### E. سياق الطالب من الـ Portal
-
-تحديث `realtime-session-token` ليقبل اختيارياً:
-```ts
-{ language, studentContext?: {
-    displayName?: string,
-    educationLevel?: string,
-    interestedCountries?: string[],
-    interestedFields?: string[]
-}}
-```
-ويُحقَن في الـ instructions: "The student's name is X. They are interested in Y in country Z."
-
-`LiveSessionPanel` يقرأ هذا من `MalakChatContext` / canonical student file إن توفر.
-
-### F. مخرج منظَّم في نهاية الجلسة
-
-تعليمات للنموذج: "في نهاية الجلسة، أرسل عبر DataChannel رسالة من نوع `response.create` تحتوي tool call باسم `submit_assessment` بالـ schema التالي":
-```json
-{
-  "language_level_estimate": "A1|A2|B1|B2|C1|C2",
-  "quantitative_level": "weak|basic|solid|strong",
-  "logical_level": "weak|basic|solid|strong",
-  "interests_detected": ["..."],
-  "countries_mentioned": ["..."],
-  "recommended_next_step": "...",
-  "confidence": "low|medium|high",
-  "session_notes_short": "..."
-}
+### الهيكل البصري (مستوحى من الصورة المرجعية)
+```text
+┌─────────────────────────────────┐
+│  ┌──┐  الاسم الكامل              │  ← بطاقة هوية بارزة
+│  │👤│  email@... · المستوى        │     (Avatar كبير + معلومات)
+│  └──┘  [عرض الملف الشخصي →]      │
+├─────────────────────────────────┤
+│  🌐 اللغة: العربية      ▾ سريع  │  ← Quick toggles (inline)
+│  🌙 الوضع الليلي         ⚪ سريع │
+│  💱 العملة: USD         ▾ سريع  │
+├─────────────────────────────────┤
+│  ⚡ إجراءات سريعة                │
+│  💬 محادثة مع Oryxa              │  ← فتح الشات مباشرة
+│  📚 متابعة آخر درس               │  ← يكمل من حيث توقف
+│  ❤️  المفضلة (12)                │
+│  💼 المحفظة + الرصيد             │
+├─────────────────────────────────┤
+│  🎓 لوحاتي                       │
+│  • حسابي  • تعلمي  • طلباتي    │
+├─────────────────────────────────┤
+│  ⚙️  الإعدادات   |   ❓ الدعم    │  ← شبكة 2×2 مدمجة
+│  🛡️  الخصوصية   |   🚪 خروج     │
+└─────────────────────────────────┘
 ```
 
-النموذج يُسجَّل بـ tool definition عبر `session.update` بعد الاتصال. الـ hook يلتقطه في `response.function_call_arguments.done` ويعرضه في الـ UI كـ "Assessment Summary Card" قابل للنسخ — **بدون حفظ في DB** (نلتزم بنطاق prototype).
+### المبادئ التصميمية
+- **عرض أوسع**: من `w-56` إلى `w-80` لاستيعاب الإجراءات السريعة بشكل مريح.
+- **بطاقة هوية في الأعلى**: أفاتار كبير (12×12) + اسم + بريد + شارة الدور (طالب/معلم/مشرف).
+- **مجموعات منطقية مفصولة**: هوية → تفضيلات سريعة → إجراءات → تنقّل → نظام.
+- **تباين خفيف للأقسام**: استخدام `bg-muted/30` للهيدر وألوان أيقونات دلالية (موجودة فعلاً).
+- **دعم RTL/LTR كامل** (تمت بالفعل عبر LanguageContext).
+- **الوضع الليلي**: متوافق مع الـ design system الحالي (`bg-card`, `border-border`).
 
-### G. UI أنضج
+---
 
-- إضافة شريط مرحلة (Phase): Greeting → Language → Math → Logic → Wrap-up
-- زر "Show my work" يُعطي tip بصري للطالب لرفع الورقة
-- بطاقة الملخص النهائية بعد إنهاء الجلسة (من tool call output)
-- مؤشر LiveStatus أوضح (waveform بسيط للصوت الوارد)
+## ثانياً: الإجراءات السريعة الجديدة (Inline Actions)
 
-## الملفات المتأثرة
+هذه إجراءات تُنفَّذ **داخل القائمة** بدون تنقّل:
 
-**Edge function (rewrite):**
-- `supabase/functions/realtime-session-token/index.ts` — 12-lang map، voice selection، rubric instructions، optional student context، tool registration hint
+| الإجراء | الآلية | الفائدة |
+|---|---|---|
+| **تبديل اللغة** | Submenu أو Select inline يستخدم `setLanguage()` من `LanguageContext` | تغيير فوري بدون فتح صفحة |
+| **الوضع الليلي** | Switch يستخدم `next-themes` (موجود في المشروع) | تبديل لحظي |
+| **تبديل العملة** | Submenu يستخدم `CurrencyContext` الموجود | تغيير عرض الأسعار فورياً |
+| **فتح Oryxa** | يستدعي `openChat()` من `useMalakChat()` | فتح الشات الرئيسي بدون مغادرة الصفحة |
+| **عداد المفضلة المباشر** | يعرض `displayShortlistCount` + زر إزالة سريعة لآخر عنصر مضاف | معلومة + إجراء |
+| **الإشعارات** (لاحقاً) | شارة عدد + قائمة مصغّرة | عرض بدون فتح صفحة كاملة |
+| **حالة الملف الشخصي** | Progress bar صغير (نسبة الاكتمال) + CTA "أكمل الآن" | شفافية + دفع للإكمال |
+| **نسخ معرّف الحساب / كود الإحالة** | زر نسخ بنقرة | إجراء قيّم بدون تنقل |
 
-**Hook (extend):**
-- `src/hooks/useRealtimeSession.ts` — قبول `studentContext`, التقاط tool call output `submit_assessment`, تتبع phase, تحسين frame loop
+---
 
-**UI (rewrite):**
-- `src/components/chat/LiveSessionPanel.tsx` — Phase indicator، assessment summary card، 12-lang labels، work-up tip
+## ثالثاً: التغييرات التقنية
 
-**i18n:**
-- `src/locales/{ar,en}/common.json` — مفاتيح: phases، summary card، rubric labels
-- البنية جاهزة للـ 10 لغات الباقية (لا نولّد ترجمات وهمية الآن — يُترك للـ translation lane)
+### الملف المستهدف
+- `src/components/layout/HeaderAuth.tsx` — إعادة هيكلة قسم `DropdownMenuContent` فقط، مع الحفاظ على كل منطق المصادقة والحالة الحالي (لا تغيير في `useEffect`، `handleSignOut`، `handleGoToAccount`).
 
-**Integration touch points (لا تغيير سلوكي):**
-- `src/components/chat/MalakChatInterface.tsx` — يمرر studentContext إن وُجد
-- `src/components/portal/support/panel/OryxaTab.tsx` — نفس الشيء
+### مكونات جديدة (داخل نفس الملف أو ملفات مساعدة قصيرة)
+- `AvatarMenuHeader` — بطاقة الهوية العلوية.
+- `AvatarMenuQuickToggles` — صف اللغة/الثيم/العملة.
+- `AvatarMenuQuickActions` — أزرار الإجراءات السريعة.
+- `AvatarMenuFooterGrid` — شبكة 2×2 (إعدادات/دعم/خصوصية/خروج).
 
-## خارج النطاق صراحةً
-- لا CRM mutation ولا حفظ نتيجة الـ assessment
-- لا touch لـ Order 2/3 (drafts/extraction) — الديون runtime لا تزال مفتوحة
-- لا تغيير في الـ text chat
-- لا توليد ترجمات للـ 10 لغات (يُترك لباب الترجمة)
-- لا audio recording / transcript persistence
+### الاعتماديات (كلها موجودة)
+- `useLanguage` ✓
+- `useMalakChat` ✓ (لـ `openChat`, `shortlist`)
+- `useStudentProfile` ✓ (للاسم والصورة ونسبة الاكتمال)
+- `next-themes` ✓
+- `CurrencyContext` ✓
+- `DropdownMenuSub`, `DropdownMenuSubContent` من shadcn (موجودة في `ui/dropdown-menu`).
+- `Switch` و `Progress` من shadcn (موجودة).
 
-## معايير الإغلاق
-- **code-ready** بعد التنفيذ
-- **runtime-proven** يحتاج اختبارك:
-  1. الجلسة تتكلم بلغة الواجهة الفعلية
-  2. تطرح أسئلة من كل قسم (لغة + رياضيات + منطق)
-  3. تطلب رفع الورقة للكاميرا في سؤال الهندسة
-  4. تنتج Summary Card في النهاية بحقول مملوءة
-  5. الصوت طبيعي ومناسب للغة
+### قواعد لن تُكسر
+- **12 لغة**: كل النصوص الجديدة عبر `t('account.*')` — سأضيف المفاتيح الناقصة في `src/locales/ar/common.json` و `src/locales/en/common.json` فقط (المفاتيح للـ 10 لغات الأخرى ستحصل على fallback تلقائياً عبر النظام الحالي).
+- **لا منطق صلاحيات جديد**: نفس فحوصات `isStaff`, `isTeacher`, `isSuperAdmin`, `hideStudentItems`.
+- **CRM truth**: لا كتابات جديدة للأفاتار أو الملف من القائمة (نحترم `set_avatar` كمسار وحيد).
+- **لا تغيير في AuthFlow**: أزرار "أكمل ملفك" وغيرها مجرد `navigate` للوجهات الموجودة.
 
-## حالة الباب الحالية
-- Live Session v1 = **failed UX / superficial** — يُستبدل
-- Live Session v2 = code-ready بعد موافقتك
+### مفاتيح ترجمة جديدة (ar + en فقط في هذه المرحلة)
+```
+account.quickActions
+account.preferences
+account.openChat
+account.continueLearning
+account.profileCompletion
+account.completeNow
+account.darkMode
+account.language
+account.currency
+account.settings
+account.support
+account.copyReferral
+account.referralCopied
+```
+
+---
+
+## ما هو خارج النطاق الآن
+- نظام إشعارات حقيقي (يحتاج تصميم منفصل).
+- لقطة من المحادثات الأخيرة داخل القائمة (مرحلة لاحقة).
+- تعديل قوائم الأفاتار في المواقع الأخرى (`OperatorHeaderAuth`, `MalakChatInterface`, `AccountContentHeader`) — سنبقيها كما هي حالياً ونوحّدها في مهمة لاحقة إن طُلب.
+- تغيير سلوك زر الأفاتار في حالة عدم تسجيل الدخول (يبقى كما هو).
+
+---
+
+## معايير القبول
+1. القائمة بتصميم جديد عصري مطابق لروح الصورة المرجعية، وتعمل في الوضعين الفاتح/الداكن وفي RTL/LTR.
+2. تبديل اللغة/الثيم/العملة يعمل **داخل القائمة** بدون إعادة تحميل أو تنقّل.
+3. زر "محادثة Oryxa" يفتح الشات الرئيسي عبر `openChat()` فوراً.
+4. عداد المفضلة ونسبة اكتمال الملف الشخصي مرئية ومحدّثة لحظياً.
+5. كل العناصر القديمة (المحفظة، التعلم، المفضلة، لوحات المعلم/الإدارة، الخصوصية، الخروج) ما زالت تعمل بنفس الوجهات.
+6. لا نصوص مكتوبة بشكل صلب — كلها عبر مفاتيح i18n.
