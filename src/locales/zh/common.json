@@ -11079,5 +11079,73 @@
   "portal.support.panel.suggestions.s3": "接受哪些付款方式？",
   "portal.support.panel.suggestions.s4": "如何跟踪我的申请？",
   "portal.support.panel.suggestions.s5": "可用的奖学金",
-  "portal.support.panel.suggestions.s6": "更新账户信息"
+  "portal.support.panel.suggestions.s6": "更新账户信息",
+  "crawlerV2": {
+    "pageTitle": "爬虫 v2 控制中心",
+    "pageSubtitle": "创建并管理大学目标列表的爬取任务",
+    "runAll": "运行所有大学",
+    "runAllDesc": "将所有活跃大学加入爬取队列",
+    "runCountry": "按国家运行",
+    "runCountryDesc": "将特定国家的所有大学加入队列",
+    "runUniversity": "运行单个大学",
+    "runUniversityDesc": "通过ID将单个大学加入队列",
+    "createRun": "创建任务",
+    "selectMode": "选择模式",
+    "countryCode": "国家代码（例如 CN）",
+    "universityId": "大学ID (UUID)",
+    "recentRuns": "最近任务",
+    "noRunsYet": "暂无爬取任务",
+    "refresh": "刷新",
+    "runDetail": "任务详情",
+    "totalTargets": "总计",
+    "queued": "排队中",
+    "failed": "失败",
+    "completed": "完成",
+    "needsReview": "待审核",
+    "published": "已发布",
+    "traceId": "追踪ID",
+    "createdAt": "创建时间",
+    "scopeLabel": "范围",
+    "statusLabel": "状态",
+    "modeLabel": "模式",
+    "failureBreakdown": "失败分类",
+    "items": "条目（前100条）",
+    "noItems": "无条目",
+    "createdSuccessfully": "任务创建成功",
+    "failedToCreate": "任务创建失败",
+    "scope": {
+      "all": "All Universities",
+      "country": "Country",
+      "university": "University",
+      "custom_list": "Custom List"
+    },
+    "mode": {
+      "missing_or_stale": "Missing or Stale",
+      "failed_only": "Failed Only",
+      "full_refresh": "Full Refresh",
+      "evidence_only": "Evidence Only",
+      "orx_only": "ORX Only",
+      "media_only": "Media Only",
+      "programs_only": "Programs Only",
+      "housing_only": "Housing Only"
+    },
+    "status": {
+      "queued": "Queued",
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "itemStatus": {
+      "queued": "Queued",
+      "completed": "Completed",
+      "failed": "Failed",
+      "needs_review": "Needs Review",
+      "published": "Published"
+    },
+    "failure": {
+      "missing_website": "Missing Website",
+      "invalid_website": "Invalid Website"
+    }
+  }
 }

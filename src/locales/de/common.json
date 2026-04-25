@@ -10435,5 +10435,73 @@
   "portal.support.panel.suggestions.s3": "Welche Zahlungsmethoden werden akzeptiert?",
   "portal.support.panel.suggestions.s4": "Wie verfolge ich meine Bewerbung?",
   "portal.support.panel.suggestions.s5": "Verfügbare Stipendien",
-  "portal.support.panel.suggestions.s6": "Kontoinformationen aktualisieren"
+  "portal.support.panel.suggestions.s6": "Kontoinformationen aktualisieren",
+  "crawlerV2": {
+    "pageTitle": "Crawler v2 Steuerung",
+    "pageSubtitle": "Crawl-Aufgaben für die Universitätsliste erstellen und verwalten",
+    "runAll": "Alle Universitäten crawlen",
+    "runAllDesc": "Alle aktiven Universitäten zur Warteschlange hinzufügen",
+    "runCountry": "Nach Land crawlen",
+    "runCountryDesc": "Alle Universitäten eines bestimmten Landes hinzufügen",
+    "runUniversity": "Einzelne Universität crawlen",
+    "runUniversityDesc": "Eine Universität per ID hinzufügen",
+    "createRun": "Aufgabe erstellen",
+    "selectMode": "Modus wählen",
+    "countryCode": "Ländercode (z.B. DE)",
+    "universityId": "Universitäts-ID (UUID)",
+    "recentRuns": "Letzte Aufgaben",
+    "noRunsYet": "Noch keine Crawl-Aufgaben",
+    "refresh": "Aktualisieren",
+    "runDetail": "Aufgabendetails",
+    "totalTargets": "Gesamt",
+    "queued": "In Warteschlange",
+    "failed": "Fehlgeschlagen",
+    "completed": "Abgeschlossen",
+    "needsReview": "Prüfung erforderlich",
+    "published": "Veröffentlicht",
+    "traceId": "Trace-ID",
+    "createdAt": "Erstellt",
+    "scopeLabel": "Umfang",
+    "statusLabel": "Status",
+    "modeLabel": "Modus",
+    "failureBreakdown": "Fehleraufschlüsselung",
+    "items": "Einträge (erste 100)",
+    "noItems": "Keine Einträge",
+    "createdSuccessfully": "Aufgabe erfolgreich erstellt",
+    "failedToCreate": "Aufgabe konnte nicht erstellt werden",
+    "scope": {
+      "all": "All Universities",
+      "country": "Country",
+      "university": "University",
+      "custom_list": "Custom List"
+    },
+    "mode": {
+      "missing_or_stale": "Missing or Stale",
+      "failed_only": "Failed Only",
+      "full_refresh": "Full Refresh",
+      "evidence_only": "Evidence Only",
+      "orx_only": "ORX Only",
+      "media_only": "Media Only",
+      "programs_only": "Programs Only",
+      "housing_only": "Housing Only"
+    },
+    "status": {
+      "queued": "Queued",
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "itemStatus": {
+      "queued": "Queued",
+      "completed": "Completed",
+      "failed": "Failed",
+      "needs_review": "Needs Review",
+      "published": "Published"
+    },
+    "failure": {
+      "missing_website": "Missing Website",
+      "invalid_website": "Invalid Website"
+    }
+  }
 }

@@ -10466,5 +10466,73 @@
   "portal.support.panel.suggestions.s3": "कौन से भुगतान तरीके स्वीकार किए जाते हैं?",
   "portal.support.panel.suggestions.s4": "मेरे आवेदन को कैसे ट्रैक करें?",
   "portal.support.panel.suggestions.s5": "उपलब्ध छात्रवृत्तियां",
-  "portal.support.panel.suggestions.s6": "खाता जानकारी अपडेट करें"
+  "portal.support.panel.suggestions.s6": "खाता जानकारी अपडेट करें",
+  "crawlerV2": {
+    "pageTitle": "क्रॉलर v2 नियंत्रण",
+    "pageSubtitle": "विश्वविद्यालय लक्ष्य सूची के लिए क्रॉल रन बनाएं और प्रबंधित करें",
+    "runAll": "सभी विश्वविद्यालय चलाएं",
+    "runAllDesc": "सभी सक्रिय विश्वविद्यालयों को कतार में जोड़ें",
+    "runCountry": "देश के अनुसार चलाएं",
+    "runCountryDesc": "किसी देश के सभी विश्वविद्यालयों को कतार में जोड़ें",
+    "runUniversity": "एकल विश्वविद्यालय चलाएं",
+    "runUniversityDesc": "ID से एकल विश्वविद्यालय जोड़ें",
+    "createRun": "रन बनाएं",
+    "selectMode": "मोड चुनें",
+    "countryCode": "देश कोड (जैसे IN)",
+    "universityId": "विश्वविद्यालय ID (UUID)",
+    "recentRuns": "हाल के रन",
+    "noRunsYet": "अभी कोई रन नहीं",
+    "refresh": "ताज़ा करें",
+    "runDetail": "रन विवरण",
+    "totalTargets": "कुल",
+    "queued": "कतार में",
+    "failed": "विफल",
+    "completed": "पूर्ण",
+    "needsReview": "समीक्षा आवश्यक",
+    "published": "प्रकाशित",
+    "traceId": "ट्रेस ID",
+    "createdAt": "बनाया गया",
+    "scopeLabel": "दायरा",
+    "statusLabel": "स्थिति",
+    "modeLabel": "मोड",
+    "failureBreakdown": "विफलता विवरण",
+    "items": "आइटम (पहले 100)",
+    "noItems": "कोई आइटम नहीं",
+    "createdSuccessfully": "रन सफलतापूर्वक बनाया गया",
+    "failedToCreate": "रन बनाने में विफल",
+    "scope": {
+      "all": "All Universities",
+      "country": "Country",
+      "university": "University",
+      "custom_list": "Custom List"
+    },
+    "mode": {
+      "missing_or_stale": "Missing or Stale",
+      "failed_only": "Failed Only",
+      "full_refresh": "Full Refresh",
+      "evidence_only": "Evidence Only",
+      "orx_only": "ORX Only",
+      "media_only": "Media Only",
+      "programs_only": "Programs Only",
+      "housing_only": "Housing Only"
+    },
+    "status": {
+      "queued": "Queued",
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "itemStatus": {
+      "queued": "Queued",
+      "completed": "Completed",
+      "failed": "Failed",
+      "needs_review": "Needs Review",
+      "published": "Published"
+    },
+    "failure": {
+      "missing_website": "Missing Website",
+      "invalid_website": "Invalid Website"
+    }
+  }
 }
