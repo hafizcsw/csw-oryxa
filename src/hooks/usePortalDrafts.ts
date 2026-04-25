@@ -54,12 +54,18 @@ export function usePortalDrafts({ studentUserId }: UsePortalDraftsOptions): UseP
     void refresh();
   }, [refresh]);
 
-  // Order 3: poll while any draft is mid-extraction.
+  // Order 3R.1: poll while any draft is mid-OCR or mid-DeepSeek extraction.
+  // Covers the new pipeline statuses emitted by oryxa-ocr-worker + oryxa-ai-provider.
   useEffect(() => {
-    const anyRunning = drafts.some(
-      (d) =>
-        d.extraction_status === "extraction_running" ||
-        d.extraction_status === "extraction_pending",
+    const RUNNING_EXTRACTION_STATUSES = new Set([
+      "extraction_pending",
+      "extraction_running",
+      "ocr_running",
+      "ocr_completed",
+      "deepseek_extraction_running",
+    ]);
+    const anyRunning = drafts.some((d) =>
+      RUNNING_EXTRACTION_STATUSES.has(d.extraction_status as string),
     );
     if (!anyRunning) return;
     const id = setInterval(() => {
