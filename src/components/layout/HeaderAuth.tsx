@@ -337,19 +337,23 @@ export function HeaderAuth() {
 
             {/* Dark mode toggle (inline switch) */}
             <div
-              className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-accent cursor-pointer"
+              className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-accent cursor-pointer"
               onClick={(e) => { e.preventDefault(); setTheme(isDark ? 'light' : 'dark'); }}
             >
-              {isDark ? <Moon className="w-4 h-4 text-indigo-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
-              <span className="text-sm flex-1">{isDark ? t('account.darkMode') : t('account.lightMode')}</span>
+              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                {isDark ? <Moon className="w-4 h-4 text-foreground" /> : <Sun className="w-4 h-4 text-foreground" />}
+              </span>
+              <span className="text-sm font-medium flex-1">{isDark ? t('account.darkMode') : t('account.lightMode')}</span>
               <Switch checked={isDark} onCheckedChange={(v) => setTheme(v ? 'dark' : 'light')} />
             </div>
 
             {/* Language submenu */}
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="gap-3 cursor-pointer">
-                <Languages className="w-4 h-4 text-blue-500" />
-                <span className="text-sm flex-1">{t('account.language')}</span>
+              <DropdownMenuSubTrigger className="gap-3 cursor-pointer py-2.5 rounded-lg">
+                <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                  <Languages className="w-4 h-4 text-foreground" />
+                </span>
+                <span className="text-sm font-medium flex-1">{t('account.language')}</span>
                 <span className="text-xs text-muted-foreground me-1">
                   {LANGUAGE_INFO[language]?.flag} {LANGUAGE_INFO[language]?.nativeName}
                 </span>
@@ -377,9 +381,11 @@ export function HeaderAuth() {
 
             {/* Currency submenu */}
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="gap-3 cursor-pointer">
-                <Globe className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm flex-1">{t('account.currency')}</span>
+              <DropdownMenuSubTrigger className="gap-3 cursor-pointer py-2.5 rounded-lg">
+                <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                  <Globe className="w-4 h-4 text-foreground" />
+                </span>
+                <span className="text-sm font-medium flex-1">{t('account.currency')}</span>
                 <span className="text-xs text-muted-foreground me-1">{selectedCurrency}</span>
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
