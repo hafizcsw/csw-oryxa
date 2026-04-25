@@ -52,7 +52,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 // Native scroll used instead of ScrollArea for better compatibility
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Send, Trash2, AlertCircle, Sparkles, Search, Loader2, Mic, MicOff, Square, User, ChevronDown, Clock, X, Plus, Check, ArrowUp, History, PanelLeftClose, PanelLeft, Maximize2, Minimize2 } from 'lucide-react';
+import { Send, Trash2, AlertCircle, Sparkles, Search, Loader2, Mic, MicOff, Square, User, ChevronDown, Clock, X, Plus, Check, ArrowUp, History, PanelLeftClose, PanelLeft, Maximize2, Minimize2, Radio, Video } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { LiveSessionPanel } from './LiveSessionPanel';
 import {
   DropdownMenu,
   DropdownMenuContent,
