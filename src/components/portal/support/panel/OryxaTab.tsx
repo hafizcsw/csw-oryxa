@@ -212,6 +212,8 @@ export function OryxaTab({ onBack }: OryxaTabProps = {}) {
           </Button>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
