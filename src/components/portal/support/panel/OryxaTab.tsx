@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Send, Loader2, RotateCcw, ArrowLeft, ArrowRight } from "lucide-react";
+import { Send, Loader2, RotateCcw, ArrowLeft, ArrowRight, Radio, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { UniversityResults } from "@/components/chat/UniversityResults";
 import { AIIcon } from "@/components/icons/AIIcon";
+import { LiveSessionPanel } from "@/components/chat/LiveSessionPanel";
 import { useMalakChat } from "@/contexts/MalakChatContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSmartScroll } from "@/hooks/useSmartScroll";
+import { cn } from "@/lib/utils";
 
 interface OryxaTabProps {
   onBack?: () => void;
