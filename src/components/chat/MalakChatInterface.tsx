@@ -1492,48 +1492,15 @@ export function MalakChatInterface({
               </div>
             )}
 
-            {/* 🆕 Live voice chat status banner (ChatGPT-style) */}
-            {(isVoiceLive || voiceChat.status === 'error') && (
+            {/* Voice error inline (banner removed — status shown on the voice button itself) */}
+            {voiceChat.status === 'error' && voiceChat.error && (
               <div
-                className={cn(
-                  "mb-2 flex items-center gap-2 rounded-full px-3 py-1.5 text-xs border",
-                  voiceChat.status === 'error'
-                    ? "bg-destructive/10 border-destructive/30 text-destructive"
-                    : "bg-primary/10 border-primary/30 text-primary"
-                )}
+                className="mb-2 flex items-center gap-2 rounded-full px-3 py-1.5 text-xs border bg-destructive/10 border-destructive/30 text-destructive"
                 role="status"
                 aria-live="polite"
               >
-                <span
-                  className={cn(
-                    "h-2 w-2 rounded-full",
-                    voiceChat.status === 'connected'
-                      ? voiceChat.isAISpeaking
-                        ? "bg-primary animate-pulse"
-                        : "bg-emerald-500 animate-pulse"
-                      : voiceChat.status === 'error'
-                        ? "bg-destructive"
-                        : "bg-amber-500 animate-pulse"
-                  )}
-                />
-                <span className="flex-1 truncate">
-                  {voiceChat.status === 'requesting_token' || voiceChat.status === 'connecting'
-                    ? t('portal.chat.voice.connecting', { defaultValue: 'Connecting voice…' })
-                    : voiceChat.status === 'error'
-                      ? voiceChat.error || t('portal.chat.voice.errorLabel', { defaultValue: 'Voice error' })
-                      : voiceChat.isAISpeaking
-                        ? (voiceChat.livePartial || t('portal.chat.voice.speaking', { defaultValue: 'Oryxa is speaking…' }))
-                        : t('portal.chat.voice.listening', { defaultValue: 'Listening — speak naturally' })}
-                </span>
-                {isVoiceLive && (
-                  <button
-                    type="button"
-                    onClick={() => voiceChat.stop()}
-                    className="text-[11px] underline-offset-2 hover:underline"
-                  >
-                    {t('portal.chat.voice.stop', { defaultValue: 'Stop' })}
-                  </button>
-                )}
+                <span className="h-2 w-2 rounded-full bg-destructive" />
+                <span className="flex-1 truncate">{voiceChat.error}</span>
               </div>
             )}
 
