@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.realtime-session-token]
 verify_jwt = false
+
+[functions.oryxa-ai-provider]
+verify_jwt = false
+
+[functions.portal-draft-extract]
+verify_jwt = false
