@@ -480,14 +480,23 @@ async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
   }
 
   const fetchSource = await detectWorldGeoFetchSource(WORLD_GEOJSON_URL);
-  const res = await fetch(WORLD_GEOJSON_URL);
-  if (!res.ok) {
-    const reason = `[Map] Failed to fetch geodata (${res.status})`;
+  // Try local bundled file first, then remote CDN.
+  let res: Response | null = null;
+  let usedUrl: string = WORLD_GEOJSON_URL_LOCAL;
+  try {
+    res = await fetch(WORLD_GEOJSON_URL_LOCAL, { cache: "force-cache" });
+    if (!res.ok) throw new Error(`local ${res.status}`);
+  } catch {
+    usedUrl = WORLD_GEOJSON_URL_REMOTE;
+    res = await fetch(WORLD_GEOJSON_URL_REMOTE);
+  }
+  if (!res || !res.ok) {
+    const reason = `[Map] Failed to fetch geodata (${res?.status ?? "no-response"})`;
     logWorldGeoEvent("error", "[Map] World GeoJSON load failed", {
       source: fetchSource,
       featureCount: 0,
       reason,
-      status: res.status,
+      status: res?.status,
     });
     throw new Error(reason);
   }
