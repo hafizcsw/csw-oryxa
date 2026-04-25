@@ -689,9 +689,13 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
       worldCopyJump: false,
       zoomSnap: 0.25,
       zoomDelta: 0.5,
-      preferCanvas: false,
+      // Canvas renderer is dramatically faster for many polygons/markers than SVG.
+      preferCanvas: true,
       maxBounds: [[-85, -180], [85, 180]],
       maxBoundsViscosity: 1.0,
+      wheelPxPerZoomLevel: 80,
+      fadeAnimation: true,
+      markerZoomAnimation: true,
     });
     map.fitBounds(worldBounds, { padding: [40, 40] });
     // Create a custom pane for country borders with higher z-index than tiles
@@ -1216,6 +1220,7 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
         } as GeoJSON.FeatureCollection,
         {
           pane: "bordersPane",
+          ...({ smoothFactor: 1.4 } as any),
           style: {
             fillOpacity: 0.14,
             fillColor: isDark ? GOLD.fillDark : GOLD.fillLight,
@@ -1244,6 +1249,8 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
 
       const geoLayer = L.geoJSON(worldGeo, {
         pane: 'bordersPane',
+        // Higher smoothFactor → fewer points → faster pan/zoom. Visually identical at world view.
+        ...({ smoothFactor: 1.6 } as any),
         style: (feature) => {
           if (!feature) return {};
           const code = getCountryCode(feature);
