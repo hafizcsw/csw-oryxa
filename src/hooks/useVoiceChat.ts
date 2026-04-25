@@ -77,11 +77,22 @@ export function useVoiceChat(): UseVoiceChatResult {
     if (!t) return;
 
     switch (t) {
+      // Speech detection — instant interruption support (like ChatGPT Voice).
+      case "input_audio_buffer.speech_started":
+        // User started talking → cut off any AI audio immediately.
+        setIsAISpeaking(false);
+        setLivePartial("");
+        partialBufRef.current = {};
+        break;
+      case "input_audio_buffer.speech_stopped":
+        break;
+
       case "response.audio.delta":
         setIsAISpeaking(true);
         break;
       case "response.audio.done":
       case "response.done":
+      case "response.cancelled":
         setIsAISpeaking(false);
         break;
 
@@ -105,6 +116,10 @@ export function useVoiceChat(): UseVoiceChatResult {
       case "conversation.item.input_audio_transcription.completed": {
         const finalText = (evt.transcript || "").trim();
         if (finalText) callbacksRef.current.onUserTranscript?.(finalText);
+        break;
+      }
+      case "conversation.item.input_audio_transcription.failed": {
+        console.warn("[voice-chat] user transcription failed", evt.error);
         break;
       }
 
