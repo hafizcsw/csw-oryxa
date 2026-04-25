@@ -1,0 +1,18 @@
+# DeepSeek-OCR service skeleton requirements.
+#
+# CPU-only baseline so the skeleton boots anywhere and /health works.
+# GPU/model deps are commented and must be enabled on the CSW-controlled
+# GPU host before the service can actually run inference.
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+httpx==0.27.2
+pydantic==2.9.2
+
+# ── Enable on GPU host (DO NOT enable in skeleton image) ────────────────────
+# torch==2.4.0
+# transformers>=4.44.0
+# accelerate>=0.33.0
+# vllm>=0.6.0
+# flash-attn>=2.6.0
+# pillow>=10.0.0
+# pypdfium2>=4.30.0
