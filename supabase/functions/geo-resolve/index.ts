@@ -21,8 +21,10 @@ const corsHeaders = {
  * - External geocoding: 1.1s polite delay between Nominatim requests
  */
 
-const RESOLVE_RATE_LIMIT = 10;  // max resolve calls per minute per IP
-const LOOKUP_RATE_LIMIT = 60;   // max lookup calls per minute per IP
+// Limits raised: map pan/zoom fires many batched lookups; previous values caused
+// user-visible 429s that blanked the map. Resolve still capped because it hits Nominatim.
+const RESOLVE_RATE_LIMIT = 60;   // max resolve calls per minute per IP
+const LOOKUP_RATE_LIMIT = 600;   // max cache-lookup calls per minute per IP
 const RATE_WINDOW_SECONDS = 60;
 
 Deno.serve(async (req) => {
