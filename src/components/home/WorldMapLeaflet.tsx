@@ -681,8 +681,6 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const worldBounds = L.latLngBounds([[-60, -170], [75, 170]]);
-    // Shared canvas renderer — dramatically faster than SVG for many markers/polygons.
-    const canvasRenderer = L.canvas({ padding: 0.5 });
     const map = L.map(containerRef.current, {
       minZoom: 1.75,
       maxZoom: 18,
@@ -691,11 +689,10 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
       worldCopyJump: false,
       zoomSnap: 0.25,
       zoomDelta: 0.5,
+      // Canvas renderer is dramatically faster for many polygons/markers than SVG.
       preferCanvas: true,
-      renderer: canvasRenderer,
       maxBounds: [[-85, -180], [85, 180]],
       maxBoundsViscosity: 1.0,
-      // Smoother panning + lighter wheel handling
       wheelPxPerZoomLevel: 80,
       fadeAnimation: true,
       markerZoomAnimation: true,
