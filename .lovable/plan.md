@@ -1,121 +1,150 @@
-# تطوير قائمة الأفاتار: تصميم جديد + إجراءات سريعة مدمجة
+# خطة بناء السوشال — Hybrid (X + TikTok + Instagram)
 
-## الهدف
-تحويل قائمة الأفاتار الحالية في `HeaderAuth.tsx` من مجرد قائمة روابط تنقل إلى **مركز تحكم سريع (Quick Actions Hub)** بتصميم عصري أنيق مستوحى من القائمة المرجعية (فيسبوك)، بحيث يستطيع المستخدم تنفيذ المهام الأكثر استخداماً مباشرة من القائمة دون مغادرة الصفحة الحالية.
+## القرار
+تنفيذ النمط البصري المشترك بين المنصات الثلاث على Phase 1 الموجودة (جداول `social_posts`, `social_likes`, `social_comments`, `social_follows` + bucket `social-media` جاهزة من المايجريشن السابق).
 
 ---
 
-## أولاً: التصميم الجديد (Design)
+## التخطيط البصري (Layout موحّد)
 
-### الهيكل البصري (مستوحى من الصورة المرجعية)
 ```text
-┌─────────────────────────────────┐
-│  ┌──┐  الاسم الكامل              │  ← بطاقة هوية بارزة
-│  │👤│  email@... · المستوى        │     (Avatar كبير + معلومات)
-│  └──┘  [عرض الملف الشخصي →]      │
-├─────────────────────────────────┤
-│  🌐 اللغة: العربية      ▾ سريع  │  ← Quick toggles (inline)
-│  🌙 الوضع الليلي         ⚪ سريع │
-│  💱 العملة: USD         ▾ سريع  │
-├─────────────────────────────────┤
-│  ⚡ إجراءات سريعة                │
-│  💬 محادثة مع Oryxa              │  ← فتح الشات مباشرة
-│  📚 متابعة آخر درس               │  ← يكمل من حيث توقف
-│  ❤️  المفضلة (12)                │
-│  💼 المحفظة + الرصيد             │
-├─────────────────────────────────┤
-│  🎓 لوحاتي                       │
-│  • حسابي  • تعلمي  • طلباتي    │
-├─────────────────────────────────┤
-│  ⚙️  الإعدادات   |   ❓ الدعم    │  ← شبكة 2×2 مدمجة
-│  🛡️  الخصوصية   |   🚪 خروج     │
-└─────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  Sidebar       │      Feed Center        │   Right Rail     │
+│  (260px)       │      (600px)            │   (320px)        │
+│                │                         │                  │
+│  Logo          │  ┌─ Stories Row ────┐   │  Search          │
+│  Home          │  │ ◉  ◉  ◉  ◉  ◉    │   │  ───────         │
+│  Explore       │  └──────────────────┘   │  Trending        │
+│  Reels         │                         │   #...            │
+│  Notifications │  ┌─ Composer ───────┐   │   #...            │
+│  Messages      │  │ "ماذا يحدث؟"     │   │  ───────         │
+│  Profile       │  │ 📷 🎬 📊 📍  Post│   │  Who to follow   │
+│  ─────         │  └──────────────────┘   │   👤 ...          │
+│  [+ Post]      │                         │                  │
+│  ─────         │  ┌─ PostCard ───────┐   │                  │
+│  Account       │  │ avatar  name·time│   │                  │
+│                │  │ text...          │   │                  │
+│                │  │ [media full]     │   │                  │
+│                │  │ 💬 🔁 ❤ 🔖 ↗   │   │                  │
+│                │  └──────────────────┘   │                  │
+│                │  ... infinite scroll    │                  │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### المبادئ التصميمية
-- **عرض أوسع**: من `w-56` إلى `w-80` لاستيعاب الإجراءات السريعة بشكل مريح.
-- **بطاقة هوية في الأعلى**: أفاتار كبير (12×12) + اسم + بريد + شارة الدور (طالب/معلم/مشرف).
-- **مجموعات منطقية مفصولة**: هوية → تفضيلات سريعة → إجراءات → تنقّل → نظام.
-- **تباين خفيف للأقسام**: استخدام `bg-muted/30` للهيدر وألوان أيقونات دلالية (موجودة فعلاً).
-- **دعم RTL/LTR كامل** (تمت بالفعل عبر LanguageContext).
-- **الوضع الليلي**: متوافق مع الـ design system الحالي (`bg-card`, `border-border`).
+**وضع Reels (TikTok)**: full-screen vertical video، تمرير عمودي (snap)، أزرار تفاعل عمودية على اليمين، معلومات الناشر أسفل يسار.
 
 ---
 
-## ثانياً: الإجراءات السريعة الجديدة (Inline Actions)
+## العناصر المشتركة المُستخرَجة من المنصات الثلاث
 
-هذه إجراءات تُنفَّذ **داخل القائمة** بدون تنقّل:
-
-| الإجراء | الآلية | الفائدة |
+| النمط | المصدر | تطبيقنا |
 |---|---|---|
-| **تبديل اللغة** | Submenu أو Select inline يستخدم `setLanguage()` من `LanguageContext` | تغيير فوري بدون فتح صفحة |
-| **الوضع الليلي** | Switch يستخدم `next-themes` (موجود في المشروع) | تبديل لحظي |
-| **تبديل العملة** | Submenu يستخدم `CurrencyContext` الموجود | تغيير عرض الأسعار فورياً |
-| **فتح Oryxa** | يستدعي `openChat()` من `useMalakChat()` | فتح الشات الرئيسي بدون مغادرة الصفحة |
-| **عداد المفضلة المباشر** | يعرض `displayShortlistCount` + زر إزالة سريعة لآخر عنصر مضاف | معلومة + إجراء |
-| **الإشعارات** (لاحقاً) | شارة عدد + قائمة مصغّرة | عرض بدون فتح صفحة كاملة |
-| **حالة الملف الشخصي** | Progress bar صغير (نسبة الاكتمال) + CTA "أكمل الآن" | شفافية + دفع للإكمال |
-| **نسخ معرّف الحساب / كود الإحالة** | زر نسخ بنقرة | إجراء قيّم بدون تنقل |
+| Sidebar أيقونة+نص + زر Post كبير | X / TikTok | `SocialSidebar` |
+| Stories دوائر متدرجة | Instagram | `StoriesRow` (عرض فقط الآن، بدون upload) |
+| Composer علوي مع toolbar | X | `PostComposer` |
+| PostCard مع شريط تفاعل سفلي | X / Instagram | `PostCard` |
+| Vertical video full-screen + side actions | TikTok | `ReelsViewer` |
+| Right rail (Trending / Suggestions) | X / Instagram | `RightRail` |
+| Dark theme افتراضي + accent ملوّن | الثلاثة | tokens في `index.css` |
+| Tabs "For You / Following" | X / TikTok | `FeedTabs` |
 
 ---
 
-## ثالثاً: التغييرات التقنية
+## الملفات الجديدة
 
-### الملف المستهدف
-- `src/components/layout/HeaderAuth.tsx` — إعادة هيكلة قسم `DropdownMenuContent` فقط، مع الحفاظ على كل منطق المصادقة والحالة الحالي (لا تغيير في `useEffect`، `handleSignOut`، `handleGoToAccount`).
+**Pages** (3):
+- `src/pages/social/SocialFeed.tsx` — `/social`
+- `src/pages/social/SocialProfile.tsx` — `/social/u/:userId`
+- `src/pages/social/SocialReels.tsx` — `/social/reels`
 
-### مكونات جديدة (داخل نفس الملف أو ملفات مساعدة قصيرة)
-- `AvatarMenuHeader` — بطاقة الهوية العلوية.
-- `AvatarMenuQuickToggles` — صف اللغة/الثيم/العملة.
-- `AvatarMenuQuickActions` — أزرار الإجراءات السريعة.
-- `AvatarMenuFooterGrid` — شبكة 2×2 (إعدادات/دعم/خصوصية/خروج).
+**Layout** (1):
+- `src/layouts/SocialLayout.tsx` — Sidebar + Outlet + RightRail (3 أعمدة، responsive)
 
-### الاعتماديات (كلها موجودة)
-- `useLanguage` ✓
-- `useMalakChat` ✓ (لـ `openChat`, `shortlist`)
-- `useStudentProfile` ✓ (للاسم والصورة ونسبة الاكتمال)
-- `next-themes` ✓
-- `CurrencyContext` ✓
-- `DropdownMenuSub`, `DropdownMenuSubContent` من shadcn (موجودة في `ui/dropdown-menu`).
-- `Switch` و `Progress` من shadcn (موجودة).
+**Components** (`src/components/social/`):
+- `SocialSidebar.tsx` — تنقل + زر Post
+- `RightRail.tsx` — بحث + Trending + Suggestions
+- `StoriesRow.tsx` — دوائر أفقية scroll
+- `FeedTabs.tsx` — For You / Following
+- `PostComposer.tsx` — textarea auto-resize + media upload + post
+- `PostCard.tsx` — البطاقة الرئيسية
+- `PostActions.tsx` — like / comment / repost / save / share
+- `MediaViewer.tsx` — صور + فيديو inline
+- `ReelsViewer.tsx` — vertical snap-scroll
+- `CommentSheet.tsx` — drawer للتعليقات
 
-### قواعد لن تُكسر
-- **12 لغة**: كل النصوص الجديدة عبر `t('account.*')` — سأضيف المفاتيح الناقصة في `src/locales/ar/common.json` و `src/locales/en/common.json` فقط (المفاتيح للـ 10 لغات الأخرى ستحصل على fallback تلقائياً عبر النظام الحالي).
-- **لا منطق صلاحيات جديد**: نفس فحوصات `isStaff`, `isTeacher`, `isSuperAdmin`, `hideStudentItems`.
-- **CRM truth**: لا كتابات جديدة للأفاتار أو الملف من القائمة (نحترم `set_avatar` كمسار وحيد).
-- **لا تغيير في AuthFlow**: أزرار "أكمل ملفك" وغيرها مجرد `navigate` للوجهات الموجودة.
+**Hooks** (`src/hooks/social/`):
+- `useSocialFeed.ts` — pagination + infinite scroll
+- `useSocialPost.ts` — create/delete
+- `useSocialLike.ts` — toggle optimistic
+- `useSocialComments.ts`
+- `useSocialFollow.ts`
 
-### مفاتيح ترجمة جديدة (ar + en فقط في هذه المرحلة)
+**i18n**: مفاتيح جديدة `social.*` في `src/locales/{12 lang}/common.json` (أو ملف منفصل `social.json`). نص فعلي لـ `en` + `ar`، باقي الـ10 لغات تأخذ نفس مفاتيح en كـ placeholder للحفاظ على الـ12-locale baseline.
+
+---
+
+## Design Tokens (تُضاف في `index.css`)
+
+```css
+--social-bg: 222 15% 6%;          /* أسود X */
+--social-surface: 222 15% 9%;
+--social-border: 222 10% 18%;
+--social-text: 210 20% 98%;
+--social-muted: 215 15% 60%;
+--social-accent: 200 100% 50%;    /* أزرق X */
+--social-like: 350 90% 60%;       /* أحمر TikTok/IG heart */
+--social-story-ring: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
 ```
-account.quickActions
-account.preferences
-account.openChat
-account.continueLearning
-account.profileCompletion
-account.completeNow
-account.darkMode
-account.language
-account.currency
-account.settings
-account.support
-account.copyReferral
-account.referralCopied
+
+كل ألوان السوشال HSL tokens — لا hex مباشر في المكونات.
+
+---
+
+## السلوك
+
+- **Optimistic UI** للإعجابات والمتابعة (counter يتحدث فوراً، rollback عند الفشل)
+- **Infinite scroll** بـ IntersectionObserver، صفحات 20 منشور
+- **Realtime** عبر `supabase.channel` لتحديث counters عند تغير `social_posts`
+- **Media upload**: صور (jpg/png/webp ≤5MB) + فيديو (mp4 ≤50MB) إلى bucket `social-media/{user_id}/{post_id}/...`
+- **Reels detection**: أي منشور بفيديو vertical (height > width) يظهر تلقائياً في `/social/reels`
+- **RTL/LTR**: `dir="auto"` على نص المنشور (لأن المحتوى مختلط لغوياً)
+- **Auth gate**: التصفح مفتوح للجميع (حسب RLS: SELECT public)، النشر/الإعجاب يتطلب تسجيل دخول → redirect إلى `/auth`
+
+---
+
+## التوجيه (Routing)
+يُضاف في `src/App.tsx`:
+```
+/social              → SocialLayout > SocialFeed
+/social/reels        → SocialLayout > SocialReels  
+/social/u/:userId    → SocialLayout > SocialProfile
+/social/p/:postId    → SocialLayout > SocialPostDetail (Phase 1.2)
 ```
 
 ---
 
-## ما هو خارج النطاق الآن
-- نظام إشعارات حقيقي (يحتاج تصميم منفصل).
-- لقطة من المحادثات الأخيرة داخل القائمة (مرحلة لاحقة).
-- تعديل قوائم الأفاتار في المواقع الأخرى (`OperatorHeaderAuth`, `MalakChatInterface`, `AccountContentHeader`) — سنبقيها كما هي حالياً ونوحّدها في مهمة لاحقة إن طُلب.
-- تغيير سلوك زر الأفاتار في حالة عدم تسجيل الدخول (يبقى كما هو).
+## ما لا يدخل في هذه الجولة (Phase 1.2+)
+- Stories upload (عرض فقط الآن)
+- Direct Messages (موجود `Messages.tsx` منفصل)
+- Live streaming
+- Algorithmic ranking (الترتيب الآن: created_at DESC فقط)
+- Hashtag pages
+- Notifications system
+- Repost/Quote (الزر يظهر معطّل مع tooltip "قريباً")
 
 ---
 
 ## معايير القبول
-1. القائمة بتصميم جديد عصري مطابق لروح الصورة المرجعية، وتعمل في الوضعين الفاتح/الداكن وفي RTL/LTR.
-2. تبديل اللغة/الثيم/العملة يعمل **داخل القائمة** بدون إعادة تحميل أو تنقّل.
-3. زر "محادثة Oryxa" يفتح الشات الرئيسي عبر `openChat()` فوراً.
-4. عداد المفضلة ونسبة اكتمال الملف الشخصي مرئية ومحدّثة لحظياً.
-5. كل العناصر القديمة (المحفظة، التعلم، المفضلة، لوحات المعلم/الإدارة، الخصوصية، الخروج) ما زالت تعمل بنفس الوجهات.
-6. لا نصوص مكتوبة بشكل صلب — كلها عبر مفاتيح i18n.
+1. `/social` يفتح ويُظهر feed فارغ + composer
+2. مستخدم مسجّل ينشر منشور نصي → يظهر فوراً في أعلى feed
+3. رفع صورة + نص → تُخزّن في `social-media` bucket وتظهر في البطاقة
+4. زر ❤ يعمل optimistic ويُحدّث `likes_count`
+5. الـ 12 لغة لا تُظهر مفاتيح خام (en/ar مترجمة كاملة، باقي اللغات تعرض en fallback بدون أخطاء)
+6. RTL يعمل تلقائياً للنصوص العربية داخل بطاقة قد تحوي نص إنجليزي
+7. `/social/reels` يعرض فيديوهات vertical بـ snap-scroll يعمل على الموبايل
+8. Right rail يختفي < 1024px، Sidebar يصبح bottom nav < 768px
+
+---
+
+## التسليم
+بعد الموافقة، تُنفّذ كلها في جولة واحدة (لا migrations جديدة — البنية جاهزة). التحقق النهائي runtime عبر فتح `/social` ونشر منشور تجريبي.
