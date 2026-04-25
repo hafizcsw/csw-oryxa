@@ -167,7 +167,15 @@ export function useVoiceChat(): UseVoiceChatResult {
 
         setStatus("connecting");
 
-        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const micStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            channelCount: 1,
+            sampleRate: 24000,
+          },
+        });
         localStreamRef.current = micStream;
 
         const pc = new RTCPeerConnection();
