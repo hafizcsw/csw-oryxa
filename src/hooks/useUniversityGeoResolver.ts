@@ -42,7 +42,9 @@ export function useUniversityGeoResolver(
     const newMissing = missing.filter(u => !attemptedRef.current.has(u.university_id));
     if (newMissing.length === 0) return;
 
+    let cancelled = false;
     const run = async () => {
+      if (cancelled) return;
       setIsResolving(true);
       try {
         // Mark as attempted
@@ -56,8 +58,9 @@ export function useUniversityGeoResolver(
         const stillMissing = newMissing.filter(u => !cached.has(uniKey(u.university_id)));
 
         // 2. Resolve via edge function in batches
-        if (stillMissing.length > 0) {
+        if (stillMissing.length > 0 && !cancelled) {
           for (let i = 0; i < stillMissing.length; i += BATCH_SIZE) {
+            if (cancelled) break;
             const batch = stillMissing.slice(i, i + BATCH_SIZE);
             const entries = batch.map(u => ({
               city_name: u.city || 'unknown',
@@ -75,7 +78,7 @@ export function useUniversityGeoResolver(
         }
 
         // Update state
-        if (cached.size > 0) {
+        if (cached.size > 0 && !cancelled) {
           setResolved(prev => {
             const merged = new Map(prev);
             for (const [k, v] of cached) merged.set(k, v);
@@ -85,11 +88,15 @@ export function useUniversityGeoResolver(
       } catch (e) {
         console.warn('[useUniversityGeoResolver] Error:', e);
       } finally {
-        setIsResolving(false);
+        if (!cancelled) setIsResolving(false);
       }
     };
 
-    run();
+    // Defer to idle so the map can paint and the user sees something fast.
+    const ric: any = (window as any).requestIdleCallback || ((cb: any) => setTimeout(cb, 600));
+    const cic: any = (window as any).cancelIdleCallback || clearTimeout;
+    const handle = ric(() => { if (!cancelled) run(); }, { timeout: 2000 });
+    return () => { cancelled = true; cic(handle); };
   }, [universities, countryCode, enabled]);
 
   return { resolved, isResolving };
