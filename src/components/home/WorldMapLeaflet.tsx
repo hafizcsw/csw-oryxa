@@ -1251,8 +1251,6 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
 
       const geoLayer = L.geoJSON(worldGeo, {
         pane: 'bordersPane',
-        smoothFactor: 1.6,
-        renderer: canvasRenderer,
         style: (feature) => {
           if (!feature) return {};
           const code = getCountryCode(feature);
