@@ -163,7 +163,7 @@ export function UniversityCommunitySection() {
               {t("home.community.joinDesc")}
             </p>
             <button
-              onClick={() => navigate("/community")}
+              onClick={() => navigate("/social")}
               className={cn(
                 "group inline-flex items-center gap-3 px-7 py-3.5 rounded-full",
                 "bg-[var(--ag-fg)] text-[var(--ag-bg)] text-sm font-medium tracking-wide",
@@ -187,7 +187,7 @@ export function UniversityCommunitySection() {
                   viewport={{ once: true, margin: "-60px" }}
                   custom={i}
                   variants={fadeUp}
-                  onClick={() => navigate("/community")}
+                  onClick={() => navigate("/social")}
                   className={cn(
                     "group text-left p-7 transition-colors duration-300",
                     "border-b border-[var(--ag-border)]",
@@ -267,7 +267,7 @@ export function UniversityCommunitySection() {
               className="mt-16 flex justify-center"
             >
               <button
-                onClick={() => navigate("/community")}
+                onClick={() => navigate("/social")}
                 className={cn(
                   "group inline-flex items-center gap-3 px-8 py-4 rounded-full",
                   "border border-[var(--ag-border)] bg-transparent",

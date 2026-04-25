@@ -21,7 +21,7 @@ export function Footer() {
     { label: t("footer.team"), href: "/team" },
     { label: t("footer.partners"), href: "/partners" },
     { label: t("footer.contactUs"), href: "/contact" },
-    { label: t("nav.community"), href: "/community" },
+    { label: t("nav.community"), href: "/social" },
     { label: t("nav.news"), href: "/blog" },
     { label: t("nav.events"), href: "/events" },
     { label: t("nav.findUs"), href: "/where-we-are" },
