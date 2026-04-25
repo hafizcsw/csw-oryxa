@@ -232,6 +232,7 @@ export function MalakChatInterface({
   const [inputValue, setInputValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [searchMode, setSearchMode] = useState<'normal' | 'deep'>('normal');
+  const [isLiveOpen, setIsLiveOpen] = useState(false);
   const [ctaDismissed, setCtaDismissed] = useState(false);
   const [guestLimitReached, setGuestLimitReached] = useState(false);
   const [showStatusBar, setShowStatusBar] = useState(false); // 🆕 شريط الحالة مخفي افتراضياً
