@@ -1479,9 +1479,9 @@
         }
       },
       "live": {
-        "title": "Live assessment session",
-        "intro": "Oryxa will speak with you over voice and see you on camera to run a short, friendly assessment.",
-        "disclaimer": "Experimental preview. Audio and video are streamed for the session only and not stored.",
+        "title": "CSW World live preliminary assessment",
+        "intro": "Oryxa will run a short, structured chat in your language: background, language, quantitative reasoning (with paper held to camera) and a logical question. Ends with a preliminary impression and a recommended next step on CSW World.",
+        "disclaimer": "Experimental preview. Audio and video are streamed for the session only and not stored. This is not a formal evaluation.",
         "start": "Start live session",
         "end": "End session",
         "connecting": "Connecting…",
@@ -1499,7 +1499,26 @@
         "oryxa": "Oryxa",
         "you": "You",
         "tabText": "Text",
-        "tabLive": "Live"
+        "tabLive": "Live",
+        "showWorkTip": "Tip: solve on paper and hold it up to the camera so Oryxa can see your work.",
+        "phase": {
+          "greeting": "Greeting",
+          "background": "Background",
+          "language": "Language",
+          "quantitative": "Quantitative",
+          "logical": "Logical",
+          "wrap_up": "Summary",
+          "complete": "Complete"
+        },
+        "summary": {
+          "title": "Preliminary impression",
+          "confidence": "Confidence",
+          "language": "Language",
+          "quant": "Quant",
+          "logic": "Logic",
+          "next": "Next step",
+          "notSaved": "This impression is shown once and is not saved."
+        }
       }
     },
     "profile": {
