@@ -6,7 +6,13 @@ import { useNavigate } from "react-router-dom";
 import { track } from "@/lib/analytics";
 import { syncGuestDraftToAuth } from "@/hooks/useGuestShortlist";
 import { Button } from "@/components/ui/button";
-import { UserCircle, LogOut, User as UserIcon, Wallet, ArrowRightLeft, Heart, Coins, Shield, GraduationCap, LayoutDashboard, AlertCircle, MessageCircle, Calendar, Home } from "lucide-react";
+import { UserCircle, LogOut, User as UserIcon, Wallet, ArrowRightLeft, Heart, Coins, Shield, GraduationCap, LayoutDashboard, AlertCircle, MessageCircle, Calendar, Home, Moon, Sun, Globe, Languages, Settings, HelpCircle, Copy, Sparkles, ChevronRight, Check } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useCurrency, SUPPORTED_CURRENCIES } from "@/contexts/CurrencyContext";
+import { SUPPORTED_LANGUAGES, LANGUAGE_INFO, type Language } from "@/i18n/languages";
+import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useStaffAuthority } from "@/hooks/useStaffAuthority";
 import { useTeacherPermissions } from "@/lib/teacherPermissions";
@@ -24,6 +30,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
@@ -38,7 +48,9 @@ import {
 
 export function HeaderAuth() {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { selectedCurrency, setSelectedCurrency } = useCurrency();
   const [user, setUser] = useState<User | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const { isAdmin } = useIsAdmin();
@@ -188,6 +200,46 @@ export function HeaderAuth() {
   // Check if profile is incomplete (email not confirmed or phone missing)
   const isProfileIncomplete = !isStaff && !isAdmin && (!user.email_confirmed_at || !profile?.phone);
 
+  // Display name (CRM → profile → email local-part)
+  const displayName =
+    crmProfile?.full_name ||
+    profile?.full_name ||
+    (user.email ? user.email.split('@')[0] : t('account.profile'));
+
+  // Role badge label
+  const roleLabel = isSuperAdmin
+    ? t('account.roleAdmin')
+    : isTeacher
+    ? t('account.roleTeacher')
+    : isStaff
+    ? t('account.roleStaff')
+    : t('account.roleStudent');
+
+  // Quick profile completion estimate (subset of fields, no documents fetch)
+  const p: any = profile || {};
+  const completionFields: Array<unknown> = [
+    p.full_name, p.phone, p.country, p.citizenship,
+    p.preferred_major, p.preferred_degree_level, p.budget_usd,
+    p.language_preference, p.gender, p.birth_year,
+  ];
+  const filledCount = completionFields.filter((v) => v !== null && v !== undefined && v !== '').length;
+  const completionPercent = Math.round((filledCount / completionFields.length) * 100);
+
+  const isDark = (resolvedTheme || theme) === 'dark';
+
+  const handleCopyAccountId = async () => {
+    try {
+      await navigator.clipboard.writeText(customerId || user.id);
+      toast.success(t('account.referralCopied'));
+    } catch {
+      toast.error(t('common.error', { defaultValue: 'Error' }));
+    }
+  };
+
+  const handleOpenChat = () => {
+    try { openChat?.(); } catch {}
+  };
+
   return (
     <div className="flex items-center gap-2">
       <TooltipProvider>
@@ -216,141 +268,264 @@ export function HeaderAuth() {
                 {t('account.completeAccountNotice')}
               </TooltipContent>
             )}
-        <DropdownMenuContent align="end" className="w-56 bg-card border-border">
-          <DropdownMenuItem
-            onClick={() => navigate("/account")}
-            className="gap-3 cursor-pointer"
-          >
-            <UserIcon className="w-4 h-4 text-primary" />
-            <div>
-              <p className="font-medium">{t('account.myAccount')}</p>
-              <p className="text-xs text-muted-foreground">{t('account.profile')}</p>
+        <DropdownMenuContent
+          align="end"
+          sideOffset={8}
+          className="w-80 p-0 overflow-hidden bg-card border-border shadow-2xl rounded-2xl"
+        >
+          {/* ===== Identity Card ===== */}
+          <div className="p-4 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-b border-border/60">
+            <div className="flex items-center gap-3">
+              <Avatar className="w-12 h-12 ring-2 ring-primary/30 shadow-md">
+                <AvatarImage src={avatarUrl} alt={displayName} />
+                <AvatarFallback className="bg-primary/15 text-primary font-semibold">
+                  {(displayName || user.email || 'U')[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm truncate">{displayName}</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                </div>
+                <Badge variant="secondary" className="mt-1.5 h-5 px-1.5 text-[10px] font-medium">
+                  {roleLabel}
+                </Badge>
+              </div>
             </div>
-          </DropdownMenuItem>
 
-          {/* Home — go to main site */}
-          {!hideStudentItems && (
-            <DropdownMenuItem
-              onClick={() => navigate('/')}
-              className="gap-3 cursor-pointer"
+            {/* Profile completion (students only) */}
+            {!hideStudentItems && !isStaff && !isAdmin && (
+              <button
+                onClick={() => navigate('/account')}
+                className="w-full mt-3 group text-start"
+              >
+                <div className="flex items-center justify-between text-[11px] mb-1">
+                  <span className="text-muted-foreground">{t('account.profileCompletion')}</span>
+                  <span className={`font-semibold ${completionPercent < 100 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                    {completionPercent}%
+                  </span>
+                </div>
+                <Progress value={completionPercent} className="h-1.5" />
+                {completionPercent < 100 && (
+                  <p className="text-[10px] text-primary mt-1 group-hover:underline">
+                    {t('account.completeNow')} →
+                  </p>
+                )}
+              </button>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/account')}
+              className="w-full mt-3 h-8 text-xs gap-1.5 bg-card/50 hover:bg-card"
             >
-              <Home className="w-4 h-4 text-blue-500" />
-              <div>
-                <p className="font-medium">{t('account.home', { defaultValue: 'Home' })}</p>
-                <p className="text-xs text-muted-foreground">{t('account.homeDesc', { defaultValue: 'Back to main page' })}</p>
+              <UserIcon className="w-3.5 h-3.5" />
+              {t('account.viewProfile')}
+              <ChevronRight className="w-3.5 h-3.5 ms-auto rtl:rotate-180" />
+            </Button>
+          </div>
+
+          {/* ===== Quick Preferences (inline toggles) ===== */}
+          <div className="p-2">
+            <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-2 py-1">
+              {t('account.preferences')}
+            </DropdownMenuLabel>
+
+            {/* Dark mode toggle (inline switch) */}
+            <div
+              className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-accent cursor-pointer"
+              onClick={(e) => { e.preventDefault(); setTheme(isDark ? 'light' : 'dark'); }}
+            >
+              {isDark ? <Moon className="w-4 h-4 text-indigo-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
+              <span className="text-sm flex-1">{isDark ? t('account.darkMode') : t('account.lightMode')}</span>
+              <Switch checked={isDark} onCheckedChange={(v) => setTheme(v ? 'dark' : 'light')} />
+            </div>
+
+            {/* Language submenu */}
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="gap-3 cursor-pointer">
+                <Languages className="w-4 h-4 text-blue-500" />
+                <span className="text-sm flex-1">{t('account.language')}</span>
+                <span className="text-xs text-muted-foreground me-1">
+                  {LANGUAGE_INFO[language]?.flag} {LANGUAGE_INFO[language]?.nativeName}
+                </span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent className="w-52 max-h-80 overflow-y-auto">
+                  {SUPPORTED_LANGUAGES.map((lng) => {
+                    const info = LANGUAGE_INFO[lng];
+                    const active = lng === language;
+                    return (
+                      <DropdownMenuItem
+                        key={lng}
+                        onClick={() => setLanguage(lng as Language)}
+                        className="gap-2 cursor-pointer"
+                      >
+                        <span className="text-base">{info.flag}</span>
+                        <span className="text-sm flex-1">{info.nativeName}</span>
+                        {active && <Check className="w-4 h-4 text-primary" />}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+
+            {/* Currency submenu */}
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="gap-3 cursor-pointer">
+                <Globe className="w-4 h-4 text-emerald-500" />
+                <span className="text-sm flex-1">{t('account.currency')}</span>
+                <span className="text-xs text-muted-foreground me-1">{selectedCurrency}</span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent className="w-52">
+                  {SUPPORTED_CURRENCIES.map((c) => {
+                    const active = c.code === selectedCurrency;
+                    return (
+                      <DropdownMenuItem
+                        key={c.code}
+                        onClick={() => setSelectedCurrency(c.code)}
+                        className="gap-2 cursor-pointer"
+                      >
+                        <span className="text-base">{c.flag}</span>
+                        <span className="text-sm flex-1">{c.code} · {c.symbol}</span>
+                        {active && <Check className="w-4 h-4 text-primary" />}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+          </div>
+
+          <DropdownMenuSeparator />
+
+          {/* ===== Quick Actions ===== */}
+          <div className="p-2">
+            <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-2 py-1 flex items-center gap-1">
+              <Sparkles className="w-3 h-3" /> {t('account.quickActions')}
+            </DropdownMenuLabel>
+
+            <DropdownMenuItem onClick={handleOpenChat} className="gap-3 cursor-pointer">
+              <MessageCircle className="w-4 h-4 text-primary" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">{t('account.openChat')}</p>
+                <p className="text-[11px] text-muted-foreground">{t('account.openChatDesc')}</p>
               </div>
             </DropdownMenuItem>
-          )}
-          
-          <DropdownMenuItem
-            onClick={() => navigate('/account?tab=wallet')}
-            className="gap-3 cursor-pointer"
-          >
-            <Wallet className="w-4 h-4 text-emerald-500" />
-            <div>
-              <p className="font-medium">{t('account.myWallet')}</p>
-              <p className="text-xs text-muted-foreground">{t('account.balanceTransfers')}</p>
-            </div>
-          </DropdownMenuItem>
 
-          {/* Teacher Dashboard — for teachers and super_admin */}
+            {!hideStudentItems && (
+              <>
+                <DropdownMenuItem
+                  onClick={() => navigate('/languages/russian/dashboard')}
+                  className="gap-3 cursor-pointer"
+                >
+                  <GraduationCap className="w-4 h-4 text-violet-500" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{t('account.continueLearning')}</p>
+                    <p className="text-[11px] text-muted-foreground">{t('account.continueLearningDesc')}</p>
+                  </div>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onClick={() => navigate('/account?tab=shortlist')}
+                  className="gap-3 cursor-pointer"
+                >
+                  <Heart className="w-4 h-4 text-red-500" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{t('nav.favorites')}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {displayShortlistCount} {t('account.programs')}
+                    </p>
+                  </div>
+                  {displayShortlistCount > 0 && (
+                    <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
+                      {displayShortlistCount}
+                    </Badge>
+                  )}
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onClick={() => navigate('/account?tab=wallet')}
+                  className="gap-3 cursor-pointer"
+                >
+                  <Wallet className="w-4 h-4 text-emerald-500" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{t('account.myWallet')}</p>
+                    <p className="text-[11px] text-muted-foreground">{t('account.balanceTransfers')}</p>
+                  </div>
+                </DropdownMenuItem>
+              </>
+            )}
+
+            <DropdownMenuItem onClick={handleCopyAccountId} className="gap-3 cursor-pointer">
+              <Copy className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm flex-1">{t('account.copyReferral')}</span>
+            </DropdownMenuItem>
+          </div>
+
+          {/* ===== Role-specific dashboards ===== */}
           {(isTeacher || isSuperAdmin) && (
-            <DropdownMenuItem
-              onClick={() => navigate('/staff/teacher')}
-              className="gap-3 cursor-pointer"
-            >
-              <LayoutDashboard className="w-4 h-4 text-primary" />
-              <div>
-                <p className="font-medium">{t('account.teacherDashboard', { defaultValue: 'Teacher Dashboard' })}</p>
-                <p className="text-xs text-muted-foreground">{t('account.teacherDashboardDesc', { defaultValue: 'Manage students & sessions' })}</p>
-              </div>
-            </DropdownMenuItem>
-          )}
-
-          {/* Admin Panel — for super_admin */}
-          {isSuperAdmin && (
-            <DropdownMenuItem
-              onClick={() => navigate('/admin')}
-              className="gap-3 cursor-pointer"
-            >
-              <LayoutDashboard className="w-4 h-4 text-primary" />
-              <div>
-                <p className="font-medium">{t('account.adminPanel', { defaultValue: 'Admin Panel' })}</p>
-                <p className="text-xs text-muted-foreground">{t('account.adminPanelDesc', { defaultValue: 'System administration' })}</p>
-              </div>
-            </DropdownMenuItem>
-          )}
-
-          {/* Student items — hidden only on staff routes for teachers */}
-          {!hideStudentItems && (
             <>
-              <DropdownMenuItem
-                onClick={() => navigate('/languages/russian/dashboard')}
-                className="gap-3 cursor-pointer"
-              >
-                <GraduationCap className="w-4 h-4 text-primary" />
-                <div>
-                  <p className="font-medium">{t('account.myLearning')}</p>
-                  <p className="text-xs text-muted-foreground">{t('account.myLearningDesc')}</p>
-                </div>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem
-                onClick={() => navigate('/account?tab=shortlist')}
-                className="gap-3 cursor-pointer"
-              >
-                <Heart className="w-4 h-4 text-red-500" />
-                <div>
-                  <p className="font-medium">{t('nav.favorites')}</p>
-                  <p className="text-xs text-muted-foreground">{displayShortlistCount} {t('account.programs')}</p>
-                </div>
-              </DropdownMenuItem>
-
               <DropdownMenuSeparator />
-              
-              <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">{t('account.premiumServices')}</DropdownMenuLabel>
-              
-              <DropdownMenuItem
-                onClick={() => navigate('/services/transfer_soon')}
-                className="gap-3 cursor-pointer"
-              >
-                <ArrowRightLeft className="w-4 h-4 text-blue-500" />
-                <div>
-                  <p className="font-medium">{t('account.moneyTransfer')}</p>
-                  <p className="text-xs text-muted-foreground">{t('account.bestRate')}</p>
-                </div>
-              </DropdownMenuItem>
-              
-              <DropdownMenuItem
-                onClick={() => toast.info(t('common.comingSoon'))}
-                className="gap-3 cursor-pointer bg-gradient-to-r from-amber-500/10 to-amber-600/10 hover:from-amber-500/20 hover:to-amber-600/20"
-              >
-                <Coins className="w-4 h-4 text-amber-500" />
-                <div>
-                  <p className="font-medium text-amber-600 dark:text-amber-400">{t('account.investWithUs')} 💰</p>
-                  <p className="text-xs text-muted-foreground">{t('account.exclusiveOpportunity')}</p>
-                </div>
-              </DropdownMenuItem>
+              <div className="p-2">
+                {(isTeacher || isSuperAdmin) && (
+                  <DropdownMenuItem onClick={() => navigate('/staff/teacher')} className="gap-3 cursor-pointer">
+                    <LayoutDashboard className="w-4 h-4 text-primary" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{t('account.teacherDashboard')}</p>
+                      <p className="text-[11px] text-muted-foreground">{t('account.teacherDashboardDesc')}</p>
+                    </div>
+                  </DropdownMenuItem>
+                )}
+                {isSuperAdmin && (
+                  <DropdownMenuItem onClick={() => navigate('/admin')} className="gap-3 cursor-pointer">
+                    <Shield className="w-4 h-4 text-primary" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{t('account.adminPanel')}</p>
+                      <p className="text-[11px] text-muted-foreground">{t('account.adminPanelDesc')}</p>
+                    </div>
+                  </DropdownMenuItem>
+                )}
+              </div>
             </>
           )}
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem
-            onClick={() => navigate("/privacy-policy")}
-            className="gap-3 cursor-pointer"
-          >
-            <Shield className="w-4 h-4 text-muted-foreground" />
-            {t('legal.privacyPolicy')}
-          </DropdownMenuItem>
-          
-          <DropdownMenuItem
-            onClick={() => setShowLogoutDialog(true)}
-            className="gap-3 cursor-pointer text-destructive focus:text-destructive"
-          >
-            <LogOut className="w-4 h-4" />
-            {t('account.signOut')}
-          </DropdownMenuItem>
+          {/* ===== Footer Grid (2x2 compact) ===== */}
+          <div className="grid grid-cols-2 gap-1 p-2">
+            <button
+              onClick={() => navigate('/')}
+              className="flex flex-col items-center gap-1 p-2 rounded-md hover:bg-accent transition-colors text-xs"
+            >
+              <Home className="w-4 h-4 text-blue-500" />
+              <span>{t('account.home')}</span>
+            </button>
+            <button
+              onClick={() => navigate('/support')}
+              className="flex flex-col items-center gap-1 p-2 rounded-md hover:bg-accent transition-colors text-xs"
+            >
+              <HelpCircle className="w-4 h-4 text-amber-500" />
+              <span>{t('account.support')}</span>
+            </button>
+            <button
+              onClick={() => navigate('/privacy-policy')}
+              className="flex flex-col items-center gap-1 p-2 rounded-md hover:bg-accent transition-colors text-xs"
+            >
+              <Shield className="w-4 h-4 text-muted-foreground" />
+              <span>{t('legal.privacyPolicy')}</span>
+            </button>
+            <button
+              onClick={() => setShowLogoutDialog(true)}
+              className="flex flex-col items-center gap-1 p-2 rounded-md hover:bg-destructive/10 text-destructive transition-colors text-xs"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>{t('account.signOut')}</span>
+            </button>
+          </div>
         </DropdownMenuContent>
           </DropdownMenu>
         </Tooltip>
