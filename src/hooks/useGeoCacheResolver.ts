@@ -34,7 +34,9 @@ export function useGeoCacheResolver(
   useEffect(() => {
     if (!citySummaries || !countryCode || citySummaries.length === 0) return;
 
+    let cancelled = false;
     const run = async () => {
+      if (cancelled) return;
       // 1. Find cities missing coordinates
       const missingCities = citySummaries.filter(
         c => c.city && c.city !== '__unknown__' && (c.city_lat == null || c.city_lon == null)
@@ -96,7 +98,11 @@ export function useGeoCacheResolver(
       }
     };
 
-    run();
+    // Defer to idle so the map can paint first.
+    const ric: any = (window as any).requestIdleCallback || ((cb: any) => setTimeout(cb, 400));
+    const cic: any = (window as any).cancelIdleCallback || clearTimeout;
+    const handle = ric(() => { if (!cancelled) run(); }, { timeout: 1500 });
+    return () => { cancelled = true; cic(handle); };
   }, [citySummaries, countryCode]);
 
   return { resolved, isResolving };

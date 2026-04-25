@@ -64,8 +64,13 @@ const TILES = {
   topo: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
 };
 
-/* ── World GeoJSON URL ── */
-const WORLD_GEOJSON_URL = "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson";
+/* ── World GeoJSON URLs ──
+ * Primary: locally bundled, simplified file (fast, no CORS, no third-party).
+ * Fallback: original CDN — only used if the local file is missing.
+ */
+const WORLD_GEOJSON_URL_LOCAL = "/data/world-countries.geojson";
+const WORLD_GEOJSON_URL_REMOTE = "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson";
+const WORLD_GEOJSON_URL = WORLD_GEOJSON_URL_LOCAL;
 const USE_TOPOJSON = false;
 
 const GOLD = {
@@ -475,14 +480,23 @@ async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
   }
 
   const fetchSource = await detectWorldGeoFetchSource(WORLD_GEOJSON_URL);
-  const res = await fetch(WORLD_GEOJSON_URL);
-  if (!res.ok) {
-    const reason = `[Map] Failed to fetch geodata (${res.status})`;
+  // Try local bundled file first, then remote CDN.
+  let res: Response | null = null;
+  let usedUrl: string = WORLD_GEOJSON_URL_LOCAL;
+  try {
+    res = await fetch(WORLD_GEOJSON_URL_LOCAL, { cache: "force-cache" });
+    if (!res.ok) throw new Error(`local ${res.status}`);
+  } catch {
+    usedUrl = WORLD_GEOJSON_URL_REMOTE;
+    res = await fetch(WORLD_GEOJSON_URL_REMOTE);
+  }
+  if (!res || !res.ok) {
+    const reason = `[Map] Failed to fetch geodata (${res?.status ?? "no-response"})`;
     logWorldGeoEvent("error", "[Map] World GeoJSON load failed", {
       source: fetchSource,
       featureCount: 0,
       reason,
-      status: res.status,
+      status: res?.status,
     });
     throw new Error(reason);
   }
@@ -521,7 +535,7 @@ async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
     throw new Error(reason);
   }
 
-  await setCachedWorldGeo(geoJsonCache, WORLD_GEOJSON_URL);
+  await setCachedWorldGeo(geoJsonCache, usedUrl);
   logWorldGeoEvent("info", "[Map] World GeoJSON ready", {
     source: fetchSource,
     featureCount: geoJsonCache.features.length,
