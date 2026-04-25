@@ -100,8 +100,7 @@ const CoursesPage = lazy(() => import("./pages/Courses"));
 const BlogPage = lazy(() => import("./pages/Blog"));
 const FAQPage = lazy(() => import("./pages/FAQ"));
 const WhereWeArePage = lazy(() => import("./pages/WhereWeAre"));
-const CommunityPage = lazy(() => import("./pages/Community"));
-const CommunityProfilePage = lazy(() => import("./pages/CommunityProfile"));
+// Community pages removed — replaced by /social (SocialFeed)
 const EventsPage = lazy(() => import("./pages/Events"));
 const CareersPage = lazy(() => import("./pages/Careers"));
 const ForInstitutionsPage = lazy(() => import("./pages/ForInstitutions"));
@@ -837,7 +836,7 @@ function AppContent() {
           <Route path="/where-we-are" element={<WhereWeArePage />} />
           <Route path="/community" element={<Navigate to="/social" replace />} />
           <Route path="/community/me" element={<Navigate to="/social" replace />} />
-          <Route path="/community/u/:userId" element={<CommunityProfilePage />} />
+          <Route path="/community/u/:userId" element={<Navigate to="/social" replace />} />
           <Route path="/events" element={<EventsPage />} />
 
           {/* Social Routes (Hybrid X · TikTok · Instagram) */}
