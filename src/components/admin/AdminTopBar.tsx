@@ -64,7 +64,7 @@ export function AdminTopBar() {
   return (
     <div className="bg-gradient-to-r from-primary/90 via-primary-glow/80 to-accent/70 dark:from-[hsl(222,25%,12%)] dark:via-[hsl(222,20%,15%)] dark:to-[hsl(222,15%,18%)] text-white dark:text-foreground" dir="ltr">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 flex items-center justify-end gap-3 text-xs">
-        <Link to="/community" className="hover:text-white/80 transition-colors">{t("nav.community")}</Link>
+        <Link to="/social" className="hover:text-white/80 transition-colors">{t("nav.community")}</Link>
         <Link to="/blog" className="hover:text-white/80 transition-colors">{t("nav.news")}</Link>
         <Link to="/events" className="hover:text-white/80 transition-colors">{t("nav.events")}</Link>
         <Link to="/where-we-are" className="hover:text-white/80 transition-colors">{t("nav.findUs")}</Link>
