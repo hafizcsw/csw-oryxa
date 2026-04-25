@@ -835,8 +835,8 @@ function AppContent() {
           <Route path="/careers" element={<CareersPage />} />
           <Route path="/for-institutions" element={<ForInstitutionsPage />} />
           <Route path="/where-we-are" element={<WhereWeArePage />} />
-          <Route path="/community" element={<CommunityPage />} />
-          <Route path="/community/me" element={<CommunityProfilePage />} />
+          <Route path="/community" element={<Navigate to="/social" replace />} />
+          <Route path="/community/me" element={<Navigate to="/social" replace />} />
           <Route path="/community/u/:userId" element={<CommunityProfilePage />} />
           <Route path="/events" element={<EventsPage />} />
 
