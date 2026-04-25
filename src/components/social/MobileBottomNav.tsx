@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, Compass, Film, Bell, Plus } from "lucide-react";
+import { Home, Compass, Film, MessageCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function MobileBottomNav({ onCompose }: { onCompose: () => void }) {
@@ -7,7 +7,7 @@ export function MobileBottomNav({ onCompose }: { onCompose: () => void }) {
     { to: "/social", icon: Home, end: true },
     { to: "/social/explore", icon: Compass },
     { to: "/social/reels", icon: Film },
-    { to: "/social/notifications", icon: Bell },
+    { to: "/social/messages", icon: MessageCircle },
   ];
   return (
     <>

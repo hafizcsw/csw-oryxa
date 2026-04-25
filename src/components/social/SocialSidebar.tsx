@@ -10,7 +10,7 @@ const items = [
   { to: "/social/explore", icon: Compass, label: "استكشاف" },
   { to: "/social/reels", icon: Film, label: "ريلز" },
   { to: "/social/notifications", icon: Bell, label: "إشعارات" },
-  { to: "/messages", icon: MessageCircle, label: "رسائل" },
+  { to: "/social/messages", icon: MessageCircle, label: "رسائل" },
 ];
 
 export function SocialSidebar({ onCompose }: { onCompose: () => void }) {
