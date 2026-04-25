@@ -8717,6 +8717,63 @@ export type Database = {
         }
         Relationships: []
       }
+      oryxa_ai_runs: {
+        Row: {
+          created_at: string
+          draft_id: string | null
+          error: string | null
+          id: string
+          input_hash: string | null
+          latency_ms: number | null
+          model: string | null
+          output_hash: string | null
+          provider: string
+          provider_mode: string
+          status: string
+          student_user_id: string | null
+          task_type: string
+          tokens_in: number | null
+          tokens_out: number | null
+          trace_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          draft_id?: string | null
+          error?: string | null
+          id?: string
+          input_hash?: string | null
+          latency_ms?: number | null
+          model?: string | null
+          output_hash?: string | null
+          provider: string
+          provider_mode: string
+          status: string
+          student_user_id?: string | null
+          task_type: string
+          tokens_in?: number | null
+          tokens_out?: number | null
+          trace_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          draft_id?: string | null
+          error?: string | null
+          id?: string
+          input_hash?: string | null
+          latency_ms?: number | null
+          model?: string | null
+          output_hash?: string | null
+          provider?: string
+          provider_mode?: string
+          status?: string
+          student_user_id?: string | null
+          task_type?: string
+          tokens_in?: number | null
+          tokens_out?: number | null
+          trace_id?: string | null
+        }
+        Relationships: []
+      }
       packages: {
         Row: {
           currency: string | null
