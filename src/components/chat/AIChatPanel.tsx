@@ -252,6 +252,7 @@ export function AIChatPanel() {
             </p>
           </div>
         </div>
+        )}
       </SheetContent>
     </Sheet>
   );
