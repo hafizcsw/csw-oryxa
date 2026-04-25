@@ -17059,6 +17059,146 @@ export type Database = {
           },
         ]
       }
+      social_comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          is_deleted: boolean
+          parent_comment_id: string | null
+          post_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_deleted?: boolean
+          parent_comment_id?: string | null
+          post_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_deleted?: boolean
+          parent_comment_id?: string | null
+          post_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "social_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "social_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      social_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "social_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_posts: {
+        Row: {
+          author_id: string
+          comments_count: number
+          content: string | null
+          created_at: string
+          id: string
+          is_deleted: boolean
+          likes_count: number
+          media_urls: string[]
+          post_type: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          author_id: string
+          comments_count?: number
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_deleted?: boolean
+          likes_count?: number
+          media_urls?: string[]
+          post_type?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          author_id?: string
+          comments_count?: number
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_deleted?: boolean
+          likes_count?: number
+          media_urls?: string[]
+          post_type?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
       source_evidence: {
         Row: {
           academic_year: string | null
