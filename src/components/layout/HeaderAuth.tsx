@@ -216,10 +216,11 @@ export function HeaderAuth() {
     : t('account.roleStudent');
 
   // Quick profile completion estimate (subset of fields, no documents fetch)
+  const p: any = profile || {};
   const completionFields: Array<unknown> = [
-    profile?.full_name, profile?.phone, profile?.country, profile?.citizenship,
-    profile?.preferred_major, profile?.preferred_degree_level, profile?.budget_usd,
-    profile?.language_preference, profile?.gender, profile?.birth_year,
+    p.full_name, p.phone, p.country, p.citizenship,
+    p.preferred_major, p.preferred_degree_level, p.budget_usd,
+    p.language_preference, p.gender, p.birth_year,
   ];
   const filledCount = completionFields.filter((v) => v !== null && v !== undefined && v !== '').length;
   const completionPercent = Math.round((filledCount / completionFields.length) * 100);
