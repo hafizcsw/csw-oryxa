@@ -178,6 +178,12 @@ const TargetCountryDebug = lazy(() => import("./pages/admin/TargetCountryDebug")
 const UniversitiesWithoutWebsitePdf = lazy(() => import("./pages/tools/UniversitiesWithoutWebsitePdf"));
 const ExportNoCityPage = lazy(() => import("./pages/tools/ExportNoCityPage"));
 
+// Social pages
+const SocialLayout = lazy(() => import("./layouts/SocialLayout"));
+const SocialFeed = lazy(() => import("./pages/social/SocialFeed"));
+const SocialProfile = lazy(() => import("./pages/social/SocialProfile"));
+const SocialReels = lazy(() => import("./pages/social/SocialReels"));
+
 // Institution Pages
 const InstitutionOnboarding = lazy(() => import("./pages/institution/Onboarding"));
 const InstitutionSearch = lazy(() => import("./pages/institution/Search"));
@@ -833,6 +839,16 @@ function AppContent() {
           <Route path="/community/me" element={<CommunityProfilePage />} />
           <Route path="/community/u/:userId" element={<CommunityProfilePage />} />
           <Route path="/events" element={<EventsPage />} />
+
+          {/* Social Routes (Hybrid X · TikTok · Instagram) */}
+          <Route path="/social" element={<SocialLayout />}>
+            <Route index element={<SocialFeed />} />
+            <Route path="reels" element={<SocialReels />} />
+            <Route path="explore" element={<SocialFeed />} />
+            <Route path="notifications" element={<SocialFeed />} />
+            <Route path="u/:userId" element={<SocialProfile />} />
+          </Route>
+
           
           {/* ORX RANK Routes */}
           <Route path="/orx-rank" element={<OrxRankHub />} />

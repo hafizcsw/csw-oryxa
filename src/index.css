@@ -114,6 +114,15 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* ===== Social (Hybrid: X · TikTok · Instagram) ===== */
+    --social-bg: 0 0% 0%;
+    --social-surface: 0 0% 9%;
+    --social-border: 0 0% 16%;
+    --social-text: 0 0% 98%;
+    --social-muted: 220 8% 55%;
+    --social-accent: 203 89% 53%;
+    --social-like: 350 89% 60%;
+
     /* Antigravity Cobalt — clean editorial palette */
     --background: 0 0% 100%;
     --foreground: 0 0% 5%;
@@ -319,6 +328,9 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+
   /* Animations */
   .animate-fade-in {
     animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
