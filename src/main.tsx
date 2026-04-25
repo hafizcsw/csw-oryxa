@@ -40,7 +40,10 @@ createRoot(document.getElementById("root")!).render(
     <Suspense fallback={<PageLoader />}>
       <LanguageProvider>
         <ChatProvider>
-          <App />
+          <CommCallProvider>
+            <App />
+            <CommCallWindow />
+          </CommCallProvider>
         </ChatProvider>
       </LanguageProvider>
     </Suspense>
