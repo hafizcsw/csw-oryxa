@@ -466,10 +466,13 @@ export const WorldMapSection = memo(function WorldMapSection() {
   }, [selectedCountryInfo, selectedCountryCode, selectedCity, drillLevel, countryDisplayName, getLocalizedValue, handleBackToWorld, handleBackToCountry]);
 
   // ── Let the map drive the active country from the real geometry under the viewport ──
+  // Works at world AND country levels: panning to a neighboring country auto-switches focus,
+  // so the user no longer needs to zoom out manually before exploring an adjacent country.
   useEffect(() => {
     if (manualCitySelection || !mapViewport || !countryStats) return;
-    if (drillLevel !== "world") return;
-    if (mapViewport.zoom < 5) return;
+    if (drillLevel === "city") return;
+    // Require enough zoom that "the country under the viewport" is meaningful.
+    if (mapViewport.zoom < 4.5) return;
 
     const activeCountryCode = mapViewport.activeCountryCode;
     if (!activeCountryCode) return;
@@ -477,7 +480,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
     const activeCountryStats = countryStats[activeCountryCode];
     if (!activeCountryStats || activeCountryStats.universities_count === 0) return;
 
-    if (selectedCountryCode === activeCountryCode) return;
+    if (selectedCountryCode === activeCountryCode && drillLevel === "country") return;
 
     setSelectedCountryCode(activeCountryCode);
     setSelectedCity(null);
@@ -686,7 +689,14 @@ export const WorldMapSection = memo(function WorldMapSection() {
                 subdivisionGeodata={subdivisionGeodata}
                 regionSummaries={regionSummaries}
                 visibleCountryCodes={filteredCodes}
-                citySummaries={geoEnrichedCities.length > 0 ? geoEnrichedCities : undefined}
+                citySummaries={
+                  // Only reveal city dots once the user has zoomed in deep enough on the country.
+                  // Below this threshold the country stays as a single highlighted shape so panning
+                  // between neighbors stays fluid without dots flickering on every adjacent country.
+                  geoEnrichedCities.length > 0 && (mapViewport?.zoom ?? 0) >= 5.2
+                    ? geoEnrichedCities
+                    : undefined
+                }
                 cityUniversities={countryUniversities || undefined}
                 regionCities={selectedCity ? [selectedCity] : selectedRegionForCity?.cities}
                  osmOverlay={osmOverlay}
