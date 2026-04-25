@@ -1650,6 +1650,20 @@ export function MalakChatInterface({
           </div>
         )}
       </div>
+
+      <Dialog open={isLiveOpen} onOpenChange={setIsLiveOpen}>
+        <DialogContent className="max-w-3xl h-[85vh] p-0 flex flex-col gap-0 overflow-hidden">
+          <DialogHeader className="px-4 py-3 border-b">
+            <DialogTitle className="text-base flex items-center gap-2">
+              <Radio className="w-4 h-4 text-primary" />
+              {t('portal.chat.live.title', { defaultValue: 'Live assessment session' })}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <LiveSessionPanel onBack={() => setIsLiveOpen(false)} />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
