@@ -152,9 +152,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
   const [subdivisionGeodata, setSubdivisionGeodata] = useState<GeoJSON.FeatureCollection | null>(null);
   const [loadingGeodata, setLoadingGeodata] = useState(false);
 
-  const {
-    filters, rpcParams, setRegion, setDegreeSlug, setFeesMax, DEFAULT_FEES_MAX,
-  } = useMapFilters();
+  // (filters/rpcParams declared above for hover prefetch)
 
   // ── Data ──
   const { data: countryMeta } = useQuery({
