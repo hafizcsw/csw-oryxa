@@ -535,7 +535,7 @@ async function loadWorldGeoJSON(): Promise<GeoJSON.FeatureCollection> {
     throw new Error(reason);
   }
 
-  await setCachedWorldGeo(geoJsonCache, WORLD_GEOJSON_URL);
+  await setCachedWorldGeo(geoJsonCache, usedUrl);
   logWorldGeoEvent("info", "[Map] World GeoJSON ready", {
     source: fetchSource,
     featureCount: geoJsonCache.features.length,
