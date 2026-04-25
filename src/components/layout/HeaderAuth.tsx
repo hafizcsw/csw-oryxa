@@ -417,32 +417,40 @@ export function HeaderAuth() {
               <Sparkles className="w-3 h-3" /> {t('account.quickActions')}
             </DropdownMenuLabel>
 
-            <DropdownMenuItem onClick={handleOpenChat} className="gap-3 cursor-pointer">
-              <MessageCircle className="w-4 h-4 text-primary" />
+            <DropdownMenuItem onClick={handleOpenChat} className="gap-3 cursor-pointer py-2.5 rounded-lg">
+              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                <MessageCircle className="w-4 h-4 text-foreground" />
+              </span>
               <div className="flex-1">
                 <p className="text-sm font-medium">{t('account.openChat')}</p>
                 <p className="text-[11px] text-muted-foreground">{t('account.openChatDesc')}</p>
               </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground rtl:rotate-180" />
             </DropdownMenuItem>
 
             {!hideStudentItems && (
               <>
                 <DropdownMenuItem
                   onClick={() => navigate('/languages/russian/dashboard')}
-                  className="gap-3 cursor-pointer"
+                  className="gap-3 cursor-pointer py-2.5 rounded-lg"
                 >
-                  <GraduationCap className="w-4 h-4 text-violet-500" />
+                  <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                    <GraduationCap className="w-4 h-4 text-foreground" />
+                  </span>
                   <div className="flex-1">
                     <p className="text-sm font-medium">{t('account.continueLearning')}</p>
                     <p className="text-[11px] text-muted-foreground">{t('account.continueLearningDesc')}</p>
                   </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground rtl:rotate-180" />
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
                   onClick={() => navigate('/account?tab=shortlist')}
-                  className="gap-3 cursor-pointer"
+                  className="gap-3 cursor-pointer py-2.5 rounded-lg"
                 >
-                  <Heart className="w-4 h-4 text-red-500" />
+                  <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                    <Heart className="w-4 h-4 text-foreground" />
+                  </span>
                   <div className="flex-1">
                     <p className="text-sm font-medium">{t('nav.favorites')}</p>
                     <p className="text-[11px] text-muted-foreground">
@@ -458,20 +466,25 @@ export function HeaderAuth() {
 
                 <DropdownMenuItem
                   onClick={() => navigate('/account?tab=wallet')}
-                  className="gap-3 cursor-pointer"
+                  className="gap-3 cursor-pointer py-2.5 rounded-lg"
                 >
-                  <Wallet className="w-4 h-4 text-emerald-500" />
+                  <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                    <Wallet className="w-4 h-4 text-foreground" />
+                  </span>
                   <div className="flex-1">
                     <p className="text-sm font-medium">{t('account.myWallet')}</p>
                     <p className="text-[11px] text-muted-foreground">{t('account.balanceTransfers')}</p>
                   </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground rtl:rotate-180" />
                 </DropdownMenuItem>
               </>
             )}
 
-            <DropdownMenuItem onClick={handleCopyAccountId} className="gap-3 cursor-pointer">
-              <Copy className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm flex-1">{t('account.copyReferral')}</span>
+            <DropdownMenuItem onClick={handleCopyAccountId} className="gap-3 cursor-pointer py-2.5 rounded-lg">
+              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                <Copy className="w-4 h-4 text-foreground" />
+              </span>
+              <span className="text-sm font-medium flex-1">{t('account.copyReferral')}</span>
             </DropdownMenuItem>
           </div>
 
