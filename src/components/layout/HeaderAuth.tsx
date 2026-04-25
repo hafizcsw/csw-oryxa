@@ -200,6 +200,45 @@ export function HeaderAuth() {
   // Check if profile is incomplete (email not confirmed or phone missing)
   const isProfileIncomplete = !isStaff && !isAdmin && (!user.email_confirmed_at || !profile?.phone);
 
+  // Display name (CRM → profile → email local-part)
+  const displayName =
+    crmProfile?.full_name ||
+    profile?.full_name ||
+    (user.email ? user.email.split('@')[0] : t('account.profile'));
+
+  // Role badge label
+  const roleLabel = isSuperAdmin
+    ? t('account.roleAdmin')
+    : isTeacher
+    ? t('account.roleTeacher')
+    : isStaff
+    ? t('account.roleStaff')
+    : t('account.roleStudent');
+
+  // Quick profile completion estimate (subset of fields, no documents fetch)
+  const completionFields: Array<unknown> = [
+    profile?.full_name, profile?.phone, profile?.country, profile?.citizenship,
+    profile?.preferred_major, profile?.preferred_degree_level, profile?.budget_usd,
+    profile?.language_preference, profile?.gender, profile?.birth_year,
+  ];
+  const filledCount = completionFields.filter((v) => v !== null && v !== undefined && v !== '').length;
+  const completionPercent = Math.round((filledCount / completionFields.length) * 100);
+
+  const isDark = (resolvedTheme || theme) === 'dark';
+
+  const handleCopyAccountId = async () => {
+    try {
+      await navigator.clipboard.writeText(customerId || user.id);
+      toast.success(t('account.referralCopied'));
+    } catch {
+      toast.error(t('common.error', { defaultValue: 'Error' }));
+    }
+  };
+
+  const handleOpenChat = () => {
+    try { openChat?.(); } catch {}
+  };
+
   return (
     <div className="flex items-center gap-2">
       <TooltipProvider>
