@@ -1683,39 +1683,43 @@ export function MalakChatInterface({
                   disabled={state === 'thinking' || state === 'searching' || isRecording || isGuestLocked || voiceChat.status === 'requesting_token' || voiceChat.status === 'connecting'}
                   title={
                     isVoiceLive
-                      ? t('portal.chat.voice.stop', { defaultValue: 'Stop voice chat' })
+                      ? t('portal.chat.voice.stop', { defaultValue: 'End voice chat' })
                       : t('portal.chat.voice.tooltip', { defaultValue: 'Talk with Oryxa by voice' })
                   }
                   aria-label={
                     isVoiceLive
-                      ? t('portal.chat.voice.stop', { defaultValue: 'Stop voice chat' })
+                      ? t('portal.chat.voice.stop', { defaultValue: 'End voice chat' })
                       : t('portal.chat.voice.start', { defaultValue: 'Start live voice chat' })
                   }
                   className={cn(
-                    "rounded-full text-muted-foreground hover:text-foreground hover:bg-muted relative gap-1.5 px-2.5",
-                    isFloating ? "h-7" : "h-8",
-                    isRecording && "bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 animate-pulse",
-                    isVoiceLive && "bg-primary/15 text-primary",
-                    voiceChat.status === 'connected' && voiceChat.isAISpeaking && "ring-2 ring-primary/60"
+                    "rounded-full relative gap-1.5 transition-all",
+                    isVoiceLive
+                      ? cn(
+                          "bg-primary text-primary-foreground hover:bg-primary/90 px-3.5 shadow-md",
+                          isFloating ? "h-7" : "h-9"
+                        )
+                      : cn(
+                          "text-muted-foreground hover:text-foreground hover:bg-muted px-2.5",
+                          isFloating ? "h-7" : "h-8"
+                        ),
+                    isRecording && !isVoiceLive && "bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 animate-pulse",
+                    voiceChat.status === 'connected' && voiceChat.isAISpeaking && "ring-2 ring-primary/40 ring-offset-1"
                   )}
                 >
                   {voiceChat.status === 'requesting_token' || voiceChat.status === 'connecting' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : isVoiceLive ? (
-                    <MicOff className="w-4 h-4" />
+                    <AudioLines className={cn("w-4 h-4", voiceChat.isAISpeaking && "animate-pulse")} />
                   ) : isRecording ? (
                     <Square className="w-4 h-4" />
                   ) : (
-                    <AudioLines className={cn("w-4 h-4", voiceChat.status === 'connected' && voiceChat.isAISpeaking && "animate-pulse")} />
+                    <AudioLines className="w-4 h-4" />
                   )}
-                  <span className="text-xs font-medium hidden sm:inline">
+                  <span className={cn("text-xs font-semibold", !isVoiceLive && "hidden sm:inline")}>
                     {isVoiceLive
-                      ? t('portal.chat.voice.labelActive', { defaultValue: 'Stop' })
+                      ? t('portal.chat.voice.labelActive', { defaultValue: 'End' })
                       : t('portal.chat.voice.label', { defaultValue: 'Voice' })}
                   </span>
-                  {voiceChat.status === 'connected' && (
-                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  )}
                 </Button>
 
                 {/* Hidden audio sink for the live voice session */}
