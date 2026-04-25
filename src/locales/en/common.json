@@ -1477,6 +1477,29 @@
             "label": "Label"
           }
         }
+      },
+      "live": {
+        "title": "Live assessment session",
+        "intro": "Oryxa will speak with you over voice and see you on camera to run a short, friendly assessment.",
+        "disclaimer": "Experimental preview. Audio and video are streamed for the session only and not stored.",
+        "start": "Start live session",
+        "end": "End session",
+        "connecting": "Connecting…",
+        "connected": "Live",
+        "idle": "Idle",
+        "ended": "Ended",
+        "errorLabel": "Error",
+        "listening": "Listening…",
+        "speaking": "Oryxa is speaking",
+        "cameraOn": "Camera on",
+        "cameraOff": "Camera off",
+        "cameraOffIdle": "Camera will turn on when session starts",
+        "cameraDisabled": "Camera disabled",
+        "micRequired": "Mic required",
+        "oryxa": "Oryxa",
+        "you": "You",
+        "tabText": "Text",
+        "tabLive": "Live"
       }
     },
     "profile": {
