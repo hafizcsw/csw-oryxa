@@ -270,11 +270,14 @@ export function HeaderAuth() {
             )}
         <DropdownMenuContent
           align="end"
-          sideOffset={8}
-          className="w-80 p-0 overflow-hidden bg-card border-border shadow-2xl rounded-2xl"
+          sideOffset={12}
+          alignOffset={-8}
+          collisionPadding={16}
+          avoidCollisions
+          className="w-[360px] max-w-[calc(100vw-2rem)] p-0 overflow-hidden bg-popover text-popover-foreground border border-border shadow-2xl rounded-2xl"
         >
           {/* ===== Identity Card ===== */}
-          <div className="p-4 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-b border-border/60">
+          <div className="p-4 border-b border-border/60">
             <div className="flex items-center gap-3">
               <Avatar className="w-12 h-12 ring-2 ring-primary/30 shadow-md">
                 <AvatarImage src={avatarUrl} alt={displayName} />
@@ -334,19 +337,23 @@ export function HeaderAuth() {
 
             {/* Dark mode toggle (inline switch) */}
             <div
-              className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-accent cursor-pointer"
+              className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-accent cursor-pointer"
               onClick={(e) => { e.preventDefault(); setTheme(isDark ? 'light' : 'dark'); }}
             >
-              {isDark ? <Moon className="w-4 h-4 text-indigo-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
-              <span className="text-sm flex-1">{isDark ? t('account.darkMode') : t('account.lightMode')}</span>
+              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                {isDark ? <Moon className="w-4 h-4 text-foreground" /> : <Sun className="w-4 h-4 text-foreground" />}
+              </span>
+              <span className="text-sm font-medium flex-1">{isDark ? t('account.darkMode') : t('account.lightMode')}</span>
               <Switch checked={isDark} onCheckedChange={(v) => setTheme(v ? 'dark' : 'light')} />
             </div>
 
             {/* Language submenu */}
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="gap-3 cursor-pointer">
-                <Languages className="w-4 h-4 text-blue-500" />
-                <span className="text-sm flex-1">{t('account.language')}</span>
+              <DropdownMenuSubTrigger className="gap-3 cursor-pointer py-2.5 rounded-lg">
+                <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                  <Languages className="w-4 h-4 text-foreground" />
+                </span>
+                <span className="text-sm font-medium flex-1">{t('account.language')}</span>
                 <span className="text-xs text-muted-foreground me-1">
                   {LANGUAGE_INFO[language]?.flag} {LANGUAGE_INFO[language]?.nativeName}
                 </span>
@@ -374,9 +381,11 @@ export function HeaderAuth() {
 
             {/* Currency submenu */}
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="gap-3 cursor-pointer">
-                <Globe className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm flex-1">{t('account.currency')}</span>
+              <DropdownMenuSubTrigger className="gap-3 cursor-pointer py-2.5 rounded-lg">
+                <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                  <Globe className="w-4 h-4 text-foreground" />
+                </span>
+                <span className="text-sm font-medium flex-1">{t('account.currency')}</span>
                 <span className="text-xs text-muted-foreground me-1">{selectedCurrency}</span>
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
@@ -408,32 +417,40 @@ export function HeaderAuth() {
               <Sparkles className="w-3 h-3" /> {t('account.quickActions')}
             </DropdownMenuLabel>
 
-            <DropdownMenuItem onClick={handleOpenChat} className="gap-3 cursor-pointer">
-              <MessageCircle className="w-4 h-4 text-primary" />
+            <DropdownMenuItem onClick={handleOpenChat} className="gap-3 cursor-pointer py-2.5 rounded-lg">
+              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                <MessageCircle className="w-4 h-4 text-foreground" />
+              </span>
               <div className="flex-1">
                 <p className="text-sm font-medium">{t('account.openChat')}</p>
                 <p className="text-[11px] text-muted-foreground">{t('account.openChatDesc')}</p>
               </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground rtl:rotate-180" />
             </DropdownMenuItem>
 
             {!hideStudentItems && (
               <>
                 <DropdownMenuItem
                   onClick={() => navigate('/languages/russian/dashboard')}
-                  className="gap-3 cursor-pointer"
+                  className="gap-3 cursor-pointer py-2.5 rounded-lg"
                 >
-                  <GraduationCap className="w-4 h-4 text-violet-500" />
+                  <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                    <GraduationCap className="w-4 h-4 text-foreground" />
+                  </span>
                   <div className="flex-1">
                     <p className="text-sm font-medium">{t('account.continueLearning')}</p>
                     <p className="text-[11px] text-muted-foreground">{t('account.continueLearningDesc')}</p>
                   </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground rtl:rotate-180" />
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
                   onClick={() => navigate('/account?tab=shortlist')}
-                  className="gap-3 cursor-pointer"
+                  className="gap-3 cursor-pointer py-2.5 rounded-lg"
                 >
-                  <Heart className="w-4 h-4 text-red-500" />
+                  <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                    <Heart className="w-4 h-4 text-foreground" />
+                  </span>
                   <div className="flex-1">
                     <p className="text-sm font-medium">{t('nav.favorites')}</p>
                     <p className="text-[11px] text-muted-foreground">
@@ -449,20 +466,25 @@ export function HeaderAuth() {
 
                 <DropdownMenuItem
                   onClick={() => navigate('/account?tab=wallet')}
-                  className="gap-3 cursor-pointer"
+                  className="gap-3 cursor-pointer py-2.5 rounded-lg"
                 >
-                  <Wallet className="w-4 h-4 text-emerald-500" />
+                  <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                    <Wallet className="w-4 h-4 text-foreground" />
+                  </span>
                   <div className="flex-1">
                     <p className="text-sm font-medium">{t('account.myWallet')}</p>
                     <p className="text-[11px] text-muted-foreground">{t('account.balanceTransfers')}</p>
                   </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground rtl:rotate-180" />
                 </DropdownMenuItem>
               </>
             )}
 
-            <DropdownMenuItem onClick={handleCopyAccountId} className="gap-3 cursor-pointer">
-              <Copy className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm flex-1">{t('account.copyReferral')}</span>
+            <DropdownMenuItem onClick={handleCopyAccountId} className="gap-3 cursor-pointer py-2.5 rounded-lg">
+              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                <Copy className="w-4 h-4 text-foreground" />
+              </span>
+              <span className="text-sm font-medium flex-1">{t('account.copyReferral')}</span>
             </DropdownMenuItem>
           </div>
 
@@ -472,21 +494,27 @@ export function HeaderAuth() {
               <DropdownMenuSeparator />
               <div className="p-2">
                 {(isTeacher || isSuperAdmin) && (
-                  <DropdownMenuItem onClick={() => navigate('/staff/teacher')} className="gap-3 cursor-pointer">
-                    <LayoutDashboard className="w-4 h-4 text-primary" />
+                  <DropdownMenuItem onClick={() => navigate('/staff/teacher')} className="gap-3 cursor-pointer py-2.5 rounded-lg">
+                    <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                      <LayoutDashboard className="w-4 h-4 text-foreground" />
+                    </span>
                     <div className="flex-1">
                       <p className="text-sm font-medium">{t('account.teacherDashboard')}</p>
                       <p className="text-[11px] text-muted-foreground">{t('account.teacherDashboardDesc')}</p>
                     </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground rtl:rotate-180" />
                   </DropdownMenuItem>
                 )}
                 {isSuperAdmin && (
-                  <DropdownMenuItem onClick={() => navigate('/admin')} className="gap-3 cursor-pointer">
-                    <Shield className="w-4 h-4 text-primary" />
+                  <DropdownMenuItem onClick={() => navigate('/admin')} className="gap-3 cursor-pointer py-2.5 rounded-lg">
+                    <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                      <Shield className="w-4 h-4 text-foreground" />
+                    </span>
                     <div className="flex-1">
                       <p className="text-sm font-medium">{t('account.adminPanel')}</p>
                       <p className="text-[11px] text-muted-foreground">{t('account.adminPanelDesc')}</p>
                     </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground rtl:rotate-180" />
                   </DropdownMenuItem>
                 )}
               </div>
@@ -495,34 +523,27 @@ export function HeaderAuth() {
 
           <DropdownMenuSeparator />
 
-          {/* ===== Footer Grid (2x2 compact) ===== */}
-          <div className="grid grid-cols-2 gap-1 p-2">
+          {/* ===== Footer Row (compact text-only links) ===== */}
+          <div className="flex items-center justify-between gap-1 p-2">
             <button
               onClick={() => navigate('/')}
-              className="flex flex-col items-center gap-1 p-2 rounded-md hover:bg-accent transition-colors text-xs"
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors text-xs font-medium"
             >
-              <Home className="w-4 h-4 text-blue-500" />
+              <Home className="w-3.5 h-3.5" />
               <span>{t('account.home')}</span>
             </button>
             <button
               onClick={() => navigate('/support')}
-              className="flex flex-col items-center gap-1 p-2 rounded-md hover:bg-accent transition-colors text-xs"
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors text-xs font-medium"
             >
-              <HelpCircle className="w-4 h-4 text-amber-500" />
+              <HelpCircle className="w-3.5 h-3.5" />
               <span>{t('account.support')}</span>
             </button>
             <button
-              onClick={() => navigate('/privacy-policy')}
-              className="flex flex-col items-center gap-1 p-2 rounded-md hover:bg-accent transition-colors text-xs"
-            >
-              <Shield className="w-4 h-4 text-muted-foreground" />
-              <span>{t('legal.privacyPolicy')}</span>
-            </button>
-            <button
               onClick={() => setShowLogoutDialog(true)}
-              className="flex flex-col items-center gap-1 p-2 rounded-md hover:bg-destructive/10 text-destructive transition-colors text-xs"
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors text-xs font-medium"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5" />
               <span>{t('account.signOut')}</span>
             </button>
           </div>
