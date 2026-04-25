@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.portal-draft-extract]
 verify_jwt = false
+
+[functions.oryxa-ocr-worker]
+verify_jwt = false

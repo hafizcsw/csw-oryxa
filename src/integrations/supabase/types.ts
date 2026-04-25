@@ -8774,6 +8774,65 @@ export type Database = {
         }
         Relationships: []
       }
+      oryxa_ocr_runs: {
+        Row: {
+          avg_confidence: number | null
+          chars_total: number | null
+          created_at: string
+          draft_id: string | null
+          engine_path: string
+          error: string | null
+          id: string
+          latency_ms: number | null
+          page_methods: Json
+          pages_total: number | null
+          quality_flags: Json
+          status: string
+          student_user_id: string
+          trace_id: string | null
+        }
+        Insert: {
+          avg_confidence?: number | null
+          chars_total?: number | null
+          created_at?: string
+          draft_id?: string | null
+          engine_path: string
+          error?: string | null
+          id?: string
+          latency_ms?: number | null
+          page_methods?: Json
+          pages_total?: number | null
+          quality_flags?: Json
+          status: string
+          student_user_id: string
+          trace_id?: string | null
+        }
+        Update: {
+          avg_confidence?: number | null
+          chars_total?: number | null
+          created_at?: string
+          draft_id?: string | null
+          engine_path?: string
+          error?: string | null
+          id?: string
+          latency_ms?: number | null
+          page_methods?: Json
+          pages_total?: number | null
+          quality_flags?: Json
+          status?: string
+          student_user_id?: string
+          trace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oryxa_ocr_runs_draft_id_fkey"
+            columns: ["draft_id"]
+            isOneToOne: false
+            referencedRelation: "portal_document_drafts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       packages: {
         Row: {
           currency: string | null
@@ -9446,7 +9505,9 @@ export type Database = {
           is_recognized: boolean
           lane_confidence: number | null
           ocr_chars: number | null
+          ocr_engine_path: string | null
           ocr_pages: number | null
+          ocr_quality_flags: Json
           rejection_reason: string | null
           student_user_id: string
           trace_id: string | null
@@ -9464,7 +9525,9 @@ export type Database = {
           is_recognized?: boolean
           lane_confidence?: number | null
           ocr_chars?: number | null
+          ocr_engine_path?: string | null
           ocr_pages?: number | null
+          ocr_quality_flags?: Json
           rejection_reason?: string | null
           student_user_id: string
           trace_id?: string | null
@@ -9482,7 +9545,9 @@ export type Database = {
           is_recognized?: boolean
           lane_confidence?: number | null
           ocr_chars?: number | null
+          ocr_engine_path?: string | null
           ocr_pages?: number | null
+          ocr_quality_flags?: Json
           rejection_reason?: string | null
           student_user_id?: string
           trace_id?: string | null
