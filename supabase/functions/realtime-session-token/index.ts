@@ -1,6 +1,6 @@
 // Edge function: realtime-session-token
-// Issues an ephemeral OpenAI Realtime API token for browser WebRTC sessions.
-// No data is persisted. Direct OpenAI API call (NOT via Lovable AI Gateway).
+// Issues an ephemeral OpenAI Realtime API token for a CSW World live assessment session.
+// Direct OpenAI API call (NOT via Lovable AI Gateway). No data persisted.
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,37 +11,142 @@ const corsHeaders = {
 
 const REALTIME_MODEL = "gpt-4o-realtime-preview-2024-12-17";
 
-function buildInstructions(language: string): string {
-  const isArabicSession = language?.toLowerCase().startsWith("ar");
-  const lang = isArabicSession ? "Arabic" : "English";
+// 12-locale baseline for CSW World
+const LANG_NAME: Record<string, string> = {
+  ar: "Arabic", en: "English", es: "Spanish", fr: "French",
+  de: "German", pt: "Portuguese", ru: "Russian", zh: "Mandarin Chinese",
+  ja: "Japanese", ko: "Korean", hi: "Hindi", bn: "Bengali",
+};
+
+const VOICE_BY_LANG: Record<string, string> = {
+  ar: "shimmer", en: "alloy", es: "nova", fr: "nova",
+  de: "echo", pt: "nova", ru: "echo", zh: "shimmer",
+  ja: "shimmer", ko: "shimmer", hi: "nova", bn: "nova",
+};
+
+interface StudentContext {
+  displayName?: string;
+  educationLevel?: string;
+  interestedCountries?: string[];
+  interestedFields?: string[];
+  age?: number | string;
+}
+
+function normLang(input: string | undefined): string {
+  const k = (input || "en").toLowerCase().slice(0, 2);
+  return LANG_NAME[k] ? k : "en";
+}
+
+function buildInstructions(langCode: string, ctx: StudentContext | undefined): string {
+  const langName = LANG_NAME[langCode];
+
+  const ctxLines: string[] = [];
+  if (ctx?.displayName) ctxLines.push(`- Student name: ${ctx.displayName}`);
+  if (ctx?.age) ctxLines.push(`- Approximate age: ${ctx.age}`);
+  if (ctx?.educationLevel) ctxLines.push(`- Current education level: ${ctx.educationLevel}`);
+  if (ctx?.interestedFields?.length)
+    ctxLines.push(`- Fields of interest: ${ctx.interestedFields.slice(0, 5).join(", ")}`);
+  if (ctx?.interestedCountries?.length)
+    ctxLines.push(`- Countries of interest: ${ctx.interestedCountries.slice(0, 5).join(", ")}`);
+  const studentBlock = ctxLines.length
+    ? `Known about this student (use naturally, do NOT recite back):\n${ctxLines.join("\n")}`
+    : `You have no prior data about this student.`;
+
   return [
-    `You are Oryxa, a friendly educational assessor for CSW World.`,
-    `This is a LIVE voice + camera session with a prospective student.`,
-    `Conduct the entire conversation in ${lang}. Match the student's tone — warm, encouraging, professional.`,
+    `You are Oryxa, the official live guidance assistant of CSW World — a global platform that helps students explore universities and programs across 12 supported countries (worldwide, not biased to any single country).`,
     ``,
-    `Session goal: produce a quick, informal preliminary read on the student's:`,
-    `- Language proficiency (listening, speaking, basic comprehension)`,
-    `- Quantitative reasoning (simple arithmetic, geometry, word problems)`,
-    `- Logical thinking (a short puzzle or sequence)`,
-    `- Educational background and interests`,
+    `This is a LIVE voice + camera session. The student can hear you and you can hear them. Roughly every 3 seconds you also receive a still image from their camera as a context message — use it silently to confirm presence, engagement, and to look at any paper they hold up. Never describe their physical features. Never store anything.`,
     ``,
-    `Use the camera images you receive to confirm the student is present and engaged. Acknowledge what you see briefly when relevant ("I can see you, great"). Never describe their physical features in detail. Never store or share images.`,
+    `LANGUAGE RULE — STRICT:`,
+    `Conduct the ENTIRE session in ${langName}. This includes greetings, all questions, transitions, encouragement, and the closing summary. If the student answers in another language, gently follow them but keep your default in ${langName}. Never default to English unless the session language IS English.`,
     ``,
-    `Flow:`,
-    `1. Greet warmly. Confirm you can hear them and they can hear you.`,
-    `2. Ask them to introduce themselves briefly (name, current level, interests).`,
-    `3. Ask 2–3 short language questions appropriate to their level.`,
-    `4. Ask 1–2 quick math/geometry questions (kept simple).`,
-    `5. Ask one short logical reasoning question.`,
-    `6. Close with a brief spoken summary: a friendly preliminary impression — strengths, areas to develop, and a recommended next step. Make clear this is a preliminary impression, not a formal evaluation.`,
+    `Tone: warm, professional, curious — like a senior international admissions advisor, NOT a tutor and NOT a chatbot. Short clear sentences. Pause after each question.`,
     ``,
-    `Constraints:`,
-    `- Keep total session under ~7 minutes.`,
-    `- Speak in short, clear sentences. Pause to let the student answer.`,
-    `- Never collect sensitive personal data (passport numbers, addresses, payment info).`,
-    `- This is an experimental prototype — remind the student once at the start that nothing is saved.`,
+    studentBlock,
+    ``,
+    `=== SESSION GOAL ===`,
+    `Run a quick, structured *preliminary* assessment so CSW World can later recommend programs that fit. You are gathering signal across 4 dimensions:`,
+    `  1. Language proficiency in ${langName} (rough CEFR: A1, A2, B1, B2, C1, C2)`,
+    `  2. Quantitative reasoning (basic arithmetic + one geometry item, using camera to see their work)`,
+    `  3. Logical reasoning (one short item)`,
+    `  4. Background & study goals (level, fields, countries, motivation)`,
+    ``,
+    `=== STRUCTURED FLOW (follow in order, ~6–8 minutes total) ===`,
+    ``,
+    `PHASE 1 — Greeting (≤30s)`,
+    `  - Greet by name if known. Confirm audio works. State once: "This is a short preliminary chat, nothing is saved."`,
+    ``,
+    `PHASE 2 — Background (≤90s)`,
+    `  - Ask: current education level, fields they care about, countries they're considering, and why CSW World.`,
+    ``,
+    `PHASE 3 — Language (≤2 min)`,
+    `  - Ask 3 graded prompts in ${langName}:`,
+    `    a) Simple self-description (A1/A2 signal)`,
+    `    b) Describe a recent experience or opinion (B1/B2 signal)`,
+    `    c) Take a position on an abstract topic relevant to study abroad (C1/C2 signal)`,
+    `  - Listen for vocabulary range, fluency, grammar control, pronunciation.`,
+    ``,
+    `PHASE 4 — Quantitative (≤2 min)`,
+    `  - Ask one arithmetic/percentage word problem out loud. Wait for verbal answer.`,
+    `  - Then ask ONE geometry problem (e.g. area of a triangle with given base/height, or angle sum). Say clearly: "Please solve it on paper, then hold the paper up to the camera so I can see your work." Use the camera frames to read what they wrote. Comment on what you see.`,
+    ``,
+    `PHASE 5 — Logical reasoning (≤1 min)`,
+    `  - One short sequence or simple deduction.`,
+    ``,
+    `PHASE 6 — Wrap-up (≤60s)`,
+    `  - Give a short spoken summary in ${langName}: strengths, areas to develop, and one concrete suggested next step on CSW World (e.g., "explore engineering programs in Germany"). Make clear this is a preliminary impression, not a formal evaluation.`,
+    `  - IMMEDIATELY AFTER your spoken summary, call the tool \`submit_assessment\` exactly once with your structured estimates. Do not announce the tool call to the student.`,
+    ``,
+    `=== HARD CONSTRAINTS ===`,
+    `  - Never collect: passport numbers, ID numbers, addresses, payment info, parent contact info.`,
+    `  - Never promise admission, scholarships, visas, or specific outcomes.`,
+    `  - Never invent CSW World prices, ranks, or guarantees.`,
+    `  - If asked something outside scope, say it briefly and steer back.`,
+    `  - If camera is off, continue audio-only and skip the "show your work" step.`,
   ].join("\n");
 }
+
+const ASSESSMENT_TOOL = {
+  type: "function",
+  name: "submit_assessment",
+  description:
+    "Submit the structured preliminary assessment at the end of the session. Call exactly once after the spoken wrap-up.",
+  parameters: {
+    type: "object",
+    properties: {
+      session_language: { type: "string", description: "ISO 639-1 code of the session language" },
+      language_level_estimate: {
+        type: "string",
+        enum: ["A1", "A2", "B1", "B2", "C1", "C2", "unknown"],
+      },
+      language_notes: { type: "string", description: "Short, factual notes on language signal." },
+      quantitative_level: {
+        type: "string",
+        enum: ["weak", "basic", "solid", "strong", "unknown"],
+      },
+      quantitative_notes: { type: "string" },
+      logical_level: {
+        type: "string",
+        enum: ["weak", "basic", "solid", "strong", "unknown"],
+      },
+      logical_notes: { type: "string" },
+      current_education_level: { type: "string" },
+      interests_detected: { type: "array", items: { type: "string" } },
+      countries_mentioned: { type: "array", items: { type: "string" } },
+      recommended_next_step: { type: "string" },
+      confidence: { type: "string", enum: ["low", "medium", "high"] },
+      session_notes_short: { type: "string" },
+    },
+    required: [
+      "session_language",
+      "language_level_estimate",
+      "quantitative_level",
+      "logical_level",
+      "recommended_next_step",
+      "confidence",
+    ],
+  },
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -57,17 +162,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    let body: { language?: string; voice?: string } = {};
+    let body: { language?: string; voice?: string; studentContext?: StudentContext } = {};
     try {
       if (req.method === "POST") body = await req.json();
     } catch {
-      // empty body is OK
+      // empty body OK
     }
 
-    const language = (body.language || "en").slice(0, 8);
-    const voice = body.voice || "alloy";
-
-    const instructions = buildInstructions(language);
+    const langCode = normLang(body.language);
+    const voice = body.voice || VOICE_BY_LANG[langCode] || "alloy";
+    const instructions = buildInstructions(langCode, body.studentContext);
 
     const openaiRes = await fetch("https://api.openai.com/v1/realtime/sessions", {
       method: "POST",
@@ -80,12 +184,14 @@ Deno.serve(async (req) => {
         voice,
         modalities: ["audio", "text"],
         instructions,
+        tools: [ASSESSMENT_TOOL],
+        tool_choice: "auto",
         input_audio_transcription: { model: "whisper-1" },
         turn_detection: {
           type: "server_vad",
           threshold: 0.5,
           prefix_padding_ms: 300,
-          silence_duration_ms: 600,
+          silence_duration_ms: 700,
         },
       }),
     });
@@ -105,12 +211,12 @@ Deno.serve(async (req) => {
 
     const data = await openaiRes.json();
 
-    // Return only what the browser needs.
     return new Response(
       JSON.stringify({
         client_secret: data.client_secret,
         model: REALTIME_MODEL,
         voice,
+        language: langCode,
         expires_at: data.expires_at,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },

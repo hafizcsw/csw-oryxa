@@ -1,118 +1,144 @@
-# جلسة فحص صوتية/مرئية حية — OpenAI Realtime مباشرة
+# إعادة بناء جلسة Oryxa الحية لتليق بـ CSW World
 
-## الفكرة
-إضافة وضع "Live Session" في الشات الرئيسية (Oryxa) يربط الطالب بـ OpenAI Realtime API عبر WebRTC:
-- يفتح الميكروفون والكاميرا
-- AI تتحدث وتسمع
-- ترى الطالب عبر frames دورية
-- تطرح أسئلة لغة + رياضيات/هندسة + تفكير منطقي
-- تخرج بتقييم شفهي مبدئي
+## التشخيص الصريح لما فشل في الجلسة الحالية
 
-**Prototype تجريبي.** لا يحفظ شيئاً، لا يلمس CRM/Portal Drafts/Order 2-3.
+1. **الشخصية عامة وسطحية**: "friendly educational assessor" بدون أي إدراك أن هذا منتج CSW World لـ **استكشاف الجامعات والبرامج عالمياً**. لا تعرف أنها أمام طالب يبحث عن دراسة في الخارج.
 
-## المزود — OpenAI مباشرة فقط
-- **لن نستخدم Lovable AI Gateway**
-- نستخدم `OPENAI_API_KEY` مباشرة
-- النموذج: `gpt-4o-realtime-preview-2024-12-17`
-- النقل: WebRTC (latency منخفض، صوت ثنائي الاتجاه native)
-- Auth: ephemeral token من `POST https://api.openai.com/v1/realtime/sessions` (لا يُسرَّب المفتاح للمتصفح)
+2. **اللغة ثنائية بدائية**: `isArabicSession` فقط — يخالف قاعدة المشروع (12 لغة). بقية الـ 10 لغات تنزل قسراً للإنجليزية.
 
-## الفيديو
-Realtime لا يستقبل stream فيديو مستمر. الحل:
-- نلتقط frame من `<video>` كل ~2 ثانية
-- نُرسله JPEG base64 كـ `input_image` ضمن `conversation.item.create`
-- النموذج "يرى" الطالب شبه-حي
+3. **القياس وهمي**: تطلب من النموذج "اطرح سؤال لغة" بدون أي rubric، بدون مقاييس CEFR، بدون قياس فعلي. النموذج يرتجل أسئلة عشوائية.
 
-## ما سيُبنى
+4. **الكاميرا بلا غرض حقيقي**: تُرسل frames لكن النموذج لا يستخدمها لأي شيء قياسي (هل الطالب موجود؟ هل يكتب؟ هل يُظهر ورقة؟ هل يحل مسألة هندسية على ورقة؟).
 
-### 1. Secret مطلوب من المستخدم
-- `OPENAI_API_KEY` (سأطلبه عبر add_secret بعد موافقتك)
+5. **الصوت/الإلقاء سيء**: `voice: alloy` ثابت. لا اختيار صوت يناسب لغة الطالب. لا تعليمات لإيقاع/نبرة.
 
-### 2. Edge function: `realtime-session-token`
-`supabase/functions/realtime-session-token/index.ts`
-- `verify_jwt = false` (يُستدعى من الشات العام)
-- يطلب من OpenAI ephemeral session مع:
-  - `model: gpt-4o-realtime-preview-2024-12-17`
-  - `voice: alloy` (افتراضي، قابل للتغيير)
-  - `modalities: ["audio", "text"]`
-  - `instructions`: شخصية Oryxa كمُقيِّمة تربوية، تتبع لغة الواجهة
-- يُرجع `client_secret.value` للمتصفح
+6. **لا سياق طالب**: لا تعرف مستواه، عمره، البلد المستهدف، التخصص المهتم به — رغم أن كل هذا موجود في portal/CRM context.
 
-### 3. Hook: `useRealtimeSession`
-`src/hooks/useRealtimeSession.ts`
-- `start(language)`: يطلب token → ينشئ `RTCPeerConnection` → يضيف mic track → يفتح DataChannel → يتفاوض SDP مع `https://api.openai.com/v1/realtime?model=...`
-- `attachVideo(stream)`: يبدأ frame capture loop (كل 2s)
-- `stop()`: يُغلق peer + tracks
-- يكشف: `status`, `transcript[]`, `isAISpeaking`, `error`
+7. **لا مخرج منظَّم**: تنتهي بـ "ملخص شفهي" يضيع. لا JSON قابل للاستفادة لاحقاً.
 
-### 4. مكوّن: `LiveSessionPanel`
-`src/components/chat/LiveSessionPanel.tsx`
-- زر "ابدأ جلسة فحص"
-- يطلب أذونات mic + camera بشرح واضح
-- يعرض:
-  - فيديو الطالب (self-view مصغّر)
-  - waveform / مؤشر AI يتحدث
-  - transcript حي
-  - زر إنهاء + disclaimer (تجريبية، لا تُحفظ)
-- يستخدم design tokens الموجودة
+## ما سنبنيه (هذا الباب فقط — Live Session Rebuild)
 
-### 5. إدماج في الشات الرئيسية
-- `AIChatPanel.tsx` و `OryxaTab.tsx`: tab/toggle بين "Text" و "Live"
-- لا يكسر التدفق النصي
+### A. شخصية Oryxa صحيحة لـ CSW World
 
-### 6. i18n (12 لغة)
-مفاتيح جديدة `portal.chat.live.*` تُضاف في `en/common.json` و `ar/common.json` (rollout الحالي):
-- `start, end, connecting, listening, speaking, permissionMic, permissionCamera, permissionDenied, disclaimer`
-- البنية جاهزة للـ 12 لغة (لن نُولّد ترجمات وهمية للباقي)
+System prompt جديد (في edge function) يتضمّن:
+- هويتها: مرشدة CSW World المتخصصة في توجيه الطلاب لدراسة في الخارج (12 دولة مدعومة)
+- مهمتها في هذه الجلسة: قياس **مبدئي موثَّق** قبل ترشيح برامج/جامعات
+- تتكلم بلغة الطالب الـ 12 الأصلية، ليس فقط ar/en
+- تعرف أن CSW World منصة عالمية — تتجنب التحيز لبلد واحد
 
-### 7. Instructions للـ AI
-prompt قصير في edge function:
-- مُقيِّمة تربوية ودودة باسم Oryxa
-- تطرح: قراءة/فهم لغوي، حساب/هندسة بسيطة، تفكير منطقي
-- تستخدم الكاميرا للتحقق من حضور وتفاعل الطالب
-- لغة الجلسة = لغة الواجهة (تُمرَّر من client)
-- نهاية الجلسة: ملخص تقييم شفهي مختصر
+### B. دعم الـ 12 لغة بشكل صحيح
 
-## التدفق
-```text
-Browser              Edge Function              OpenAI
-  |--POST /token---------->|                       |
-  |                        |--POST /sessions------>|
-  |                        |<--client_secret-------|
-  |<--ephemeral token------|                       |
-  |                                                |
-  |--SDP offer + Bearer ephemeral----------------->|
-  |<--SDP answer-----------------------------------|
-  |======== WebRTC audio + DataChannel ===========|
-  |--every 2s: frame as input_image-------------->|
-  |<--audio chunks + transcript events------------|
+استبدال `isArabicSession` بـ map كامل:
+```ts
+const VOICE_BY_LANG = {
+  ar: "shimmer", en: "alloy", es: "nova", fr: "nova",
+  de: "echo", pt: "nova", ru: "echo", zh: "shimmer",
+  ja: "shimmer", ko: "shimmer", hi: "nova", bn: "nova"
+};
+const LANG_NAME = { ar:"Arabic", en:"English", es:"Spanish", ... };
+```
+النموذج يتلقى تعليمات صريحة: "Conduct the entire session in {LANG_NAME}. If the student switches language, follow them but note it."
+
+### C. قياس حقيقي مُهيكل (Structured Assessment)
+
+تعليمات داخلية للنموذج تتبع rubric واضح:
+
+1. **Language proficiency** — مقياس CEFR تقريبي (A1→C2):
+   - 3 prompts متدرجة الصعوبة بلغة الطالب
+   - يقيس: نطق، استيعاب، طلاقة، مفردات
+2. **Quantitative reasoning** — 2 أسئلة:
+   - حسابية بسيطة (نسبة، نسبة مئوية)
+   - هندسية (مساحة/محيط أو زاوية)
+   - **يطلب من الطالب رفع الورقة للكاميرا** ليرى حله
+3. **Logical reasoning** — سؤال واحد (تسلسل أو منطق بسيط)
+4. **Background & goals** — تخصص مهتم، مستوى دراسي حالي، دول مهتم بها
+
+### D. استخدام الكاميرا بهدف
+
+تحديث الـ system prompt ليطلب من النموذج صراحةً:
+- التحقق من حضور الطالب (ليس صورة ثابتة)
+- طلب رؤية ورقة الحل في أسئلة الرياضيات
+- ملاحظة بيئة الجلسة (هل الطالب في مكان مناسب؟)
+
+تحديث `useRealtimeSession.ts`:
+- خفض `FRAME_INTERVAL_MS` من 2500 → 3500 (أقل ضوضاء)
+- إضافة `text` hint مع كل frame: `"[camera_frame_t={timestamp}]"` ليعرف النموذج أنها صورة سياق وليست input مستقل
+
+### E. سياق الطالب من الـ Portal
+
+تحديث `realtime-session-token` ليقبل اختيارياً:
+```ts
+{ language, studentContext?: {
+    displayName?: string,
+    educationLevel?: string,
+    interestedCountries?: string[],
+    interestedFields?: string[]
+}}
+```
+ويُحقَن في الـ instructions: "The student's name is X. They are interested in Y in country Z."
+
+`LiveSessionPanel` يقرأ هذا من `MalakChatContext` / canonical student file إن توفر.
+
+### F. مخرج منظَّم في نهاية الجلسة
+
+تعليمات للنموذج: "في نهاية الجلسة، أرسل عبر DataChannel رسالة من نوع `response.create` تحتوي tool call باسم `submit_assessment` بالـ schema التالي":
+```json
+{
+  "language_level_estimate": "A1|A2|B1|B2|C1|C2",
+  "quantitative_level": "weak|basic|solid|strong",
+  "logical_level": "weak|basic|solid|strong",
+  "interests_detected": ["..."],
+  "countries_mentioned": ["..."],
+  "recommended_next_step": "...",
+  "confidence": "low|medium|high",
+  "session_notes_short": "..."
+}
 ```
 
-## ملفات تُنشأ
-- `supabase/functions/realtime-session-token/index.ts`
-- `src/hooks/useRealtimeSession.ts`
-- `src/components/chat/LiveSessionPanel.tsx`
+النموذج يُسجَّل بـ tool definition عبر `session.update` بعد الاتصال. الـ hook يلتقطه في `response.function_call_arguments.done` ويعرضه في الـ UI كـ "Assessment Summary Card" قابل للنسخ — **بدون حفظ في DB** (نلتزم بنطاق prototype).
 
-## ملفات تُعدَّل
-- `src/components/chat/AIChatPanel.tsx`
-- `src/components/portal/support/panel/OryxaTab.tsx`
-- `src/locales/en/common.json`
-- `src/locales/ar/common.json`
-- `supabase/config.toml` (تسجيل الدالة مع `verify_jwt = false`)
+### G. UI أنضج
+
+- إضافة شريط مرحلة (Phase): Greeting → Language → Math → Logic → Wrap-up
+- زر "Show my work" يُعطي tip بصري للطالب لرفع الورقة
+- بطاقة الملخص النهائية بعد إنهاء الجلسة (من tool call output)
+- مؤشر LiveStatus أوضح (waveform بسيط للصوت الوارد)
+
+## الملفات المتأثرة
+
+**Edge function (rewrite):**
+- `supabase/functions/realtime-session-token/index.ts` — 12-lang map، voice selection، rubric instructions، optional student context، tool registration hint
+
+**Hook (extend):**
+- `src/hooks/useRealtimeSession.ts` — قبول `studentContext`, التقاط tool call output `submit_assessment`, تتبع phase, تحسين frame loop
+
+**UI (rewrite):**
+- `src/components/chat/LiveSessionPanel.tsx` — Phase indicator، assessment summary card، 12-lang labels، work-up tip
+
+**i18n:**
+- `src/locales/{ar,en}/common.json` — مفاتيح: phases، summary card، rubric labels
+- البنية جاهزة للـ 10 لغات الباقية (لا نولّد ترجمات وهمية الآن — يُترك للـ translation lane)
+
+**Integration touch points (لا تغيير سلوكي):**
+- `src/components/chat/MalakChatInterface.tsx` — يمرر studentContext إن وُجد
+- `src/components/portal/support/panel/OryxaTab.tsx` — نفس الشيء
 
 ## خارج النطاق صراحةً
-- لا حفظ صوت/فيديو/transcript في storage أو DB
-- لا جدول جديد، لا CRM، لا Portal Drafts، لا Order 2/3
-- لا avatar/lip-sync مولَّد
-- لا fallback لمزودين آخرين
-- لا تغيير المنطق النصي للشات الحالي
+- لا CRM mutation ولا حفظ نتيجة الـ assessment
+- لا touch لـ Order 2/3 (drafts/extraction) — الديون runtime لا تزال مفتوحة
+- لا تغيير في الـ text chat
+- لا توليد ترجمات للـ 10 لغات (يُترك لباب الترجمة)
+- لا audio recording / transcript persistence
 
-## Done criteria
-- **code-ready** فور الانتهاء
-- **runtime-proven** يحتاج اختبار يدوي منك (mic+camera+محادثة فعلية + التحقق من latency)
+## معايير الإغلاق
+- **code-ready** بعد التنفيذ
+- **runtime-proven** يحتاج اختبارك:
+  1. الجلسة تتكلم بلغة الواجهة الفعلية
+  2. تطرح أسئلة من كل قسم (لغة + رياضيات + منطق)
+  3. تطلب رفع الورقة للكاميرا في سؤال الهندسة
+  4. تنتج Summary Card في النهاية بحقول مملوءة
+  5. الصوت طبيعي ومناسب للغة
 
----
-
-**أحتاج تأكيدك على:**
-1. الموافقة على إضافة `OPENAI_API_KEY` كـ secret.
-2. تأكيد أن الزر يظهر في الشات الرئيسية فقط (`AIChatPanel` + `OryxaTab`).
+## حالة الباب الحالية
+- Live Session v1 = **failed UX / superficial** — يُستبدل
+- Live Session v2 = code-ready بعد موافقتك
