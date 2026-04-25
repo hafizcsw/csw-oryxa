@@ -270,8 +270,11 @@ export function HeaderAuth() {
             )}
         <DropdownMenuContent
           align="end"
-          sideOffset={8}
-          className="w-80 p-0 overflow-hidden bg-card border-border shadow-2xl rounded-2xl"
+          sideOffset={12}
+          alignOffset={-8}
+          collisionPadding={16}
+          avoidCollisions
+          className="w-[360px] max-w-[calc(100vw-2rem)] p-0 overflow-hidden bg-popover text-popover-foreground border border-border shadow-2xl rounded-2xl"
         >
           {/* ===== Identity Card ===== */}
           <div className="p-4 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-b border-border/60">
