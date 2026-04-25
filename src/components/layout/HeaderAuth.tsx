@@ -277,7 +277,7 @@ export function HeaderAuth() {
           className="w-[360px] max-w-[calc(100vw-2rem)] p-0 overflow-hidden bg-popover text-popover-foreground border border-border shadow-2xl rounded-2xl"
         >
           {/* ===== Identity Card ===== */}
-          <div className="p-4 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-b border-border/60">
+          <div className="p-4 border-b border-border/60">
             <div className="flex items-center gap-3">
               <Avatar className="w-12 h-12 ring-2 ring-primary/30 shadow-md">
                 <AvatarImage src={avatarUrl} alt={displayName} />
