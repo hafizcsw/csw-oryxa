@@ -1248,6 +1248,8 @@ export const WorldMapLeaflet = forwardRef<LeafletMapHandle, LeafletMapProps>(fun
 
       const geoLayer = L.geoJSON(worldGeo, {
         pane: 'bordersPane',
+        // Higher smoothFactor → fewer points → faster pan/zoom. Visually identical at world view.
+        ...({ smoothFactor: 1.6 } as any),
         style: (feature) => {
           if (!feature) return {};
           const code = getCountryCode(feature);
