@@ -133,13 +133,13 @@ export function CommCallProvider({ children }: { children: ReactNode }) {
           // Fetch caller name
           const { data: profile } = await supabase
             .from('profiles')
-            .select('display_name, avatar_url, first_name, last_name')
+            .select('full_name, avatar_storage_path, email')
             .eq('user_id', row.caller_id)
             .maybeSingle();
-          const remoteName =
-            profile?.display_name ||
-            [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') ||
-            undefined;
+          const remoteName = profile?.full_name || profile?.email || undefined;
+          const remoteAvatar = profile?.avatar_storage_path
+            ? supabase.storage.from('avatars').getPublicUrl(profile.avatar_storage_path).data.publicUrl
+            : undefined;
           const incoming: ActiveCall = {
             id: row.id,
             threadId: row.thread_id,
