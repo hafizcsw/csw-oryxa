@@ -28,6 +28,7 @@ export function OryxaTab({ onBack }: OryxaTabProps = {}) {
   } = useMalakChat();
 
   const [input, setInput] = useState("");
+  const [mode, setMode] = useState<"text" | "live">("text");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const hasNewMessage = useMemo(
@@ -69,8 +70,8 @@ export function OryxaTab({ onBack }: OryxaTabProps = {}) {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {onBack && (
-        <div className="flex items-center px-3 py-2 border-b border-border/40 bg-card/40">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-card/40 gap-2">
+        {onBack ? (
           <button
             type="button"
             onClick={onBack}
@@ -79,8 +80,36 @@ export function OryxaTab({ onBack }: OryxaTabProps = {}) {
             <Arrow className="h-3.5 w-3.5" />
             {t("portal.support.panel.back", { defaultValue: "Back" })}
           </button>
+        ) : <div />}
+        <div className="inline-flex rounded-full bg-muted/50 p-0.5 text-[11px]">
+          <button
+            type="button"
+            onClick={() => setMode("text")}
+            className={cn(
+              "h-7 px-3 rounded-full inline-flex items-center gap-1 transition-colors",
+              mode === "text" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <MessageSquare className="h-3 w-3" />
+            {t("portal.chat.live.tabText", { defaultValue: "Text" })}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("live")}
+            className={cn(
+              "h-7 px-3 rounded-full inline-flex items-center gap-1 transition-colors",
+              mode === "live" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Radio className="h-3 w-3" />
+            {t("portal.chat.live.tabLive", { defaultValue: "Live" })}
+          </button>
         </div>
-      )}
+      </div>
+      {mode === "live" ? (
+        <LiveSessionPanel />
+      ) : (
+      <>
       <div
         ref={scrollRef}
         onScroll={handleScroll}
