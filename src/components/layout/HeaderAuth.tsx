@@ -48,7 +48,9 @@ import {
 
 export function HeaderAuth() {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { selectedCurrency, setSelectedCurrency } = useCurrency();
   const [user, setUser] = useState<User | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const { isAdmin } = useIsAdmin();
