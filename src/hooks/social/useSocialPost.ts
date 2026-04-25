@@ -13,7 +13,7 @@ export function useCreateSocialPost() {
   return useMutation({
     mutationFn: async ({ userId, content, files }: CreateInput) => {
       const media_urls: string[] = [];
-      let media_type: string | null = null;
+      let post_type = "text";
 
       if (files && files.length) {
         for (const f of files) {
@@ -25,17 +25,19 @@ export function useCreateSocialPost() {
           if (upErr) throw upErr;
           const { data: pub } = supabase.storage.from("social-media").getPublicUrl(path);
           media_urls.push(pub.publicUrl);
-          if (!media_type) media_type = f.type.startsWith("video") ? "video" : "image";
+          if (f.type.startsWith("video")) post_type = "video";
+          else if (post_type === "text") post_type = "image";
         }
       }
 
       const { data, error } = await supabase
         .from("social_posts")
         .insert({
-          user_id: userId,
+          author_id: userId,
           content: content || null,
-          media_urls: media_urls.length ? media_urls : null,
-          media_type,
+          media_urls,
+          post_type,
+          visibility: "public",
         })
         .select()
         .single();
@@ -54,7 +56,10 @@ export function useDeleteSocialPost() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("social_posts").delete().eq("id", id);
+      const { error } = await supabase
+        .from("social_posts")
+        .update({ is_deleted: true })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["social-feed"] }),
