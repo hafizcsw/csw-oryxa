@@ -244,7 +244,7 @@ function validateRussianDraftOutput(o: any): { ok: boolean; error?: string } {
 // ─── Run-log writer ─────────────────────────────────────────────
 
 async function writeRun(
-  admin: ReturnType<typeof createClient>,
+  admin: any,
   row: {
     student_user_id: string | null;
     draft_id: string | null;
