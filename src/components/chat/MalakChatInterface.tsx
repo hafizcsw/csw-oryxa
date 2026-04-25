@@ -9,6 +9,7 @@ import { useChat } from '@/contexts/ChatContext';
 import { useMalakAssistant } from '@/hooks/useMalakAssistant';
 import { useBotTelemetry } from '@/hooks/useBotTelemetry';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
+import { useVoiceChat } from '@/hooks/useVoiceChat';
 import { useStudentTour } from '@/contexts/StudentTourContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCRMEventExecutor } from '@/hooks/useCRMEventExecutor';
