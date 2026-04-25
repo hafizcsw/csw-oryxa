@@ -149,7 +149,7 @@ export function CommCallProvider({ children }: { children: ReactNode }) {
             isOutgoing: false,
             remoteUserId: row.caller_id,
             remoteName,
-            remoteAvatar: profile?.avatar_url || undefined,
+            remoteAvatar,
           };
           callRef.current = incoming;
           setCall(incoming);
