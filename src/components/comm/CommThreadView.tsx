@@ -1,15 +1,17 @@
 /**
  * CommThreadView — Shared message thread view for the canonical communication backbone.
  */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Paperclip, Loader2 } from 'lucide-react';
+import { Send, Paperclip, Loader2, Phone, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useCommMessages, commSendMessage, commMarkRead, type CommMessage } from '@/hooks/useCommApi';
+import { useCommCall } from '@/contexts/CommCallContext';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 interface CommThreadViewProps {
   threadId: string;
