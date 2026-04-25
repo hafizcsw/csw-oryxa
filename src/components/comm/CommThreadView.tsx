@@ -35,6 +35,43 @@ export function CommThreadView({ threadId, threadType, subject, className }: Com
   const [sending, setSending] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const msgsEndRef = useRef<HTMLDivElement>(null);
+  const { startCall, call: activeCall } = useCommCall();
+
+  // Derive remote participant from messages (first message not sent by me)
+  const remoteParticipant = useMemo(() => {
+    if (!userId) return null;
+    const other = messages.find((m) => m.sender_id !== userId);
+    if (!other) return null;
+    return {
+      userId: other.sender_id,
+      name: other.sender_name || undefined,
+      avatar: other.sender_avatar || undefined,
+    };
+  }, [messages, userId]);
+
+  const canCall = !!remoteParticipant && !activeCall && threadType !== 'security_notice' && threadType !== 'system_notice';
+
+  const handleStartCall = async (callType: 'audio' | 'video') => {
+    if (!remoteParticipant) {
+      toast({ title: t('comm.call.noRecipient'), variant: 'destructive' });
+      return;
+    }
+    try {
+      await startCall({
+        threadId,
+        calleeId: remoteParticipant.userId,
+        callType,
+        remoteName: remoteParticipant.name,
+        remoteAvatar: remoteParticipant.avatar,
+      });
+    } catch (e: any) {
+      toast({
+        title: t('comm.call.failed'),
+        description: e?.message,
+        variant: 'destructive',
+      });
+    }
+  };
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id || null));
