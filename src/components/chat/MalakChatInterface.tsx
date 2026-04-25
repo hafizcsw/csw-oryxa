@@ -289,6 +289,13 @@ export function MalakChatInterface({
     cancelRecording
   } = useVoiceRecorder();
 
+  // 🆕 Live voice chat (ChatGPT-style) — runs INSIDE the chat box, transcripts become messages
+  const voiceChat = useVoiceChat();
+  const isVoiceLive =
+    voiceChat.status === 'connected' ||
+    voiceChat.status === 'connecting' ||
+    voiceChat.status === 'requesting_token';
+
   // 🆕 دالة حساب حالة التوقيت للضيف
   const getGuestTimingState = useCallback(() => {
     if (!guestChatStartedAt) {
@@ -1157,13 +1164,48 @@ export function MalakChatInterface({
   }, [handleSend]);
   
   const handleVoiceRecording = async () => {
-    if (isRecording) {
-      const transcribedText = await stopRecording();
-      if (transcribedText) {
-        setInputValue(transcribedText);
-      }
-    } else {
-      await startRecording();
+    // If a live voice session is already on, stop it.
+    if (isVoiceLive) {
+      voiceChat.stop();
+      return;
+    }
+
+    // Start a ChatGPT-style live voice conversation inside the chat box.
+    try {
+      await voiceChat.start({
+        language,
+        onUserTranscript: (text) => {
+          if (!text.trim()) return;
+          setMessages((prev) => [
+            ...prev,
+            {
+              from: 'user',
+              type: 'text',
+              content: text,
+              timestamp: new Date(),
+            } as WebChatMessage,
+          ]);
+        },
+        onAssistantTranscript: (text) => {
+          if (!text.trim()) return;
+          setMessages((prev) => [
+            ...prev,
+            {
+              from: 'bot',
+              type: 'text',
+              content: text,
+              timestamp: new Date(),
+            } as WebChatMessage,
+          ]);
+        },
+      });
+    } catch (e) {
+      console.error('[MalakChat] voice chat failed', e);
+      toast.error(
+        t('portal.chat.voice.startFailed', {
+          defaultValue: 'Could not start voice chat. Check your microphone permissions.',
+        }),
+      );
     }
   };
 
