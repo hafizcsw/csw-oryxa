@@ -494,21 +494,27 @@ export function HeaderAuth() {
               <DropdownMenuSeparator />
               <div className="p-2">
                 {(isTeacher || isSuperAdmin) && (
-                  <DropdownMenuItem onClick={() => navigate('/staff/teacher')} className="gap-3 cursor-pointer">
-                    <LayoutDashboard className="w-4 h-4 text-primary" />
+                  <DropdownMenuItem onClick={() => navigate('/staff/teacher')} className="gap-3 cursor-pointer py-2.5 rounded-lg">
+                    <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                      <LayoutDashboard className="w-4 h-4 text-foreground" />
+                    </span>
                     <div className="flex-1">
                       <p className="text-sm font-medium">{t('account.teacherDashboard')}</p>
                       <p className="text-[11px] text-muted-foreground">{t('account.teacherDashboardDesc')}</p>
                     </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground rtl:rotate-180" />
                   </DropdownMenuItem>
                 )}
                 {isSuperAdmin && (
-                  <DropdownMenuItem onClick={() => navigate('/admin')} className="gap-3 cursor-pointer">
-                    <Shield className="w-4 h-4 text-primary" />
+                  <DropdownMenuItem onClick={() => navigate('/admin')} className="gap-3 cursor-pointer py-2.5 rounded-lg">
+                    <span className="flex items-center justify-center w-9 h-9 rounded-full bg-muted">
+                      <Shield className="w-4 h-4 text-foreground" />
+                    </span>
                     <div className="flex-1">
                       <p className="text-sm font-medium">{t('account.adminPanel')}</p>
                       <p className="text-[11px] text-muted-foreground">{t('account.adminPanelDesc')}</p>
                     </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground rtl:rotate-180" />
                   </DropdownMenuItem>
                 )}
               </div>
@@ -517,34 +523,27 @@ export function HeaderAuth() {
 
           <DropdownMenuSeparator />
 
-          {/* ===== Footer Grid (2x2 compact) ===== */}
-          <div className="grid grid-cols-2 gap-1 p-2">
+          {/* ===== Footer Row (compact text-only links) ===== */}
+          <div className="flex items-center justify-between gap-1 p-2">
             <button
               onClick={() => navigate('/')}
-              className="flex flex-col items-center gap-1 p-2 rounded-md hover:bg-accent transition-colors text-xs"
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors text-xs font-medium"
             >
-              <Home className="w-4 h-4 text-blue-500" />
+              <Home className="w-3.5 h-3.5" />
               <span>{t('account.home')}</span>
             </button>
             <button
               onClick={() => navigate('/support')}
-              className="flex flex-col items-center gap-1 p-2 rounded-md hover:bg-accent transition-colors text-xs"
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors text-xs font-medium"
             >
-              <HelpCircle className="w-4 h-4 text-amber-500" />
+              <HelpCircle className="w-3.5 h-3.5" />
               <span>{t('account.support')}</span>
             </button>
             <button
-              onClick={() => navigate('/privacy-policy')}
-              className="flex flex-col items-center gap-1 p-2 rounded-md hover:bg-accent transition-colors text-xs"
-            >
-              <Shield className="w-4 h-4 text-muted-foreground" />
-              <span>{t('legal.privacyPolicy')}</span>
-            </button>
-            <button
               onClick={() => setShowLogoutDialog(true)}
-              className="flex flex-col items-center gap-1 p-2 rounded-md hover:bg-destructive/10 text-destructive transition-colors text-xs"
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors text-xs font-medium"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5" />
               <span>{t('account.signOut')}</span>
             </button>
           </div>
