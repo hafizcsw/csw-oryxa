@@ -77,10 +77,11 @@ Do not include any explanation or markdown formatting.`
       const errorText = await response.text();
       console.error('[translate-ticker] AI Gateway error:', response.status, errorText);
       
-      if (response.status === 429) {
+      if (response.status === 429 || response.status >= 500) {
+        // Graceful fallback: return English text with 200 so client doesn't crash
         return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded, please try again later', text: text_en, label: label_en }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ text: text_en, label: label_en, fallback: true, reason: response.status === 429 ? 'rate_limit' : 'upstream_error' }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
