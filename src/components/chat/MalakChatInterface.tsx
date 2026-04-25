@@ -1629,17 +1629,41 @@ export function MalakChatInterface({
                   size="icon" 
                   variant="ghost" 
                   onClick={handleVoiceRecording} 
-                  disabled={state === 'thinking' || state === 'searching' || isRecording || isGuestLocked} 
-                  title={t('portal.chat.controls.voice')}
-                  aria-label={t('portal.chat.controls.voice')}
+                  disabled={state === 'thinking' || state === 'searching' || isRecording || isGuestLocked || voiceChat.status === 'requesting_token' || voiceChat.status === 'connecting'} 
+                  title={
+                    isVoiceLive
+                      ? t('portal.chat.voice.stop', { defaultValue: 'Stop voice chat' })
+                      : t('portal.chat.voice.start', { defaultValue: 'Start live voice chat' })
+                  }
+                  aria-label={
+                    isVoiceLive
+                      ? t('portal.chat.voice.stop', { defaultValue: 'Stop voice chat' })
+                      : t('portal.chat.voice.start', { defaultValue: 'Start live voice chat' })
+                  }
                   className={cn(
-                    "rounded-full text-muted-foreground hover:text-foreground hover:bg-muted", 
+                    "rounded-full text-muted-foreground hover:text-foreground hover:bg-muted relative", 
                     isFloating ? "h-7 w-7" : "h-8 w-8", 
-                    isRecording && "bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 animate-pulse"
+                    isRecording && "bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 animate-pulse",
+                    isVoiceLive && "bg-primary/15 text-primary",
+                    voiceChat.status === 'connected' && voiceChat.isAISpeaking && "ring-2 ring-primary/60 animate-pulse"
                   )}
                 >
-                  {isRecording ? <Square className="w-4 h-4" /> : <Mic className="w-5 h-5" />}
+                  {voiceChat.status === 'requesting_token' || voiceChat.status === 'connecting' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : isVoiceLive ? (
+                    <MicOff className="w-5 h-5" />
+                  ) : isRecording ? (
+                    <Square className="w-4 h-4" />
+                  ) : (
+                    <Mic className="w-5 h-5" />
+                  )}
+                  {voiceChat.status === 'connected' && (
+                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  )}
                 </Button>
+
+                {/* Hidden audio sink for the live voice session */}
+                <audio ref={voiceChat.remoteAudioRef} autoPlay className="hidden" />
 
                 <div className="w-px h-5 bg-border/60" aria-hidden="true" />
 
