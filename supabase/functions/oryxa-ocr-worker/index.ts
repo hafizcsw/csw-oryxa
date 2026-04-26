@@ -78,6 +78,7 @@ interface ReqBody {
 type EnginePath =
   | "pdf_text"
   | "deepseek_ocr"
+  | "mistral_ocr"
   | "paddle_structure"
   | "failed";
 
@@ -86,7 +87,7 @@ interface OcrPage {
   text: string;
   markdown?: string;
   confidence: number | null;
-  method: "pdf_text" | "deepseek_ocr_2" | "paddle_structure" | "none";
+  method: "pdf_text" | "deepseek_ocr_2" | "mistral_ocr" | "paddle_structure" | "none";
 }
 
 interface OcrResult {
