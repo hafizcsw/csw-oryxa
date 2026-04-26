@@ -537,32 +537,74 @@ Deno.serve(async (req) => {
     }
   }
 
-  // ── Step 2: DeepSeek-OCR (primary) for scanned PDFs / images ──
+  // ── Step 2: scanned PDFs / images ──
+  // Order of attempt depends on transitional flags:
+  //   • PREFER_MISTRAL_FIRST  → Mistral OCR (external) first, then DeepSeek-OCR.
+  //   • else                  → DeepSeek-OCR first; if not configured/failed AND
+  //                             transitional allow flag is set → Mistral OCR.
+  // pdf_text always runs first (above) and short-circuits this block if it succeeds.
   if (ocr.status !== "ok") {
-    const ds = await tryDeepSeekOcr({
-      draft_id: draft.id,
-      document_type_hint: body.document_type_hint ?? draft.document_type ?? null,
-      authHeader,
-      trace_id,
-      supabaseUrl: SUPABASE_URL,
-      anonKey: ANON_KEY,
-    });
-
-    if (ds.status === "ok") {
-      ocr = ds;
-    } else if (ALLOW_PADDLE_FALLBACK) {
-      // Deprecated fallback, opt-in only.
-      tlog(trace_id, "paddle_fallback_attempt", { reason: ds.error });
-      const paddle = await tryPaddleStructureFallback({
+    if (PREFER_MISTRAL_FIRST) {
+      tlog(trace_id, "mistral_first_attempt", { mode: OCR_MODE });
+      const mi = await tryMistralOcr({
         draft_id: draft.id,
+        document_type_hint: body.document_type_hint ?? draft.document_type ?? null,
         authHeader,
         trace_id,
         supabaseUrl: SUPABASE_URL,
         anonKey: ANON_KEY,
       });
-      ocr = paddle.status === "ok" ? paddle : ds; // surface DS error if both fail
+      if (mi.status === "ok") {
+        ocr = mi;
+      } else {
+        // Try DeepSeek-OCR as a secondary attempt.
+        const ds = await tryDeepSeekOcr({
+          draft_id: draft.id,
+          document_type_hint: body.document_type_hint ?? draft.document_type ?? null,
+          authHeader,
+          trace_id,
+          supabaseUrl: SUPABASE_URL,
+          anonKey: ANON_KEY,
+        });
+        ocr = ds.status === "ok" ? ds : mi; // surface mistral error if both fail
+      }
     } else {
-      ocr = ds;
+      const ds = await tryDeepSeekOcr({
+        draft_id: draft.id,
+        document_type_hint: body.document_type_hint ?? draft.document_type ?? null,
+        authHeader,
+        trace_id,
+        supabaseUrl: SUPABASE_URL,
+        anonKey: ANON_KEY,
+      });
+
+      if (ds.status === "ok") {
+        ocr = ds;
+      } else if (MISTRAL_TRANSITIONAL_ENABLED) {
+        tlog(trace_id, "mistral_fallback_attempt", { reason: ds.error });
+        const mi = await tryMistralOcr({
+          draft_id: draft.id,
+          document_type_hint: body.document_type_hint ?? draft.document_type ?? null,
+          authHeader,
+          trace_id,
+          supabaseUrl: SUPABASE_URL,
+          anonKey: ANON_KEY,
+        });
+        ocr = mi.status === "ok" ? mi : ds; // surface DS error if both fail
+      } else if (ALLOW_PADDLE_FALLBACK) {
+        // Deprecated fallback, opt-in only.
+        tlog(trace_id, "paddle_fallback_attempt", { reason: ds.error });
+        const paddle = await tryPaddleStructureFallback({
+          draft_id: draft.id,
+          authHeader,
+          trace_id,
+          supabaseUrl: SUPABASE_URL,
+          anonKey: ANON_KEY,
+        });
+        ocr = paddle.status === "ok" ? paddle : ds; // surface DS error if both fail
+      } else {
+        ocr = ds;
+      }
     }
   }
 
