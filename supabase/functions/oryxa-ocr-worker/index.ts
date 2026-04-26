@@ -28,14 +28,25 @@
 //   7. Persist OCR audit row in oryxa_ocr_runs.
 //
 // Privacy
-//   Raw student files are NOT sent to DeepSeek V4 API or to any
-//   third-party OCR/AI APIs. For OCR fallback, a short-lived
-//   signed URL may be fetched only by a CSW-controlled
-//   DeepSeek-OCR service.
+//   Raw student files are NEVER sent to the AI provider (DeepSeek V4)
+//   or to any text-extraction AI. Only OCR-extracted text is sent to AI.
+//
+//   For OCR itself:
+//     • pdf_text (unpdf) runs locally — no external transfer.
+//     • DeepSeek-OCR self-hosted service receives signed URLs only
+//       from a CSW-controlled deployment.
+//     • Mistral OCR (TRANSITIONAL) may receive a short-lived signed URL
+//       on portal-drafts ONLY when explicitly enabled via
+//       ORYXA_OCR_MODE=mistral_ocr_transitional or
+//       ORYXA_OCR_ALLOW_EXTERNAL_TRANSITIONAL=true. This is logged
+//       transparently with provider=mistral_ocr_transitional and
+//       quality_flags including external_ocr_provider — never masked
+//       as internal.
 //
 // Hard prohibitions enforced
-//   • Never sends the raw file to DeepSeek V4 / any third-party.
-//   • Never calls Mistral, Google Vision, AWS Textract, OpenAI.
+//   • Never sends the raw file to the AI provider (DeepSeek V4) or
+//     to Google Vision / AWS Textract / OpenAI.
+//   • Never calls Mistral OCR unless the transitional flag above is set.
 //   • Never writes to CRM tables (customer_files, student-docs,
 //     crm_storage, document_lane_facts, document_review_queue).
 // ═══════════════════════════════════════════════════════════════
