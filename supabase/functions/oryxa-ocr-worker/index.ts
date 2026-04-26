@@ -461,6 +461,18 @@ Deno.serve(async (req) => {
   const ALLOW_PADDLE_FALLBACK =
     (Deno.env.get("ORYXA_OCR_ALLOW_PADDLE_FALLBACK") ?? "").toLowerCase() === "true";
 
+  // Transitional EXTERNAL OCR (Mistral) — opt-in only, used while
+  // DeepSeek-OCR self-host is not closed on GCP/Mac.
+  const OCR_MODE = (Deno.env.get("ORYXA_OCR_MODE") ?? "").toLowerCase();
+  const ALLOW_EXTERNAL_TRANSITIONAL =
+    (Deno.env.get("ORYXA_OCR_ALLOW_EXTERNAL_TRANSITIONAL") ?? "").toLowerCase() === "true";
+  const MISTRAL_TRANSITIONAL_ENABLED =
+    OCR_MODE === "mistral_ocr_transitional" || ALLOW_EXTERNAL_TRANSITIONAL;
+  // When mode is explicitly mistral_ocr_transitional, prefer Mistral
+  // for scanned/image. Otherwise (allow flag only) keep DeepSeek-OCR
+  // first and use Mistral only as a fallback if DeepSeek isn't ready.
+  const PREFER_MISTRAL_FIRST = OCR_MODE === "mistral_ocr_transitional";
+
   let body: ReqBody;
   try { body = await req.json(); } catch {
     return jsonRes({ ok: false, reason: "bad_json" }, 400);
