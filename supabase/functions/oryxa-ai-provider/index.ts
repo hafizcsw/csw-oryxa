@@ -148,6 +148,31 @@ interface DeepSeekResult {
   tokens_in?: number;
   tokens_out?: number;
   http_status: number;
+  finish_reason?: string;
+  content_length: number;
+  latency_ms: number;
+}
+
+interface DeepSeekParseFailure {
+  kind: "parse_failure";
+  http_status: number;
+  latency_ms: number;
+  content_length: number;
+  finish_reason?: string;
+  tokens_in?: number;
+  tokens_out?: number;
+  raw_envelope_length: number;
+  content_first_300: string;
+  content_last_300: string;
+  parse_error: string;
+}
+
+function getDocumentExtractionMaxTokens(): number {
+  const raw = Deno.env.get("ORYXA_DOCUMENT_EXTRACTION_MAX_TOKENS");
+  if (!raw) return 6000;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 512 || n > 16000) return 6000;
+  return Math.floor(n);
 }
 
 async function callDeepSeek(args: {
@@ -156,7 +181,9 @@ async function callDeepSeek(args: {
   systemPrompt: string;
   userPrompt: string;
   trace_id: string;
-}): Promise<DeepSeekResult> {
+  maxTokens: number;
+}): Promise<DeepSeekResult | DeepSeekParseFailure> {
+  const callStart = Date.now();
   const r = await fetch(`${DEEPSEEK_BASE}/chat/completions`, {
     method: "POST",
     headers: {
@@ -166,7 +193,7 @@ async function callDeepSeek(args: {
     body: JSON.stringify({
       model: args.model,
       temperature: 0,
-      max_tokens: 2400,
+      max_tokens: args.maxTokens,
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: args.systemPrompt },
@@ -176,6 +203,7 @@ async function callDeepSeek(args: {
   });
 
   const text = await r.text();
+  const latency_ms = Date.now() - callStart;
   if (!r.ok) {
     throw new Error(`deepseek_http_${r.status}:${text.slice(0, 240)}`);
   }
@@ -186,19 +214,57 @@ async function callDeepSeek(args: {
     throw new Error("deepseek_envelope_bad_json:" + (e as Error).message);
   }
   const content: string | undefined = payload?.choices?.[0]?.message?.content;
+  const finish_reason: string | undefined = payload?.choices?.[0]?.finish_reason;
+  const tokens_in: number | undefined = payload?.usage?.prompt_tokens;
+  const tokens_out: number | undefined = payload?.usage?.completion_tokens;
+  const tokens_total: number | undefined = payload?.usage?.total_tokens;
+  const content_length = typeof content === "string" ? content.length : 0;
+
+  // Diagnostics BEFORE JSON.parse(content)
+  tlog(args.trace_id, "deepseek_response_diag", {
+    http_status: r.status,
+    latency_ms,
+    model: args.model,
+    finish_reason: finish_reason ?? null,
+    prompt_tokens: tokens_in ?? null,
+    completion_tokens: tokens_out ?? null,
+    total_tokens: tokens_total ?? null,
+    raw_envelope_length: text.length,
+    message_content_length: content_length,
+    content_first_300: typeof content === "string" ? content.slice(0, 300) : null,
+    content_last_300: typeof content === "string" ? content.slice(-300) : null,
+    parse_target: "message.content",
+    max_tokens_requested: args.maxTokens,
+  });
+
   if (!content) throw new Error("deepseek_no_content");
   let parsed: unknown;
   try {
     parsed = JSON.parse(content);
   } catch (e) {
-    throw new Error("deepseek_content_not_json:" + (e as Error).message);
+    return {
+      kind: "parse_failure",
+      http_status: r.status,
+      latency_ms,
+      content_length,
+      finish_reason,
+      tokens_in,
+      tokens_out,
+      raw_envelope_length: text.length,
+      content_first_300: content.slice(0, 300),
+      content_last_300: content.slice(-300),
+      parse_error: (e as Error).message,
+    };
   }
   return {
     json: parsed,
     raw: content,
-    tokens_in: payload?.usage?.prompt_tokens,
-    tokens_out: payload?.usage?.completion_tokens,
+    tokens_in,
+    tokens_out,
     http_status: r.status,
+    finish_reason,
+    content_length,
+    latency_ms,
   };
 }
 
