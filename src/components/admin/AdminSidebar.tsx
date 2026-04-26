@@ -97,7 +97,7 @@ export function AdminSidebar({ onClose }: AdminSidebarProps) {
         { label: t('admin.sidebar.newsTicker'), href: "/admin/news-ticker", icon: "monitor" },
         { label: "Hero Video (2K)", href: "/admin/hero-video", icon: "video" },
         { label: t('admin.sidebar.videoTest'), href: "/admin/testimonials", icon: "video" },
-        { label: t('admin.sidebar.universityRanking'), href: "/admin/unis-assistant", icon: "trophy" },
+        { label: t('admin.sidebar.crawlerV2', { defaultValue: 'Crawler v2' }), href: "/admin/crawler-v2", icon: "radar" },
         { label: t('admin.sidebar.websiteEnrichment'), href: "/admin/website-enrichment", icon: "search" },
         { label: "ORX Control Panel", href: "/admin/orx-control", icon: "radar" },
       ]
