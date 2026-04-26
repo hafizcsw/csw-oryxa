@@ -1,0 +1,1 @@
+ALTER TABLE public.oryxa_ocr_runs ADD COLUMN IF NOT EXISTS provider text;

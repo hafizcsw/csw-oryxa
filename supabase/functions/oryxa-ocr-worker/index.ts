@@ -78,6 +78,7 @@ interface ReqBody {
 type EnginePath =
   | "pdf_text"
   | "deepseek_ocr"
+  | "mistral_ocr"
   | "paddle_structure"
   | "failed";
 
@@ -86,7 +87,7 @@ interface OcrPage {
   text: string;
   markdown?: string;
   confidence: number | null;
-  method: "pdf_text" | "deepseek_ocr_2" | "paddle_structure" | "none";
+  method: "pdf_text" | "deepseek_ocr_2" | "mistral_ocr" | "paddle_structure" | "none";
 }
 
 interface OcrResult {
@@ -266,6 +267,121 @@ async function tryDeepSeekOcr(args: {
   };
 }
 
+// ─── Mistral OCR (TRANSITIONAL external) ────────────────────────
+// Activated only when ORYXA_OCR_MODE=mistral_ocr_transitional or
+// ORYXA_OCR_ALLOW_EXTERNAL_TRANSITIONAL=true. Used for scanned PDFs
+// and images while DeepSeek-OCR self-host is not yet closed.
+// Sends a short-lived signed URL on portal-drafts to Mistral.
+// NOT internal-only — quality_flags carry external_ocr_provider.
+
+async function tryMistralOcr(args: {
+  draft_id: string;
+  document_type_hint: string | null;
+  authHeader: string;
+  trace_id: string;
+  supabaseUrl: string;
+  anonKey: string;
+}): Promise<OcrResult> {
+  let upstream: Response;
+  try {
+    upstream = await fetch(`${args.supabaseUrl}/functions/v1/mistral-ocr-service`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: args.authHeader,
+        apikey: args.anonKey,
+        "x-portal-trace-id": args.trace_id,
+      },
+      body: JSON.stringify({
+        draft_id: args.draft_id,
+        document_type_hint: args.document_type_hint,
+        trace_id: args.trace_id,
+      }),
+    });
+  } catch {
+    return {
+      ocr_text: "", markdown: "", pages: [],
+      engine_path: "failed",
+      quality_flags: ["mistral_ocr_unreachable", "external_ocr_provider"],
+      avg_confidence: null,
+      status: "failed",
+      error: "mistral_ocr_failed",
+    };
+  }
+
+  const text = await upstream.text();
+  let body: any;
+  try { body = JSON.parse(text); } catch {
+    return {
+      ocr_text: "", markdown: "", pages: [],
+      engine_path: "failed",
+      quality_flags: ["mistral_ocr_bad_json", "external_ocr_provider"],
+      avg_confidence: null,
+      status: "failed",
+      error: "mistral_ocr_failed",
+    };
+  }
+
+  if (!body?.ok) {
+    const reason = body?.reason ?? "mistral_ocr_failed";
+    const status: OcrResult["status"] =
+      reason === "mistral_ocr_service_not_configured"
+        ? "service_not_configured"
+        : "failed";
+    return {
+      ocr_text: "", markdown: "", pages: [],
+      engine_path: "failed",
+      quality_flags: [reason, "external_ocr_provider"],
+      avg_confidence: null,
+      status,
+      error: reason,
+    };
+  }
+
+  const upstreamPages: any[] = Array.isArray(body.pages) ? body.pages : [];
+  const pages: OcrPage[] = upstreamPages.map((p, i) => ({
+    page: typeof p?.page === "number" ? p.page : i + 1,
+    text: typeof p?.text === "string" ? p.text : "",
+    markdown: typeof p?.markdown === "string" ? p.markdown : undefined,
+    confidence: null,
+    method: "mistral_ocr",
+  }));
+  const ocr_text = typeof body.ocr_text === "string" && body.ocr_text.length
+    ? body.ocr_text
+    : pages.map((p) => p.text).join("\n\n").trim();
+  const markdown = typeof body.markdown === "string" && body.markdown.length
+    ? body.markdown
+    : ocr_text;
+
+  if (!ocr_text) {
+    return {
+      ocr_text: "", markdown: "", pages,
+      engine_path: "failed",
+      quality_flags: ["mistral_ocr_empty_text", "external_ocr_provider"],
+      avg_confidence: null,
+      status: "unreadable_document",
+      error: "unreadable_document",
+    };
+  }
+
+  const upstreamFlags: string[] = Array.isArray(body.quality_flags) ? body.quality_flags : [];
+  const flagSet = new Set<string>([
+    ...upstreamFlags,
+    "external_ocr_provider",
+    "mistral_ocr_transitional",
+  ]);
+
+  return {
+    ocr_text,
+    markdown,
+    pages,
+    engine_path: "mistral_ocr",
+    quality_flags: Array.from(flagSet),
+    avg_confidence: null,
+    status: "ok",
+  };
+}
+
 // ─── PaddleOCR (DEPRECATED fallback, disabled by default) ───────
 
 async function tryPaddleStructureFallback(args: {
@@ -345,6 +461,18 @@ Deno.serve(async (req) => {
   const ALLOW_PADDLE_FALLBACK =
     (Deno.env.get("ORYXA_OCR_ALLOW_PADDLE_FALLBACK") ?? "").toLowerCase() === "true";
 
+  // Transitional EXTERNAL OCR (Mistral) — opt-in only, used while
+  // DeepSeek-OCR self-host is not closed on GCP/Mac.
+  const OCR_MODE = (Deno.env.get("ORYXA_OCR_MODE") ?? "").toLowerCase();
+  const ALLOW_EXTERNAL_TRANSITIONAL =
+    (Deno.env.get("ORYXA_OCR_ALLOW_EXTERNAL_TRANSITIONAL") ?? "").toLowerCase() === "true";
+  const MISTRAL_TRANSITIONAL_ENABLED =
+    OCR_MODE === "mistral_ocr_transitional" || ALLOW_EXTERNAL_TRANSITIONAL;
+  // When mode is explicitly mistral_ocr_transitional, prefer Mistral
+  // for scanned/image. Otherwise (allow flag only) keep DeepSeek-OCR
+  // first and use Mistral only as a fallback if DeepSeek isn't ready.
+  const PREFER_MISTRAL_FIRST = OCR_MODE === "mistral_ocr_transitional";
+
   let body: ReqBody;
   try { body = await req.json(); } catch {
     return jsonRes({ ok: false, reason: "bad_json" }, 400);
@@ -409,42 +537,95 @@ Deno.serve(async (req) => {
     }
   }
 
-  // ── Step 2: DeepSeek-OCR (primary) for scanned PDFs / images ──
+  // ── Step 2: scanned PDFs / images ──
+  // Order of attempt depends on transitional flags:
+  //   • PREFER_MISTRAL_FIRST  → Mistral OCR (external) first, then DeepSeek-OCR.
+  //   • else                  → DeepSeek-OCR first; if not configured/failed AND
+  //                             transitional allow flag is set → Mistral OCR.
+  // pdf_text always runs first (above) and short-circuits this block if it succeeds.
   if (ocr.status !== "ok") {
-    const ds = await tryDeepSeekOcr({
-      draft_id: draft.id,
-      document_type_hint: body.document_type_hint ?? draft.document_type ?? null,
-      authHeader,
-      trace_id,
-      supabaseUrl: SUPABASE_URL,
-      anonKey: ANON_KEY,
-    });
-
-    if (ds.status === "ok") {
-      ocr = ds;
-    } else if (ALLOW_PADDLE_FALLBACK) {
-      // Deprecated fallback, opt-in only.
-      tlog(trace_id, "paddle_fallback_attempt", { reason: ds.error });
-      const paddle = await tryPaddleStructureFallback({
+    if (PREFER_MISTRAL_FIRST) {
+      tlog(trace_id, "mistral_first_attempt", { mode: OCR_MODE });
+      const mi = await tryMistralOcr({
         draft_id: draft.id,
+        document_type_hint: body.document_type_hint ?? draft.document_type ?? null,
         authHeader,
         trace_id,
         supabaseUrl: SUPABASE_URL,
         anonKey: ANON_KEY,
       });
-      ocr = paddle.status === "ok" ? paddle : ds; // surface DS error if both fail
+      if (mi.status === "ok") {
+        ocr = mi;
+      } else {
+        // Try DeepSeek-OCR as a secondary attempt.
+        const ds = await tryDeepSeekOcr({
+          draft_id: draft.id,
+          document_type_hint: body.document_type_hint ?? draft.document_type ?? null,
+          authHeader,
+          trace_id,
+          supabaseUrl: SUPABASE_URL,
+          anonKey: ANON_KEY,
+        });
+        ocr = ds.status === "ok" ? ds : mi; // surface mistral error if both fail
+      }
     } else {
-      ocr = ds;
+      const ds = await tryDeepSeekOcr({
+        draft_id: draft.id,
+        document_type_hint: body.document_type_hint ?? draft.document_type ?? null,
+        authHeader,
+        trace_id,
+        supabaseUrl: SUPABASE_URL,
+        anonKey: ANON_KEY,
+      });
+
+      if (ds.status === "ok") {
+        ocr = ds;
+      } else if (MISTRAL_TRANSITIONAL_ENABLED) {
+        tlog(trace_id, "mistral_fallback_attempt", { reason: ds.error });
+        const mi = await tryMistralOcr({
+          draft_id: draft.id,
+          document_type_hint: body.document_type_hint ?? draft.document_type ?? null,
+          authHeader,
+          trace_id,
+          supabaseUrl: SUPABASE_URL,
+          anonKey: ANON_KEY,
+        });
+        ocr = mi.status === "ok" ? mi : ds; // surface DS error if both fail
+      } else if (ALLOW_PADDLE_FALLBACK) {
+        // Deprecated fallback, opt-in only.
+        tlog(trace_id, "paddle_fallback_attempt", { reason: ds.error });
+        const paddle = await tryPaddleStructureFallback({
+          draft_id: draft.id,
+          authHeader,
+          trace_id,
+          supabaseUrl: SUPABASE_URL,
+          anonKey: ANON_KEY,
+        });
+        ocr = paddle.status === "ok" ? paddle : ds; // surface DS error if both fail
+      } else {
+        ocr = ds;
+      }
     }
   }
 
   const ocr_latency_ms = Date.now() - t0;
   const chars_total = ocr.ocr_text.length;
 
+  // Map engine_path → audited provider name. Mistral is recorded
+  // explicitly as `mistral_ocr_transitional` so external usage is
+  // never silently masked as internal-only.
+  const provider =
+    ocr.engine_path === "mistral_ocr"     ? "mistral_ocr_transitional" :
+    ocr.engine_path === "deepseek_ocr"    ? "deepseek_ocr_2" :
+    ocr.engine_path === "pdf_text"        ? "pdf_text_unpdf" :
+    ocr.engine_path === "paddle_structure" ? "paddle_structure_deprecated" :
+    null;
+
   await admin.from("oryxa_ocr_runs").insert({
     student_user_id: user_id,
     draft_id: draft.id,
     engine_path: ocr.engine_path,
+    provider,
     page_methods: ocr.pages.map((p) => p.method),
     pages_total: ocr.pages.length || null,
     chars_total,
@@ -460,10 +641,14 @@ Deno.serve(async (req) => {
     const ext_error =
       ocr.error === "deepseek_ocr_service_not_configured"
         ? "deepseek_ocr_service_not_configured"
+        : ocr.error === "mistral_ocr_service_not_configured"
+        ? "mistral_ocr_service_not_configured"
         : ocr.status === "unreadable_document"
         ? "unreadable_document"
         : ocr.error === "deepseek_ocr_failed"
         ? "deepseek_ocr_failed"
+        : ocr.error === "mistral_ocr_failed"
+        ? "mistral_ocr_failed"
         : "ocr_failed";
     await admin
       .from("portal_document_drafts")

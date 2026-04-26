@@ -8786,6 +8786,7 @@ export type Database = {
           latency_ms: number | null
           page_methods: Json
           pages_total: number | null
+          provider: string | null
           quality_flags: Json
           status: string
           student_user_id: string
@@ -8802,6 +8803,7 @@ export type Database = {
           latency_ms?: number | null
           page_methods?: Json
           pages_total?: number | null
+          provider?: string | null
           quality_flags?: Json
           status: string
           student_user_id: string
@@ -8818,6 +8820,7 @@ export type Database = {
           latency_ms?: number | null
           page_methods?: Json
           pages_total?: number | null
+          provider?: string | null
           quality_flags?: Json
           status?: string
           student_user_id?: string

@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.deepseek-ocr-service]
 verify_jwt = false
+
+[functions.mistral-ocr-service]
+verify_jwt = false
