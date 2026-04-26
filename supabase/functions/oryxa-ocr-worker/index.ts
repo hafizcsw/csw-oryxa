@@ -611,10 +611,21 @@ Deno.serve(async (req) => {
   const ocr_latency_ms = Date.now() - t0;
   const chars_total = ocr.ocr_text.length;
 
+  // Map engine_path → audited provider name. Mistral is recorded
+  // explicitly as `mistral_ocr_transitional` so external usage is
+  // never silently masked as internal-only.
+  const provider =
+    ocr.engine_path === "mistral_ocr"     ? "mistral_ocr_transitional" :
+    ocr.engine_path === "deepseek_ocr"    ? "deepseek_ocr_2" :
+    ocr.engine_path === "pdf_text"        ? "pdf_text_unpdf" :
+    ocr.engine_path === "paddle_structure" ? "paddle_structure_deprecated" :
+    null;
+
   await admin.from("oryxa_ocr_runs").insert({
     student_user_id: user_id,
     draft_id: draft.id,
     engine_path: ocr.engine_path,
+    provider,
     page_methods: ocr.pages.map((p) => p.method),
     pages_total: ocr.pages.length || null,
     chars_total,
