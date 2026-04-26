@@ -2487,8 +2487,8 @@
         "step1_desc": "L'OCR intelligent comprend tous les formats",
         "step2_title": "Nous extrayons vos données",
         "step2_desc": "Nom, dates, notes, spécialité",
-        "step3_title": "Nous construisons votre dossier",
-        "step3_desc": "Un profil unifié envoyé aux universités"
+        "step3_title": "Nous préparons votre dossier d'études vérifié",
+        "step3_desc": "Rien n’est envoyé à CSW ni aux universités tant que vous ne confirmez pas"
       }
     },
     "saveDocs": {

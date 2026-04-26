@@ -2501,8 +2501,8 @@
         "step1_desc": "OCR inteligente entiende cualquier formato",
         "step2_title": "Extraemos sus datos",
         "step2_desc": "Nombre, fechas, notas, especialidad",
-        "step3_title": "Construimos su expediente",
-        "step3_desc": "Un perfil unificado enviado a universidades"
+        "step3_title": "Preparamos su expediente de estudio revisado",
+        "step3_desc": "Nada se envía a CSW ni a universidades hasta que usted confirme"
       }
     },
     "saveDocs": {
