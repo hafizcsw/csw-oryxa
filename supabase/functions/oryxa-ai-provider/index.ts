@@ -61,9 +61,17 @@ async function sha256Hex(s: string): Promise<string> {
 
 const SYS_EXTRACTION =
   "You are a strict document analyst. Read ONLY the OCR text supplied by the user. " +
-  "Never infer or fabricate fields. If a field is not visibly present, set value=null and status=\"missing\" with a short reason. " +
+  "Never infer or fabricate fields. If a field is not visibly present, set value=null and status=\"missing\" with a short reason (<=140 chars). " +
   "Every extracted/proposed field MUST cite an evidence_id pointing to an entry in evidence_map whose quote is taken verbatim from the OCR text. " +
-  "Return a single JSON object that matches the requested schema. Output JSON only.";
+  "Keep evidence_quote <=180 chars. No markdown. No prose. No comments. No trailing commas. " +
+  "Return ONE compact valid JSON object only.";
+
+const SYS_EXTRACTION_COMPACT_RETRY =
+  "You are a strict document analyst. Read ONLY the OCR text supplied. " +
+  "Return ONE compact valid JSON object only. No markdown, no prose, no comments, no trailing commas. " +
+  "evidence_quote <=140 chars. missing_fields[].reason <=100 chars. " +
+  "If a field is missing, set value=null, status=\"missing\". " +
+  "Every extracted/proposed field MUST have an evidence_id present in evidence_map.";
 
 const SYS_READINESS =
   "You are a document file-readiness evaluator. Input is a JSON object describing already-extracted fields, missing fields, and confidence values. " +
@@ -140,6 +148,31 @@ interface DeepSeekResult {
   tokens_in?: number;
   tokens_out?: number;
   http_status: number;
+  finish_reason?: string;
+  content_length: number;
+  latency_ms: number;
+}
+
+interface DeepSeekParseFailure {
+  kind: "parse_failure";
+  http_status: number;
+  latency_ms: number;
+  content_length: number;
+  finish_reason?: string;
+  tokens_in?: number;
+  tokens_out?: number;
+  raw_envelope_length: number;
+  content_first_300: string;
+  content_last_300: string;
+  parse_error: string;
+}
+
+function getDocumentExtractionMaxTokens(): number {
+  const raw = Deno.env.get("ORYXA_DOCUMENT_EXTRACTION_MAX_TOKENS");
+  if (!raw) return 6000;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 512 || n > 16000) return 6000;
+  return Math.floor(n);
 }
 
 async function callDeepSeek(args: {
@@ -148,7 +181,9 @@ async function callDeepSeek(args: {
   systemPrompt: string;
   userPrompt: string;
   trace_id: string;
-}): Promise<DeepSeekResult> {
+  maxTokens: number;
+}): Promise<DeepSeekResult | DeepSeekParseFailure> {
+  const callStart = Date.now();
   const r = await fetch(`${DEEPSEEK_BASE}/chat/completions`, {
     method: "POST",
     headers: {
@@ -158,7 +193,7 @@ async function callDeepSeek(args: {
     body: JSON.stringify({
       model: args.model,
       temperature: 0,
-      max_tokens: 2400,
+      max_tokens: args.maxTokens,
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: args.systemPrompt },
@@ -168,6 +203,7 @@ async function callDeepSeek(args: {
   });
 
   const text = await r.text();
+  const latency_ms = Date.now() - callStart;
   if (!r.ok) {
     throw new Error(`deepseek_http_${r.status}:${text.slice(0, 240)}`);
   }
@@ -178,19 +214,57 @@ async function callDeepSeek(args: {
     throw new Error("deepseek_envelope_bad_json:" + (e as Error).message);
   }
   const content: string | undefined = payload?.choices?.[0]?.message?.content;
+  const finish_reason: string | undefined = payload?.choices?.[0]?.finish_reason;
+  const tokens_in: number | undefined = payload?.usage?.prompt_tokens;
+  const tokens_out: number | undefined = payload?.usage?.completion_tokens;
+  const tokens_total: number | undefined = payload?.usage?.total_tokens;
+  const content_length = typeof content === "string" ? content.length : 0;
+
+  // Diagnostics BEFORE JSON.parse(content)
+  tlog(args.trace_id, "deepseek_response_diag", {
+    http_status: r.status,
+    latency_ms,
+    model: args.model,
+    finish_reason: finish_reason ?? null,
+    prompt_tokens: tokens_in ?? null,
+    completion_tokens: tokens_out ?? null,
+    total_tokens: tokens_total ?? null,
+    raw_envelope_length: text.length,
+    message_content_length: content_length,
+    content_first_300: typeof content === "string" ? content.slice(0, 300) : null,
+    content_last_300: typeof content === "string" ? content.slice(-300) : null,
+    parse_target: "message.content",
+    max_tokens_requested: args.maxTokens,
+  });
+
   if (!content) throw new Error("deepseek_no_content");
   let parsed: unknown;
   try {
     parsed = JSON.parse(content);
   } catch (e) {
-    throw new Error("deepseek_content_not_json:" + (e as Error).message);
+    return {
+      kind: "parse_failure",
+      http_status: r.status,
+      latency_ms,
+      content_length,
+      finish_reason,
+      tokens_in,
+      tokens_out,
+      raw_envelope_length: text.length,
+      content_first_300: content.slice(0, 300),
+      content_last_300: content.slice(-300),
+      parse_error: (e as Error).message,
+    };
   }
   return {
     json: parsed,
     raw: content,
-    tokens_in: payload?.usage?.prompt_tokens,
-    tokens_out: payload?.usage?.completion_tokens,
+    tokens_in,
+    tokens_out,
     http_status: r.status,
+    finish_reason,
+    content_length,
+    latency_ms,
   };
 }
 
@@ -436,17 +510,117 @@ Deno.serve(async (req) => {
   const input_hash = await sha256Hex(inputCanonical);
 
   // Call provider.
+  const docExtractionMaxTokens = getDocumentExtractionMaxTokens();
+  const maxTokensForTask =
+    task_type === "document_extraction" ? docExtractionMaxTokens : 2400;
+
   let providerResult: DeepSeekResult;
+  let firstAttemptDiag: DeepSeekParseFailure | null = null;
+  let retryDiag: DeepSeekParseFailure | null = null;
+  let retryUsed = false;
+
   try {
-    tlog(trace_id, "provider_call_started", { provider: policy.provider, model: policy.model, task_type });
-    providerResult = await callDeepSeek({
+    tlog(trace_id, "provider_call_started", {
+      provider: policy.provider,
+      model: policy.model,
+      task_type,
+      max_tokens: maxTokensForTask,
+    });
+    const first = await callDeepSeek({
       apiKey,
       model: policy.model,
       systemPrompt,
       userPrompt,
       trace_id,
+      maxTokens: maxTokensForTask,
     });
-    tlog(trace_id, "provider_call_ok", { tokens_in: providerResult.tokens_in, tokens_out: providerResult.tokens_out });
+
+    if ("kind" in first && first.kind === "parse_failure") {
+      firstAttemptDiag = first;
+      tlog(trace_id, "deepseek_first_attempt_parse_failed", {
+        content_length: first.content_length,
+        finish_reason: first.finish_reason ?? null,
+        completion_tokens: first.tokens_out ?? null,
+        parse_error: first.parse_error.slice(0, 240),
+      });
+
+      // One controlled compact-retry, ONLY for document_extraction.
+      if (task_type === "document_extraction") {
+        retryUsed = true;
+        tlog(trace_id, "deepseek_compact_retry_started", { max_tokens: docExtractionMaxTokens });
+        const second = await callDeepSeek({
+          apiKey,
+          model: policy.model,
+          systemPrompt: SYS_EXTRACTION_COMPACT_RETRY,
+          userPrompt,
+          trace_id,
+          maxTokens: docExtractionMaxTokens,
+        });
+        if ("kind" in second && second.kind === "parse_failure") {
+          retryDiag = second;
+          tlog(trace_id, "deepseek_compact_retry_failed", {
+            content_length: second.content_length,
+            finish_reason: second.finish_reason ?? null,
+            completion_tokens: second.tokens_out ?? null,
+            parse_error: second.parse_error.slice(0, 240),
+          });
+          const errPayload = {
+            error: "deepseek_content_not_json_after_retry",
+            first_attempt_content_length: first.content_length,
+            second_attempt_content_length: second.content_length,
+            first_finish_reason: first.finish_reason ?? null,
+            second_finish_reason: second.finish_reason ?? null,
+            first_completion_tokens: first.tokens_out ?? null,
+            second_completion_tokens: second.tokens_out ?? null,
+            parse_error_short: second.parse_error.slice(0, 200),
+          };
+          await writeRun(admin, {
+            student_user_id: user_id,
+            draft_id: body.draft_id ?? null,
+            task_type,
+            policy,
+            input_hash,
+            output_hash: null,
+            status: "provider_error",
+            tokens_in: second.tokens_in ?? first.tokens_in ?? null,
+            tokens_out: second.tokens_out ?? null,
+            latency_ms: Date.now() - t0,
+            trace_id,
+            error: JSON.stringify(errPayload).slice(0, 500),
+          });
+          return jsonRes({ ok: false, ...errPayload, trace_id }, 502);
+        }
+        providerResult = second as DeepSeekResult;
+      } else {
+        // Non-extraction tasks: no retry; surface as provider_error.
+        const errMsg = "deepseek_content_not_json:" + first.parse_error;
+        await writeRun(admin, {
+          student_user_id: user_id,
+          draft_id: body.draft_id ?? null,
+          task_type,
+          policy,
+          input_hash,
+          output_hash: null,
+          status: "provider_error",
+          tokens_in: first.tokens_in ?? null,
+          tokens_out: first.tokens_out ?? null,
+          latency_ms: Date.now() - t0,
+          trace_id,
+          error: errMsg.slice(0, 500),
+        });
+        return jsonRes({ ok: false, error: "provider_error", detail: errMsg, trace_id }, 502);
+      }
+    } else {
+      providerResult = first as DeepSeekResult;
+    }
+
+    tlog(trace_id, "provider_call_ok", {
+      tokens_in: providerResult.tokens_in,
+      tokens_out: providerResult.tokens_out,
+      retry_used: retryUsed,
+      finish_reason: providerResult.finish_reason ?? null,
+      content_length: providerResult.content_length,
+    });
   } catch (e) {
     const msg = (e as Error).message;
     await writeRun(admin, {
