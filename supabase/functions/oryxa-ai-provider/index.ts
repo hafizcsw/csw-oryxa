@@ -61,9 +61,17 @@ async function sha256Hex(s: string): Promise<string> {
 
 const SYS_EXTRACTION =
   "You are a strict document analyst. Read ONLY the OCR text supplied by the user. " +
-  "Never infer or fabricate fields. If a field is not visibly present, set value=null and status=\"missing\" with a short reason. " +
+  "Never infer or fabricate fields. If a field is not visibly present, set value=null and status=\"missing\" with a short reason (<=140 chars). " +
   "Every extracted/proposed field MUST cite an evidence_id pointing to an entry in evidence_map whose quote is taken verbatim from the OCR text. " +
-  "Return a single JSON object that matches the requested schema. Output JSON only.";
+  "Keep evidence_quote <=180 chars. No markdown. No prose. No comments. No trailing commas. " +
+  "Return ONE compact valid JSON object only.";
+
+const SYS_EXTRACTION_COMPACT_RETRY =
+  "You are a strict document analyst. Read ONLY the OCR text supplied. " +
+  "Return ONE compact valid JSON object only. No markdown, no prose, no comments, no trailing commas. " +
+  "evidence_quote <=140 chars. missing_fields[].reason <=100 chars. " +
+  "If a field is missing, set value=null, status=\"missing\". " +
+  "Every extracted/proposed field MUST have an evidence_id present in evidence_map.";
 
 const SYS_READINESS =
   "You are a document file-readiness evaluator. Input is a JSON object describing already-extracted fields, missing fields, and confidence values. " +
