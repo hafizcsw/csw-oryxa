@@ -5309,11 +5309,53 @@ Deno.serve(async (req) => {
             // ✅ FIX: include 'pending' (freshly uploaded) and 'saved'.
             // Freshly uploaded CRM files land as 'pending' and must be scannable by the portal.
             const ACCEPTED_STATUSES = new Set(['saved', 'pending', 'uploaded', 'ready', 'active', null, undefined]);
-            const files = rawAll.filter((r: any) =>
+            let files = rawAll.filter((r: any) =>
               r.deleted_at == null &&
               r.visibility === 'student_visible' &&
               (ACCEPTED_STATUSES.has(r.status) || r.status == null)
             );
+
+            // ✅ IDENTITY FIREWALL — Study File surface must never display
+            // identity / verification artifacts even if CRM list_files returns them
+            // for the same customer. We filter on file_kind, storage_bucket, and a
+            // narrow filename heuristic. Identity surfaces use their own dedicated
+            // hook (useIdentityCase) and are not affected.
+            const IDENTITY_FILE_KINDS = new Set([
+              'liveness', 'selfie',
+              'identity_selfie', 'identity_liveness',
+              'identity_document', 'identity_doc',
+              'identity_activation', 'identity_verification',
+              'identity', 'verification', 'verification_video',
+            ]);
+            const IDENTITY_BUCKETS = new Set([
+              'identity-activation', 'identity_activation', 'identity', 'identity-verification',
+            ]);
+            const isIdentityArtifact = (r: any): boolean => {
+              const kind = String(r.file_kind || '').toLowerCase();
+              const bucket = String(r.storage_bucket || '').toLowerCase();
+              const name = String(r.file_name || '').toLowerCase();
+              if (IDENTITY_FILE_KINDS.has(kind)) return true;
+              if (kind.startsWith('identity_')) return true;
+              if (IDENTITY_BUCKETS.has(bucket)) return true;
+              // narrow filename heuristic — only as a defensive fallback
+              if (name === 'liveness.webm' || name === 'selfie.jpg' || name === 'selfie.jpeg' || name === 'selfie.png') return true;
+              return false;
+            };
+
+            if (surface === 'study_file') {
+              const before = files.length;
+              const filteredOut: any[] = [];
+              files = files.filter((r: any) => {
+                if (isIdentityArtifact(r)) {
+                  filteredOut.push({ id: r.id, kind: r.file_kind, bucket: r.storage_bucket, name: r.file_name });
+                  return false;
+                }
+                return true;
+              });
+              if (filteredOut.length > 0) {
+                console.log('[crm_storage:list_files] 🛡️ identity_firewall: hid', filteredOut.length, 'of', before, 'identity artifacts from study_file surface', filteredOut);
+              }
+            }
             console.log('[crm_storage:list_files] 🔎 status histogram of not_deleted:',
               Object.entries(rawAll.filter((r:any)=>r.deleted_at==null).reduce((acc:any,r:any)=>{acc[r.status||'null']=(acc[r.status||'null']||0)+1;return acc;},{}))
             );
