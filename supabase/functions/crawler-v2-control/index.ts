@@ -85,6 +85,8 @@ Deno.serve(async (req: Request) => {
         return await handleListRuns(srv, tid, origin);
       case "get_run":
         return await handleGetRun(srv, body, tid, origin);
+      case "search_universities":
+        return await handleSearchUniversities(srv, body, tid, origin);
       default:
         return jsonResp({ ok: false, error: "unknown_action", trace_id: tid }, 400, origin);
     }
