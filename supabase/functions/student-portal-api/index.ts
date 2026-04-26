@@ -5262,10 +5262,21 @@ Deno.serve(async (req) => {
           
           // ============= LIST FILES =============
           case 'list_files': {
+            // ✅ Surface scoping: callers may request a narrower view.
+            //   - 'study_file' (default): excludes identity/verification artifacts
+            //   - 'identity'             : reserved for identity surfaces (no extra filter here)
+            //   - 'all'                  : raw, unfiltered (admin/debug)
+            const requestedSurface = (payload as any)?.surface as string | undefined;
+            const surface: 'study_file' | 'identity' | 'all' =
+              requestedSurface === 'all' || requestedSurface === 'identity'
+                ? requestedSurface
+                : 'study_file';
+
             // 🔎 DIAGNOSTIC — prove exactly which CRM customer we are reading for
             console.log('[crm_storage:list_files] 🔎 DIAG', {
               authUserId,
               resolvedCustomerId: customerId,
+              surface,
               crm_url_hint: CRM_SUPABASE_URL?.slice(0, 40) + '...',
             });
 
