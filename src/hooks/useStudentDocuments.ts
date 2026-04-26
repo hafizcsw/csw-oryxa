@@ -37,6 +37,32 @@ export interface StudentDocument {
   rejection_reason?: string | null;
 }
 
+// 🛡️ Identity firewall (client defense-in-depth)
+// The Study File surface MUST NEVER display identity / verification artifacts
+// (liveness, selfie, identity-activation videos/images), even if a stale CRM
+// list_files response includes them. The server already filters under
+// surface='study_file'; this is a second wall on the client.
+const IDENTITY_FILE_KINDS = new Set([
+  'liveness', 'selfie',
+  'identity_selfie', 'identity_liveness',
+  'identity_document', 'identity_doc',
+  'identity_activation', 'identity_verification',
+  'identity', 'verification', 'verification_video',
+]);
+const IDENTITY_BUCKETS = new Set([
+  'identity-activation', 'identity_activation', 'identity', 'identity-verification',
+]);
+function isIdentityArtifact(f: { file_kind?: string; storage_bucket?: string; file_name?: string }): boolean {
+  const kind = String(f.file_kind || '').toLowerCase();
+  const bucket = String(f.storage_bucket || '').toLowerCase();
+  const name = String(f.file_name || '').toLowerCase();
+  if (IDENTITY_FILE_KINDS.has(kind)) return true;
+  if (kind.startsWith('identity_')) return true;
+  if (IDENTITY_BUCKETS.has(bucket)) return true;
+  if (name === 'liveness.webm' || name === 'selfie.jpg' || name === 'selfie.jpeg' || name === 'selfie.png') return true;
+  return false;
+}
+
 // ✅ Helper to find duplicate files (same file_kind, keep newest)
 export function findDuplicateFiles(files: StudentDocument[]): {
   toKeep: StudentDocument[];
