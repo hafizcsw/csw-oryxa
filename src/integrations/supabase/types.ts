@@ -2764,6 +2764,453 @@ export type Database = {
         }
         Relationships: []
       }
+      crawler_locks: {
+        Row: {
+          acquired_at: string
+          expires_at: string
+          lock_holder: string
+          lock_metadata: Json
+          resource_id: string
+          resource_type: string
+        }
+        Insert: {
+          acquired_at?: string
+          expires_at: string
+          lock_holder: string
+          lock_metadata?: Json
+          resource_id: string
+          resource_type: string
+        }
+        Update: {
+          acquired_at?: string
+          expires_at?: string
+          lock_holder?: string
+          lock_metadata?: Json
+          resource_id?: string
+          resource_type?: string
+        }
+        Relationships: []
+      }
+      crawler_run_items: {
+        Row: {
+          artifacts_found: number
+          artifacts_parsed: number
+          completed_at: string | null
+          created_at: string
+          draft_count: number
+          evidence_count: number
+          evidence_verified_count: number
+          failure_detail: string | null
+          failure_reason: string | null
+          id: string
+          orx_signal_count: number
+          pages_fetched: number
+          pages_found: number
+          pages_rendered: number
+          progress_percent: number
+          retry_count: number
+          run_id: string
+          stage: string | null
+          started_at: string | null
+          status: string
+          target_domain: string | null
+          target_id: string | null
+          trace_id: string
+          university_id: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          artifacts_found?: number
+          artifacts_parsed?: number
+          completed_at?: string | null
+          created_at?: string
+          draft_count?: number
+          evidence_count?: number
+          evidence_verified_count?: number
+          failure_detail?: string | null
+          failure_reason?: string | null
+          id?: string
+          orx_signal_count?: number
+          pages_fetched?: number
+          pages_found?: number
+          pages_rendered?: number
+          progress_percent?: number
+          retry_count?: number
+          run_id: string
+          stage?: string | null
+          started_at?: string | null
+          status?: string
+          target_domain?: string | null
+          target_id?: string | null
+          trace_id: string
+          university_id: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          artifacts_found?: number
+          artifacts_parsed?: number
+          completed_at?: string | null
+          created_at?: string
+          draft_count?: number
+          evidence_count?: number
+          evidence_verified_count?: number
+          failure_detail?: string | null
+          failure_reason?: string | null
+          id?: string
+          orx_signal_count?: number
+          pages_fetched?: number
+          pages_found?: number
+          pages_rendered?: number
+          progress_percent?: number
+          retry_count?: number
+          run_id?: string
+          stage?: string | null
+          started_at?: string | null
+          status?: string
+          target_domain?: string | null
+          target_id?: string | null
+          trace_id?: string
+          university_id?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crawler_run_items_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "crawler_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crawler_run_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "mv_university_catalog_fts"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_run_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "programs_view"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_run_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crawler_run_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_details"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_run_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_run_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search_api"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_run_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search_api_v3_final"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_run_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_slider_active"
+            referencedColumns: ["university_slug"]
+          },
+          {
+            foreignKeyName: "crawler_run_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_card"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crawler_run_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_catalog"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_run_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_details"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_run_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_search"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crawler_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          filters_json: Json
+          id: string
+          mode: string
+          scope: string
+          settings_json: Json
+          started_at: string | null
+          status: string
+          total_targets: number
+          trace_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          filters_json?: Json
+          id?: string
+          mode?: string
+          scope: string
+          settings_json?: Json
+          started_at?: string | null
+          status?: string
+          total_targets?: number
+          trace_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          filters_json?: Json
+          id?: string
+          mode?: string
+          scope?: string
+          settings_json?: Json
+          started_at?: string | null
+          status?: string
+          total_targets?: number
+          trace_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      crawler_targets: {
+        Row: {
+          confidence_0_100: number | null
+          created_at: string
+          id: string
+          last_check_status: string | null
+          last_checked_at: string | null
+          source: string
+          source_metadata: Json
+          status: string
+          target_domain: string
+          target_type: string
+          target_url: string
+          university_id: string
+          updated_at: string
+        }
+        Insert: {
+          confidence_0_100?: number | null
+          created_at?: string
+          id?: string
+          last_check_status?: string | null
+          last_checked_at?: string | null
+          source?: string
+          source_metadata?: Json
+          status?: string
+          target_domain: string
+          target_type?: string
+          target_url: string
+          university_id: string
+          updated_at?: string
+        }
+        Update: {
+          confidence_0_100?: number | null
+          created_at?: string
+          id?: string
+          last_check_status?: string | null
+          last_checked_at?: string | null
+          source?: string
+          source_metadata?: Json
+          status?: string
+          target_domain?: string
+          target_type?: string
+          target_url?: string
+          university_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crawler_targets_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "mv_university_catalog_fts"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_targets_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "programs_view"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_targets_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crawler_targets_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_details"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_targets_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_targets_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search_api"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_targets_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search_api_v3_final"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_targets_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_slider_active"
+            referencedColumns: ["university_slug"]
+          },
+          {
+            foreignKeyName: "crawler_targets_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_card"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crawler_targets_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_catalog"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_targets_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_details"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "crawler_targets_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_search"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crawler_telemetry: {
+        Row: {
+          duration_ms: number | null
+          error_message: string | null
+          error_type: string | null
+          event_type: string
+          id: string
+          metadata: Json
+          run_id: string | null
+          run_item_id: string | null
+          stage: string
+          success: boolean | null
+          timestamp: string
+          trace_id: string
+        }
+        Insert: {
+          duration_ms?: number | null
+          error_message?: string | null
+          error_type?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json
+          run_id?: string | null
+          run_item_id?: string | null
+          stage: string
+          success?: boolean | null
+          timestamp?: string
+          trace_id: string
+        }
+        Update: {
+          duration_ms?: number | null
+          error_message?: string | null
+          error_type?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json
+          run_id?: string | null
+          run_item_id?: string | null
+          stage?: string
+          success?: boolean | null
+          timestamp?: string
+          trace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crawler_telemetry_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "crawler_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crawler_telemetry_run_item_id_fkey"
+            columns: ["run_item_id"]
+            isOneToOne: false
+            referencedRelation: "crawler_run_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credential_mapping_decision_log: {
         Row: {
           created_at: string
@@ -4408,6 +4855,340 @@ export type Database = {
         }
         Relationships: []
       }
+      evidence_items: {
+        Row: {
+          artifact_id: string | null
+          confidence_0_100: number
+          confidence_scale_version: string
+          content_hash: string
+          contextual_only: boolean
+          crawler_run_id: string
+          crawler_run_item_id: string
+          created_at: string
+          entity_id: string | null
+          entity_match_status: string
+          entity_type: string
+          evidence_quote: string | null
+          evidence_quote_hash: string | null
+          evidence_quote_length: number | null
+          evidence_quote_storage_url: string | null
+          extraction_method: string
+          extractor_version: string | null
+          fact_group: string
+          field_key: string
+          freshness_date: string | null
+          id: string
+          language_code: string | null
+          legacy_confidence_0_1: number | null
+          legacy_source_id: string | null
+          legacy_source_table: string | null
+          model_name: string | null
+          model_provider: string | null
+          orx_evidence_id: string | null
+          orx_layer: string | null
+          orx_signal_family: string | null
+          prompt_version: string | null
+          publish_status: string
+          raw_page_id: number | null
+          review_status: string
+          source_domain: string
+          source_url: string
+          target_id: string | null
+          trace_id: string
+          trust_level: string
+          university_id: string
+          updated_at: string
+          validation_status: string
+          value_normalized: string | null
+          value_raw: string
+        }
+        Insert: {
+          artifact_id?: string | null
+          confidence_0_100: number
+          confidence_scale_version?: string
+          content_hash: string
+          contextual_only?: boolean
+          crawler_run_id: string
+          crawler_run_item_id: string
+          created_at?: string
+          entity_id?: string | null
+          entity_match_status?: string
+          entity_type: string
+          evidence_quote?: string | null
+          evidence_quote_hash?: string | null
+          evidence_quote_length?: number | null
+          evidence_quote_storage_url?: string | null
+          extraction_method: string
+          extractor_version?: string | null
+          fact_group: string
+          field_key: string
+          freshness_date?: string | null
+          id?: string
+          language_code?: string | null
+          legacy_confidence_0_1?: number | null
+          legacy_source_id?: string | null
+          legacy_source_table?: string | null
+          model_name?: string | null
+          model_provider?: string | null
+          orx_evidence_id?: string | null
+          orx_layer?: string | null
+          orx_signal_family?: string | null
+          prompt_version?: string | null
+          publish_status?: string
+          raw_page_id?: number | null
+          review_status?: string
+          source_domain: string
+          source_url: string
+          target_id?: string | null
+          trace_id: string
+          trust_level?: string
+          university_id: string
+          updated_at?: string
+          validation_status?: string
+          value_normalized?: string | null
+          value_raw: string
+        }
+        Update: {
+          artifact_id?: string | null
+          confidence_0_100?: number
+          confidence_scale_version?: string
+          content_hash?: string
+          contextual_only?: boolean
+          crawler_run_id?: string
+          crawler_run_item_id?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_match_status?: string
+          entity_type?: string
+          evidence_quote?: string | null
+          evidence_quote_hash?: string | null
+          evidence_quote_length?: number | null
+          evidence_quote_storage_url?: string | null
+          extraction_method?: string
+          extractor_version?: string | null
+          fact_group?: string
+          field_key?: string
+          freshness_date?: string | null
+          id?: string
+          language_code?: string | null
+          legacy_confidence_0_1?: number | null
+          legacy_source_id?: string | null
+          legacy_source_table?: string | null
+          model_name?: string | null
+          model_provider?: string | null
+          orx_evidence_id?: string | null
+          orx_layer?: string | null
+          orx_signal_family?: string | null
+          prompt_version?: string | null
+          publish_status?: string
+          raw_page_id?: number | null
+          review_status?: string
+          source_domain?: string
+          source_url?: string
+          target_id?: string | null
+          trace_id?: string
+          trust_level?: string
+          university_id?: string
+          updated_at?: string
+          validation_status?: string
+          value_normalized?: string | null
+          value_raw?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_items_artifact_id_fkey"
+            columns: ["artifact_id"]
+            isOneToOne: false
+            referencedRelation: "crawl_file_artifacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_items_crawler_run_id_fkey"
+            columns: ["crawler_run_id"]
+            isOneToOne: false
+            referencedRelation: "crawler_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_items_crawler_run_item_id_fkey"
+            columns: ["crawler_run_item_id"]
+            isOneToOne: false
+            referencedRelation: "crawler_run_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_items_orx_evidence_id_fkey"
+            columns: ["orx_evidence_id"]
+            isOneToOne: false
+            referencedRelation: "orx_evidence"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_items_raw_page_id_fkey"
+            columns: ["raw_page_id"]
+            isOneToOne: false
+            referencedRelation: "raw_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_items_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "crawler_targets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "mv_university_catalog_fts"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "evidence_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "programs_view"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "evidence_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_details"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "evidence_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "evidence_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search_api"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "evidence_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search_api_v3_final"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "evidence_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_slider_active"
+            referencedColumns: ["university_slug"]
+          },
+          {
+            foreignKeyName: "evidence_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_card"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_catalog"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "evidence_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_details"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "evidence_items_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_search"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence_validation_rules: {
+        Row: {
+          active: boolean
+          allowed_values: Json | null
+          auto_reject: boolean
+          created_at: string
+          custom_logic: Json | null
+          description: string | null
+          examples: Json | null
+          fact_group: string
+          field_key: string
+          id: string
+          max_value: number | null
+          min_value: number | null
+          reference_column: string | null
+          reference_table: string | null
+          regex_pattern: string | null
+          requires_manual_review: boolean
+          rule_name: string
+          severity: string
+          validation_type: string
+        }
+        Insert: {
+          active?: boolean
+          allowed_values?: Json | null
+          auto_reject?: boolean
+          created_at?: string
+          custom_logic?: Json | null
+          description?: string | null
+          examples?: Json | null
+          fact_group: string
+          field_key: string
+          id?: string
+          max_value?: number | null
+          min_value?: number | null
+          reference_column?: string | null
+          reference_table?: string | null
+          regex_pattern?: string | null
+          requires_manual_review?: boolean
+          rule_name: string
+          severity?: string
+          validation_type: string
+        }
+        Update: {
+          active?: boolean
+          allowed_values?: Json | null
+          auto_reject?: boolean
+          created_at?: string
+          custom_logic?: Json | null
+          description?: string | null
+          examples?: Json | null
+          fact_group?: string
+          field_key?: string
+          id?: string
+          max_value?: number | null
+          min_value?: number | null
+          reference_column?: string | null
+          reference_table?: string | null
+          regex_pattern?: string | null
+          requires_manual_review?: boolean
+          rule_name?: string
+          severity?: string
+          validation_type?: string
+        }
+        Relationships: []
+      }
       extraction_proposals: {
         Row: {
           auto_apply_candidate: boolean
@@ -5516,6 +6297,295 @@ export type Database = {
           title?: string
         }
         Relationships: []
+      }
+      housing_draft: {
+        Row: {
+          available_spaces: number | null
+          capacity: number | null
+          crawler_run_id: string
+          crawler_run_item_id: string
+          created_at: string
+          distance_to_campus_km: number | null
+          eligibility_text: string | null
+          facilities: Json
+          housing_name: string
+          housing_type: string | null
+          id: string
+          international_students_allowed: boolean | null
+          latitude: number | null
+          location_address: string | null
+          longitude: number | null
+          primary_evidence_id: string | null
+          publish_status: string
+          review_status: string
+          trace_id: string
+          university_id: string
+          updated_at: string
+        }
+        Insert: {
+          available_spaces?: number | null
+          capacity?: number | null
+          crawler_run_id: string
+          crawler_run_item_id: string
+          created_at?: string
+          distance_to_campus_km?: number | null
+          eligibility_text?: string | null
+          facilities?: Json
+          housing_name: string
+          housing_type?: string | null
+          id?: string
+          international_students_allowed?: boolean | null
+          latitude?: number | null
+          location_address?: string | null
+          longitude?: number | null
+          primary_evidence_id?: string | null
+          publish_status?: string
+          review_status?: string
+          trace_id: string
+          university_id: string
+          updated_at?: string
+        }
+        Update: {
+          available_spaces?: number | null
+          capacity?: number | null
+          crawler_run_id?: string
+          crawler_run_item_id?: string
+          created_at?: string
+          distance_to_campus_km?: number | null
+          eligibility_text?: string | null
+          facilities?: Json
+          housing_name?: string
+          housing_type?: string | null
+          id?: string
+          international_students_allowed?: boolean | null
+          latitude?: number | null
+          location_address?: string | null
+          longitude?: number | null
+          primary_evidence_id?: string | null
+          publish_status?: string
+          review_status?: string
+          trace_id?: string
+          university_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "housing_draft_crawler_run_id_fkey"
+            columns: ["crawler_run_id"]
+            isOneToOne: false
+            referencedRelation: "crawler_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "housing_draft_crawler_run_item_id_fkey"
+            columns: ["crawler_run_item_id"]
+            isOneToOne: false
+            referencedRelation: "crawler_run_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "housing_draft_primary_evidence_id_fkey"
+            columns: ["primary_evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "housing_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "mv_university_catalog_fts"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "housing_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "programs_view"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "housing_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "housing_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_details"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "housing_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "housing_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search_api"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "housing_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search_api_v3_final"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "housing_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_slider_active"
+            referencedColumns: ["university_slug"]
+          },
+          {
+            foreignKeyName: "housing_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_card"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "housing_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_catalog"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "housing_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_details"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "housing_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_search"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      housing_media_draft: {
+        Row: {
+          caption: string | null
+          confidence_0_100: number | null
+          created_at: string
+          evidence_item_id: string | null
+          housing_draft_id: string
+          id: string
+          is_official: boolean
+          media_type: string | null
+          media_url: string
+          storage_path: string | null
+        }
+        Insert: {
+          caption?: string | null
+          confidence_0_100?: number | null
+          created_at?: string
+          evidence_item_id?: string | null
+          housing_draft_id: string
+          id?: string
+          is_official?: boolean
+          media_type?: string | null
+          media_url: string
+          storage_path?: string | null
+        }
+        Update: {
+          caption?: string | null
+          confidence_0_100?: number | null
+          created_at?: string
+          evidence_item_id?: string | null
+          housing_draft_id?: string
+          id?: string
+          is_official?: boolean
+          media_type?: string | null
+          media_url?: string
+          storage_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "housing_media_draft_evidence_item_id_fkey"
+            columns: ["evidence_item_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "housing_media_draft_housing_draft_id_fkey"
+            columns: ["housing_draft_id"]
+            isOneToOne: false
+            referencedRelation: "housing_draft"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      housing_price_draft: {
+        Row: {
+          confidence_0_100: number | null
+          created_at: string
+          currency: string
+          evidence_item_id: string | null
+          excludes: string[]
+          housing_draft_id: string
+          id: string
+          includes: string[]
+          period: string
+          price_amount: number
+          room_type: string
+        }
+        Insert: {
+          confidence_0_100?: number | null
+          created_at?: string
+          currency: string
+          evidence_item_id?: string | null
+          excludes?: string[]
+          housing_draft_id: string
+          id?: string
+          includes?: string[]
+          period: string
+          price_amount: number
+          room_type: string
+        }
+        Update: {
+          confidence_0_100?: number | null
+          created_at?: string
+          currency?: string
+          evidence_item_id?: string | null
+          excludes?: string[]
+          housing_draft_id?: string
+          id?: string
+          includes?: string[]
+          period?: string
+          price_amount?: number
+          room_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "housing_price_draft_evidence_item_id_fkey"
+            columns: ["evidence_item_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "housing_price_draft_housing_draft_id_fkey"
+            columns: ["housing_draft_id"]
+            isOneToOne: false
+            referencedRelation: "housing_draft"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       identity_activations: {
         Row: {
@@ -6711,6 +7781,166 @@ export type Database = {
         }
         Relationships: []
       }
+      leadership_draft: {
+        Row: {
+          bio: string | null
+          crawler_run_id: string
+          crawler_run_item_id: string
+          created_at: string
+          id: string
+          person_name: string
+          photo_url: string | null
+          primary_evidence_id: string | null
+          publish_status: string
+          review_status: string
+          role: string | null
+          title: string | null
+          trace_id: string
+          university_id: string
+          updated_at: string
+        }
+        Insert: {
+          bio?: string | null
+          crawler_run_id: string
+          crawler_run_item_id: string
+          created_at?: string
+          id?: string
+          person_name: string
+          photo_url?: string | null
+          primary_evidence_id?: string | null
+          publish_status?: string
+          review_status?: string
+          role?: string | null
+          title?: string | null
+          trace_id: string
+          university_id: string
+          updated_at?: string
+        }
+        Update: {
+          bio?: string | null
+          crawler_run_id?: string
+          crawler_run_item_id?: string
+          created_at?: string
+          id?: string
+          person_name?: string
+          photo_url?: string | null
+          primary_evidence_id?: string | null
+          publish_status?: string
+          review_status?: string
+          role?: string | null
+          title?: string | null
+          trace_id?: string
+          university_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leadership_draft_crawler_run_id_fkey"
+            columns: ["crawler_run_id"]
+            isOneToOne: false
+            referencedRelation: "crawler_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leadership_draft_crawler_run_item_id_fkey"
+            columns: ["crawler_run_item_id"]
+            isOneToOne: false
+            referencedRelation: "crawler_run_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leadership_draft_primary_evidence_id_fkey"
+            columns: ["primary_evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leadership_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "mv_university_catalog_fts"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "leadership_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "programs_view"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "leadership_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leadership_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_details"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "leadership_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "leadership_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search_api"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "leadership_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search_api_v3_final"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "leadership_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_slider_active"
+            referencedColumns: ["university_slug"]
+          },
+          {
+            foreignKeyName: "leadership_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_card"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leadership_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_catalog"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "leadership_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_details"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "leadership_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_search"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       learning_assignments: {
         Row: {
           created_at: string | null
@@ -7117,6 +8347,171 @@ export type Database = {
           word_ru?: string
         }
         Relationships: []
+      }
+      media_draft: {
+        Row: {
+          alt_text: string | null
+          caption: string | null
+          confidence_0_100: number | null
+          crawler_run_id: string
+          crawler_run_item_id: string
+          created_at: string
+          entity_draft_ref: Json | null
+          entity_type: string | null
+          id: string
+          is_official: boolean
+          media_type: string | null
+          public_url: string | null
+          publish_status: string
+          review_status: string
+          source_url: string
+          storage_path: string | null
+          trace_id: string
+          university_id: string
+          updated_at: string
+        }
+        Insert: {
+          alt_text?: string | null
+          caption?: string | null
+          confidence_0_100?: number | null
+          crawler_run_id: string
+          crawler_run_item_id: string
+          created_at?: string
+          entity_draft_ref?: Json | null
+          entity_type?: string | null
+          id?: string
+          is_official?: boolean
+          media_type?: string | null
+          public_url?: string | null
+          publish_status?: string
+          review_status?: string
+          source_url: string
+          storage_path?: string | null
+          trace_id: string
+          university_id: string
+          updated_at?: string
+        }
+        Update: {
+          alt_text?: string | null
+          caption?: string | null
+          confidence_0_100?: number | null
+          crawler_run_id?: string
+          crawler_run_item_id?: string
+          created_at?: string
+          entity_draft_ref?: Json | null
+          entity_type?: string | null
+          id?: string
+          is_official?: boolean
+          media_type?: string | null
+          public_url?: string | null
+          publish_status?: string
+          review_status?: string
+          source_url?: string
+          storage_path?: string | null
+          trace_id?: string
+          university_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_draft_crawler_run_id_fkey"
+            columns: ["crawler_run_id"]
+            isOneToOne: false
+            referencedRelation: "crawler_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "media_draft_crawler_run_item_id_fkey"
+            columns: ["crawler_run_item_id"]
+            isOneToOne: false
+            referencedRelation: "crawler_run_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "media_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "mv_university_catalog_fts"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "media_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "programs_view"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "media_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "media_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_details"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "media_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "media_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search_api"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "media_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_program_search_api_v3_final"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "media_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_slider_active"
+            referencedColumns: ["university_slug"]
+          },
+          {
+            foreignKeyName: "media_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_card"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "media_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_catalog"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "media_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_details"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "media_draft_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "vw_university_search"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       moderation_queue: {
         Row: {
@@ -8584,6 +9979,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      orx_mapping_rules: {
+        Row: {
+          active: boolean
+          approved_by: string | null
+          confidence_boost: number
+          created_at: string
+          created_by: string | null
+          evidence_pattern: string | null
+          fact_group: string
+          field_key: string
+          id: string
+          orx_layer: string
+          orx_signal_family: string
+          requires_manual_review: boolean
+        }
+        Insert: {
+          active?: boolean
+          approved_by?: string | null
+          confidence_boost?: number
+          created_at?: string
+          created_by?: string | null
+          evidence_pattern?: string | null
+          fact_group: string
+          field_key: string
+          id?: string
+          orx_layer: string
+          orx_signal_family: string
+          requires_manual_review?: boolean
+        }
+        Update: {
+          active?: boolean
+          approved_by?: string | null
+          confidence_boost?: number
+          created_at?: string
+          created_by?: string | null
+          evidence_pattern?: string | null
+          fact_group?: string
+          field_key?: string
+          id?: string
+          orx_layer?: string
+          orx_signal_family?: string
+          requires_manual_review?: boolean
+        }
+        Relationships: []
       }
       orx_score_history: {
         Row: {
@@ -10694,6 +12134,85 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_university_catalog"
             referencedColumns: ["program_id"]
+          },
+        ]
+      }
+      program_curriculum_draft: {
+        Row: {
+          ai_exposure_detected: boolean
+          applied_learning_detected: boolean
+          confidence_0_100: number | null
+          created_at: string
+          credits: number | null
+          curriculum_type: string
+          description: string | null
+          evidence_item_id: string
+          future_skill_detected: boolean
+          id: string
+          module_code: string | null
+          module_name: string | null
+          orx_signal_family: string | null
+          orx_signal_strength: number | null
+          program_draft_id: number
+          semester: number | null
+        }
+        Insert: {
+          ai_exposure_detected?: boolean
+          applied_learning_detected?: boolean
+          confidence_0_100?: number | null
+          created_at?: string
+          credits?: number | null
+          curriculum_type: string
+          description?: string | null
+          evidence_item_id: string
+          future_skill_detected?: boolean
+          id?: string
+          module_code?: string | null
+          module_name?: string | null
+          orx_signal_family?: string | null
+          orx_signal_strength?: number | null
+          program_draft_id: number
+          semester?: number | null
+        }
+        Update: {
+          ai_exposure_detected?: boolean
+          applied_learning_detected?: boolean
+          confidence_0_100?: number | null
+          created_at?: string
+          credits?: number | null
+          curriculum_type?: string
+          description?: string | null
+          evidence_item_id?: string
+          future_skill_detected?: boolean
+          id?: string
+          module_code?: string | null
+          module_name?: string | null
+          orx_signal_family?: string | null
+          orx_signal_strength?: number | null
+          program_draft_id?: number
+          semester?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_curriculum_draft_evidence_item_id_fkey"
+            columns: ["evidence_item_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_curriculum_draft_program_draft_id_fkey"
+            columns: ["program_draft_id"]
+            isOneToOne: false
+            referencedRelation: "door2_review_current_v1"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_curriculum_draft_program_draft_id_fkey"
+            columns: ["program_draft_id"]
+            isOneToOne: false
+            referencedRelation: "program_draft"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -13167,6 +14686,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      publish_audit_trail: {
+        Row: {
+          action: string
+          after_snapshot: Json | null
+          before_snapshot: Json | null
+          confidence_avg: number | null
+          confidence_min: number | null
+          draft_ref: Json | null
+          entity_text_id: string | null
+          entity_type: string
+          entity_uuid: string | null
+          evidence_item_ids: string[]
+          id: string
+          published_at: string
+          published_by: string | null
+          rollback_snapshot: Json | null
+          trace_id: string
+        }
+        Insert: {
+          action: string
+          after_snapshot?: Json | null
+          before_snapshot?: Json | null
+          confidence_avg?: number | null
+          confidence_min?: number | null
+          draft_ref?: Json | null
+          entity_text_id?: string | null
+          entity_type: string
+          entity_uuid?: string | null
+          evidence_item_ids?: string[]
+          id?: string
+          published_at?: string
+          published_by?: string | null
+          rollback_snapshot?: Json | null
+          trace_id: string
+        }
+        Update: {
+          action?: string
+          after_snapshot?: Json | null
+          before_snapshot?: Json | null
+          confidence_avg?: number | null
+          confidence_min?: number | null
+          draft_ref?: Json | null
+          entity_text_id?: string | null
+          entity_type?: string
+          entity_uuid?: string | null
+          evidence_item_ids?: string[]
+          id?: string
+          published_at?: string
+          published_by?: string | null
+          rollback_snapshot?: Json | null
+          trace_id?: string
+        }
+        Relationships: []
       }
       qs_acquisition_cursor: {
         Row: {
@@ -27464,6 +29037,7 @@ export type Database = {
         }
       }
       clean_old_events: { Args: never; Returns: undefined }
+      cleanup_expired_crawler_locks: { Args: never; Returns: number }
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       compute_recommendations: {
         Args: { p_limit?: number; p_user?: string; p_visitor?: string }

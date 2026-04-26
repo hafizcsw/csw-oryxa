@@ -120,10 +120,11 @@ interface RunCardProps {
   extra?: React.ReactNode;
   onSubmit: () => void;
   creating: boolean;
-  t: (k: string) => string;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+  submitDisabled?: boolean;
 }
 
-function RunCard({ icon, title, description, mode, onModeChange, extra, onSubmit, creating, t }: RunCardProps) {
+function RunCard({ icon, title, description, mode, onModeChange, extra, onSubmit, creating, t, submitDisabled }: RunCardProps) {
   return (
     <Card className="flex flex-col gap-4 p-5">
       <div className="flex items-start gap-3">
@@ -148,7 +149,7 @@ function RunCard({ icon, title, description, mode, onModeChange, extra, onSubmit
         </Select>
         {extra}
       </div>
-      <Button size="sm" className="w-full gap-2" onClick={onSubmit} disabled={creating}>
+      <Button size="sm" className="w-full gap-2" onClick={onSubmit} disabled={creating || submitDisabled}>
         {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
         {t("crawlerV2.createRun")}
       </Button>
@@ -280,6 +281,151 @@ function DetailPanel({ detail, onClose, t }: { detail: RunDetail | null; onClose
   );
 }
 
+// ── University Search Autocomplete ───────────────────────────────────────────
+
+interface UniSuggestion {
+  id: string;
+  name: string;
+  name_en: string | null;
+  name_ar: string | null;
+  slug: string | null;
+  country: string | null;
+  city: string | null;
+  website: string | null;
+}
+
+interface UniversitySearchInputProps {
+  selected: UniSuggestion | null;
+  onSelect: (u: UniSuggestion | null) => void;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+}
+
+function UniversitySearchInput({ selected, onSelect, t }: UniversitySearchInputProps) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<UniSuggestion[]>([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Debounce search
+  useEffect(() => {
+    if (selected) return; // do not search while a selection is active
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults([]);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const { data, error } = await callControl({
+          action: "search_universities",
+          query: q,
+          limit: 20,
+        });
+        if (cancelled) return;
+        if (error) {
+          toast.error(error.message);
+          setResults([]);
+        } else if (data?.ok) {
+          setResults((data.results ?? []) as UniSuggestion[]);
+          setOpen(true);
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        toast.error(msg);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [query, selected]);
+
+  if (selected) {
+    return (
+      <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-muted/40 px-2 py-1.5">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium truncate">{selected.name}</p>
+          <p className="text-[10px] text-muted-foreground truncate">
+            {[selected.country, selected.city, selected.website].filter(Boolean).join(" · ")}
+          </p>
+        </div>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-6 px-2 text-[10px]"
+          onClick={() => {
+            onSelect(null);
+            setQuery("");
+            setResults([]);
+          }}
+        >
+          {t("crawlerV2.changeUniversity", { defaultValue: "Change" })}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <Input
+        className="h-8 text-xs"
+        placeholder={t("crawlerV2.universitySearchPlaceholder", {
+          defaultValue: "Search university by name, slug, or website…",
+        })}
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => {
+          if (results.length > 0) setOpen(true);
+        }}
+        onBlur={() => {
+          // Delay so click on a suggestion can register
+          setTimeout(() => setOpen(false), 150);
+        }}
+      />
+      {open && (loading || results.length > 0) && (
+        <div className="absolute z-20 mt-1 w-full rounded-md border border-border bg-popover shadow-md max-h-72 overflow-y-auto">
+          {loading && (
+            <div className="flex items-center gap-2 px-2 py-1.5 text-[11px] text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              {t("crawlerV2.searching", { defaultValue: "Searching…" })}
+            </div>
+          )}
+          {!loading && results.length === 0 && query.trim().length >= 2 && (
+            <div className="px-2 py-1.5 text-[11px] text-muted-foreground">
+              {t("crawlerV2.noUniversitiesFound", { defaultValue: "No universities found" })}
+            </div>
+          )}
+          {results.map((u) => (
+            <button
+              key={u.id}
+              type="button"
+              className="w-full text-left px-2 py-1.5 hover:bg-muted/60 border-b border-border/50 last:border-0"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onSelect(u);
+                setOpen(false);
+                setQuery("");
+              }}
+            >
+              <p className="text-xs font-medium truncate">{u.name}</p>
+              <p className="text-[10px] text-muted-foreground truncate">
+                {[u.country, u.city, u.website].filter(Boolean).join(" · ") || u.id}
+              </p>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 export default function CrawlerV2Page() {
@@ -290,7 +436,7 @@ export default function CrawlerV2Page() {
   const [countryMode, setCountryMode] = useState<Mode>("missing_or_stale");
   const [countryCode, setCountryCode] = useState("");
   const [uniMode, setUniMode] = useState<Mode>("missing_or_stale");
-  const [universityId, setUniversityId] = useState("");
+  const [selectedUniversity, setSelectedUniversity] = useState<UniSuggestion | null>(null);
   const [creating, setCreating] = useState<Scope | null>(null);
 
   // Runs list state
@@ -398,14 +544,20 @@ export default function CrawlerV2Page() {
           mode={uniMode}
           onModeChange={setUniMode}
           extra={
-            <Input
-              className="h-8 text-xs font-mono"
-              placeholder={t("crawlerV2.universityId")}
-              value={universityId}
-              onChange={(e) => setUniversityId(e.target.value.trim())}
+            <UniversitySearchInput
+              selected={selectedUniversity}
+              onSelect={setSelectedUniversity}
+              t={t}
             />
           }
-          onSubmit={() => createRun("university", uniMode, { university_id: universityId })}
+          onSubmit={() => {
+            if (!selectedUniversity) {
+              toast.error(t("crawlerV2.selectUniversityFirst", { defaultValue: "Select a university first" }));
+              return;
+            }
+            createRun("university", uniMode, { university_id: selectedUniversity.id });
+          }}
+          submitDisabled={!selectedUniversity}
           creating={creating === "university"}
           t={t}
         />

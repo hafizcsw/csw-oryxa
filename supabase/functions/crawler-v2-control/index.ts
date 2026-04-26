@@ -85,6 +85,8 @@ Deno.serve(async (req: Request) => {
         return await handleListRuns(srv, tid, origin);
       case "get_run":
         return await handleGetRun(srv, body, tid, origin);
+      case "search_universities":
+        return await handleSearchUniversities(srv, body, tid, origin);
       default:
         return jsonResp({ ok: false, error: "unknown_action", trace_id: tid }, 400, origin);
     }
@@ -466,4 +468,72 @@ async function handleGetRun(
     items,
     trace_id: tid,
   }, 200, origin);
+}
+
+// ── Action: search_universities ────────────────────────────────────────────
+// Admin-only autocomplete used by the Run Single University card.
+// Read-only. No writes. Searches: name, name_en, name_ar, slug, website.
+
+async function handleSearchUniversities(
+  srv: ReturnType<typeof createClient>,
+  body: Record<string, unknown>,
+  tid: string,
+  origin: string | null,
+): Promise<Response> {
+  const rawQuery = (body.query as string | undefined)?.trim() ?? "";
+  const limitRaw = body.limit as number | undefined;
+  const limit = Math.min(Math.max(typeof limitRaw === "number" ? limitRaw : 20, 1), 50);
+
+  if (rawQuery.length < 2) {
+    return jsonResp({ ok: true, results: [], trace_id: tid }, 200, origin);
+  }
+
+  // Sanitize for ilike: escape % and _ and remove commas (PostgREST `or` separator)
+  const safe = rawQuery.replace(/[,%_]/g, " ").replace(/\s+/g, " ").trim();
+  const pattern = `%${safe}%`;
+
+  const orClauses = [
+    `name.ilike.${pattern}`,
+    `name_en.ilike.${pattern}`,
+    `name_ar.ilike.${pattern}`,
+    `slug.ilike.${pattern}`,
+    `website.ilike.${pattern}`,
+  ].join(",");
+
+  const { data, error } = await srv
+    .from("universities")
+    .select("id, name, name_en, name_ar, slug, website, country_code, city, is_active")
+    .eq("is_active", true)
+    .or(orClauses)
+    .order("name_en", { ascending: true, nullsFirst: false })
+    .limit(limit);
+
+  if (error) {
+    slog({ tid, level: "error", error: error.message });
+    return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
+  }
+
+  type UniRow = {
+    id: string;
+    name: string | null;
+    name_en: string | null;
+    name_ar: string | null;
+    slug: string | null;
+    website: string | null;
+    country_code: string | null;
+    city: string | null;
+  };
+
+  const results = ((data ?? []) as UniRow[]).map((u) => ({
+    id: u.id,
+    name: u.name_en || u.name || u.name_ar || u.slug || u.id,
+    name_en: u.name_en,
+    name_ar: u.name_ar,
+    slug: u.slug,
+    country: u.country_code,
+    city: u.city,
+    website: u.website,
+  }));
+
+  return jsonResp({ ok: true, results, trace_id: tid }, 200, origin);
 }
