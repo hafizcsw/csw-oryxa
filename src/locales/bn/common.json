@@ -10523,6 +10523,10 @@
     "failure": {
       "missing_website": "Missing Website",
       "invalid_website": "Invalid Website"
-    }
+    },
+    "changeUniversity": "পরিবর্তন",
+    "universitySearchPlaceholder": "নাম দিয়ে বিশ্ববিদ্যালয় খুঁজুন...",
+    "noUniversitiesFound": "কোনো বিশ্ববিদ্যালয় পাওয়া যায়নি",
+    "selectUniversityFirst": "প্রথমে একটি বিশ্ববিদ্যালয় নির্বাচন করুন"
   }
 }

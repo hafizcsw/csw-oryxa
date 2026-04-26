@@ -14287,6 +14287,10 @@
     "failure": {
       "missing_website": "Missing Website",
       "invalid_website": "Invalid Website"
-    }
+    },
+    "changeUniversity": "Change",
+    "universitySearchPlaceholder": "Search universities by name...",
+    "noUniversitiesFound": "No universities found",
+    "selectUniversityFirst": "Please select a university first"
   }
 }

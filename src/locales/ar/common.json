@@ -14324,6 +14324,10 @@
     "failure": {
       "missing_website": "Missing Website",
       "invalid_website": "Invalid Website"
-    }
+    },
+    "changeUniversity": "تغيير",
+    "universitySearchPlaceholder": "ابحث عن جامعة بالاسم...",
+    "noUniversitiesFound": "لم يتم العثور على جامعات",
+    "selectUniversityFirst": "الرجاء اختيار جامعة أولاً"
   }
 }
