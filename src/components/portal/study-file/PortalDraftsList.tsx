@@ -51,6 +51,7 @@ import {
 } from "@/features/student-file/classifyStudyFileDraft";
 import { useDraftExtractions } from "@/hooks/useDraftExtractions";
 import { StudyFileReviewDrawer } from "./StudyFileReviewDrawer";
+import { StudyFileMissingSummary } from "./StudyFileMissingSummary";
 
 interface PortalDraftsListProps {
   drafts: PortalDraft[];
@@ -384,6 +385,13 @@ export function PortalDraftsList({ drafts, pending, onDelete }: PortalDraftsList
             </CollapsibleContent>
           </Collapsible>
         )}
+      </div>
+
+      <div className="mt-3">
+        <StudyFileMissingSummary
+          drafts={drafts}
+          extractionByDraftId={extractionByDraftId}
+        />
       </div>
 
       <StudyFileReviewDrawer
