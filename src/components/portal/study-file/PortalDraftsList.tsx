@@ -140,18 +140,20 @@ export function PortalDraftsList({ drafts, pending, onDelete }: PortalDraftsList
   const [reviewDraftId, setReviewDraftId] = useState<string | null>(null);
   const [legacyOpen, setLegacyOpen] = useState(false);
 
-  // Latest success per filename (used to mark older failures as superseded)
+  // Latest success per filename (used to mark older failures as superseded).
+  // PortalDraft type doesn't expose extraction_completed_at — fall back to created_at.
   const latestSuccessByName = useMemo(() => {
     const map: Record<string, string> = {};
-    for (const d of drafts) {
+    for (const d of drafts as Array<PortalDraft & { extraction_completed_at?: string | null }>) {
+      const completedAt = d.extraction_completed_at ?? d.created_at;
       if (
         d.extraction_status === "extraction_completed" &&
-        d.extraction_completed_at &&
+        completedAt &&
         d.original_file_name
       ) {
         const cur = map[d.original_file_name];
-        if (!cur || Date.parse(d.extraction_completed_at) > Date.parse(cur)) {
-          map[d.original_file_name] = d.extraction_completed_at;
+        if (!cur || Date.parse(completedAt) > Date.parse(cur)) {
+          map[d.original_file_name] = completedAt;
         }
       }
     }
@@ -170,14 +172,14 @@ export function PortalDraftsList({ drafts, pending, onDelete }: PortalDraftsList
 
   // Classify
   const classified = useMemo(() => {
-    return drafts.map((d) => {
+    return (drafts as Array<PortalDraft & { extraction_completed_at?: string | null; extraction_error?: string | null }>).map((d) => {
       const hasExtractionRow = !!extractionByDraftId[d.id];
       const latestSuccessForName = d.original_file_name
         ? latestSuccessByName[d.original_file_name] ?? null
         : null;
-      // Only mark as superseded when the newer success isn't *this* row
+      const completedAt = d.extraction_completed_at ?? null;
       const supersedingTime =
-        latestSuccessForName && d.extraction_completed_at !== latestSuccessForName
+        latestSuccessForName && completedAt !== latestSuccessForName
           ? latestSuccessForName
           : null;
       const state = classifyStudyFileDraft(d, {
