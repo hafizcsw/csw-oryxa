@@ -510,17 +510,117 @@ Deno.serve(async (req) => {
   const input_hash = await sha256Hex(inputCanonical);
 
   // Call provider.
+  const docExtractionMaxTokens = getDocumentExtractionMaxTokens();
+  const maxTokensForTask =
+    task_type === "document_extraction" ? docExtractionMaxTokens : 2400;
+
   let providerResult: DeepSeekResult;
+  let firstAttemptDiag: DeepSeekParseFailure | null = null;
+  let retryDiag: DeepSeekParseFailure | null = null;
+  let retryUsed = false;
+
   try {
-    tlog(trace_id, "provider_call_started", { provider: policy.provider, model: policy.model, task_type });
-    providerResult = await callDeepSeek({
+    tlog(trace_id, "provider_call_started", {
+      provider: policy.provider,
+      model: policy.model,
+      task_type,
+      max_tokens: maxTokensForTask,
+    });
+    const first = await callDeepSeek({
       apiKey,
       model: policy.model,
       systemPrompt,
       userPrompt,
       trace_id,
+      maxTokens: maxTokensForTask,
     });
-    tlog(trace_id, "provider_call_ok", { tokens_in: providerResult.tokens_in, tokens_out: providerResult.tokens_out });
+
+    if ("kind" in first && first.kind === "parse_failure") {
+      firstAttemptDiag = first;
+      tlog(trace_id, "deepseek_first_attempt_parse_failed", {
+        content_length: first.content_length,
+        finish_reason: first.finish_reason ?? null,
+        completion_tokens: first.tokens_out ?? null,
+        parse_error: first.parse_error.slice(0, 240),
+      });
+
+      // One controlled compact-retry, ONLY for document_extraction.
+      if (task_type === "document_extraction") {
+        retryUsed = true;
+        tlog(trace_id, "deepseek_compact_retry_started", { max_tokens: docExtractionMaxTokens });
+        const second = await callDeepSeek({
+          apiKey,
+          model: policy.model,
+          systemPrompt: SYS_EXTRACTION_COMPACT_RETRY,
+          userPrompt,
+          trace_id,
+          maxTokens: docExtractionMaxTokens,
+        });
+        if ("kind" in second && second.kind === "parse_failure") {
+          retryDiag = second;
+          tlog(trace_id, "deepseek_compact_retry_failed", {
+            content_length: second.content_length,
+            finish_reason: second.finish_reason ?? null,
+            completion_tokens: second.tokens_out ?? null,
+            parse_error: second.parse_error.slice(0, 240),
+          });
+          const errPayload = {
+            error: "deepseek_content_not_json_after_retry",
+            first_attempt_content_length: first.content_length,
+            second_attempt_content_length: second.content_length,
+            first_finish_reason: first.finish_reason ?? null,
+            second_finish_reason: second.finish_reason ?? null,
+            first_completion_tokens: first.tokens_out ?? null,
+            second_completion_tokens: second.tokens_out ?? null,
+            parse_error_short: second.parse_error.slice(0, 200),
+          };
+          await writeRun(admin, {
+            student_user_id: user_id,
+            draft_id: body.draft_id ?? null,
+            task_type,
+            policy,
+            input_hash,
+            output_hash: null,
+            status: "provider_error",
+            tokens_in: second.tokens_in ?? first.tokens_in ?? null,
+            tokens_out: second.tokens_out ?? null,
+            latency_ms: Date.now() - t0,
+            trace_id,
+            error: JSON.stringify(errPayload).slice(0, 500),
+          });
+          return jsonRes({ ok: false, ...errPayload, trace_id }, 502);
+        }
+        providerResult = second as DeepSeekResult;
+      } else {
+        // Non-extraction tasks: no retry; surface as provider_error.
+        const errMsg = "deepseek_content_not_json:" + first.parse_error;
+        await writeRun(admin, {
+          student_user_id: user_id,
+          draft_id: body.draft_id ?? null,
+          task_type,
+          policy,
+          input_hash,
+          output_hash: null,
+          status: "provider_error",
+          tokens_in: first.tokens_in ?? null,
+          tokens_out: first.tokens_out ?? null,
+          latency_ms: Date.now() - t0,
+          trace_id,
+          error: errMsg.slice(0, 500),
+        });
+        return jsonRes({ ok: false, error: "provider_error", detail: errMsg, trace_id }, 502);
+      }
+    } else {
+      providerResult = first as DeepSeekResult;
+    }
+
+    tlog(trace_id, "provider_call_ok", {
+      tokens_in: providerResult.tokens_in,
+      tokens_out: providerResult.tokens_out,
+      retry_used: retryUsed,
+      finish_reason: providerResult.finish_reason ?? null,
+      content_length: providerResult.content_length,
+    });
   } catch (e) {
     const msg = (e as Error).message;
     await writeRun(admin, {
