@@ -641,10 +641,14 @@ Deno.serve(async (req) => {
     const ext_error =
       ocr.error === "deepseek_ocr_service_not_configured"
         ? "deepseek_ocr_service_not_configured"
+        : ocr.error === "mistral_ocr_service_not_configured"
+        ? "mistral_ocr_service_not_configured"
         : ocr.status === "unreadable_document"
         ? "unreadable_document"
         : ocr.error === "deepseek_ocr_failed"
         ? "deepseek_ocr_failed"
+        : ocr.error === "mistral_ocr_failed"
+        ? "mistral_ocr_failed"
         : "ocr_failed";
     await admin
       .from("portal_document_drafts")
