@@ -1617,7 +1617,51 @@
         "extractionPending": "استخراج قيد الانتظار",
         "extractionRunning": "جارٍ الاستخراج…",
         "extractionCompleted": "تم الاستخراج",
-        "extractionFailed": "فشل الاستخراج"
+        "extractionFailed": "فشل الاستخراج",
+        "stateUploadedPending": "تم الرفع — بانتظار الاستخراج",
+        "stateReading": "جارٍ قراءة المستند",
+        "stateExtracting": "جارٍ استخراج المعلومات",
+        "stateReady": "جاهز للمراجعة",
+        "stateFailedRetryable": "يحتاج إعادة محاولة",
+        "stateFailedLegacy": "مسودة فاشلة قديمة",
+        "stateSuperseded": "استُبدلت برفع أحدث",
+        "stateSubmitted": "أُرسل إلى CSW",
+        "review": "مراجعة",
+        "retry": "إعادة المحاولة",
+        "retryComingSoon": "ستُفعّل إعادة المحاولة عند توصيل إعادة استخراج آمنة.",
+        "externalOcrBadge": "استُخدم OCR خارجي",
+        "externalOcrTooltip": "تم إرسال النص المُتعرَّف عليه فقط إلى المحلّل. ملفك يبقى في تخزين خاص.",
+        "legacyHeading": "مسودات فاشلة قديمة"
+      },
+      "review": {
+        "title": "مراجعة المعلومات المستخرجة",
+        "subline": "مراجعة للقراءة فقط. لم يُرسَل أي شيء إلى CSW.",
+        "empty": "لا يوجد استخراج متاح بعد.",
+        "confidence": "الثقة",
+        "factsHeading": "المعلومات المستخرجة",
+        "noFacts": "لم تُستخرج أي حقول.",
+        "evidenceOk": "دليل",
+        "evidenceMissing": "غير موثّق",
+        "missingHeading": "لم يُعثر عليها في هذا المستند",
+        "ocrEngine": "محرك OCR",
+        "qualityFlags": "مؤشرات الجودة",
+        "externalOcrTitle": "استُخدم OCR خارجي لاستخراج النص",
+        "externalOcrBody": "تم إرسال النص المُتعرَّف عليه فقط إلى المحلّل. الملف الأصلي يبقى في تخزينك الخاص."
+      },
+      "missingSummary": {
+        "title": "المستندات في ملفك الدراسي",
+        "subline": "ملخص للقراءة فقط بناءً على ما اكتشفناه. لم يُرسَل أي شيء إلى CSW.",
+        "detectedHeading": "ما تم اكتشافه حتى الآن",
+        "missingHeading": "لم تُرفع بعد",
+        "noneDetected": "لم يتم اكتشاف أي مستندات بعد.",
+        "noneMissing": "لا يبدو أن هناك ما هو ناقص بشكل واضح.",
+        "kind": {
+          "passport": "جواز السفر / الهوية",
+          "transcript": "كشف الدرجات الأكاديمية",
+          "ielts": "شهادة IELTS / اللغة الإنجليزية",
+          "certificate": "شهادة التخرج",
+          "additional": "مستند إضافي"
+        }
       }
     },
     "uploadHub": {
