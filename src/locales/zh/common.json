@@ -2553,8 +2553,8 @@
         "step1_desc": "智能 OCR 理解任何格式",
         "step2_title": "我们提取您的数据",
         "step2_desc": "姓名、日期、成绩、专业",
-        "step3_title": "我们构建您的档案",
-        "step3_desc": "发送给大学的统一档案"
+        "step3_title": "我们准备您审核后的学习档案",
+        "step3_desc": "在您确认之前，不会向 CSW 或大学发送任何内容"
       }
     },
     "saveDocs": {

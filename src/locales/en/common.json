@@ -1697,8 +1697,8 @@
         "step1_desc": "Smart OCR understands any format",
         "step2_title": "We extract your data",
         "step2_desc": "Name, dates, grades, major",
-        "step3_title": "We build your file",
-        "step3_desc": "A unified profile sent to universities"
+        "step3_title": "We prepare your reviewed study file",
+        "step3_desc": "Nothing is sent to CSW or universities until you confirm"
       }
     },
     "saveDocs": {

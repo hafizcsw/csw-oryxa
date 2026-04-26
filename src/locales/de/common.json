@@ -2503,8 +2503,8 @@
         "step1_desc": "Intelligente OCR versteht jedes Format",
         "step2_title": "Wir extrahieren Ihre Daten",
         "step2_desc": "Name, Daten, Noten, Hauptfach",
-        "step3_title": "Wir erstellen Ihre Akte",
-        "step3_desc": "Ein einheitliches Profil, das an Universitäten gesendet wird"
+        "step3_title": "Wir bereiten Ihre geprüfte Studienakte vor",
+        "step3_desc": "Nichts wird an CSW oder Universitäten gesendet, bis Sie es bestätigen"
       }
     },
     "saveDocs": {
