@@ -185,7 +185,7 @@ export function useStudentDocuments(options?: { enabled?: boolean }) {
     if (!options?.silent) setLoading(true);
     
     try {
-      const res = await listFiles();
+      const res = await listFiles('study_file');
       if (loadId !== latestLoadIdRef.current) return;
       
       if (!res.ok) {
@@ -199,7 +199,23 @@ export function useStudentDocuments(options?: { enabled?: boolean }) {
         return;
       }
 
-      const files = res.files || [];
+      const rawFiles = res.files || [];
+
+      // 🛡️ Client-side identity firewall (defense-in-depth).
+      // Server already filters under surface='study_file' but we re-filter here
+      // so a stale/older server build can never leak identity artifacts into
+      // the Study File surface.
+      const hidden: any[] = [];
+      const files = rawFiles.filter((f: any) => {
+        if (isIdentityArtifact(f)) {
+          hidden.push({ id: f.id, kind: f.file_kind, bucket: f.storage_bucket, name: f.file_name });
+          return false;
+        }
+        return true;
+      });
+      if (hidden.length > 0) {
+        console.log('[useStudentDocuments] 🛡️ identity_firewall (client) hid', hidden.length, 'identity artifacts', hidden);
+      }
 
       // 🔎 DIAG — prove exactly what CRM returned to the UI
       console.log('[useStudentDocuments] 🔎 DIAG list_files result', {
