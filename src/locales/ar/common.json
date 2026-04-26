@@ -14257,5 +14257,73 @@
   "portal.support.panel.suggestions.s3": "ما طرق الدفع المقبولة؟",
   "portal.support.panel.suggestions.s4": "كيف أتابع طلبي؟",
   "portal.support.panel.suggestions.s5": "المنح الدراسية المتاحة",
-  "portal.support.panel.suggestions.s6": "تعديل بيانات حسابي"
+  "portal.support.panel.suggestions.s6": "تعديل بيانات حسابي",
+  "crawlerV2": {
+    "pageTitle": "لوحة تحكم الزاحف v2",
+    "pageSubtitle": "إنشاء وإدارة عمليات الزحف على قائمة الجامعات المستهدفة",
+    "runAll": "تشغيل جميع الجامعات",
+    "runAllDesc": "إضافة جميع الجامعات النشطة إلى قائمة الزحف",
+    "runCountry": "تشغيل حسب الدولة",
+    "runCountryDesc": "إضافة جميع جامعات دولة معينة",
+    "runUniversity": "تشغيل جامعة واحدة",
+    "runUniversityDesc": "إضافة جامعة واحدة عبر المعرّف",
+    "createRun": "إنشاء تشغيل",
+    "selectMode": "اختر الوضع",
+    "countryCode": "رمز الدولة (مثال: SA)",
+    "universityId": "معرّف الجامعة (UUID)",
+    "recentRuns": "التشغيلات الأخيرة",
+    "noRunsYet": "لا توجد تشغيلات بعد",
+    "refresh": "تحديث",
+    "runDetail": "تفاصيل التشغيل",
+    "totalTargets": "الإجمالي",
+    "queued": "في الانتظار",
+    "failed": "فشل",
+    "completed": "مكتمل",
+    "needsReview": "يحتاج مراجعة",
+    "published": "منشور",
+    "traceId": "معرّف التتبع",
+    "createdAt": "تاريخ الإنشاء",
+    "scopeLabel": "النطاق",
+    "statusLabel": "الحالة",
+    "modeLabel": "الوضع",
+    "failureBreakdown": "تفاصيل الأخطاء",
+    "items": "العناصر (أول 100)",
+    "noItems": "لا توجد عناصر",
+    "createdSuccessfully": "تم إنشاء التشغيل بنجاح",
+    "failedToCreate": "فشل إنشاء التشغيل",
+    "scope": {
+      "all": "All Universities",
+      "country": "Country",
+      "university": "University",
+      "custom_list": "Custom List"
+    },
+    "mode": {
+      "missing_or_stale": "Missing or Stale",
+      "failed_only": "Failed Only",
+      "full_refresh": "Full Refresh",
+      "evidence_only": "Evidence Only",
+      "orx_only": "ORX Only",
+      "media_only": "Media Only",
+      "programs_only": "Programs Only",
+      "housing_only": "Housing Only"
+    },
+    "status": {
+      "queued": "Queued",
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "itemStatus": {
+      "queued": "Queued",
+      "completed": "Completed",
+      "failed": "Failed",
+      "needs_review": "Needs Review",
+      "published": "Published"
+    },
+    "failure": {
+      "missing_website": "Missing Website",
+      "invalid_website": "Invalid Website"
+    }
+  }
 }

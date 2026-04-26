@@ -10456,5 +10456,73 @@
   "portal.support.panel.suggestions.s3": "利用可能な支払い方法は？",
   "portal.support.panel.suggestions.s4": "申請状況の確認方法は？",
   "portal.support.panel.suggestions.s5": "利用可能な奨学金",
-  "portal.support.panel.suggestions.s6": "アカウント情報の更新"
+  "portal.support.panel.suggestions.s6": "アカウント情報の更新",
+  "crawlerV2": {
+    "pageTitle": "クローラー v2 コントロール",
+    "pageSubtitle": "大学ターゲットリストに対するクロール実行を作成・管理",
+    "runAll": "全大学を実行",
+    "runAllDesc": "すべてのアクティブな大学をキューに追加",
+    "runCountry": "国別に実行",
+    "runCountryDesc": "特定の国のすべての大学をキューに追加",
+    "runUniversity": "単一大学を実行",
+    "runUniversityDesc": "IDで単一大学をキューに追加",
+    "createRun": "実行を作成",
+    "selectMode": "モードを選択",
+    "countryCode": "国コード (例: JP)",
+    "universityId": "大学ID (UUID)",
+    "recentRuns": "最近の実行",
+    "noRunsYet": "実行履歴なし",
+    "refresh": "更新",
+    "runDetail": "実行詳細",
+    "totalTargets": "合計",
+    "queued": "キュー中",
+    "failed": "失敗",
+    "completed": "完了",
+    "needsReview": "要確認",
+    "published": "公開済み",
+    "traceId": "トレースID",
+    "createdAt": "作成日時",
+    "scopeLabel": "スコープ",
+    "statusLabel": "ステータス",
+    "modeLabel": "モード",
+    "failureBreakdown": "失敗内訳",
+    "items": "項目（最初の100件）",
+    "noItems": "項目なし",
+    "createdSuccessfully": "実行を作成しました",
+    "failedToCreate": "実行の作成に失敗しました",
+    "scope": {
+      "all": "All Universities",
+      "country": "Country",
+      "university": "University",
+      "custom_list": "Custom List"
+    },
+    "mode": {
+      "missing_or_stale": "Missing or Stale",
+      "failed_only": "Failed Only",
+      "full_refresh": "Full Refresh",
+      "evidence_only": "Evidence Only",
+      "orx_only": "ORX Only",
+      "media_only": "Media Only",
+      "programs_only": "Programs Only",
+      "housing_only": "Housing Only"
+    },
+    "status": {
+      "queued": "Queued",
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "itemStatus": {
+      "queued": "Queued",
+      "completed": "Completed",
+      "failed": "Failed",
+      "needs_review": "Needs Review",
+      "published": "Published"
+    },
+    "failure": {
+      "missing_website": "Missing Website",
+      "invalid_website": "Invalid Website"
+    }
+  }
 }

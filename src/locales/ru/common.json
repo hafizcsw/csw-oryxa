@@ -11494,5 +11494,73 @@
   "portal.support.panel.suggestions.s3": "Какие способы оплаты принимаются?",
   "portal.support.panel.suggestions.s4": "Как отслеживать заявку?",
   "portal.support.panel.suggestions.s5": "Доступные стипендии",
-  "portal.support.panel.suggestions.s6": "Обновить данные аккаунта"
+  "portal.support.panel.suggestions.s6": "Обновить данные аккаунта",
+  "crawlerV2": {
+    "pageTitle": "Управление Crawler v2",
+    "pageSubtitle": "Создание и управление задачами обхода списка университетов",
+    "runAll": "Запустить все университеты",
+    "runAllDesc": "Добавить все активные университеты в очередь",
+    "runCountry": "Запустить по стране",
+    "runCountryDesc": "Добавить все университеты конкретной страны",
+    "runUniversity": "Запустить один университет",
+    "runUniversityDesc": "Добавить университет по ID",
+    "createRun": "Создать задачу",
+    "selectMode": "Выберите режим",
+    "countryCode": "Код страны (напр. RU)",
+    "universityId": "ID университета (UUID)",
+    "recentRuns": "Последние задачи",
+    "noRunsYet": "Нет задач",
+    "refresh": "Обновить",
+    "runDetail": "Детали задачи",
+    "totalTargets": "Всего",
+    "queued": "В очереди",
+    "failed": "Ошибка",
+    "completed": "Завершено",
+    "needsReview": "Требует проверки",
+    "published": "Опубликовано",
+    "traceId": "ID трассировки",
+    "createdAt": "Создано",
+    "scopeLabel": "Область",
+    "statusLabel": "Статус",
+    "modeLabel": "Режим",
+    "failureBreakdown": "Разбивка ошибок",
+    "items": "Элементы (первые 100)",
+    "noItems": "Нет элементов",
+    "createdSuccessfully": "Задача успешно создана",
+    "failedToCreate": "Не удалось создать задачу",
+    "scope": {
+      "all": "All Universities",
+      "country": "Country",
+      "university": "University",
+      "custom_list": "Custom List"
+    },
+    "mode": {
+      "missing_or_stale": "Missing or Stale",
+      "failed_only": "Failed Only",
+      "full_refresh": "Full Refresh",
+      "evidence_only": "Evidence Only",
+      "orx_only": "ORX Only",
+      "media_only": "Media Only",
+      "programs_only": "Programs Only",
+      "housing_only": "Housing Only"
+    },
+    "status": {
+      "queued": "Queued",
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "itemStatus": {
+      "queued": "Queued",
+      "completed": "Completed",
+      "failed": "Failed",
+      "needs_review": "Needs Review",
+      "published": "Published"
+    },
+    "failure": {
+      "missing_website": "Missing Website",
+      "invalid_website": "Invalid Website"
+    }
+  }
 }

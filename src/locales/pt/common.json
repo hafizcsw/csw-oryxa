@@ -10456,5 +10456,73 @@
   "portal.support.panel.suggestions.s3": "Quais métodos de pagamento são aceitos?",
   "portal.support.panel.suggestions.s4": "Como rastreio minha candidatura?",
   "portal.support.panel.suggestions.s5": "Bolsas disponíveis",
-  "portal.support.panel.suggestions.s6": "Atualizar minha conta"
+  "portal.support.panel.suggestions.s6": "Atualizar minha conta",
+  "crawlerV2": {
+    "pageTitle": "Controle do Crawler v2",
+    "pageSubtitle": "Criar e gerenciar execuções de rastreamento na lista de universidades",
+    "runAll": "Executar todas as universidades",
+    "runAllDesc": "Adicionar todas as universidades ativas à fila",
+    "runCountry": "Executar por país",
+    "runCountryDesc": "Adicionar todas as universidades de um país específico",
+    "runUniversity": "Executar uma universidade",
+    "runUniversityDesc": "Adicionar uma universidade por ID",
+    "createRun": "Criar execução",
+    "selectMode": "Selecionar modo",
+    "countryCode": "Código do país (ex. BR)",
+    "universityId": "ID da universidade (UUID)",
+    "recentRuns": "Execuções recentes",
+    "noRunsYet": "Nenhuma execução ainda",
+    "refresh": "Atualizar",
+    "runDetail": "Detalhe da execução",
+    "totalTargets": "Total",
+    "queued": "Na fila",
+    "failed": "Falhou",
+    "completed": "Concluído",
+    "needsReview": "Necessita revisão",
+    "published": "Publicado",
+    "traceId": "ID de rastreamento",
+    "createdAt": "Criado em",
+    "scopeLabel": "Escopo",
+    "statusLabel": "Status",
+    "modeLabel": "Modo",
+    "failureBreakdown": "Detalhamento de falhas",
+    "items": "Itens (primeiros 100)",
+    "noItems": "Sem itens",
+    "createdSuccessfully": "Execução criada com sucesso",
+    "failedToCreate": "Falha ao criar execução",
+    "scope": {
+      "all": "All Universities",
+      "country": "Country",
+      "university": "University",
+      "custom_list": "Custom List"
+    },
+    "mode": {
+      "missing_or_stale": "Missing or Stale",
+      "failed_only": "Failed Only",
+      "full_refresh": "Full Refresh",
+      "evidence_only": "Evidence Only",
+      "orx_only": "ORX Only",
+      "media_only": "Media Only",
+      "programs_only": "Programs Only",
+      "housing_only": "Housing Only"
+    },
+    "status": {
+      "queued": "Queued",
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "itemStatus": {
+      "queued": "Queued",
+      "completed": "Completed",
+      "failed": "Failed",
+      "needs_review": "Needs Review",
+      "published": "Published"
+    },
+    "failure": {
+      "missing_website": "Missing Website",
+      "invalid_website": "Invalid Website"
+    }
+  }
 }

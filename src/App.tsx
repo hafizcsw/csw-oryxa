@@ -172,6 +172,7 @@ const WebsiteEnrichment = lazy(() => import("./pages/admin/WebsiteEnrichment"));
 const BulkPublish = lazy(() => import("./pages/admin/BulkPublish"));
 const OrxControlPanel = lazy(() => import("./pages/admin/OrxControlPanel"));
 const LanguageEnrollments = lazy(() => import("./pages/admin/LanguageEnrollments"));
+const CrawlerV2 = lazy(() => import("./pages/admin/CrawlerV2"));
 const DecisionDashboard = lazy(() => import("./pages/admin/DecisionDashboard"));
 const TargetCountryDebug = lazy(() => import("./pages/admin/TargetCountryDebug"));
 const UniversitiesWithoutWebsitePdf = lazy(() => import("./pages/tools/UniversitiesWithoutWebsitePdf"));
@@ -933,6 +934,7 @@ function AppContent() {
             <Route path="bulk-publish" element={<BulkPublish />} />
             <Route path="orx-control" element={<OrxControlPanel />} />
             <Route path="language-enrollments" element={<LanguageEnrollments />} />
+            <Route path="crawler-v2" element={<CrawlerV2 />} />
             
           </Route>
           
