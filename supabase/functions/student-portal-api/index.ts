@@ -5414,7 +5414,7 @@ Deno.serve(async (req) => {
               diag,
             });
 
-            return Response.json({ ok: true, files: liveFiles, orphans_removed: orphanIds.length, diag }, { headers: corsHeaders });
+            return Response.json({ ok: true, files: liveFiles, orphans_removed: orphanIds.length, surface, diag }, { headers: corsHeaders });
           }
           
           // ============= SIGN FILE =============
