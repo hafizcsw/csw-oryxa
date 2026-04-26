@@ -7,7 +7,16 @@
 // No DB writes. No CRM contact. No evaluation logic. Display only.
 // ═══════════════════════════════════════════════════════════════
 
-import type { PortalDraft } from "@/features/documents/portalDrafts";
+// PortalDraft is an evolving shape; this helper only depends on the fields
+// listed in StudyFileDraftLike to avoid coupling to the full interface.
+export interface StudyFileDraftLike {
+  extraction_status?: string | null;
+  extraction_error?: string | null;
+  extraction_completed_at?: string | null;
+  created_at?: string | null;
+  shared_to_crm_at?: string | null;
+  original_file_name?: string | null;
+}
 
 export type StudyFileDisplayState =
   | "uploaded_pending"            // file uploaded, extraction not started yet
@@ -60,19 +69,7 @@ function ageMs(iso: string | null | undefined): number {
 }
 
 export function classifyStudyFileDraft(
-  draft: Pick<
-    PortalDraft,
-    | "extraction_status"
-    | "extraction_error" extends keyof PortalDraft ? "extraction_error" : never
-    | "extraction_completed_at"
-    | "created_at"
-    | "shared_to_crm_at"
-    | "original_file_name"
-  > & {
-    extraction_error?: string | null;
-    extraction_completed_at?: string | null;
-    shared_to_crm_at?: string | null;
-  },
+  draft: StudyFileDraftLike,
   ctx: ClassifyContext = { hasExtractionRow: false },
 ): StudyFileDisplayState {
   // Reserved for the future "Send to CSW" affordance.
