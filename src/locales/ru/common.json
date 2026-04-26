@@ -11561,6 +11561,10 @@
     "failure": {
       "missing_website": "Missing Website",
       "invalid_website": "Invalid Website"
-    }
+    },
+    "changeUniversity": "Изменить",
+    "universitySearchPlaceholder": "Поиск университетов по названию...",
+    "noUniversitiesFound": "Университеты не найдены",
+    "selectUniversityFirst": "Сначала выберите университет"
   }
 }

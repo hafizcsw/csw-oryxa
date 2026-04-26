@@ -10533,6 +10533,10 @@
     "failure": {
       "missing_website": "Missing Website",
       "invalid_website": "Invalid Website"
-    }
+    },
+    "changeUniversity": "बदलें",
+    "universitySearchPlaceholder": "नाम से विश्वविद्यालय खोजें...",
+    "noUniversitiesFound": "कोई विश्वविद्यालय नहीं मिला",
+    "selectUniversityFirst": "कृपया पहले एक विश्वविद्यालय चुनें"
   }
 }

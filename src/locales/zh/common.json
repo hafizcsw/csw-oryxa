@@ -11146,6 +11146,10 @@
     "failure": {
       "missing_website": "Missing Website",
       "invalid_website": "Invalid Website"
-    }
+    },
+    "changeUniversity": "更改",
+    "universitySearchPlaceholder": "按名称搜索大学...",
+    "noUniversitiesFound": "未找到大学",
+    "selectUniversityFirst": "请先选择一所大学"
   }
 }

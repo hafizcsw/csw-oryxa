@@ -10523,6 +10523,10 @@
     "failure": {
       "missing_website": "Missing Website",
       "invalid_website": "Invalid Website"
-    }
+    },
+    "changeUniversity": "変更",
+    "universitySearchPlaceholder": "大学名で検索...",
+    "noUniversitiesFound": "大学が見つかりません",
+    "selectUniversityFirst": "最初に大学を選択してください"
   }
 }

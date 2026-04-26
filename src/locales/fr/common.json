@@ -11529,6 +11529,10 @@
     "failure": {
       "missing_website": "Missing Website",
       "invalid_website": "Invalid Website"
-    }
+    },
+    "changeUniversity": "Changer",
+    "universitySearchPlaceholder": "Rechercher des universités par nom...",
+    "noUniversitiesFound": "Aucune université trouvée",
+    "selectUniversityFirst": "Veuillez d'abord sélectionner une université"
   }
 }

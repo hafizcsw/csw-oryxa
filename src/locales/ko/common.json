@@ -10523,6 +10523,10 @@
     "failure": {
       "missing_website": "Missing Website",
       "invalid_website": "Invalid Website"
-    }
+    },
+    "changeUniversity": "변경",
+    "universitySearchPlaceholder": "이름으로 대학 검색...",
+    "noUniversitiesFound": "대학을 찾을 수 없습니다",
+    "selectUniversityFirst": "먼저 대학을 선택하세요"
   }
 }
