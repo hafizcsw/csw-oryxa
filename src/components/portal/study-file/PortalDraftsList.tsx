@@ -79,7 +79,7 @@ interface StateMeta {
 
 function getStateMeta(
   state: StudyFileDisplayState,
-  t: (k: string, d?: string) => string,
+  t: (k: string, d?: string) => any,
 ): StateMeta {
   switch (state) {
     case "uploaded_pending":
