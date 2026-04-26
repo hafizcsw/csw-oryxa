@@ -120,10 +120,11 @@ interface RunCardProps {
   extra?: React.ReactNode;
   onSubmit: () => void;
   creating: boolean;
-  t: (k: string) => string;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+  submitDisabled?: boolean;
 }
 
-function RunCard({ icon, title, description, mode, onModeChange, extra, onSubmit, creating, t }: RunCardProps) {
+function RunCard({ icon, title, description, mode, onModeChange, extra, onSubmit, creating, t, submitDisabled }: RunCardProps) {
   return (
     <Card className="flex flex-col gap-4 p-5">
       <div className="flex items-start gap-3">
@@ -148,7 +149,7 @@ function RunCard({ icon, title, description, mode, onModeChange, extra, onSubmit
         </Select>
         {extra}
       </div>
-      <Button size="sm" className="w-full gap-2" onClick={onSubmit} disabled={creating}>
+      <Button size="sm" className="w-full gap-2" onClick={onSubmit} disabled={creating || submitDisabled}>
         {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
         {t("crawlerV2.createRun")}
       </Button>
@@ -435,7 +436,7 @@ export default function CrawlerV2Page() {
   const [countryMode, setCountryMode] = useState<Mode>("missing_or_stale");
   const [countryCode, setCountryCode] = useState("");
   const [uniMode, setUniMode] = useState<Mode>("missing_or_stale");
-  const [universityId, setUniversityId] = useState("");
+  const [selectedUniversity, setSelectedUniversity] = useState<UniSuggestion | null>(null);
   const [creating, setCreating] = useState<Scope | null>(null);
 
   // Runs list state
@@ -543,14 +544,20 @@ export default function CrawlerV2Page() {
           mode={uniMode}
           onModeChange={setUniMode}
           extra={
-            <Input
-              className="h-8 text-xs font-mono"
-              placeholder={t("crawlerV2.universityId")}
-              value={universityId}
-              onChange={(e) => setUniversityId(e.target.value.trim())}
+            <UniversitySearchInput
+              selected={selectedUniversity}
+              onSelect={setSelectedUniversity}
+              t={t}
             />
           }
-          onSubmit={() => createRun("university", uniMode, { university_id: universityId })}
+          onSubmit={() => {
+            if (!selectedUniversity) {
+              toast.error(t("crawlerV2.selectUniversityFirst", { defaultValue: "Select a university first" }));
+              return;
+            }
+            createRun("university", uniMode, { university_id: selectedUniversity.id });
+          }}
+          submitDisabled={!selectedUniversity}
           creating={creating === "university"}
           t={t}
         />
