@@ -183,6 +183,8 @@ const SocialFeed = lazy(() => import("./pages/social/SocialFeed"));
 const SocialProfile = lazy(() => import("./pages/social/SocialProfile"));
 const SocialReels = lazy(() => import("./pages/social/SocialReels"));
 const SocialMessages = lazy(() => import("./pages/social/SocialMessages"));
+const SocialExplore = lazy(() => import("./pages/social/SocialExplore"));
+const SocialNotifications = lazy(() => import("./pages/social/SocialNotifications"));
 
 // Institution Pages
 const InstitutionOnboarding = lazy(() => import("./pages/institution/Onboarding"));
@@ -844,8 +846,8 @@ function AppContent() {
           <Route path="/social" element={<SocialLayout />}>
             <Route index element={<SocialFeed />} />
             <Route path="reels" element={<SocialReels />} />
-            <Route path="explore" element={<SocialFeed />} />
-            <Route path="notifications" element={<SocialFeed />} />
+            <Route path="explore" element={<SocialExplore />} />
+            <Route path="notifications" element={<SocialNotifications />} />
             <Route path="u/:userId" element={<SocialProfile />} />
             <Route path="messages" element={<SocialMessages />} />
             <Route path="messages/:threadId" element={<SocialMessages />} />
