@@ -154,10 +154,17 @@ export async function confirmUpload(params: {
 }
 
 /**
- * List files from CRM
+ * List files from CRM.
+ *
+ * `surface` scopes the result set to a UI surface:
+ *   - 'study_file' (default): server hides identity/verification artifacts
+ *   - 'identity'            : reserved for identity surfaces
+ *   - 'all'                 : raw (admin/debug)
  */
-export async function listFiles(): Promise<{ ok: boolean; files?: FileRecord[]; error?: string }> {
-  const result = await callCrmStorage<{ files: FileRecord[] }>('list_files');
+export async function listFiles(
+  surface: 'study_file' | 'identity' | 'all' = 'study_file',
+): Promise<{ ok: boolean; files?: FileRecord[]; error?: string }> {
+  const result = await callCrmStorage<{ files: FileRecord[] }>('list_files', { surface });
   if (result.ok && result.data) {
     return { ok: true, files: (result.data as any)?.files || result.data || [] };
   }
