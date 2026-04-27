@@ -329,14 +329,11 @@ Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin");
   const tid    = req.headers.get("x-client-trace-id") || generateTraceId();
 
-  const adminErr = await requireAdmin(req);
-  if (adminErr) return adminErr;
-
-  const SUPABASE_URL      = Deno.env.get("SUPABASE_URL")!;
-  const SERVICE_ROLE_KEY  = Deno.env.get("SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const srv = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
-    auth: { persistSession: false },
-  });
+  const auth = await requireAdmin(req);
+  if (!auth.ok) {
+    return jsonResp({ ok: false, error: auth.error, trace_id: tid }, auth.status, origin);
+  }
+  const srv = auth.srv;
 
   let body: Record<string, unknown>;
   try {
