@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   handleCorsPreflight,
   getCorsHeaders,
@@ -85,6 +85,31 @@ Deno.serve(async (req: Request) => {
         return await handleListRuns(srv, tid, origin);
       case "get_run":
         return await handleGetRun(srv, body, tid, origin);
+      // ── 1E: read views ────────────────────────────────────────────────────
+      case "get_run_candidates":
+        return await handleGetRunCandidates(srv, body, tid, origin);
+      case "get_run_evidence":
+        return await handleGetRunEvidence(srv, body, tid, origin);
+      // ── 2: queue management ───────────────────────────────────────────────
+      case "cancel_run":
+        return await handleCancelRun(srv, body, tid, origin);
+      case "pause_run":
+        return await handlePauseRun(srv, body, tid, origin);
+      case "resume_run":
+        return await handleResumeRun(srv, body, tid, origin);
+      case "retry_failed_item":
+        return await handleRetryFailedItem(srv, body, tid, origin);
+      case "cleanup_locks":
+        return await handleCleanupLocks(srv, tid, origin);
+      case "mark_stuck_items_failed":
+        return await handleMarkStuckItemsFailed(srv, body, tid, origin);
+      // ── 6: publish ────────────────────────────────────────────────────────
+      case "verify_item":
+        return await handleVerifyItem(srv, body, tid, origin);
+      case "publish_item":
+        return await handlePublishItem(srv, body, tid, origin);
+      case "get_pending_review":
+        return await handleGetPendingReview(srv, body, tid, origin);
       case "search_universities":
         return await handleSearchUniversities(srv, body, tid, origin);
       default:
@@ -100,7 +125,7 @@ Deno.serve(async (req: Request) => {
 // ── Action: create_run ─────────────────────────────────────────────────────
 
 async function handleCreateRun(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
@@ -341,7 +366,7 @@ async function handleCreateRun(
 // ── Action: list_runs ──────────────────────────────────────────────────────
 
 async function handleListRuns(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   tid: string,
   origin: string | null,
 ): Promise<Response> {
@@ -400,7 +425,7 @@ async function handleListRuns(
 // ── Action: get_run ────────────────────────────────────────────────────────
 
 async function handleGetRun(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
@@ -470,12 +495,262 @@ async function handleGetRun(
   }, 200, origin);
 }
 
+// ── Action: get_run_candidates (1E) ────────────────────────────────────────
+
+async function handleGetRunCandidates(
+  srv: SupabaseClient<any, any, any>,
+  body: Record<string, unknown>,
+  tid: string,
+  origin: string | null,
+): Promise<Response> {
+  const runId = body.run_id as string | undefined;
+  if (!runId) return jsonResp({ ok: false, error: "run_id required", trace_id: tid }, 400, origin);
+
+  const { data, error } = await srv
+    .from("crawler_page_candidates")
+    .select("id,crawler_run_item_id,candidate_url,candidate_type,discovery_method,priority,status,fetch_error,created_at")
+    .eq("crawler_run_id", runId)
+    .order("priority", { ascending: false })
+    .limit(500);
+
+  if (error) return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
+  return jsonResp({ ok: true, candidates: data ?? [], total: (data ?? []).length, trace_id: tid }, 200, origin);
+}
+
+// ── Action: get_run_evidence (1E) ──────────────────────────────────────────
+
+async function handleGetRunEvidence(
+  srv: SupabaseClient<any, any, any>,
+  body: Record<string, unknown>,
+  tid: string,
+  origin: string | null,
+): Promise<Response> {
+  const runId = body.run_id as string | undefined;
+  if (!runId) return jsonResp({ ok: false, error: "run_id required", trace_id: tid }, 400, origin);
+
+  const { data, error } = await srv
+    .from("evidence_items")
+    .select("id,crawler_run_item_id,university_id,entity_type,fact_group,field_key,value_raw,source_url,confidence_0_100,trust_level,validation_status,review_status,publish_status,orx_layer,orx_signal_family,created_at")
+    .eq("crawler_run_id", runId)
+    .order("created_at", { ascending: false })
+    .limit(500);
+
+  if (error) return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
+  return jsonResp({ ok: true, evidence: data ?? [], total: (data ?? []).length, trace_id: tid }, 200, origin);
+}
+
+// ── Action: cancel_run (2) ─────────────────────────────────────────────────
+
+async function handleCancelRun(
+  srv: SupabaseClient<any, any, any>,
+  body: Record<string, unknown>,
+  tid: string,
+  origin: string | null,
+): Promise<Response> {
+  const runId = body.run_id as string | undefined;
+  if (!runId) return jsonResp({ ok: false, error: "run_id required", trace_id: tid }, 400, origin);
+
+  const ACTIVE = ["queued","website_check","fetching","rendering_needed","rendering",
+    "artifact_discovery","artifact_parsing","extracting","ai_extracting"];
+
+  const { error: itemErr } = await srv
+    .from("crawler_run_items")
+    .update({ status: "failed", failure_reason: "publish_blocked", updated_at: new Date().toISOString() })
+    .eq("run_id", runId)
+    .in("status", ACTIVE);
+
+  if (itemErr) return jsonResp({ ok: false, error: itemErr.message, trace_id: tid }, 500, origin);
+
+  await srv.from("crawler_runs").update({
+    status: "cancelled", completed_at: new Date().toISOString(),
+  }).eq("id", runId);
+
+  return jsonResp({ ok: true, run_id: runId, trace_id: tid }, 200, origin);
+}
+
+// ── Action: pause_run (2) ─────────────────────────────────────────────────
+
+async function handlePauseRun(
+  srv: SupabaseClient<any, any, any>,
+  body: Record<string, unknown>,
+  tid: string,
+  origin: string | null,
+): Promise<Response> {
+  const runId = body.run_id as string | undefined;
+  if (!runId) return jsonResp({ ok: false, error: "run_id required", trace_id: tid }, 400, origin);
+
+  await srv.from("crawler_runs").update({ status: "paused" }).eq("id", runId).in("status", ["running", "queued"]);
+  return jsonResp({ ok: true, run_id: runId, trace_id: tid }, 200, origin);
+}
+
+// ── Action: resume_run (2) ────────────────────────────────────────────────
+
+async function handleResumeRun(
+  srv: SupabaseClient<any, any, any>,
+  body: Record<string, unknown>,
+  tid: string,
+  origin: string | null,
+): Promise<Response> {
+  const runId = body.run_id as string | undefined;
+  if (!runId) return jsonResp({ ok: false, error: "run_id required", trace_id: tid }, 400, origin);
+
+  await srv.from("crawler_runs").update({ status: "running" }).eq("id", runId).eq("status", "paused");
+  return jsonResp({ ok: true, run_id: runId, trace_id: tid }, 200, origin);
+}
+
+// ── Action: retry_failed_item (2) ─────────────────────────────────────────
+
+async function handleRetryFailedItem(
+  srv: SupabaseClient<any, any, any>,
+  body: Record<string, unknown>,
+  tid: string,
+  origin: string | null,
+): Promise<Response> {
+  const runItemId = body.run_item_id as string | undefined;
+  if (!runItemId) return jsonResp({ ok: false, error: "run_item_id required", trace_id: tid }, 400, origin);
+
+  const { error } = await srv
+    .from("crawler_run_items")
+    .update({
+      status: "queued", stage: null, failure_reason: null, failure_detail: null,
+      progress_percent: 0, updated_at: new Date().toISOString(),
+    })
+    .eq("id", runItemId)
+    .eq("status", "failed");
+
+  if (error) return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
+  return jsonResp({ ok: true, run_item_id: runItemId, trace_id: tid }, 200, origin);
+}
+
+// ── Action: cleanup_locks (2) ─────────────────────────────────────────────
+
+async function handleCleanupLocks(
+  srv: SupabaseClient<any, any, any>,
+  tid: string,
+  origin: string | null,
+): Promise<Response> {
+  const { data, error } = await srv.rpc("cleanup_expired_crawler_locks");
+  if (error) return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
+  return jsonResp({ ok: true, deleted: data ?? 0, trace_id: tid }, 200, origin);
+}
+
+// ── Action: mark_stuck_items_failed (2) ───────────────────────────────────
+
+async function handleMarkStuckItemsFailed(
+  srv: SupabaseClient<any, any, any>,
+  body: Record<string, unknown>,
+  tid: string,
+  origin: string | null,
+): Promise<Response> {
+  const stuckMinutes = (body.stuck_minutes as number | undefined) ?? 30;
+  const cutoff = new Date(Date.now() - stuckMinutes * 60_000).toISOString();
+
+  const STUCK_STATUSES = ["website_check","fetching","rendering","rendering_needed",
+    "artifact_discovery","artifact_parsing","extracting","ai_extracting"];
+
+  const { data: stuck } = await srv
+    .from("crawler_run_items")
+    .select("id")
+    .in("status", STUCK_STATUSES)
+    .lt("updated_at", cutoff);
+
+  if (!stuck || stuck.length === 0) {
+    return jsonResp({ ok: true, marked: 0, trace_id: tid }, 200, origin);
+  }
+
+  const ids = stuck.map((i: { id: string }) => i.id);
+  await srv.from("crawler_run_items").update({
+    status: "failed", failure_reason: "timeout",
+    failure_detail: `Stuck > ${stuckMinutes}min`,
+    updated_at: new Date().toISOString(),
+  }).in("id", ids);
+
+  return jsonResp({ ok: true, marked: ids.length, trace_id: tid }, 200, origin);
+}
+
+// ── Action: get_pending_review (6) ────────────────────────────────────────
+
+async function handleGetPendingReview(
+  srv: SupabaseClient<any, any, any>,
+  body: Record<string, unknown>,
+  tid: string,
+  origin: string | null,
+): Promise<Response> {
+  const runId = body.run_id as string | undefined;
+
+  let query = srv
+    .from("crawler_run_items")
+    .select("id,run_id,university_id,website,status,stage,progress_percent,evidence_count,orx_signal_count,trace_id,updated_at")
+    .in("status", ["needs_review", "verified"])
+    .order("updated_at", { ascending: false })
+    .limit(100);
+
+  if (runId) query = query.eq("run_id", runId);
+
+  const { data, error } = await query;
+  if (error) return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
+
+  // Enrich with university name
+  const uniIds = (data ?? []).map((i: { university_id: string }) => i.university_id).filter(Boolean);
+  let uniMap: Map<string, string> = new Map();
+  if (uniIds.length > 0) {
+    const { data: unis } = await srv.from("universities").select("id,name_en,name_ar").in("id", uniIds);
+    uniMap = new Map((unis ?? []).map((u: { id: string; name_en: string; name_ar: string }) => [
+      u.id, u.name_en ?? u.name_ar ?? u.id,
+    ]));
+  }
+
+  const items = (data ?? []).map((i: Record<string, unknown>) => ({
+    ...i, university_name: uniMap.get(i.university_id as string) ?? null,
+  }));
+
+  return jsonResp({ ok: true, items, total: items.length, trace_id: tid }, 200, origin);
+}
+
+// ── Action: verify_item (6) ───────────────────────────────────────────────
+
+async function handleVerifyItem(
+  srv: SupabaseClient<any, any, any>,
+  body: Record<string, unknown>,
+  tid: string,
+  origin: string | null,
+): Promise<Response> {
+  const runItemId = body.run_item_id as string | undefined;
+  if (!runItemId) return jsonResp({ ok: false, error: "run_item_id required", trace_id: tid }, 400, origin);
+
+  const { data, error } = await srv.rpc("rpc_v2_verify_run_item", {
+    p_run_item_id: runItemId,
+    p_reviewer_id: null,
+  });
+
+  if (error) return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
+  return jsonResp({ ...(data as object), trace_id: tid }, 200, origin);
+}
+
+// ── Action: publish_item (6) ──────────────────────────────────────────────
+
+async function handlePublishItem(
+  srv: SupabaseClient<any, any, any>,
+  body: Record<string, unknown>,
+  tid: string,
+  origin: string | null,
+): Promise<Response> {
+  const runItemId = body.run_item_id as string | undefined;
+  if (!runItemId) return jsonResp({ ok: false, error: "run_item_id required", trace_id: tid }, 400, origin);
+
+  const { data, error } = await srv.rpc("rpc_v2_publish_run_item", {
+    p_run_item_id:  runItemId,
+    p_publisher_id: null,
+  });
+
+  if (error) return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
+  return jsonResp({ ...(data as object), trace_id: tid }, 200, origin);
+}
+
 // ── Action: search_universities ────────────────────────────────────────────
-// Admin-only autocomplete used by the Run Single University card.
-// Read-only. No writes. Searches: name, name_en, name_ar, slug, website.
 
 async function handleSearchUniversities(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
