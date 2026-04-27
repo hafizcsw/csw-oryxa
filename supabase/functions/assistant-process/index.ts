@@ -502,9 +502,10 @@ serve(async (req) => {
     // ✅ SECURITY FIX: Define finalClientBuild for message requests too
     const finalClientBuild = sanitizeClientBuild(inbound_client_build);
     
-    // 🆕 ORYXA V2: AI Model preference (GPT-5 upgrade)
-    // Options: openai/gpt-5, openai/gpt-5.2, google/gemini-2.5-pro
-    const AI_MODEL_PREFERENCE = Deno.env.get('ORYXA_AI_MODEL') || 'openai/gpt-5';
+    // 🆕 ORYXA V2: AI Model preference
+    // Options: deepseek/deepseek-chat, openai/gpt-5, openai/gpt-5.2, google/gemini-2.5-pro
+    // Default set to DeepSeek unless ORYXA_AI_MODEL overrides it per environment.
+    const AI_MODEL_PREFERENCE = Deno.env.get('ORYXA_AI_MODEL') || 'deepseek/deepseek-chat';
     
     // ============================================
     // 🔥 P0-FIX V2: Pre-processing Hints for CRM
