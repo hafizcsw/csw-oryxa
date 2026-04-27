@@ -2997,7 +2997,7 @@
       "newsTicker": "Лента новостей",
       "videoTest": "Видео-отзывы",
       "importData": "Импорт данных",
-      "universityRanking": "Рейтинг университетов",
+      "crawlerV2": "Crawler v2",
       "websiteEnrichment": "Website Enrichment",
       "integrations": "Интеграции",
       "analytics": "Аналитика и здоровье",
@@ -11595,5 +11595,9 @@
     "orxReadiness": "Готовность ORX",
     "mapOrx": "Сопоставить ORX сигналы",
     "orxMapped": "ORX сигналы сопоставлены"
+    "changeUniversity": "Изменить",
+    "universitySearchPlaceholder": "Поиск университетов по названию...",
+    "noUniversitiesFound": "Университеты не найдены",
+    "selectUniversityFirst": "Сначала выберите университет"
   }
 }

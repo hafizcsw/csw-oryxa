@@ -10557,5 +10557,9 @@
     "orxReadiness": "ORX 준비 상태",
     "mapOrx": "ORX 신호 매핑",
     "orxMapped": "ORX 신호가 매핑되었습니다"
+    "changeUniversity": "변경",
+    "universitySearchPlaceholder": "이름으로 대학 검색...",
+    "noUniversitiesFound": "대학을 찾을 수 없습니다",
+    "selectUniversityFirst": "먼저 대학을 선택하세요"
   }
 }

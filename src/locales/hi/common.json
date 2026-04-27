@@ -10567,5 +10567,9 @@
     "orxReadiness": "ORX तत्परता",
     "mapOrx": "ORX संकेत मैप करें",
     "orxMapped": "ORX संकेत मैप हुए"
+    "changeUniversity": "बदलें",
+    "universitySearchPlaceholder": "नाम से विश्वविद्यालय खोजें...",
+    "noUniversitiesFound": "कोई विश्वविद्यालय नहीं मिला",
+    "selectUniversityFirst": "कृपया पहले एक विश्वविद्यालय चुनें"
   }
 }

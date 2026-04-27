@@ -10928,5 +10928,9 @@
     "orxReadiness": "Preparación ORX",
     "mapOrx": "Mapear señales ORX",
     "orxMapped": "Señales ORX mapeadas"
+    "changeUniversity": "Cambiar",
+    "universitySearchPlaceholder": "Buscar universidades por nombre...",
+    "noUniversitiesFound": "No se encontraron universidades",
+    "selectUniversityFirst": "Por favor seleccione una universidad primero"
   }
 }

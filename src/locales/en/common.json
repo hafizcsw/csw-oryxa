@@ -3316,7 +3316,7 @@
       "newsTicker": "News Ticker",
       "videoTest": "Video Testimonials",
       "importData": "Import Data",
-      "universityRanking": "University Ranking",
+      "crawlerV2": "Crawler v2",
       "websiteEnrichment": "Website Enrichment",
       "integrations": "Integrations",
       "analytics": "Analytics & Health",
@@ -14321,5 +14321,9 @@
     "orxReadiness": "ORX Readiness",
     "mapOrx": "Map ORX Signals",
     "orxMapped": "ORX signals mapped"
+    "changeUniversity": "Change",
+    "universitySearchPlaceholder": "Search universities by name...",
+    "noUniversitiesFound": "No universities found",
+    "selectUniversityFirst": "Please select a university first"
   }
 }

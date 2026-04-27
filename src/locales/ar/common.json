@@ -3318,7 +3318,7 @@
       "newsTicker": "شريط الأخبار",
       "videoTest": "شهادات الفيديو",
       "importData": "استيراد البيانات",
-      "universityRanking": "تصنيف الجامعات",
+      "crawlerV2": "زاحف الجامعات v2",
       "websiteEnrichment": "إثراء المواقع",
       "integrations": "التكاملات",
       "analytics": "التحليلات والصحة",
@@ -14358,5 +14358,9 @@
     "orxReadiness": "جاهزية ORX",
     "mapOrx": "تعيين إشارات ORX",
     "orxMapped": "تم تعيين إشارات ORX"
+    "changeUniversity": "تغيير",
+    "universitySearchPlaceholder": "ابحث عن جامعة بالاسم...",
+    "noUniversitiesFound": "لم يتم العثور على جامعات",
+    "selectUniversityFirst": "الرجاء اختيار جامعة أولاً"
   }
 }

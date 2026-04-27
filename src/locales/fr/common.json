@@ -2995,7 +2995,7 @@
       "newsTicker": "Fil d'actualités",
       "videoTest": "Témoignages vidéo",
       "importData": "Importer des données",
-      "universityRanking": "Classement des universités",
+      "crawlerV2": "Crawler v2",
       "websiteEnrichment": "Website Enrichment",
       "integrations": "Intégrations",
       "analytics": "Analyses et santé",
@@ -11563,5 +11563,9 @@
     "orxReadiness": "Disponibilité ORX",
     "mapOrx": "Cartographier les signaux ORX",
     "orxMapped": "Signaux ORX cartographiés"
+    "changeUniversity": "Changer",
+    "universitySearchPlaceholder": "Rechercher des universités par nom...",
+    "noUniversitiesFound": "Aucune université trouvée",
+    "selectUniversityFirst": "Veuillez d'abord sélectionner une université"
   }
 }
