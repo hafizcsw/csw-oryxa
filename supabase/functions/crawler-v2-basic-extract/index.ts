@@ -103,11 +103,41 @@ async function extractHomepage(
   });
 
   // 2. Get homepage raw_page
-  const { data: rawPage } = await srv
-    .from("raw_pages")
-    .select("id,url,text_content,status_code,content_type")
-    .eq("url", website)
-    .maybeSingle();
+  // Match both normalized and trailing-slash homepage URLs, then fall back to the
+  // latest successful raw page for this university. Order 1B stores ITMO as
+  // https://itmo.ru/ while item.website may be normalized to https://itmo.ru.
+  const rawPageUrls = Array.from(new Set([
+    website,
+    website ? `${website}/` : "",
+  ].filter(Boolean)));
+
+  let rawPage: any = null;
+
+  if (rawPageUrls.length > 0) {
+    const { data: exactRawPage } = await srv
+      .from("raw_pages")
+      .select("id,url,text_content,status_code,content_type")
+      .in("url", rawPageUrls)
+      .order("fetched_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    rawPage = exactRawPage;
+  }
+
+  if (!rawPage?.text_content) {
+    const { data: fallbackRawPage } = await srv
+      .from("raw_pages")
+      .select("id,url,text_content,status_code,content_type")
+      .eq("university_id", uniId)
+      .gte("status_code", 200)
+      .lt("status_code", 300)
+      .order("fetched_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    rawPage = fallbackRawPage;
+  }
 
   if (!rawPage?.text_content) {
     await tlog(srv, {
