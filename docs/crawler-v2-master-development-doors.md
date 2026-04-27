@@ -10,7 +10,7 @@ This document creates the master door structure for expanding the existing Crawl
 
 Door 0 is fully defined as the Baseline & Safety gate. It freezes the baseline, names runtime-closed and runtime-open stages, and makes forbidden work explicit before any follow-on door can become implementation work.
 
-Door 1 is fully defined as the Run Control & Diagnostics gate. Doors 2-6 remain stubbed only; they establish the future sequence but do not yet expand requirements, acceptance tests, or implementation plans.
+Door 1 is fully defined as the Run Control & Diagnostics gate. Doors 2-6 are fully defined as planning contracts only; they establish evidence, extraction, ORX, student evaluation, and product-surface gates before any implementation begins.
 
 ## Door Structure
 
@@ -18,11 +18,11 @@ Door 1 is fully defined as the Run Control & Diagnostics gate. Doors 2-6 remain 
 |---:|---|---|---|
 | 0 | Baseline & Safety | Planned in this document | Fully defined |
 | 1 | Run Control & Diagnostics | Planned, not implemented | Fully defined |
-| 2 | Evidence & Review Workbench | Planned, not implemented | Stub only |
-| 3 | Extraction Expansion | Planned, not implemented | Stub only |
-| 4 | ORX Evidence Layer | Planned, not implemented | Stub only |
-| 5 | Student Evaluation Layer | Planned, not implemented | Stub only |
-| 6 | Product Surfaces | Planned, not implemented | Stub only |
+| 2 | Evidence & Review Workbench | Planned, not implemented | Fully defined |
+| 3 | Extraction Expansion | Planned, not implemented | Fully defined |
+| 4 | ORX Evidence Layer | Planned, not implemented | Fully defined |
+| 5 | Student Evaluation Layer | Planned, not implemented | Fully defined |
+| 6 | Product Surfaces | Planned, not implemented | Fully defined |
 
 ## Door 0: Baseline & Safety
 
@@ -444,133 +444,415 @@ The following remain blocked after Door 1:
 
 Status: planned, not implemented
 
-Purpose: define review, provenance, confidence, conflict, and benchmark planning for crawler evidence.
+### Purpose
 
-Depends on:
+Door 2 defines the evidence trust layer above the existing Crawler v2 engine. It turns raw pages, page candidates, extracted facts, telemetry, drafts, and later ORX outputs into reviewable evidence with provenance, confidence, conflict handling, and benchmark expectations. It does not publish, score, write canonical data, or make student decisions.
 
-- Door 0 accepted.
-- Runtime closure or simulation-only handling for 1E Review Surface and 6 Verify/Publish Gate.
+### Included Features From Source Inventory
 
-Examples of features from PR #4:
+| Feature | Current engine component extended | Required evidence | AI role | Human review trigger | Anti-gaming risk | Expected UI impact | Admin action impact | What remains simulation-only |
+|---|---|---|---|---|---|---|---|---|
+| Evidence Knowledge Graph | 1D Basic Extract, 4 Draft Writer, 5 ORX Mapper | Source URL, quote, entity, field, hash, observed timestamp, trace id | Suggest claim-source-entity links from saved evidence | Orphan claim, circular support, weak citation | Evidence spam or repeated low-quality source volume | Graph context inside Review Workbench and Evidence Pack Drawer | No new primary action; visible through Open Review and Generate Evidence Pack | Graph writes, persistent graph tables, score usage |
+| Provenance model | 1D, 3 AI Extract, 4, 6 | Source URL, evidence quote, source type, extraction method, model/provider, observed_at, content hash, trace id | None required; AI-derived fields must preserve model/provider | Missing provenance on any high-impact fact | Low | Provenance chips and missing-proof states | No write action; reviewer can approve/reject facts only later | Schema changes and canonical provenance enforcement |
+| Quality / Confidence Engine | 1D, 3, 1E, 6 | Evidence count, source authority, recency, conflict count, extraction method, field risk | Explain confidence inputs from saved evidence | Low confidence, high impact, conflicting evidence | Confidence inflation by source repetition | Confidence lanes and risk flags | Review triage only | Automatic acceptance or public badge assignment |
+| Official Conflict Resolver | 1D, 1E, 6 | Conflicting values, source URLs, page type, timestamps, official-domain relationship | Summarize conflict options; never decide high-impact conflicts alone | Fee, deadline, requirement, accreditation, ORX signal conflict | Fake partner domains, stale PDFs, page-vs-PDF contradictions | Conflicts lane and conflict drawer | Mark conflict, request source, copy handoff | Canonical resolution or publish |
+| Weak Marketing Claim Detector | 1D, 3, 1E | Claim text, surrounding quote, page type, factual support | Classify factual vs marketing-only claims from saved text | Marketing claim proposed for ORX/student/public use | Very high; institutions may over-optimize language | Claim-strength badge and Needs Evidence lane | Reject or mark needs source at row level | Score or recommendation impact |
+| Human Review Triggers | 1E, 6 | Risk level, confidence, conflict status, source type, affected entity, field impact | Explain why review is required | High-impact low-confidence item; conflict; missing source; AI-derived fact | Medium | Review lanes and blocked states | Open Review only; row-level decisions later | Auto-publish and automated student decisions |
+| Safe Publish Sandbox | 6 Verify/Publish Gate | Draft diff, target entity, proposed field, old value, new value, provenance, no-write statement | Summarize dry-run diff | Any publish-impacting change | High if used as real publish | Dry-run Publish / Promote remains disabled until 6 closes | Future fifth primary action only after gate proof | Real publish, canonical writes, public truth |
+| Benchmarking System | All stages using saved packs | Golden labels, expected outputs, reviewer agreement, error rates, cost, stop condition | Offline judge only against labels | Benchmark drift, low reviewer agreement | Low | Benchmark status in roadmap cards | No runtime action | CI/workflow automation and production gating |
 
-- Evidence Knowledge Graph.
-- Provenance model.
-- Quality / Confidence Engine.
-- Official Conflict Resolver.
-- Weak Marketing Claim Detector.
-- Human Review Triggers.
-- Safe Publish Sandbox.
-- Benchmarking System.
+### Current Engine Components Extended
+
+Door 2 extends 1D Basic Extract, 3 AI Extract, 1E Review Surface, 4 Draft Writer, 5 ORX Mapper, and 6 Verify/Publish Gate by defining evidence contracts around their outputs. It does not replace any stage or add a new crawler path.
+
+### Dependencies On Runtime-Open Stages
+
+| Runtime-open stage | Door 2 dependency |
+|---|---|
+| 1E Review Surface | Required before reviewer workflow execution, lane persistence, reviewer decisions, or dispute handling can be runtime closed |
+| 4 Draft Writer | Required before draft fields can be reviewed as production candidates |
+| 5 ORX Mapper | Required before ORX evidence graph links can affect score signals |
+| 6 Verify/Publish Gate | Required before safe publish sandbox can promote anything beyond no-write diff preview |
+
+### Allowed Work
+
+- Define evidence pack fields, review lanes, confidence inputs, conflict classes, provenance requirements, and benchmark acceptance rules.
+- Use saved snapshots, manually exported evidence packs, and labeled local examples for simulation planning.
+- Define UI contracts for review and evidence inspection without implementing UI code.
+- Define no-write dry-run publish contracts that explicitly prove zero canonical updates.
+
+### Forbidden Work
+
+- No publish, canonical writes, trust badges, ORX scores, student eligibility decisions, or public-page updates.
+- No schema migrations, Supabase changes, Edge Functions, scripts, workflows, or crawler execution.
+- No AI call that fetches or extracts new live evidence.
+- No automatic resolution of high-impact conflicts.
+
+### Required Evidence
+
+Every Door 2 item must preserve run_id, run_item_id, university_id when applicable, entity type, entity id or candidate id, field, value, source_url, evidence quote, source type, extraction method, model/provider if AI-derived, confidence, risk level, conflict status, trace_id, observed_at, content hash if available, reviewer status, and blocked reason when blocked.
+
+### Review Lanes
+
+| Lane | Purpose | Entry criteria | Exit criteria | Blocked until |
+|---|---|---|---|---|
+| Critical | High-impact facts that could harm publish, ORX, or student decisions | High risk, missing provenance, policy-sensitive, publish-impacting | Human-approved, rejected, or escalated | 1E and 6 for execution |
+| Conflicts | Contradictory official facts | Multiple official values for same field | Winner selected with cited rationale or item blocked | 1E and 6 |
+| Needs Evidence | Claims lacking sufficient official support | Missing quote, missing source URL, marketing-only support | Source added or claim rejected | 1E |
+| Low Confidence | Extracted fact below confidence threshold | Low model/deterministic confidence or weak source | Accepted with human rationale, improved evidence, or rejected | 1E |
+| Ready for Draft | Fact has enough evidence for Draft Writer simulation | Provenance complete, no critical conflict | Draft preview only until 4 closes | 4 |
+| Ready for ORX | Evidence candidate may feed ORX mapping simulation | Provenance complete, signal candidate labeled, no weak marketing basis | ORX mapper simulation only until 5 closes | 5 |
+| Blocked | Item cannot proceed due to missing runtime gate or safety rule | Any unmet gate, forbidden action, unresolved high-risk issue | Gate closes or item removed | Relevant gate |
+
+### Expected UI Impact
+
+Door 2 introduces the Review Workbench, review lanes, evidence drawers, provenance chips, confidence labels, conflict flags, benchmark status, and no-write publish preview states. It must not add global primary actions beyond the five-action contract.
+
+### Admin Action Impact
+
+Door 2 may use Open Review, Generate Evidence Pack, and later Dry-run Publish / Promote. Row-level review actions are secondary and must stay inside the workbench or drawer.
+
+### Acceptance Criteria
+
+- Review lanes are defined with entry, exit, and blocked states.
+- Every review item field is traceable to provenance.
+- Confidence, conflict, weak-claim, and human-review trigger rules are specified.
+- Safe Publish Sandbox remains no-write and disabled for real promotion until 6 closes.
+- Benchmarking uses labeled packs and does not require crawler execution.
+
+### Runtime Proof Required Later
+
+- A reviewer can inspect an evidence item, source quote, trace id, confidence, conflict status, and recommended action from the Review Surface.
+- Review decisions preserve provenance and do not publish.
+- A dry-run publish preview proves zero writes and lists blocked canonical effects.
+- Benchmarks reproduce expected labels and flag regressions.
+
+### Blocked Items
+
+Reviewer workflow execution is blocked by 1E. Draft promotion is blocked by 4. ORX score-affecting use is blocked by 5 and 6. Publish, trust badges, public pages, data APIs, and student-facing truth are blocked by 6.
+
+### Promotion Criteria
+
+Door 2 is accepted when the evidence model, review lanes, provenance requirements, confidence/conflict/weak-claim rules, benchmark plan, and no-write publish sandbox contract are explicit and still docs-only.
+
+### What Must Remain Simulation-only
+
+Evidence graph persistence, confidence automation, conflict auto-resolution, safe publish promotion, benchmark automation, public trust badges, ORX score effects, and student recommendation effects.
 
 ## Door 3: Extraction Expansion
 
 Status: planned, not implemented
 
-Purpose: define crawler expansion simulations that improve evidence coverage without replacing the current engine.
+### Purpose
 
-Depends on:
+Door 3 defines crawler evidence-coverage expansions as deltas above the current Crawler v2 engine. It improves what the existing stages could discover, fetch, parse, and monitor later, while keeping the original engine as the baseline and avoiding any live crawler execution in this PR.
 
-- Door 0 accepted.
-- Door 1 diagnostics defined.
-- Runtime closure or simulation-only handling for 4 Draft Writer and 6 Verify/Publish Gate where outputs affect drafts or publish decisions.
+### Included Features From Source Inventory
 
-Examples of features from PR #4:
+| Feature | Current engine component extended | Required evidence | AI role | Human review trigger | Anti-gaming risk | Expected UI impact | Admin action impact | What remains simulation-only |
+|---|---|---|---|---|---|---|---|---|
+| Discovery Intelligence | 1C Page Planner | URL candidates, anchor text, page intent, source officialness, known-useful labels | Rank page intent from saved candidates | Non-official or irrelevant page selected | SEO-stuffed navigation | Candidate coverage card and discovery gaps | No new primary action | Live discovery changes |
+| Deep Program Extraction | 1D Basic Extract, 3 AI Extract, 4 Draft Writer | Program pages, catalog text, requirement snippets, degree/title/field evidence | Extract structured candidates from saved text only | Requirement, tuition, deadline, or admission condition has low confidence | Program clones and marketing pages | Program evidence detail in Review Workbench | Review only; no draft write | Program draft persistence |
+| PDF Intelligence | 1B artifacts, 1D, 3 | PDF URL, file hash, page refs, extracted text, quote with page number | Summarize/extract from saved PDF text | OCR uncertainty, page conflict, stale PDF | Old brochures reused as current truth | Artifact view and page-ref citations | Open source/copy handoff only | PDF crawler, OCR service, artifact tables |
+| JS-render fallback | 1B Homepage Fetch | Static text length, rendered capture comparison, render-needed reason | None first; summarize diff later | Rendered content materially differs from static source | Low-medium | Fetch diagnostics flag | No visible Run All or render button | Browser rendering execution |
+| Multi-domain official handling | 1C Planner, 6 Gate | Root-domain links, redirects, domain alias rationale, source ownership hint | Explain domain relationship | Alias not linked from official root or conflicts | High; fake partner domains | Official-domain warning and alias status | Review only | Official alias persistence |
+| Media/file artifact intelligence | 1B artifacts, 1D | Media URL, type, hash, source page, official-domain status | Classify artifact type from saved inventory | Non-official, low-quality, or promotional-only asset | Medium | Artifact inventory in Evidence Pack Drawer | No media publish action | university_media writes |
+| Crawl Ethics / Politeness | 1B Fetch, 2 Queue Controls | robots hints, response codes, per-host counts, retry attempts, 403/429 spikes | None | Robots disallow, rate-limit spike, repeated failure | Low | Ethics status card and blocked-state message | No country crawl or Run All | Enforced queue policy |
+| Crawler Cost Brain | 1A, 1B, 3 | Page count, render attempts, AI extraction count, accepted-fact count, cost estimate | Estimate value from saved run stats | High cost with low evidence yield | Low | Cost/yield card | No execution action | Automated budget decisions |
+| Evidence Freshness SLA | 1D, 6 | observed_at, page date, PDF date, content hash, freshness class | Extract date references from saved text | Missing, ambiguous, stale, or old-year date | Medium | Freshness badge and stale evidence lane | Review only | Gate-enforced expiration |
+| Change Detection | 1B content hash, 4 Draft Writer, 6 | Old/new content hash, semantic diff, affected fields, prior evidence | Summarize material diff from saved snapshots | Material change affects verified fact | Medium; tiny text churn | Change summary and recrawl-needed flag | No recrawl button by default | Automated recrawls or draft writes |
 
-- Discovery Intelligence.
-- Deep Program Extraction.
-- PDF Intelligence.
-- JS-render fallback.
-- Multi-domain official handling.
-- Media/file artifact intelligence.
-- Crawl Ethics / Politeness.
-- Crawler Cost Brain.
-- Evidence Freshness SLA.
-- Change Detection.
+### Dependencies On Runtime-Open Stages
+
+Door 3 production use is blocked by 2 for queue enforcement, 4 for draft persistence, and 6 for official domain/freshness/publish gates. Simulations may use 1B, 1C, 1D, and 3 saved outputs now.
+
+### Allowed Work
+
+- Define extraction benchmark inputs, output contracts, no-write artifact inventories, freshness classifications, change-detection evidence, and politeness/cost simulations.
+- Compare saved snapshots against manually labeled expected outputs.
+- Define review triggers for extraction uncertainty.
+
+### Forbidden Work
+
+- No live crawl, Run All, country crawl, JS render execution, PDF fetch, OCR service, queue mutation, or draft write.
+- No media publish, canonical writes, language/i18n expansion, 12-locale crawler logic, or new crawler architecture.
+- No default UI action for broad crawl or country crawl.
+
+### Required Evidence
+
+Door 3 evidence must include source URL, official-domain status, page or artifact type, fetch timestamp, content hash when available, extraction method, page/PDF location reference, quote/snippet, confidence, conflict status, trace id, and no-write statement.
+
+### Expected UI Impact
+
+Door 3 adds evidence-coverage indicators: discovery gaps, PDF/artifact inventory, JS-render-needed flags, domain alias warnings, freshness status, change summary, ethics status, and cost/yield estimates. These appear as status cards, review facts, drawer details, or roadmap items, not as new global buttons.
+
+### Admin Action Impact
+
+Door 3 may be inspected through Generate Evidence Pack and Open Review. Run Safe Stage remains bounded by Door 1 and cannot become Run All, country crawl, or unbounded discovery.
+
+### Acceptance Criteria
+
+- Each extraction expansion has an input pack, expected output pack, review trigger, blocked gate, and stop condition.
+- Deep extraction, PDF intelligence, freshness, and change detection preserve field-level provenance.
+- Politeness and cost planning define limits before any runtime enforcement is proposed.
+- No feature requires new production code in this PR.
+
+### Runtime Proof Required Later
+
+- Discovery ranking improves useful-page coverage on labeled snapshots.
+- Deep program and PDF extraction match human labels with complete citations.
+- JS fallback proves benefit on saved captures before any render runtime.
+- Domain alias logic rejects non-official domains.
+- Freshness and change detection identify stale or changed facts without writes.
+
+### Blocked Items
+
+Queue-enforced retries, selected-stage execution, JS render fallback, and politeness enforcement are blocked by 2. Draft-affecting extraction is blocked by 4. Publish/freshness enforcement, media exposure, official alias acceptance, and public facts are blocked by 6.
+
+### Promotion Criteria
+
+Door 3 is accepted when extraction-expansion simulations are fully specified, reviewable, cost-aware, provenance-preserving, and blocked from production effects.
+
+### What Must Remain Simulation-only
+
+Discovery changes, deep extraction, PDF parsing, JS rendering, multi-domain alias handling, media artifact use, cost policy, freshness expiration, and change-detection alerts.
 
 ## Door 4: ORX Evidence Layer
 
 Status: planned, not implemented
 
-Purpose: define evidence-to-ORX mapping, signal benchmarking, explanation, and anti-gaming plans.
+### Purpose
 
-Depends on:
+Door 4 defines how crawler evidence may later support ORX signal candidates, explanations, improvement guidance, and anti-gaming controls. It does not create ORX scores, publish ORX outputs, update orx_scores, or expose public rankings.
 
-- Door 0 accepted.
-- Door 2 evidence/provenance rules defined.
-- Runtime closure of 5 ORX Mapper before score-affecting work.
-- Runtime closure of 6 Verify/Publish Gate before public ORX outputs.
+### Included Features From Source Inventory
 
-Examples of features from PR #4:
+| Feature group | Included ideas | Current components extended | Required evidence | AI role | Human review trigger | Anti-gaming risk | Expected UI impact | What remains simulation-only |
+|---|---|---|---|---|---|---|---|---|
+| ORX evidence backbone | ORX Evidence Integration; ORX Signal Candidates | 5 ORX Mapper, 1D evidence, Door 2 provenance | Signal id, entity, source URL, quote, source type, confidence, label, benchmark result | Suggest candidate mapping from saved evidence | Missing source, weak signal, low benchmark support | Ready for ORX lane and ORX signal candidate card | Very high | Mapping persistence and score effects |
+| Curriculum and future readiness | ORX Curriculum and Future Readiness Evidence Agent; curriculum updates; course/module changes; learning outcomes; AI/data/automation exposure | 3 AI Extract, 4 Draft Writer, 5 ORX Mapper | Catalog text, course/module pages, outcomes, version dates, old/new diffs | Extract and cite only from saved text | AI infers beyond evidence; buzzword-only support | Curriculum signal preview and benchmark status | High | Score contribution |
+| Applied and industry evidence | Industry advisory boards; internships/co-op/capstone; employer partnerships | 1D, 3, 4, 5 | Official board, internship, capstone, co-op, partner pages with dates and scope | Normalize evidence and optional/required status | Optional marketed as required; logo wall without proof | Applied-learning and partnership review facts | High | Public ORX claims |
+| Outcomes and quality evidence | Career outcomes; employment reports; accreditation and quality assurance | 1B PDFs, 1D, 5, 6 | Outcome year, cohort, denominator, PDF page refs, accreditor, scope, status date | Extract tables from saved text only | Missing denominator, expired accreditation, non-program scope | Outcome/accreditation conflict and confidence cards | High | Public trust badge or score |
+| Institution strategy and infrastructure | Annual reports; strategic plans; research labs and AI centers; startup incubators; faculty development; digital learning infrastructure; career services; student/international support | 1B, 1D, 5 | Official reports/pages, dates, activity proof, concrete services | Summarize and classify evidence strength | Aspirational claim scored as delivered; dormant assets | Improvement evidence preview | Medium-high | ORX guidance and scoring |
+| Explanation and governance | ORX Explanation Engine; ORX University Improvement Guidance; ORX Anti-gaming; Published ORX signal <=5% verified-error strategy | 5 ORX Mapper, 6 Gate, Door 2 benchmarks | Signal labels, citations, error rate, source diversity, gaming flags | Draft explanation from evidence only | Unsupported score reason or signal above error threshold | Explanation preview remains blocked | Very high | Public ORX explanation, production score, university guidance |
 
-- ORX Evidence Integration.
-- ORX Signal Candidates.
-- ORX Curriculum and Future Readiness Evidence Agent.
-- Curriculum updates.
-- Course/module changes.
-- AI/data/automation exposure.
-- Accreditation and quality assurance.
-- ORX Explanation Engine.
-- ORX University Improvement Guidance.
-- ORX Anti-gaming.
-- Published ORX signal <=5% verified-error strategy.
+### Dependencies On Runtime-Open Stages
+
+Door 4 depends on Door 2 evidence/provenance rules. ORX signal mapping is blocked by 5. Public explanations, score effects, trust badges, and published signal releases are blocked by 6. Draft-dependent program evidence is blocked by 4.
+
+### Allowed Work
+
+- Define ORX evidence fields, signal candidate benchmarks, <=5% verified-error strategy, anti-gaming tests, explanation requirements, and improvement-guidance contracts.
+- Use saved evidence packs and labeled holdout sets.
+- Separate delivered evidence from aspirations, marketing claims, and source-volume inflation.
+
+### Forbidden Work
+
+- No ORX score production, orx_scores writes, public ORX pages, score badges, automated mapper execution, or score-affecting AI output.
+- No university improvement guidance shown to external users.
+- No marketing-only claim may contribute to ORX.
+
+### Required Evidence
+
+ORX evidence must include signal candidate id, ORX level or dimension if known, entity type, entity id/candidate id, source URL, quote, source type, officialness, date, extraction method, model/provider if AI-derived, confidence, conflict status, anti-gaming flags, benchmark label, reviewer status, and trace id.
+
+### Expected UI Impact
+
+Door 4 appears as Ready for ORX review lane items, ORX candidate scorecards, benchmark status, anti-gaming warnings, explanation previews, and blocked public-output states. It must not expose ORX score actions.
+
+### Admin Action Impact
+
+Admins may inspect ORX evidence candidates and copy handoffs. They may not produce scores, publish ORX outputs, or promote ORX explanations until 5 and 6 close.
+
+### Acceptance Criteria
+
+- All ORX signal candidates have required evidence and benchmark requirements.
+- Curriculum, AI exposure, applied learning, outcomes, accreditation, and support signals define review triggers and anti-gaming risks.
+- Published ORX signals require <=5% verified-error on a labeled holdout before public consideration.
+- ORX explanations cite every score-relevant claim and remain blocked until 5/6.
+
+### Runtime Proof Required Later
+
+- ORX Mapper links every score input to supported evidence.
+- Signal benchmarks hold at or below the verified-error threshold.
+- Anti-gaming tests block weak, repeated, stale, or marketing-only evidence.
+- Explanation preview contains no uncited score claim.
+
+### Blocked Items
+
+All score-affecting ORX work is blocked by 5. Public ORX explanations, trust badges, rankings, university guidance, and orx_scores updates are blocked by 6. Draft-dependent ORX program evidence is blocked by 4.
+
+### Promotion Criteria
+
+Door 4 is accepted when ORX evidence, signal benchmarking, anti-gaming, explanation, improvement guidance, and <=5% verified-error contracts are explicit and remain no-write.
+
+### What Must Remain Simulation-only
+
+ORX Evidence Agent output, candidate signals, future-readiness rollups, explanations, improvement guidance, anti-gaming flags, public ORX outputs, and score release decisions.
 
 ## Door 5: Student Evaluation Layer
 
 Status: planned, not implemented
 
-Purpose: define simulations for student-file interpretation, requirement matching, decision confidence, and fit.
+### Purpose
 
-Depends on:
+Door 5 defines how verified crawler evidence may later support student-file parsing, program eligibility, application readiness, fit, skills, and risk planning. It does not create production eligibility decisions, student AI advice, public recommendations, CRM automation, or country policy ingestion.
 
-- Door 0 accepted.
-- Door 2 evidence/provenance rules defined.
-- Runtime closure of 4 Draft Writer and 6 Verify/Publish Gate before verified program requirements can support production eligibility decisions.
+### Included Features From Source Inventory
 
-Examples of features from PR #4:
+| Feature group | Included ideas | Current components extended | Required evidence | AI role | Human review trigger | Anti-gaming or safety risk | Expected UI impact | What remains simulation-only |
+|---|---|---|---|---|---|---|---|---|
+| Eligibility and requirements | Program Requirement Hardness Classifier; Student Evidence Parser; Student-Program Eligibility Matcher; Decision Confidence Engine; Negative Recommendation Engine | 4 Draft Writer, 6 Gate, student file lane later | Verified requirement text, student document evidence, hardness label, confidence, source quote | Parse and compare only in offline benchmark | Any accept/reject edge case, missing source, low OCR confidence | Student evaluation preview blocked from production | False eligibility positives | Eligibility decisions and student-facing advice |
+| Program alternatives and apply readiness | Program Substitution Engine; Official Apply Pack; Deadline Radar | 4, 6, Door 2 freshness | Apply links, documents, fees, deadlines, intakes, freshness date | Normalize checklist and date windows from saved evidence | Missing/ambiguous document or old-year deadline | Apply-pack and deadline review facts | Medium-high | Checklist/action automation |
+| Country and risk | Country/Visa/Budget risk layer | Country layer later, verified program facts | Dated official policy/cost/visa/budget evidence, source policy | Summarize risk only after source policy exists | Outdated policy, sensitive risk, cost mismatch | Country risk remains blocked/delayed | High | External country policy ingestion |
+| Psychological/person-program fit | Interests; work values; learning preference; risk tolerance; language/culture tolerance; financial risk tolerance; career orientation; technical vs human-facing preference; solo vs team preference; research vs applied preference | 4 verified program facts, Door 2 confidence, Door 4 outcomes/labs/applied evidence | Program facts, student preference inputs, advisor labels, sensitive wording rules | Explain fit cautiously from verified facts | Sensitive inference, stereotyping, high-risk recommendation | Fit signals stay advisor-reviewed | Medium-high | Automated ranking or advice |
+| Skills and future of work | Program-to-skills mapping; skills-to-occupations mapping; future demand; AI exposure; skill durability; transferability; student fit; ORX program future readiness | 4 program facts, 5 ORX Mapper, external taxonomy later | Outcomes/modules, skill labels, occupation taxonomy later, demand source policy | Map skills from evidence and explain uncertainty | Hallucinated skill, unsupported job promise, speculative demand | Skills preview and benchmark cards | High | Career promises and public future-demand claims |
 
-- Program Requirement Hardness Classifier.
-- Student Evidence Parser.
-- Student-Program Eligibility Matcher.
-- Decision Confidence Engine.
-- Negative Recommendation Engine.
-- Program Substitution Engine.
-- Official Apply Pack.
-- Deadline Radar.
-- Country/Visa/Budget risk layer.
-- Psychological/person-program fit dimensions.
-- Program-to-skills mapping.
-- Skills-to-occupations mapping.
-- Future demand.
-- Student fit.
+### Dependencies On Runtime-Open Stages
+
+Door 5 depends on Door 2 provenance and review rules. Verified program requirements require 4 and 6. ORX/future-readiness inputs require 5 and 6. Student-facing production decisions require verified requirements plus human-review rules. Country policy and labor-market facts require an external source policy before any production use.
+
+### Allowed Work
+
+- Define classifier labels, benchmark datasets, decision confidence rules, apply-pack fields, deadline freshness rules, fit dimensions, skills mapping contracts, and country-risk source requirements.
+- Simulate eligibility and fit only with saved evidence and manually labeled examples.
+- Define negative recommendation safety: no negative recommendation without hard evidence and human-review path.
+
+### Forbidden Work
+
+- No production student eligibility decisions, CRM case automation, student AI advisor decisions, public match recommendations, or country policy ingestion.
+- No claim that marketing-only, low-confidence, or unverified facts support eligibility, affordability, ORX, or fit.
+- No sensitive psychological/cultural inference without human-approved framing.
+
+### Required Evidence
+
+Door 5 evidence must include verified requirement source, requirement hardness, student evidence source, extraction method, confidence, missing fields, deadline freshness, risk classification, human review trigger, recommended action, blocked reason, and full provenance for every cited program fact.
+
+### Expected UI Impact
+
+Door 5 appears as blocked student-evaluation preview states, requirement hardness benchmark cards, apply-pack/deadline review items, skills and fit candidate labels, and country-risk disabled states. It must not expose student eligibility actions.
+
+### Admin Action Impact
+
+Admins may review evidence and copy handoffs. They may not trigger eligibility production, student advice, CRM automation, or application checklist production before the required gates close.
+
+### Acceptance Criteria
+
+- Requirement hardness, eligibility matching, negative recommendations, apply pack, deadline radar, fit, skills, and country risk have explicit evidence contracts.
+- High-stakes student outputs require verified program facts and human-review triggers.
+- Fit and skills work cannot override eligibility or verified requirements.
+- Country layer is delayed until official source policy, update cadence, and legal/human review requirements exist.
+
+### Runtime Proof Required Later
+
+- Requirement hardness benchmark separates hard, soft, conditional, and unclear rules with low false-positive eligibility risk.
+- Eligibility matcher explains every decision from verified requirements and student evidence.
+- Deadline radar blocks stale or ambiguous deadlines.
+- Fit/skills recommendations are advisor-reviewable and avoid unsupported promises.
+
+### Blocked Items
+
+Student eligibility production, application checklist production, substitutions, negative recommendations, and student advice are blocked by 4 and 6. Decision confidence workflows are blocked by 1E and 6. Country policy, future demand, visa, work rights, safety, and labor-market layers are blocked by external source policy and review.
+
+### Promotion Criteria
+
+Door 5 is accepted when student evaluation, fit, skills, and country-risk contracts are explicit, evidence-first, human-reviewable, and blocked from production decisions.
+
+### What Must Remain Simulation-only
+
+Eligibility matching, student document parsing, negative recommendations, apply packs, deadline alerts, substitutions, fit ranking, skills/occupation mapping, future demand, country/visa/budget risk, and student-facing explanations.
 
 ## Door 6: Product Surfaces
 
 Status: planned, not implemented
 
-Purpose: define when verified crawler, ORX, and student-evaluation outputs may be exposed to users, universities, CRM, public pages, or APIs.
+### Purpose
 
-Depends on:
+Door 6 defines the product-surface boundaries for exposing crawler, ORX, and student-evaluation outputs after the original runtime gates close. It is the last door because it converts internal evidence into user-visible, CRM-visible, university-visible, public, or API-visible claims.
 
-- Door 0 accepted.
-- Door 2 evidence/provenance rules defined.
-- Door 4 ORX evidence rules for ORX-facing surfaces.
-- Door 5 student evaluation rules for student-facing surfaces.
-- Runtime closure of 6 Verify/Publish Gate before public or production truth surfaces.
+### Included Features From Source Inventory
 
-Examples of features from PR #4:
+| Surface | Current engine component extended | Required evidence | AI role | Human review trigger | Anti-gaming / safety risk | Expected UI impact | Admin action impact | What cannot be exposed until gates close |
+|---|---|---|---|---|---|---|---|---|
+| Student App | 4, 6, Door 5 | Verified program facts, citations, freshness, requirement confidence | Explain with citations only later | Any unverified high-stakes fact | Medium-high | Verified-data contract only | No student action in admin | Shortlists, eligibility, public truth |
+| Student AI Advisor | 3, 6, Door 5 | Evidence pack, citations, refusal rules | Answer only with verified citations later | Unsupported advice | High | Advisor blocked state | No advisor launch action | Production decisions or advice |
+| Public University Pages | 6, Door 2, Door 3 media | Verified facts, public-safe citations, media provenance | Summarize citations later | Conflict, stale claim, weak provenance | High | Public preview/diff only | Dry-run only after 6 | Public page writes |
+| University Dashboard | 1E, 6, Door 4 guidance | Evidence gaps, conflicts, stale facts, improvement candidates | Summarize gaps later | Institution dispute | High | Dashboard roadmap card | No external dashboard action | Institution-facing claims |
+| CRM Case Handoff | 1E, 4, 6, Door 5 | Approved evidence pack, risks, missing facts, next action | Generate concise handoff from approved facts later | Missing requirement or deadline | Medium | Copy handoff only | No CRM automation | Case automation |
+| Admin Review Queue | 1E, Door 2 | Review lanes, triggers, provenance, confidence | Summarize issue | High-impact low-confidence fact | Medium | Review Workbench | Open Review only | Publish from queue |
+| ORX Public Explanation | 5, 6, Door 4 | Mapped signals, citations, benchmark error, anti-gaming flags | Draft explanation only from evidence later | Unsupported score reason | High | Explanation preview blocked | No ORX score action | Public ORX scores/explanations |
+| Application Checklist | 4, 6, Door 5 | Apply links, docs, deadlines, fees, requirement proof | Normalize checklist later | Ambiguous required document | Medium-high | Checklist preview blocked | No checklist production | Student checklist actions |
+| Deadline Alerts | 4, 6, Door 5 | Current-year deadline, observed date, freshness class | Extract date window later | Old year or ambiguous intake | High | Deadline radar blocked state | No alert action | Alert delivery |
+| Trust Badges | 6, Door 2 confidence | Provenance completeness, freshness, source diversity, review status | None required | Badge threshold edge case | High | Badge threshold roadmap card | No badge action | Public badges |
+| Data Products/API | 6, legal/source policy | Verified facts, source rights, provenance, license review | Summarize field coverage later | Licensing/provenance ambiguity | High | API delayed state | No API action | External API/data products |
 
-- Student App.
-- Student AI Advisor.
-- Public University Pages.
-- University Dashboard.
-- CRM Case Handoff.
-- Admin Review Queue.
-- ORX Public Explanation.
-- Application Checklist.
-- Deadline Alerts.
-- Trust Badges.
-- Data Products/API.
+### Dependencies On Runtime-Open Stages
+
+Door 6 depends on Door 2 evidence/provenance rules, Door 4 ORX rules for ORX-facing surfaces, Door 5 student evaluation rules for student-facing surfaces, and runtime closure of 6 Verify/Publish Gate before any public or production truth surface.
+
+### Allowed Work
+
+- Define surface contracts, disabled states, preview-only behavior, handoff fields, citation requirements, and production boundaries.
+- Define what each surface may show as internal, draft, blocked, preview, or verified.
+- Define review and source requirements for future enablement.
+
+### Forbidden Work
+
+- No production UI code, public page writes, CRM automation, student AI advisor launch, trust badge display, data API, or ORX public score.
+- No exposing unverified crawler facts as student/public/CRM truth.
+- No publish button before Verify/Publish Gate runtime closes.
+
+### Required Evidence
+
+All product surfaces require verified provenance, freshness status, confidence, conflict status, source type, review status, gate status, and a clear distinction between internal preview, draft, verified, public, and blocked.
+
+### Expected UI Impact
+
+Door 6 adds roadmap-visible surface states, blocked public/student/CRM labels, preview-only dry-run states, and future enablement requirements. It must preserve the maximum five primary admin actions.
+
+### Admin Action Impact
+
+The fifth primary action, Dry-run Publish / Promote, remains disabled until Verify/Publish Gate runtime proof exists. Even after dry-run unlocks, real publish remains blocked until the gate is closed and explicit implementation work is approved later.
+
+### Acceptance Criteria
+
+- Each product surface defines its source dependencies, blocked gates, and public/student/CRM boundaries.
+- No surface can expose ORX score, student eligibility, trust badge, public page, CRM automation, or API output before its gates close.
+- Internal previews preserve provenance and review status.
+- Admin UI remains status-first, evidence-first, review-first, and actions-minimal.
+
+### Runtime Proof Required Later
+
+- Verify/Publish Gate proves verified facts can be promoted safely with audit trail.
+- Public preview contains only verified facts and citations.
+- Student/CRM outputs refuse missing or unverified facts.
+- Trust badges and public ORX explanations are withheld when provenance is incomplete.
+
+### Blocked Items
+
+All public, student, CRM, trust badge, ORX public explanation, and data API surfaces are blocked by 6. ORX public surfaces are also blocked by 5. Student eligibility surfaces are blocked by verified requirements, 4, and 6. Country/public policy surfaces are blocked by external source policy and review.
+
+### Promotion Criteria
+
+Door 6 is accepted when product-surface contracts are explicit, blocked outputs are named, and every future surface is bound to verified evidence and runtime gates.
+
+### What Must Remain Simulation-only
+
+Student App outputs, Student AI Advisor decisions, Public University Pages, University Dashboard, CRM automation, ORX public explanations, application checklists, deadline alerts, trust badges, and Data Products/API.
+
+## Expansion Assignment Register
+
+| Door or bucket | Assigned expansion ideas |
+|---|---|
+| Door 1 already defined | Full Pipeline Orchestrator above existing stages as read-only/supervisory plan; Duplicate Run Guard; Failure Classifier; Retry Policy; Smoke Diagnostics / Evidence Pack; Queue Controls Validation; Safe selected-stage runner; Agent-neutral handoff; Local fallback vs GitHub Actions diagnostics; No-write runtime evidence contract |
+| Door 2 | Evidence Knowledge Graph; Provenance model; Quality / Confidence Engine; Official Conflict Resolver; Weak Marketing Claim Detector; Human Review Triggers; Safe Publish Sandbox; Benchmarking System; Admin Review Queue evidence behavior |
+| Door 3 | Discovery Intelligence; Deep Program Extraction; PDF Intelligence; JS-render fallback; Multi-domain official handling; Media/file artifact intelligence; Crawl Ethics / Politeness; Crawler Cost Brain; Evidence Freshness SLA; Change Detection |
+| Door 4 | Dedupe Engine where ORX/entity candidate duplication affects mapped evidence; ORX Evidence Integration; ORX Signal Candidates; ORX Curriculum and Future Readiness Evidence Agent; curriculum updates; course/module changes; learning outcomes; AI/data/automation exposure; industry advisory boards; internships/co-op/capstone; employer partnerships; career outcomes; employment reports; accreditation and quality assurance; annual reports; strategic plans; research labs and AI centers; startup incubators; faculty development; digital learning infrastructure; career services; student/international support; ORX Explanation Engine; ORX University Improvement Guidance; ORX Anti-gaming; Published ORX signal <=5% verified-error strategy |
+| Door 5 | Program Requirement Hardness Classifier; Student Evidence Parser; Student-Program Eligibility Matcher; Decision Confidence Engine; Negative Recommendation Engine; Program Substitution Engine; Official Apply Pack; Deadline Radar; Country/Visa/Budget risk layer; interests; work values; learning preference; risk tolerance; language/culture tolerance; financial risk tolerance; career orientation; technical vs human-facing preference; solo vs team preference; research vs applied preference; program-to-skills mapping; skills-to-occupations mapping; future demand; AI exposure; skill durability; transferability; student fit; ORX program future readiness |
+| Door 6 | Student App; Student AI Advisor; Public University Pages; University Dashboard; CRM Case Handoff; Admin Review Queue product surface; ORX Public Explanation; Application Checklist; Deadline Alerts; Trust Badges; Data Products/API |
+| Blocked/delayed bucket | Public ORX scores; student eligibility production; CRM automation; public trust badges; data APIs; country policy, visa, work rights, cost-of-living, safety/stability, labor-market-demand, tech-ecosystem, international-student-policy production; any output requiring external source policy, legal review, or Verify/Publish closure |
+| Not in scope yet | New crawler/system rewrite; separate simulation lab; production orchestrator; Run All; country crawl; crawler language/i18n changes; 12-locale crawler logic; migrations; Edge Functions; workflows; scripts; Supabase changes |
 
 ## Next Step for Claude
 
-After Door 1 is accepted, Claude should continue with Door 2 -- Evidence & Review Workbench. Door 2 should remain docs-first and should define evidence, provenance, review, confidence, conflict, and benchmark acceptance criteria before any implementation work is proposed.
+After this master planning layer is accepted, Claude should move only to implementation planning for the first approved P0 item, starting with no-write Evidence Pack implementation details. Door 2-6 feature work should remain blocked until the relevant original Crawler v2 runtime gates close.
