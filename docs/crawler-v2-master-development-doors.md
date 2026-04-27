@@ -8,16 +8,16 @@ Scope: docs-only sequencing; no implementation, crawler execution, publish, or s
 
 This document creates the master door structure for expanding the existing Crawler v2 engine safely. It does not define a new crawler, a replacement architecture, or a production implementation plan. Every door is a controlled planning gate above the current Crawler v2 baseline.
 
-Door 0 is the first required gate: Baseline & Safety. It freezes the baseline, names runtime-closed and runtime-open stages, and makes forbidden work explicit before any follow-on door can become implementation work.
+Door 0 is fully defined as the Baseline & Safety gate. It freezes the baseline, names runtime-closed and runtime-open stages, and makes forbidden work explicit before any follow-on door can become implementation work.
 
-Doors 1-6 are intentionally stubbed only. They establish the future sequence but do not yet expand requirements, acceptance tests, or implementation plans.
+Door 1 is fully defined as the Run Control & Diagnostics gate. Doors 2-6 remain stubbed only; they establish the future sequence but do not yet expand requirements, acceptance tests, or implementation plans.
 
 ## Door Structure
 
 | Door | Name | Status | Detail level |
 |---:|---|---|---|
 | 0 | Baseline & Safety | Planned in this document | Fully defined |
-| 1 | Run Control & Diagnostics | Planned, not implemented | Stub only |
+| 1 | Run Control & Diagnostics | Planned, not implemented | Fully defined |
 | 2 | Evidence & Review Workbench | Planned, not implemented | Stub only |
 | 3 | Extraction Expansion | Planned, not implemented | Stub only |
 | 4 | ORX Evidence Layer | Planned, not implemented | Stub only |
@@ -573,4 +573,4 @@ Examples of features from PR #4:
 
 ## Next Step for Claude
 
-Claude should continue with Door 1 only after Door 0 is accepted. Door 1 should remain docs-first and should define run-control and diagnostics acceptance criteria before any implementation work is proposed.
+After Door 1 is accepted, Claude should continue with Door 2 -- Evidence & Review Workbench. Door 2 should remain docs-first and should define evidence, provenance, review, confidence, conflict, and benchmark acceptance criteria before any implementation work is proposed.
