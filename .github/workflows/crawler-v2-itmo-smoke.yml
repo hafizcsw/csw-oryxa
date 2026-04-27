@@ -1,0 +1,89 @@
+name: Crawler v2 ITMO Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_worker:
+        type: boolean
+        default: false
+      run_planner:
+        type: boolean
+        default: false
+      run_basic_extract:
+        type: boolean
+        default: false
+      run_ai_extract:
+        type: boolean
+        default: false
+      run_draft_writer:
+        type: boolean
+        default: false
+      run_orx_mapper:
+        type: boolean
+        default: false
+      run_verify_only:
+        type: boolean
+        default: false
+      deploy_functions:
+        type: boolean
+        default: false
+
+jobs:
+  itmo-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      RUN_WORKER: ${{ inputs.run_worker }}
+      RUN_PLANNER: ${{ inputs.run_planner }}
+      RUN_BASIC_EXTRACT: ${{ inputs.run_basic_extract }}
+      RUN_AI_EXTRACT: ${{ inputs.run_ai_extract }}
+      RUN_DRAFT_WRITER: ${{ inputs.run_draft_writer }}
+      RUN_ORX_MAPPER: ${{ inputs.run_orx_mapper }}
+      RUN_VERIFY_ONLY: ${{ inputs.run_verify_only }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate smoke script
+        run: node --check scripts/crawler-v2-itmo-smoke.mjs
+
+      - name: Install Supabase CLI
+        if: ${{ inputs.deploy_functions }}
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy selected crawler-v2 functions
+        if: ${{ inputs.deploy_functions }}
+        run: |
+          set -euo pipefail
+          deploy_fn () {
+            echo "Deploying $1"
+            supabase functions deploy "$1" --project-ref "${SUPABASE_PROJECT_REF}" --use-api
+          }
+          if [ "${RUN_WORKER}" = "true" ]; then deploy_fn crawler-v2-worker; fi
+          if [ "${RUN_PLANNER}" = "true" ]; then deploy_fn crawler-v2-page-planner; fi
+          if [ "${RUN_BASIC_EXTRACT}" = "true" ]; then deploy_fn crawler-v2-basic-extract; fi
+          if [ "${RUN_AI_EXTRACT}" = "true" ]; then deploy_fn crawler-v2-ai-extract; fi
+          if [ "${RUN_DRAFT_WRITER}" = "true" ]; then deploy_fn crawler-v2-draft-writer; fi
+          if [ "${RUN_ORX_MAPPER}" = "true" ]; then deploy_fn crawler-v2-orx-mapper; fi
+          if [ "${RUN_VERIFY_ONLY}" = "true" ]; then deploy_fn crawler-v2-control; fi
+
+      - name: Run smoke
+        run: node scripts/crawler-v2-itmo-smoke.mjs
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crawler-v2-itmo-smoke-report
+          path: crawler-v2-itmo-smoke-report.json
+          if-no-files-found: warn
