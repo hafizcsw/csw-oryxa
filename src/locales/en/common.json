@@ -14275,7 +14275,8 @@
       "running": "Running",
       "completed": "Completed",
       "failed": "Failed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "paused": "Paused"
     },
     "itemStatus": {
       "queued": "Queued",
@@ -14287,6 +14288,38 @@
     "failure": {
       "missing_website": "Missing Website",
       "invalid_website": "Invalid Website"
-    }
+    },
+    "tabItems": "Items",
+    "tabCandidates": "Page Candidates",
+    "tabEvidence": "Evidence",
+    "noCandidates": "No candidates discovered yet",
+    "noEvidence": "No evidence items yet",
+    "pause": "Pause",
+    "resume": "Resume",
+    "cancel": "Cancel",
+    "retry": "Retry",
+    "cancelledSuccessfully": "Run cancelled",
+    "pausedSuccessfully": "Run paused",
+    "resumedSuccessfully": "Run resumed",
+    "retriedSuccessfully": "Item requeued for retry",
+    "maintenance": "Maintenance",
+    "cleanupLocks": "Cleanup Expired Locks",
+    "markStuck": "Mark Stuck Items Failed",
+    "locksCleanedUp": "Expired locks cleaned up",
+    "stuckMarked": "Stuck items marked as failed",
+    "reviewPublish": "Review & Publish",
+    "noPendingReview": "No items pending review",
+    "university": "University",
+    "evidence": "Evidence",
+    "orxSignals": "ORX Signals",
+    "actions": "Actions",
+    "verify": "Verify",
+    "publish": "Publish",
+    "confirmPublish": "Confirm Publish",
+    "verifiedSuccessfully": "Item verified",
+    "publishedSuccessfully": "Evidence published",
+    "orxReadiness": "ORX Readiness",
+    "mapOrx": "Map ORX Signals",
+    "orxMapped": "ORX signals mapped"
   }
 }

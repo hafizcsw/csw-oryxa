@@ -10511,7 +10511,8 @@
       "running": "Running",
       "completed": "Completed",
       "failed": "Failed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "paused": "Pausado"
     },
     "itemStatus": {
       "queued": "Queued",
@@ -10523,6 +10524,38 @@
     "failure": {
       "missing_website": "Missing Website",
       "invalid_website": "Invalid Website"
-    }
+    },
+    "tabItems": "Itens",
+    "tabCandidates": "Páginas candidatas",
+    "tabEvidence": "Evidências",
+    "noCandidates": "Nenhum candidato descoberto ainda",
+    "noEvidence": "Nenhuma evidência ainda",
+    "pause": "Pausar",
+    "resume": "Retomar",
+    "cancel": "Cancelar",
+    "retry": "Tentar novamente",
+    "cancelledSuccessfully": "Execução cancelada",
+    "pausedSuccessfully": "Execução pausada",
+    "resumedSuccessfully": "Execução retomada",
+    "retriedSuccessfully": "Item recolocado na fila",
+    "maintenance": "Manutenção",
+    "cleanupLocks": "Limpar bloqueios expirados",
+    "markStuck": "Marcar itens presos como falhos",
+    "locksCleanedUp": "Bloqueios expirados limpos",
+    "stuckMarked": "Itens presos marcados como falhos",
+    "reviewPublish": "Revisar e Publicar",
+    "noPendingReview": "Nenhum item aguardando revisão",
+    "university": "Universidade",
+    "evidence": "Evidências",
+    "orxSignals": "Sinais ORX",
+    "actions": "Ações",
+    "verify": "Verificar",
+    "publish": "Publicar",
+    "confirmPublish": "Confirmar publicação",
+    "verifiedSuccessfully": "Item verificado",
+    "publishedSuccessfully": "Evidências publicadas",
+    "orxReadiness": "Disponibilidade ORX",
+    "mapOrx": "Mapear sinais ORX",
+    "orxMapped": "Sinais ORX mapeados"
   }
 }

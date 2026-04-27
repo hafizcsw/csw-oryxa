@@ -10511,7 +10511,8 @@
       "running": "Running",
       "completed": "Completed",
       "failed": "Failed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "paused": "일시정지됨"
     },
     "itemStatus": {
       "queued": "Queued",
@@ -10523,6 +10524,38 @@
     "failure": {
       "missing_website": "Missing Website",
       "invalid_website": "Invalid Website"
-    }
+    },
+    "tabItems": "항목",
+    "tabCandidates": "페이지 후보",
+    "tabEvidence": "증거",
+    "noCandidates": "아직 후보가 발견되지 않았습니다",
+    "noEvidence": "아직 증거가 없습니다",
+    "pause": "일시정지",
+    "resume": "재개",
+    "cancel": "취소",
+    "retry": "재시도",
+    "cancelledSuccessfully": "실행이 취소되었습니다",
+    "pausedSuccessfully": "실행이 일시정지되었습니다",
+    "resumedSuccessfully": "실행이 재개되었습니다",
+    "retriedSuccessfully": "항목이 재대기열에 등록되었습니다",
+    "maintenance": "유지보수",
+    "cleanupLocks": "만료된 잠금 정리",
+    "markStuck": "정체된 항목 실패로 표시",
+    "locksCleanedUp": "만료된 잠금이 정리되었습니다",
+    "stuckMarked": "정체된 항목이 실패로 표시되었습니다",
+    "reviewPublish": "검토 및 게시",
+    "noPendingReview": "검토 대기 중인 항목 없음",
+    "university": "대학교",
+    "evidence": "증거",
+    "orxSignals": "ORX 신호",
+    "actions": "작업",
+    "verify": "검증",
+    "publish": "게시",
+    "confirmPublish": "게시 확인",
+    "verifiedSuccessfully": "항목이 검증되었습니다",
+    "publishedSuccessfully": "증거가 게시되었습니다",
+    "orxReadiness": "ORX 준비 상태",
+    "mapOrx": "ORX 신호 매핑",
+    "orxMapped": "ORX 신호가 매핑되었습니다"
   }
 }

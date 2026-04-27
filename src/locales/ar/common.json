@@ -14312,7 +14312,8 @@
       "running": "Running",
       "completed": "Completed",
       "failed": "Failed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "paused": "متوقف"
     },
     "itemStatus": {
       "queued": "Queued",
@@ -14324,6 +14325,38 @@
     "failure": {
       "missing_website": "Missing Website",
       "invalid_website": "Invalid Website"
-    }
+    },
+    "tabItems": "العناصر",
+    "tabCandidates": "الصفحات المرشحة",
+    "tabEvidence": "الأدلة",
+    "noCandidates": "لم يتم اكتشاف مرشحين بعد",
+    "noEvidence": "لا توجد أدلة حتى الآن",
+    "pause": "إيقاف مؤقت",
+    "resume": "استئناف",
+    "cancel": "إلغاء",
+    "retry": "إعادة المحاولة",
+    "cancelledSuccessfully": "تم إلغاء الجولة",
+    "pausedSuccessfully": "تم إيقاف الجولة مؤقتاً",
+    "resumedSuccessfully": "تم استئناف الجولة",
+    "retriedSuccessfully": "تمت إعادة جدولة العنصر",
+    "maintenance": "صيانة",
+    "cleanupLocks": "تنظيف الأقفال المنتهية",
+    "markStuck": "تعليم العناصر العالقة كفاشلة",
+    "locksCleanedUp": "تم تنظيف الأقفال المنتهية",
+    "stuckMarked": "تم تعليم العناصر العالقة كفاشلة",
+    "reviewPublish": "المراجعة والنشر",
+    "noPendingReview": "لا توجد عناصر في انتظار المراجعة",
+    "university": "الجامعة",
+    "evidence": "الأدلة",
+    "orxSignals": "إشارات ORX",
+    "actions": "الإجراءات",
+    "verify": "تحقق",
+    "publish": "نشر",
+    "confirmPublish": "تأكيد النشر",
+    "verifiedSuccessfully": "تم التحقق من العنصر",
+    "publishedSuccessfully": "تم نشر الأدلة",
+    "orxReadiness": "جاهزية ORX",
+    "mapOrx": "تعيين إشارات ORX",
+    "orxMapped": "تم تعيين إشارات ORX"
   }
 }

@@ -10511,7 +10511,8 @@
       "running": "Running",
       "completed": "Completed",
       "failed": "Failed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "paused": "一時停止中"
     },
     "itemStatus": {
       "queued": "Queued",
@@ -10523,6 +10524,38 @@
     "failure": {
       "missing_website": "Missing Website",
       "invalid_website": "Invalid Website"
-    }
+    },
+    "tabItems": "アイテム",
+    "tabCandidates": "ページ候補",
+    "tabEvidence": "エビデンス",
+    "noCandidates": "まだ候補が見つかっていません",
+    "noEvidence": "エビデンスはまだありません",
+    "pause": "一時停止",
+    "resume": "再開",
+    "cancel": "キャンセル",
+    "retry": "再試行",
+    "cancelledSuccessfully": "実行がキャンセルされました",
+    "pausedSuccessfully": "実行が一時停止されました",
+    "resumedSuccessfully": "実行が再開されました",
+    "retriedSuccessfully": "アイテムが再キューされました",
+    "maintenance": "メンテナンス",
+    "cleanupLocks": "期限切れロックのクリーンアップ",
+    "markStuck": "停止中のアイテムを失敗としてマーク",
+    "locksCleanedUp": "期限切れロックがクリーンアップされました",
+    "stuckMarked": "停止中のアイテムが失敗としてマークされました",
+    "reviewPublish": "レビューと公開",
+    "noPendingReview": "レビュー待ちのアイテムはありません",
+    "university": "大学",
+    "evidence": "エビデンス",
+    "orxSignals": "ORXシグナル",
+    "actions": "アクション",
+    "verify": "検証",
+    "publish": "公開",
+    "confirmPublish": "公開を確認",
+    "verifiedSuccessfully": "アイテムが検証されました",
+    "publishedSuccessfully": "エビデンスが公開されました",
+    "orxReadiness": "ORX準備状況",
+    "mapOrx": "ORXシグナルをマッピング",
+    "orxMapped": "ORXシグナルがマッピングされました"
   }
 }

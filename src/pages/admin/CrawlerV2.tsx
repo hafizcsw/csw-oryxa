@@ -10,11 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
   Play, RefreshCw, Globe, Building2, GraduationCap,
   Loader2, CheckCircle2, XCircle, Clock, AlertTriangle,
-  ChevronRight, Copy,
+  ChevronRight, Copy, StopCircle, PauseCircle, RotateCcw,
+  Link2, FileSearch, Wrench,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -62,6 +64,37 @@ interface RunDetail extends CrawlerRun {
     trace_id: string;
     updated_at: string;
   }>;
+}
+
+interface PageCandidate {
+  id: string;
+  crawler_run_item_id: string;
+  candidate_url: string;
+  candidate_type: string;
+  discovery_method: string;
+  priority: number;
+  status: string;
+  fetch_error: string | null;
+  created_at: string;
+}
+
+interface EvidenceItem {
+  id: string;
+  crawler_run_item_id: string;
+  university_id: string;
+  entity_type: string;
+  fact_group: string;
+  field_key: string;
+  value_raw: string;
+  source_url: string;
+  confidence_0_100: number;
+  trust_level: string;
+  validation_status: string;
+  review_status: string;
+  publish_status: string;
+  orx_layer: string | null;
+  orx_signal_family: string | null;
+  created_at: string;
 }
 
 // ── Constants ───────────────────────────────────────────────────────────────
@@ -175,7 +208,36 @@ function RunProgress({ run, t }: { run: CrawlerRun; t: (k: string) => string }) 
 
 // ── Detail Panel ─────────────────────────────────────────────────────────────
 
-function DetailPanel({ detail, onClose, t }: { detail: RunDetail | null; onClose: () => void; t: (k: string) => string }) {
+interface DetailPanelProps {
+  detail: RunDetail | null;
+  onClose: () => void;
+  t: (k: string) => string;
+  onCancel: (runId: string) => void;
+  onPause: (runId: string) => void;
+  onResume: (runId: string) => void;
+  onRetryItem: (runItemId: string) => void;
+  actioning: string | null;
+}
+
+function DetailPanel({ detail, onClose, t, onCancel, onPause, onResume, onRetryItem, actioning }: DetailPanelProps) {
+  const [candidates, setCandidates] = useState<PageCandidate[]>([]);
+  const [evidence, setEvidence] = useState<EvidenceItem[]>([]);
+  const [tabDataLoaded, setTabDataLoaded] = useState<Record<string, boolean>>({});
+
+  const loadTabData = useCallback(async (tab: string) => {
+    if (!detail || tabDataLoaded[tab]) return;
+    setTabDataLoaded((p) => ({ ...p, [tab]: true }));
+    if (tab === "candidates") {
+      const { data } = await callControl({ action: "get_run_candidates", run_id: detail.run.id });
+      setCandidates(data?.candidates ?? []);
+    } else if (tab === "evidence") {
+      const { data } = await callControl({ action: "get_run_evidence", run_id: detail.run.id });
+      setEvidence(data?.evidence ?? []);
+    }
+  }, [detail, tabDataLoaded]);
+
+  useEffect(() => { setCandidates([]); setEvidence([]); setTabDataLoaded({}); }, [detail?.run?.id]);
+
   if (!detail) return null;
   const run = detail.run;
   const sb = detail.status_breakdown ?? {};
@@ -206,13 +268,32 @@ function DetailPanel({ detail, onClose, t }: { detail: RunDetail | null; onClose
             <div className="col-span-2 flex items-center gap-1">
               <span className="text-muted-foreground">{t("crawlerV2.traceId")}: </span>
               <code className="font-mono text-[10px] truncate max-w-[200px]">{run.trace_id}</code>
-              <button
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => { navigator.clipboard.writeText(run.trace_id); }}
-              >
+              <button className="text-muted-foreground hover:text-foreground" onClick={() => navigator.clipboard.writeText(run.trace_id)}>
                 <Copy className="w-3 h-3" />
               </button>
             </div>
+          </div>
+
+          {/* Queue controls */}
+          <div className="flex gap-2 flex-wrap">
+            {["running", "queued"].includes(run.status) && (
+              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" disabled={actioning === run.id}
+                onClick={() => onPause(run.id)}>
+                <PauseCircle className="w-3 h-3" />{t("crawlerV2.pause")}
+              </Button>
+            )}
+            {run.status === "paused" && (
+              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" disabled={actioning === run.id}
+                onClick={() => onResume(run.id)}>
+                <Play className="w-3 h-3" />{t("crawlerV2.resume")}
+              </Button>
+            )}
+            {["running", "queued", "paused"].includes(run.status) && (
+              <Button size="sm" variant="destructive" className="h-7 text-xs gap-1" disabled={actioning === run.id}
+                onClick={() => onCancel(run.id)}>
+                <StopCircle className="w-3 h-3" />{t("crawlerV2.cancel")}
+              </Button>
+            )}
           </div>
 
           <Separator />
@@ -253,27 +334,86 @@ function DetailPanel({ detail, onClose, t }: { detail: RunDetail | null; onClose
 
           <Separator />
 
-          {/* Item list */}
-          <div className="space-y-2">
-            <p className="text-xs font-semibold">{t("crawlerV2.items")}</p>
-            {detail.items.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-4">{t("crawlerV2.noItems")}</p>
-            ) : (
-              <div className="space-y-1 max-h-80 overflow-y-auto">
-                {detail.items.map((item, i) => (
-                  <div key={i} className="flex items-center justify-between text-xs p-1.5 rounded hover:bg-muted/40">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{item.university_name ?? item.university_id}</p>
-                      {item.website && (
-                        <p className="text-muted-foreground truncate text-[10px]">{item.website}</p>
+          {/* Tabs: Items / Candidates / Evidence */}
+          <Tabs defaultValue="items" onValueChange={loadTabData}>
+            <TabsList className="h-7 text-xs">
+              <TabsTrigger value="items" className="text-xs h-6">{t("crawlerV2.tabItems")}</TabsTrigger>
+              <TabsTrigger value="candidates" className="text-xs h-6">
+                <Link2 className="w-3 h-3 mr-1" />{t("crawlerV2.tabCandidates")}
+              </TabsTrigger>
+              <TabsTrigger value="evidence" className="text-xs h-6">
+                <FileSearch className="w-3 h-3 mr-1" />{t("crawlerV2.tabEvidence")}
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Items tab */}
+            <TabsContent value="items" className="mt-2">
+              {detail.items.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-4">{t("crawlerV2.noItems")}</p>
+              ) : (
+                <div className="space-y-1 max-h-80 overflow-y-auto">
+                  {detail.items.map((item, i) => (
+                    <div key={i} className="flex items-center justify-between text-xs p-1.5 rounded hover:bg-muted/40">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{item.university_name ?? item.university_id}</p>
+                        {item.website && <p className="text-muted-foreground truncate text-[10px]">{item.website}</p>}
+                      </div>
+                      <div className="flex items-center gap-1 ml-2 shrink-0">
+                        <StatusBadge status={item.status} map={ITEM_BADGE} t={t} prefix="crawlerV2.itemStatus" />
+                        {item.status === "failed" && (
+                          <button title={t("crawlerV2.retry")} className="text-muted-foreground hover:text-foreground"
+                            onClick={(e) => { e.stopPropagation(); onRetryItem(item.trace_id); }}>
+                            <RotateCcw className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Candidates tab */}
+            <TabsContent value="candidates" className="mt-2">
+              {candidates.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-4">{t("crawlerV2.noCandidates")}</p>
+              ) : (
+                <div className="space-y-1 max-h-80 overflow-y-auto">
+                  {candidates.map((c) => (
+                    <div key={c.id} className="text-xs p-1.5 rounded hover:bg-muted/40">
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0">{c.candidate_type}</Badge>
+                        <span className="font-mono truncate flex-1 text-[10px] text-muted-foreground">{c.candidate_url}</span>
+                        <Badge className={`text-[10px] h-4 px-1 shrink-0 ${c.status === "fetched" ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>{c.status}</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Evidence tab */}
+            <TabsContent value="evidence" className="mt-2">
+              {evidence.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-4">{t("crawlerV2.noEvidence")}</p>
+              ) : (
+                <div className="space-y-1 max-h-80 overflow-y-auto">
+                  {evidence.map((ev) => (
+                    <div key={ev.id} className="text-xs p-1.5 rounded hover:bg-muted/40 border border-transparent hover:border-border">
+                      <div className="flex items-center justify-between gap-2 mb-0.5">
+                        <span className="font-medium">{ev.fact_group}/{ev.field_key}</span>
+                        <Badge variant="outline" className="text-[10px] h-4 px-1">{ev.confidence_0_100}%</Badge>
+                      </div>
+                      <p className="text-muted-foreground truncate">{ev.value_raw}</p>
+                      {ev.orx_signal_family && (
+                        <p className="text-[10px] text-blue-600 dark:text-blue-400">{ev.orx_layer}/{ev.orx_signal_family}</p>
                       )}
                     </div>
-                    <StatusBadge status={item.status} map={ITEM_BADGE} t={t} prefix="crawlerV2.itemStatus" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </SheetContent>
     </Sheet>
@@ -299,6 +439,15 @@ export default function CrawlerV2Page() {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [detail, setDetail] = useState<RunDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [actioning, setActioning] = useState<string | null>(null);
+
+  // Publish review state
+  const [pendingReview, setPendingReview] = useState<Array<{
+    id: string; run_id: string; university_id: string; university_name: string | null;
+    website: string | null; status: string; evidence_count: number; orx_signal_count: number; trace_id: string;
+  }>>([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  const [publishConfirm, setPublishConfirm] = useState<string | null>(null);
 
   const fetchRuns = useCallback(async () => {
     setRunsLoading(true);
@@ -314,7 +463,21 @@ export default function CrawlerV2Page() {
     }
   }, []);
 
-  useEffect(() => { fetchRuns(); }, [fetchRuns]);
+  const fetchPendingReview = useCallback(async () => {
+    setPendingLoading(true);
+    try {
+      const { data, error } = await callControl({ action: "get_pending_review" });
+      if (error) throw error;
+      setPendingReview(data?.items ?? []);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(msg);
+    } finally {
+      setPendingLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchRuns(); fetchPendingReview(); }, [fetchRuns, fetchPendingReview]);
 
   const fetchDetail = useCallback(async (runId: string) => {
     setDetailLoading(true);
@@ -330,6 +493,25 @@ export default function CrawlerV2Page() {
       setDetailLoading(false);
     }
   }, []);
+
+  const runAction = useCallback(async (action: string, body: Record<string, unknown>, successMsg: string) => {
+    const key = body.run_id as string ?? body.run_item_id as string ?? action;
+    setActioning(key);
+    try {
+      const { data, error } = await callControl({ action, ...body });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error ?? action + "_failed");
+      toast.success(successMsg);
+      await fetchRuns();
+      if (detail && body.run_id === detail.run.id) {
+        await fetchDetail(detail.run.id);
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setActioning(null);
+    }
+  }, [fetchRuns, fetchDetail, detail]);
 
   const createRun = useCallback(async (scope: Scope, mode: Mode, extra?: Record<string, unknown>) => {
     setCreating(scope);
@@ -490,8 +672,121 @@ export default function CrawlerV2Page() {
         </Card>
       ))}
 
+      {/* Review & Publish panel */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4" />{t("crawlerV2.reviewPublish")}
+          </CardTitle>
+          <Button variant="outline" size="sm" onClick={fetchPendingReview} disabled={pendingLoading} className="gap-1.5">
+            {pendingLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+            {t("crawlerV2.refresh")}
+          </Button>
+        </CardHeader>
+        <CardContent className="p-0">
+          {pendingLoading && pendingReview.length === 0 ? (
+            <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+          ) : pendingReview.length === 0 ? (
+            <p className="text-muted-foreground text-sm text-center py-8">{t("crawlerV2.noPendingReview")}</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">{t("crawlerV2.university")}</TableHead>
+                  <TableHead className="text-xs">{t("crawlerV2.statusLabel")}</TableHead>
+                  <TableHead className="text-xs text-right">{t("crawlerV2.evidence")}</TableHead>
+                  <TableHead className="text-xs text-right">{t("crawlerV2.orxSignals")}</TableHead>
+                  <TableHead className="text-xs">{t("crawlerV2.actions")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pendingReview.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="text-xs font-medium">
+                      {item.university_name ?? item.university_id}
+                      {item.website && <p className="text-[10px] text-muted-foreground">{item.website}</p>}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={item.status} map={ITEM_BADGE} t={t} prefix="crawlerV2.itemStatus" />
+                    </TableCell>
+                    <TableCell className="text-xs text-right tabular-nums">{item.evidence_count}</TableCell>
+                    <TableCell className="text-xs text-right tabular-nums">{item.orx_signal_count}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1.5">
+                        {item.status === "needs_review" && (
+                          <Button size="sm" variant="outline" className="h-6 text-xs gap-1"
+                            disabled={actioning === item.id}
+                            onClick={() => runAction("verify_item", { run_item_id: item.id }, t("crawlerV2.verifiedSuccessfully"))
+                              .then(() => fetchPendingReview())}>
+                            <CheckCircle2 className="w-3 h-3" />{t("crawlerV2.verify")}
+                          </Button>
+                        )}
+                        {item.status === "verified" && (
+                          publishConfirm === item.id ? (
+                            <div className="flex gap-1">
+                              <Button size="sm" variant="destructive" className="h-6 text-xs"
+                                disabled={actioning === item.id}
+                                onClick={() => {
+                                  setPublishConfirm(null);
+                                  runAction("publish_item", { run_item_id: item.id }, t("crawlerV2.publishedSuccessfully"))
+                                    .then(() => fetchPendingReview());
+                                }}>
+                                {t("crawlerV2.confirmPublish")}
+                              </Button>
+                              <Button size="sm" variant="ghost" className="h-6 text-xs"
+                                onClick={() => setPublishConfirm(null)}>
+                                {t("crawlerV2.cancel")}
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button size="sm" variant="default" className="h-6 text-xs gap-1"
+                              onClick={() => setPublishConfirm(item.id)}>
+                              <Play className="w-3 h-3" />{t("crawlerV2.publish")}
+                            </Button>
+                          )
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Maintenance toolbar */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Wrench className="w-4 h-4" />{t("crawlerV2.maintenance")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex gap-2 flex-wrap pb-4">
+          <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5"
+            disabled={!!actioning}
+            onClick={() => runAction("cleanup_locks", {}, t("crawlerV2.locksCleanedUp"))}>
+            <RefreshCw className="w-3.5 h-3.5" />{t("crawlerV2.cleanupLocks")}
+          </Button>
+          <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5"
+            disabled={!!actioning}
+            onClick={() => runAction("mark_stuck_items_failed", { stuck_minutes: 30 }, t("crawlerV2.stuckMarked"))}>
+            <AlertTriangle className="w-3.5 h-3.5" />{t("crawlerV2.markStuck")}
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Detail Panel */}
-      <DetailPanel detail={detail} onClose={() => { setDetail(null); setSelectedRunId(null); }} t={t} />
+      <DetailPanel
+        detail={detail}
+        onClose={() => { setDetail(null); setSelectedRunId(null); }}
+        t={t}
+        actioning={actioning}
+        onCancel={(id) => runAction("cancel_run", { run_id: id }, t("crawlerV2.cancelledSuccessfully"))}
+        onPause={(id) => runAction("pause_run", { run_id: id }, t("crawlerV2.pausedSuccessfully"))}
+        onResume={(id) => runAction("resume_run", { run_id: id }, t("crawlerV2.resumedSuccessfully"))}
+        onRetryItem={(itemId) => runAction("retry_failed_item", { run_item_id: itemId }, t("crawlerV2.retriedSuccessfully"))}
+      />
     </div>
   );
 }
