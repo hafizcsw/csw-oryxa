@@ -203,11 +203,38 @@ async function aiExtract(
   });
 
   // 2. Get homepage raw_page
-  const { data: rawPage } = await srv
-    .from("raw_pages")
-    .select("id,url,text_content")
-    .eq("url", website)
-    .maybeSingle();
+  const rawPageUrls = Array.from(new Set([
+    website,
+    website ? `${website}/` : "",
+  ].filter(Boolean)));
+
+  let rawPage: any = null;
+
+  if (rawPageUrls.length > 0) {
+    const { data: exactRawPage } = await srv
+      .from("raw_pages")
+      .select("id,url,text_content")
+      .in("url", rawPageUrls)
+      .order("fetched_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    rawPage = exactRawPage;
+  }
+
+  if (!rawPage?.text_content) {
+    const { data: fallbackRawPage } = await srv
+      .from("raw_pages")
+      .select("id,url,text_content")
+      .eq("university_id", uniId)
+      .gte("status_code", 200)
+      .lt("status_code", 300)
+      .order("fetched_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    rawPage = fallbackRawPage;
+  }
 
   if (!rawPage?.text_content) {
     await tlog(srv, {
