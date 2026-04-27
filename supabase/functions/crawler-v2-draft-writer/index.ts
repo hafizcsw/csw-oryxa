@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   handleCorsPreflight,
   getCorsHeaders,
@@ -29,7 +29,7 @@ function jsonResp(data: unknown, status = 200, origin: string | null = null): Re
 }
 
 async function tlog(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   p: {
     run_id: string; run_item_id: string; stage: string; event_type: EventType;
     duration_ms?: number; success?: boolean; error_type?: string;
@@ -83,7 +83,7 @@ async function probeUrl(url: string): Promise<{ reachable: boolean; contentType:
 // ── Main: write_drafts ─────────────────────────────────────────────────────
 
 async function writeDrafts(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   runItemId: string,
   tid: string,
 ): Promise<{ ok: boolean; error?: string; artifacts_registered: number; drafts_written: number }> {

@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   handleCorsPreflight,
   getCorsHeaders,
@@ -125,7 +125,7 @@ Deno.serve(async (req: Request) => {
 // ── Action: create_run ─────────────────────────────────────────────────────
 
 async function handleCreateRun(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
@@ -366,7 +366,7 @@ async function handleCreateRun(
 // ── Action: list_runs ──────────────────────────────────────────────────────
 
 async function handleListRuns(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   tid: string,
   origin: string | null,
 ): Promise<Response> {
@@ -425,7 +425,7 @@ async function handleListRuns(
 // ── Action: get_run ────────────────────────────────────────────────────────
 
 async function handleGetRun(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
@@ -498,12 +498,7 @@ async function handleGetRun(
 // ── Action: get_run_candidates (1E) ────────────────────────────────────────
 
 async function handleGetRunCandidates(
-// ── Action: search_universities ────────────────────────────────────────────
-// Admin-only autocomplete used by the Run Single University card.
-// Read-only. No writes. Searches: name, name_en, name_ar, slug, website.
-
-async function handleSearchUniversities(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
@@ -525,7 +520,7 @@ async function handleSearchUniversities(
 // ── Action: get_run_evidence (1E) ──────────────────────────────────────────
 
 async function handleGetRunEvidence(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
@@ -547,7 +542,7 @@ async function handleGetRunEvidence(
 // ── Action: cancel_run (2) ─────────────────────────────────────────────────
 
 async function handleCancelRun(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
@@ -576,7 +571,7 @@ async function handleCancelRun(
 // ── Action: pause_run (2) ─────────────────────────────────────────────────
 
 async function handlePauseRun(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
@@ -591,7 +586,7 @@ async function handlePauseRun(
 // ── Action: resume_run (2) ────────────────────────────────────────────────
 
 async function handleResumeRun(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
@@ -606,7 +601,7 @@ async function handleResumeRun(
 // ── Action: retry_failed_item (2) ─────────────────────────────────────────
 
 async function handleRetryFailedItem(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
@@ -630,7 +625,7 @@ async function handleRetryFailedItem(
 // ── Action: cleanup_locks (2) ─────────────────────────────────────────────
 
 async function handleCleanupLocks(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   tid: string,
   origin: string | null,
 ): Promise<Response> {
@@ -642,7 +637,7 @@ async function handleCleanupLocks(
 // ── Action: mark_stuck_items_failed (2) ───────────────────────────────────
 
 async function handleMarkStuckItemsFailed(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
@@ -676,7 +671,7 @@ async function handleMarkStuckItemsFailed(
 // ── Action: get_pending_review (6) ────────────────────────────────────────
 
 async function handleGetPendingReview(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
@@ -715,7 +710,7 @@ async function handleGetPendingReview(
 // ── Action: verify_item (6) ───────────────────────────────────────────────
 
 async function handleVerifyItem(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
@@ -735,7 +730,7 @@ async function handleVerifyItem(
 // ── Action: publish_item (6) ──────────────────────────────────────────────
 
 async function handlePublishItem(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   body: Record<string, unknown>,
   tid: string,
   origin: string | null,
@@ -750,6 +745,16 @@ async function handlePublishItem(
 
   if (error) return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
   return jsonResp({ ...(data as object), trace_id: tid }, 200, origin);
+}
+
+// ── Action: search_universities ────────────────────────────────────────────
+
+async function handleSearchUniversities(
+  srv: SupabaseClient<any, any, any>,
+  body: Record<string, unknown>,
+  tid: string,
+  origin: string | null,
+): Promise<Response> {
   const rawQuery = (body.query as string | undefined)?.trim() ?? "";
   const limitRaw = body.limit as number | undefined;
   const limit = Math.min(Math.max(typeof limitRaw === "number" ? limitRaw : 20, 1), 50);

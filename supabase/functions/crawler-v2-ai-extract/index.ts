@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   handleCorsPreflight,
   getCorsHeaders,
@@ -75,7 +75,7 @@ function extractDomain(url: string): string {
 }
 
 async function tlog(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   p: {
     run_id: string; run_item_id: string; stage: string; event_type: EventType;
     duration_ms?: number; success?: boolean; error_type?: string;
@@ -161,7 +161,7 @@ async function callDeepSeek(
 // ── Main: ai_extract ───────────────────────────────────────────────────────
 
 async function aiExtract(
-  srv: ReturnType<typeof createClient>,
+  srv: SupabaseClient<any, any, any>,
   runItemId: string,
   tid: string,
 ): Promise<{ ok: boolean; error?: string; evidence_created: number; ai_enabled: boolean }> {
