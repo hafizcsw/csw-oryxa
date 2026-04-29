@@ -1,6 +1,8 @@
 {
   "_version": "2.1.1",
   "common": {
+    "fullscreen": "पूर्ण स्क्रीन",
+    "exitFullscreen": "पूर्ण स्क्रीन से बाहर निकलें",
     "more": "और",
     "loading": "लोड हो रहा है...",
     "contactUs": "संपर्क करें",
@@ -48,6 +50,7 @@
     "scholarships": "छात्रवृत्तियाँ",
     "resources": "संसाधन",
     "ielts": "IELTS तैयारी",
+    "languages": "भाषाएँ",
     "courses": "भाषा पाठ्यक्रम",
     "blog": "ब्लॉग",
     "faq": "अक्सर पूछे जाने वाले प्रश्न",
@@ -80,6 +83,7 @@
     "studyDestinations": "अध्ययन गंतव्य",
     "findUniversity": "विश्वविद्यालय खोजें",
     "ielts": "IELTS",
+    "languages": "भाषाएँ",
     "essentials": "छात्र आवश्यकताएँ",
     "myLessons": "My Lessons",
     "mySessions": "My Sessions",
@@ -436,6 +440,9 @@
       "dayAgo": "{{n}}दि पहले"
     },
     "orx": {
+    "nav": {
+      "orxRank": "ORX RANK"
+    },
       "badge": "साक्ष्य-आधारित रेटिंग प्रणाली",
       "subtitle": "एक अनूठी रेटिंग प्रणाली जो पारंपरिक प्रतिष्ठा नहीं बल्कि भविष्य की तैयारी पर केंद्रित है — तीन विश्लेषणात्मक परतों में सत्यापित साक्ष्य पर आधारित",
       "pillars": {
@@ -1164,7 +1171,8 @@
         "accountCreatedLinked": "✅ Your account has been created and linked to your WhatsApp number. We will now take you on a quick tour of the most important items.",
         "chatLinkedAccount": "✅ Your chat has been linked to your account. We will now take you on a quick tour of the most important items.",
         "searchingFallback": "Searching for the best options for you...",
-        "thinkingFallback": "Got it — one moment..."
+        "thinkingFallback": "Got it — one moment...",
+        "aiAssistGreeting": "नमस्ते, मुझे अपने लिए सबसे अच्छा अध्ययन कार्यक्रम खोजने में मदद चाहिए"
       },
       "controls": {
         "deepSearch": "Deep Search",
@@ -1175,7 +1183,9 @@
         "send": "भेजें",
         "hideHistory": "Hide history",
         "showHistory": "Show history",
-        "newChat": "नई चैट"
+        "newChat": "नई चैट",
+        "add": "अटैचमेंट जोड़ें",
+        "clearSearchMode": "खोज मोड साफ़ करें"
       },
       "status": {
         "current": "वर्तमान स्थिति",
@@ -1205,6 +1215,20 @@
             "label": "Label"
           }
         }
+      },
+      "live": {
+        "title": "लाइव मूल्यांकन सत्र",
+        "start": "लाइव सत्र शुरू करें",
+        "label": "लाइव",
+        "tooltip": "वीडियो के साथ लाइव सत्र"
+      },
+      "voice": {
+        "label": "आवाज़",
+        "labelActive": "समाप्त",
+        "start": "लाइव वॉइस चैट शुरू करें",
+        "startFailed": "वॉइस चैट शुरू नहीं हो सकी। माइक्रोफ़ोन अनुमति जाँचें।",
+        "stop": "वॉइस चैट समाप्त करें",
+        "tooltip": "Oryxa से आवाज़ में बात करें"
       }
     },
     "profile": {
@@ -9415,6 +9439,9 @@
     "status": "Status"
   },
   "orx": {
+    "nav": {
+      "orxRank": "ORX RANK"
+    },
     "evaluating": {
       "title": "Title"
     }
@@ -10566,7 +10593,7 @@
     "publishedSuccessfully": "साक्ष्य प्रकाशित हुए",
     "orxReadiness": "ORX तत्परता",
     "mapOrx": "ORX संकेत मैप करें",
-    "orxMapped": "ORX संकेत मैप हुए"
+    "orxMapped": "ORX संकेत मैप हुए",
     "changeUniversity": "बदलें",
     "universitySearchPlaceholder": "नाम से विश्वविद्यालय खोजें...",
     "noUniversitiesFound": "कोई विश्वविद्यालय नहीं मिला",

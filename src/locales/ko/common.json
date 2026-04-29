@@ -1,6 +1,8 @@
 {
   "_version": "2.1.1",
   "common": {
+    "fullscreen": "전체 화면",
+    "exitFullscreen": "전체 화면 종료",
     "more": "더보기",
     "loading": "로딩 중...",
     "contactUs": "문의하기",
@@ -48,6 +50,7 @@
     "scholarships": "장학금",
     "resources": "리소스",
     "ielts": "IELTS 준비",
+    "languages": "언어",
     "courses": "어학 과정",
     "blog": "블로그",
     "faq": "자주 묻는 질문",
@@ -80,6 +83,7 @@
     "studyDestinations": "유학 목적지",
     "findUniversity": "대학 찾기",
     "ielts": "IELTS",
+    "languages": "언어",
     "essentials": "학생 필수 정보",
     "myLessons": "My Lessons",
     "mySessions": "My Sessions",
@@ -436,6 +440,9 @@
       "dayAgo": "{{n}}일 전"
     },
     "orx": {
+    "nav": {
+      "orxRank": "ORX RANK"
+    },
       "badge": "근거 기반 평가 시스템",
       "subtitle": "전통적 명성이 아닌 미래 준비도에 초점을 맞춘 고유한 평가 시스템 — 세 가지 분석 계층의 검증된 근거를 기반으로 합니다",
       "pillars": {
@@ -1164,7 +1171,8 @@
         "accountCreatedLinked": "✅ Your account has been created and linked to your WhatsApp number. We will now take you on a quick tour of the most important items.",
         "chatLinkedAccount": "✅ Your chat has been linked to your account. We will now take you on a quick tour of the most important items.",
         "searchingFallback": "Searching for the best options for you...",
-        "thinkingFallback": "Got it — one moment..."
+        "thinkingFallback": "Got it — one moment...",
+        "aiAssistGreeting": "안녕하세요, 저에게 가장 적합한 학업 프로그램을 찾는 데 도움이 필요합니다"
       },
       "controls": {
         "deepSearch": "Deep Search",
@@ -1175,7 +1183,9 @@
         "send": "보내기",
         "hideHistory": "Hide history",
         "showHistory": "Show history",
-        "newChat": "새 채팅"
+        "newChat": "새 채팅",
+        "add": "첨부 파일 추가",
+        "clearSearchMode": "검색 모드 해제"
       },
       "status": {
         "current": "현재 상태",
@@ -1205,6 +1215,20 @@
             "label": "Label"
           }
         }
+      },
+      "live": {
+        "title": "라이브 평가 세션",
+        "start": "라이브 세션 시작",
+        "label": "라이브",
+        "tooltip": "비디오가 포함된 라이브 세션"
+      },
+      "voice": {
+        "label": "음성",
+        "labelActive": "종료",
+        "start": "라이브 음성 채팅 시작",
+        "startFailed": "음성 채팅을 시작할 수 없습니다. 마이크 권한을 확인하세요.",
+        "stop": "음성 채팅 종료",
+        "tooltip": "Oryxa와 음성으로 대화하기"
       }
     },
     "profile": {
@@ -9405,6 +9429,9 @@
     "status": "Status"
   },
   "orx": {
+    "nav": {
+      "orxRank": "ORX RANK"
+    },
     "evaluating": {
       "title": "Title"
     }
@@ -10556,7 +10583,7 @@
     "publishedSuccessfully": "증거가 게시되었습니다",
     "orxReadiness": "ORX 준비 상태",
     "mapOrx": "ORX 신호 매핑",
-    "orxMapped": "ORX 신호가 매핑되었습니다"
+    "orxMapped": "ORX 신호가 매핑되었습니다",
     "changeUniversity": "변경",
     "universitySearchPlaceholder": "이름으로 대학 검색...",
     "noUniversitiesFound": "대학을 찾을 수 없습니다",

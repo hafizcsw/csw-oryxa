@@ -1,6 +1,8 @@
 {
   "_version": "2.1.1",
   "common": {
+    "fullscreen": "Vollbild",
+    "exitFullscreen": "Vollbild beenden",
     "more": "mehr",
     "loading": "Lädt...",
     "contactUs": "Kontaktieren Sie uns",
@@ -48,6 +50,7 @@
     "scholarships": "Stipendien",
     "resources": "Ressourcen",
     "ielts": "IELTS-Vorbereitung",
+    "languages": "Sprachen",
     "courses": "Sprachkurse",
     "blog": "Neuigkeiten",
     "faq": "Häufige Fragen",
@@ -80,6 +83,7 @@
     "studyDestinations": "Studienziele",
     "findUniversity": "Eine Universität finden",
     "ielts": "IELTS",
+    "languages": "Sprachen",
     "essentials": "Studenten-Essentials",
     "myLessons": "My Lessons",
     "mySessions": "My Sessions",
@@ -436,6 +440,9 @@
       "dayAgo": "vor {{n}} Tg"
     },
     "orx": {
+    "nav": {
+      "orxRank": "ORX RANK"
+    },
       "badge": "Evidenzbasiertes Bewertungssystem",
       "subtitle": "Ein einzigartiges Bewertungssystem, das sich auf Zukunftsfähigkeit konzentriert – nicht auf traditionelle Reputation – basierend auf verifizierten Daten in drei Analyseebenen",
       "pillars": {
@@ -1164,7 +1171,8 @@
         "accountCreatedLinked": "✅ Your account has been created and linked to your WhatsApp number. We will now take you on a quick tour of the most important items.",
         "chatLinkedAccount": "✅ Your chat has been linked to your account. We will now take you on a quick tour of the most important items.",
         "searchingFallback": "Searching for the best options for you...",
-        "thinkingFallback": "Got it — one moment..."
+        "thinkingFallback": "Got it — one moment...",
+        "aiAssistGreeting": "Hallo, ich brauche Hilfe, das beste Studienprogramm für mich zu finden"
       },
       "controls": {
         "deepSearch": "Deep Search",
@@ -1175,7 +1183,9 @@
         "send": "Senden",
         "hideHistory": "Hide history",
         "showHistory": "Show history",
-        "newChat": "Neuer Chat"
+        "newChat": "Neuer Chat",
+        "add": "Anhang hinzufügen",
+        "clearSearchMode": "Suchmodus löschen"
       },
       "status": {
         "current": "Aktueller Status",
@@ -1205,6 +1215,20 @@
             "label": "Label"
           }
         }
+      },
+      "live": {
+        "title": "Live-Bewertungssitzung",
+        "start": "Live-Sitzung starten",
+        "label": "Live",
+        "tooltip": "Live-Sitzung mit Video"
+      },
+      "voice": {
+        "label": "Sprache",
+        "labelActive": "Beenden",
+        "start": "Live-Sprachchat starten",
+        "startFailed": "Sprachchat konnte nicht gestartet werden. Bitte prüfe die Mikrofonberechtigungen.",
+        "stop": "Sprachchat beenden",
+        "tooltip": "Sprich per Stimme mit Oryxa"
       }
     },
     "profile": {
@@ -9384,6 +9408,9 @@
     "status": "Status"
   },
   "orx": {
+    "nav": {
+      "orxRank": "ORX RANK"
+    },
     "evaluating": {
       "title": "Title"
     }
@@ -10535,7 +10562,7 @@
     "publishedSuccessfully": "Belege veröffentlicht",
     "orxReadiness": "ORX-Bereitschaft",
     "mapOrx": "ORX-Signale zuordnen",
-    "orxMapped": "ORX-Signale zugeordnet"
+    "orxMapped": "ORX-Signale zugeordnet",
     "changeUniversity": "Ändern",
     "universitySearchPlaceholder": "Universitäten nach Namen suchen...",
     "noUniversitiesFound": "Keine Universitäten gefunden",

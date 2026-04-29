@@ -10,6 +10,7 @@ import { DebugOverlay } from '@/components/chat/DebugOverlay';
 import { CompareFloatingBar } from '@/components/compare/CompareFloatingBar';
 import { CompareDrawer } from '@/components/compare/CompareDrawer';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getLanguageDirection } from '@/i18n/languages';
 import { useMalakChat } from '@/contexts/MalakChatContext';
 import { useTheme } from 'next-themes';
 import { useQuery } from '@tanstack/react-query';
@@ -29,7 +30,7 @@ export function HeroSection() {
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const { showSuggestedPrograms, universities } = useMalakChat();
-  const isArabic = language === 'ar';
+  const isRTL = getLanguageDirection(language) === 'rtl';
   const [isTickerVisible, setIsTickerVisible] = useState(true);
   const [compareDrawerOpen, setCompareDrawerOpen] = useState(false);
   const [chatMessageCount, setChatMessageCount] = useState(0);
@@ -139,7 +140,7 @@ export function HeroSection() {
             {/* Scrolling Text */}
             <div className="flex-1 overflow-hidden py-2 sm:py-3">
               <div 
-                className={`animate-marquee whitespace-nowrap font-medium text-xs sm:text-sm tracking-wide ${isArabic ? 'direction-rtl' : ''}`}
+                className={`animate-marquee whitespace-nowrap font-medium text-xs sm:text-sm tracking-wide ${isRTL ? 'direction-rtl' : ''}`}
                 style={{ 
                   color: tickerSettings?.text_color || '#FFFFFF',
                   animationDuration: `${tickerSettings?.speed_seconds || 15}s`

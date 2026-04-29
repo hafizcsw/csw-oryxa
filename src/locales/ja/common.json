@@ -1,6 +1,8 @@
 {
   "_version": "2.1.1",
   "common": {
+    "fullscreen": "全画面",
+    "exitFullscreen": "全画面を終了",
     "more": "もっと",
     "loading": "読み込み中...",
     "contactUs": "お問い合わせ",
@@ -48,6 +50,7 @@
     "scholarships": "奨学金",
     "resources": "リソース",
     "ielts": "IELTS対策",
+    "languages": "言語",
     "courses": "語学コース",
     "blog": "ブログ",
     "faq": "よくある質問",
@@ -80,6 +83,7 @@
     "studyDestinations": "留学先",
     "findUniversity": "大学を探す",
     "ielts": "IELTS",
+    "languages": "言語",
     "essentials": "学生向け必需品",
     "myLessons": "My Lessons",
     "mySessions": "My Sessions",
@@ -436,6 +440,9 @@
       "dayAgo": "{{n}}日前"
     },
     "orx": {
+    "nav": {
+      "orxRank": "ORX RANK"
+    },
       "badge": "エビデンスに基づく評価システム",
       "subtitle": "従来の評判ではなく、将来への準備度に焦点を当てた独自の評価システム — 3 つの分析レイヤーにわたる検証済みデータに基づいています",
       "pillars": {
@@ -1164,7 +1171,8 @@
         "accountCreatedLinked": "✅ Your account has been created and linked to your WhatsApp number. We will now take you on a quick tour of the most important items.",
         "chatLinkedAccount": "✅ Your chat has been linked to your account. We will now take you on a quick tour of the most important items.",
         "searchingFallback": "Searching for the best options for you...",
-        "thinkingFallback": "Got it — one moment..."
+        "thinkingFallback": "Got it — one moment...",
+        "aiAssistGreeting": "こんにちは。自分に最適な学習プログラムを見つける手助けが必要です"
       },
       "controls": {
         "deepSearch": "Deep Search",
@@ -1175,7 +1183,9 @@
         "send": "送信",
         "hideHistory": "Hide history",
         "showHistory": "Show history",
-        "newChat": "新しいチャット"
+        "newChat": "新しいチャット",
+        "add": "添付を追加",
+        "clearSearchMode": "検索モードを解除"
       },
       "status": {
         "current": "現在のステータス",
@@ -1205,6 +1215,20 @@
             "label": "Label"
           }
         }
+      },
+      "live": {
+        "title": "ライブ評価セッション",
+        "start": "ライブセッションを開始",
+        "label": "ライブ",
+        "tooltip": "ビデオ付きライブセッション"
+      },
+      "voice": {
+        "label": "音声",
+        "labelActive": "終了",
+        "start": "ライブ音声チャットを開始",
+        "startFailed": "音声チャットを開始できませんでした。マイクの権限を確認してください。",
+        "stop": "音声チャットを終了",
+        "tooltip": "Oryxaと音声で話す"
       }
     },
     "profile": {
@@ -9405,6 +9429,9 @@
     "status": "Status"
   },
   "orx": {
+    "nav": {
+      "orxRank": "ORX RANK"
+    },
     "evaluating": {
       "title": "Title"
     }
@@ -10556,7 +10583,7 @@
     "publishedSuccessfully": "エビデンスが公開されました",
     "orxReadiness": "ORX準備状況",
     "mapOrx": "ORXシグナルをマッピング",
-    "orxMapped": "ORXシグナルがマッピングされました"
+    "orxMapped": "ORXシグナルがマッピングされました",
     "changeUniversity": "変更",
     "universitySearchPlaceholder": "大学名で検索...",
     "noUniversitiesFound": "大学が見つかりません",

@@ -1,6 +1,8 @@
 {
   "_version": "2.1.1",
   "common": {
+    "fullscreen": "全屏",
+    "exitFullscreen": "退出全屏",
     "more": "更多",
     "loading": "加载中...",
     "contactUs": "联系我们",
@@ -49,6 +51,7 @@
     "forInstitutions": "面向教育机构",
     "resources": "资源",
     "ielts": "雅思备考",
+    "languages": "语言",
     "courses": "语言课程",
     "blog": "博客",
     "faq": "常见问题",
@@ -81,6 +84,7 @@
     "studyDestinations": "留学目的地",
     "findUniversity": "寻找大学",
     "ielts": "雅思",
+    "languages": "语言",
     "essentials": "学生必备",
     "myLessons": "My Lessons",
     "mySessions": "My Sessions",
@@ -437,6 +441,9 @@
       "dayAgo": "{{n}}天前"
     },
     "orx": {
+    "nav": {
+      "orxRank": "ORX RANK"
+    },
       "badge": "循证评级体系",
       "subtitle": "独特的评级体系,关注面向未来的能力而非传统声誉 — 基于三层分析的可验证数据",
       "pillars": {
@@ -1165,7 +1172,8 @@
         "accountCreatedLinked": "✅ 你的账号已创建并与手机号关联。接下来我们会带你快速了解最重要的事项。",
         "chatLinkedAccount": "✅ 你的聊天已关联到账号。接下来我们会带你快速了解最重要的事项。",
         "searchingFallback": "正在为你搜索最佳选项...",
-        "thinkingFallback": "收到，请稍等..."
+        "thinkingFallback": "收到，请稍等...",
+        "aiAssistGreeting": "你好，我需要帮助找到最适合我的学习项目"
       },
       "controls": {
         "deepSearch": "深度搜索",
@@ -1176,7 +1184,9 @@
         "send": "发送",
         "hideHistory": "隐藏历史",
         "showHistory": "显示历史",
-        "newChat": "新聊天"
+        "newChat": "新聊天",
+        "add": "添加附件",
+        "clearSearchMode": "清除搜索模式"
       },
       "status": {
         "current": "当前状态",
@@ -1206,6 +1216,20 @@
             "label": "Label"
           }
         }
+      },
+      "live": {
+        "title": "实时评估会话",
+        "start": "开始实时会话",
+        "label": "实时",
+        "tooltip": "带视频的实时会话"
+      },
+      "voice": {
+        "label": "语音",
+        "labelActive": "结束",
+        "start": "开始实时语音聊天",
+        "startFailed": "无法启动语音聊天。请检查麦克风权限。",
+        "stop": "结束语音聊天",
+        "tooltip": "通过语音与 Oryxa 交谈"
       }
     },
     "profile": {
@@ -10028,6 +10052,9 @@
     "status": "Status"
   },
   "orx": {
+    "nav": {
+      "orxRank": "ORX RANK"
+    },
     "evaluating": {
       "title": "Title"
     }
@@ -11179,7 +11206,7 @@
     "publishedSuccessfully": "证据已发布",
     "orxReadiness": "ORX就绪情况",
     "mapOrx": "映射ORX信号",
-    "orxMapped": "ORX信号已映射"
+    "orxMapped": "ORX信号已映射",
     "changeUniversity": "更改",
     "universitySearchPlaceholder": "按名称搜索大学...",
     "noUniversitiesFound": "未找到大学",
