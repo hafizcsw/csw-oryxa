@@ -325,7 +325,7 @@ async function aiExtract(
 
   // 6. Update run item
   await srv.from("crawler_run_items").update({
-    status:           "ai_extracting",
+    status:           "evidence_created",
     stage:            "ai_extracted",
     progress_percent: 75,
     updated_at:       new Date().toISOString(),
