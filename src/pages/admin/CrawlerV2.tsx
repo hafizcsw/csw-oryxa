@@ -56,13 +56,20 @@ interface RunDetail extends CrawlerRun {
   run: CrawlerRun;
   status_breakdown: Record<string, number>;
   items: Array<{
+    id: string;
     university_id: string;
     university_name: string | null;
     website: string | null;
     status: string;
+    stage: string | null;
+    progress_percent: number;
     failure_reason: string | null;
     trace_id: string;
+    created_at: string;
     updated_at: string;
+    evidence_count: number;
+    pages_found: number;
+    pages_fetched: number;
   }>;
 }
 
@@ -75,6 +82,7 @@ interface PageCandidate {
   priority: number;
   status: string;
   fetch_error: string | null;
+  trace_id: string | null;
   created_at: string;
 }
 
@@ -86,15 +94,21 @@ interface EvidenceItem {
   fact_group: string;
   field_key: string;
   value_raw: string;
+  evidence_quote: string | null;
   source_url: string;
   confidence_0_100: number;
   trust_level: string;
   validation_status: string;
   review_status: string;
   publish_status: string;
+  extraction_method: string | null;
+  model_provider: string | null;
+  model_name: string | null;
+  trace_id: string | null;
   orx_layer: string | null;
   orx_signal_family: string | null;
   created_at: string;
+  updated_at: string | null;
 }
 
 // ── Constants ───────────────────────────────────────────────────────────────
@@ -134,9 +148,11 @@ function callControl(body: Record<string, unknown>) {
 
 function StatusBadge({ status, map, t, prefix }: { status: string; map: Record<string, string>; t: (k: string) => string; prefix: string }) {
   const cls = map[status] ?? "bg-muted text-muted-foreground";
+  const key = `${prefix}.${status}`;
+  const label = t(key);
   return (
     <Badge className={`text-xs font-medium ${cls}`}>
-      {t(`${prefix}.${status}`) || status}
+      {label === key ? status : label}
     </Badge>
   );
 }
@@ -358,6 +374,10 @@ function DetailPanel({ detail, onClose, t, onCancel, onPause, onResume, onRetryI
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{item.university_name ?? item.university_id}</p>
                         {item.website && <p className="text-muted-foreground truncate text-[10px]">{item.website}</p>}
+                        <p className="font-mono text-[10px] text-muted-foreground truncate">
+                          {[item.stage, `${item.progress_percent}%`, item.updated_at].filter(Boolean).join(" | ")}
+                        </p>
+                        <p className="font-mono text-[10px] text-muted-foreground truncate">{item.trace_id}</p>
                       </div>
                       <div className="flex items-center gap-1 ml-2 shrink-0">
                         <StatusBadge status={item.status} map={ITEM_BADGE} t={t} prefix="crawlerV2.itemStatus" />
@@ -387,6 +407,11 @@ function DetailPanel({ detail, onClose, t, onCancel, onPause, onResume, onRetryI
                         <span className="font-mono truncate flex-1 text-[10px] text-muted-foreground">{c.candidate_url}</span>
                         <Badge className={`text-[10px] h-4 px-1 shrink-0 ${c.status === "fetched" ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>{c.status}</Badge>
                       </div>
+                      <p className="font-mono text-[10px] text-muted-foreground truncate">
+                        {[c.discovery_method, String(c.priority), c.created_at].filter(Boolean).join(" | ")}
+                      </p>
+                      {c.trace_id && <p className="font-mono text-[10px] text-muted-foreground truncate">{c.trace_id}</p>}
+                      {c.fetch_error && <p className="text-[10px] text-destructive truncate">{c.fetch_error}</p>}
                     </div>
                   ))}
                 </div>
@@ -406,6 +431,15 @@ function DetailPanel({ detail, onClose, t, onCancel, onPause, onResume, onRetryI
                         <Badge variant="outline" className="text-[10px] h-4 px-1">{ev.confidence_0_100}%</Badge>
                       </div>
                       <p className="text-muted-foreground truncate">{ev.value_raw}</p>
+                      {ev.evidence_quote && <p className="text-[10px] text-muted-foreground truncate">{ev.evidence_quote}</p>}
+                      <p className="font-mono text-[10px] text-muted-foreground truncate">{ev.source_url}</p>
+                      <p className="font-mono text-[10px] text-muted-foreground truncate">
+                        {[ev.extraction_method, ev.model_provider, ev.model_name].filter(Boolean).join(" | ")}
+                      </p>
+                      <p className="font-mono text-[10px] text-muted-foreground truncate">
+                        {[ev.review_status, ev.publish_status, ev.created_at].filter(Boolean).join(" | ")}
+                      </p>
+                      {ev.trace_id && <p className="font-mono text-[10px] text-muted-foreground truncate">{ev.trace_id}</p>}
                       {ev.orx_signal_family && (
                         <p className="text-[10px] text-blue-600 dark:text-blue-400">{ev.orx_layer}/{ev.orx_signal_family}</p>
                       )}

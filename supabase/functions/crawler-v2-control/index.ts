@@ -448,7 +448,7 @@ async function handleGetRun(
   // Item counts by status
   const { data: allItems } = await srv
     .from("crawler_run_items")
-    .select("status, failure_reason, university_id, website, trace_id, updated_at")
+    .select("id, status, stage, progress_percent, failure_reason, university_id, website, trace_id, created_at, updated_at, evidence_count, pages_found, pages_fetched")
     .eq("run_id", runId)
     .order("created_at", { ascending: true })
     .limit(100);
@@ -504,14 +504,19 @@ async function handleGetRunCandidates(
   origin: string | null,
 ): Promise<Response> {
   const runId = body.run_id as string | undefined;
-  if (!runId) return jsonResp({ ok: false, error: "run_id required", trace_id: tid }, 400, origin);
+  const runItemId = body.run_item_id as string | undefined;
+  if (!runId && !runItemId) return jsonResp({ ok: false, error: "run_id or run_item_id required", trace_id: tid }, 400, origin);
 
-  const { data, error } = await srv
+  let query = srv
     .from("crawler_page_candidates")
-    .select("id,crawler_run_item_id,candidate_url,candidate_type,discovery_method,priority,status,fetch_error,created_at")
-    .eq("crawler_run_id", runId)
+    .select("id,crawler_run_item_id,candidate_url,candidate_type,discovery_method,priority,status,fetch_error,trace_id,created_at")
     .order("priority", { ascending: false })
     .limit(500);
+
+  if (runItemId) query = query.eq("crawler_run_item_id", runItemId);
+  else query = query.eq("crawler_run_id", runId);
+
+  const { data, error } = await query;
 
   if (error) return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
   return jsonResp({ ok: true, candidates: data ?? [], total: (data ?? []).length, trace_id: tid }, 200, origin);
@@ -526,14 +531,19 @@ async function handleGetRunEvidence(
   origin: string | null,
 ): Promise<Response> {
   const runId = body.run_id as string | undefined;
-  if (!runId) return jsonResp({ ok: false, error: "run_id required", trace_id: tid }, 400, origin);
+  const runItemId = body.run_item_id as string | undefined;
+  if (!runId && !runItemId) return jsonResp({ ok: false, error: "run_id or run_item_id required", trace_id: tid }, 400, origin);
 
-  const { data, error } = await srv
+  let query = srv
     .from("evidence_items")
-    .select("id,crawler_run_item_id,university_id,entity_type,fact_group,field_key,value_raw,source_url,confidence_0_100,trust_level,validation_status,review_status,publish_status,orx_layer,orx_signal_family,created_at")
-    .eq("crawler_run_id", runId)
+    .select("id,crawler_run_item_id,university_id,entity_type,fact_group,field_key,value_raw,evidence_quote,source_url,confidence_0_100,trust_level,validation_status,review_status,publish_status,extraction_method,model_provider,model_name,trace_id,orx_layer,orx_signal_family,created_at,updated_at")
     .order("created_at", { ascending: false })
     .limit(500);
+
+  if (runItemId) query = query.eq("crawler_run_item_id", runItemId);
+  else query = query.eq("crawler_run_id", runId);
+
+  const { data, error } = await query;
 
   if (error) return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
   return jsonResp({ ok: true, evidence: data ?? [], total: (data ?? []).length, trace_id: tid }, 200, origin);
