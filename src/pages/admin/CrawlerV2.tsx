@@ -383,7 +383,7 @@ function DetailPanel({ detail, onClose, t, onCancel, onPause, onResume, onRetryI
                         <StatusBadge status={item.status} map={ITEM_BADGE} t={t} prefix="crawlerV2.itemStatus" />
                         {item.status === "failed" && (
                           <button title={t("crawlerV2.retry")} className="text-muted-foreground hover:text-foreground"
-                            onClick={(e) => { e.stopPropagation(); onRetryItem(item.trace_id); }}>
+                            onClick={(e) => { e.stopPropagation(); onRetryItem(item.id); }}>
                             <RotateCcw className="w-3 h-3" />
                           </button>
                         )}
@@ -731,6 +731,7 @@ export default function CrawlerV2Page() {
           onSubmit={() => createRun("all", allMode)}
           creating={creating === "all"}
           t={t}
+          submitDisabled
         />
         <RunCard
           icon={<Building2 className="w-5 h-5" />}
@@ -751,6 +752,7 @@ export default function CrawlerV2Page() {
           onSubmit={() => createRun("country", countryMode, { country_code: countryCode })}
           creating={creating === "country"}
           t={t}
+          submitDisabled
         />
         <RunCard
           icon={<GraduationCap className="w-5 h-5" />}
@@ -955,8 +957,8 @@ export default function CrawlerV2Page() {
             <RefreshCw className="w-3.5 h-3.5" />{t("crawlerV2.cleanupLocks")}
           </Button>
           <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5"
-            disabled={!!actioning}
-            onClick={() => runAction("mark_stuck_items_failed", { stuck_minutes: 30 }, t("crawlerV2.stuckMarked"))}>
+            disabled={!!actioning || !detail?.run?.id}
+            onClick={() => runAction("mark_stuck_items_failed", { stuck_minutes: 30, run_id: detail?.run?.id }, t("crawlerV2.stuckMarked"))}>
             <AlertTriangle className="w-3.5 h-3.5" />{t("crawlerV2.markStuck")}
           </Button>
         </CardContent>

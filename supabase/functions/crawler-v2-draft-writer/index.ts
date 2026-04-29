@@ -86,13 +86,13 @@ async function writeDrafts(
   srv: SupabaseClient<any, any, any>,
   runItemId: string,
   tid: string,
-): Promise<{ ok: boolean; error?: string; artifacts_registered: number; drafts_written: number }> {
+): Promise<{ ok: boolean; error?: string; artifacts_registered: number; drafts_written: number; no_data?: boolean; write_errors?: string[] }> {
   const t0 = Date.now();
 
   // 1. Load run item
   const { data: item, error: itemErr } = await srv
     .from("crawler_run_items")
-    .select("id,run_id,university_id,website,target_domain,trace_id")
+    .select("id,run_id,university_id,website,target_domain,trace_id,status")
     .eq("id", runItemId)
     .single();
 
@@ -105,6 +105,16 @@ async function writeDrafts(
   const website = ((item.website as string | null) ?? "").replace(/\/$/, "");
   const domain  = ((item.target_domain as string | null) ?? "").replace(/^www\./, "");
   const traceId = (item.trace_id as string) || tid;
+  const status  = item.status as string;
+
+  if (status !== "evidence_created") {
+    return {
+      ok: false,
+      error: "invalid_status_for_draft_writer",
+      artifacts_registered: 0,
+      drafts_written: 0,
+    };
+  }
 
   await tlog(srv, {
     run_id: runId, run_item_id: runItemId, stage: "draft_writer", event_type: "started",
@@ -160,6 +170,7 @@ async function writeDrafts(
   // ── 5. Register PDF artifacts ──────────────────────────────────────────────
 
   let artifactsRegistered = 0;
+  const writeErrors: string[] = [];
   const uniquePdfs = [...new Set(pdfUrls)].slice(0, 20);
 
   const artifactRows = uniquePdfs.map((url) => {
@@ -184,7 +195,8 @@ async function writeDrafts(
       .from("crawl_file_artifacts")
       .upsert(artifactRows, { onConflict: "source_url", ignoreDuplicates: true })
       .select("id");
-    if (!artErr) artifactsRegistered = (insertedArtifacts ?? []).length;
+    if (artErr) writeErrors.push(`crawl_file_artifacts: ${artErr.message}`);
+    else artifactsRegistered = (insertedArtifacts ?? []).length;
   }
 
   await tlog(srv, {
@@ -213,7 +225,8 @@ async function writeDrafts(
       trace_id:            traceId,
     }));
     const { error: mediaErr } = await srv.from("media_draft").insert(mediaDraftRows);
-    if (!mediaErr) draftsWritten += uniqueMedia.length;
+    if (mediaErr) writeErrors.push(`media_draft: ${mediaErr.message}`);
+    else draftsWritten += uniqueMedia.length;
   }
 
   // Register brochure PDFs as media_draft too
@@ -231,8 +244,9 @@ async function writeDrafts(
       publish_status:      "unpublished",
       trace_id:            traceId,
     }));
-    await srv.from("media_draft").insert(brochureRows);
-    draftsWritten += uniquePdfs.length;
+    const { error: brochureErr } = await srv.from("media_draft").insert(brochureRows);
+    if (brochureErr) writeErrors.push(`media_draft_brochures: ${brochureErr.message}`);
+    else draftsWritten += uniquePdfs.length;
   }
 
   // ── 7. housing_draft: from housing evidence ─────────────────────���─────────
@@ -261,14 +275,16 @@ async function writeDrafts(
       .select("id")
       .single();
 
+    if (hdErr) writeErrors.push(`housing_draft: ${hdErr.message}`);
     if (!hdErr && housingDraft && housingUrl) {
-      await srv.from("housing_media_draft").insert({
+      const { error: hmdErr } = await srv.from("housing_media_draft").insert({
         housing_draft_id:  housingDraft.id,
         media_type:        "link",
         media_url:         housingUrl.value_raw,
         is_official:       true,
         confidence_0_100:  housingUrl.confidence_0_100,
       });
+      if (hmdErr) writeErrors.push(`housing_media_draft: ${hmdErr.message}`);
     }
     if (!hdErr) draftsWritten++;
   }
@@ -295,7 +311,37 @@ async function writeDrafts(
       publish_status:      "unpublished",
       trace_id:            traceId,
     });
-    if (!ldErr) draftsWritten++;
+    if (ldErr) writeErrors.push(`leadership_draft: ${ldErr.message}`);
+    else draftsWritten++;
+  }
+
+  if (writeErrors.length > 0) {
+    const durationMs = Date.now() - t0;
+    await tlog(srv, {
+      run_id: runId, run_item_id: runItemId, stage: "draft_writer", event_type: "failed",
+      duration_ms: durationMs, success: false, error_type: "draft_write_failed",
+      error_message: writeErrors.join("; ").slice(0, 1000),
+      metadata: { artifacts_registered: artifactsRegistered, drafts_written: draftsWritten, write_errors: writeErrors },
+      trace_id: traceId,
+    });
+    return {
+      ok: false,
+      error: "draft_write_failed",
+      artifacts_registered: artifactsRegistered,
+      drafts_written: draftsWritten,
+      write_errors: writeErrors,
+    };
+  }
+
+  if (artifactsRegistered === 0 && draftsWritten === 0) {
+    const durationMs = Date.now() - t0;
+    await tlog(srv, {
+      run_id: runId, run_item_id: runItemId, stage: "draft_writer", event_type: "completed",
+      duration_ms: durationMs, success: true,
+      metadata: { artifacts_registered: 0, drafts_written: 0, safe_noop: true, reason: "no_supported_draft_data" },
+      trace_id: traceId,
+    });
+    return { ok: true, artifacts_registered: 0, drafts_written: 0, no_data: true };
   }
 
   // ── 9. Update run item ─────────────────────────────────────────────────────
