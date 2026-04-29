@@ -1,6 +1,8 @@
 {
   "_version": "2.1.1",
   "common": {
+    "fullscreen": "Полный экран",
+    "exitFullscreen": "Выйти из полноэкранного режима",
     "more": "ещё",
     "loading": "Загрузка...",
     "contactUs": "Связаться с нами",
@@ -1166,7 +1168,8 @@
         "accountCreatedLinked": "✅ Your account has been created and linked to your WhatsApp number. We will now take you on a quick tour of the most important items.",
         "chatLinkedAccount": "✅ Your chat has been linked to your account. We will now take you on a quick tour of the most important items.",
         "searchingFallback": "Searching for the best options for you...",
-        "thinkingFallback": "Got it — one moment..."
+        "thinkingFallback": "Got it — one moment...",
+        "aiAssistGreeting": "Здравствуйте, мне нужна помощь с подбором лучшей учебной программы для меня"
       },
       "controls": {
         "deepSearch": "Deep Search",
@@ -1177,7 +1180,9 @@
         "send": "Отправить",
         "hideHistory": "Hide history",
         "showHistory": "Show history",
-        "newChat": "Новый чат"
+        "newChat": "Новый чат",
+        "add": "Добавить вложение",
+        "clearSearchMode": "Сбросить режим поиска"
       },
       "status": {
         "current": "Текущий статус",
@@ -1207,6 +1212,20 @@
             "label": "Label"
           }
         }
+      },
+      "live": {
+        "title": "Live-сессия оценки",
+        "start": "Начать live-сессию",
+        "label": "Live",
+        "tooltip": "Live-сессия с видео"
+      },
+      "voice": {
+        "label": "Голос",
+        "labelActive": "Завершить",
+        "start": "Начать голосовой live-чат",
+        "startFailed": "Не удалось начать голосовой чат. Проверьте разрешения микрофона.",
+        "stop": "Завершить голосовой чат",
+        "tooltip": "Говорите с Oryxa голосом"
       }
     },
     "profile": {
@@ -11594,7 +11613,7 @@
     "publishedSuccessfully": "Доказательства опубликованы",
     "orxReadiness": "Готовность ORX",
     "mapOrx": "Сопоставить ORX сигналы",
-    "orxMapped": "ORX сигналы сопоставлены"
+    "orxMapped": "ORX сигналы сопоставлены",
     "changeUniversity": "Изменить",
     "universitySearchPlaceholder": "Поиск университетов по названию...",
     "noUniversitiesFound": "Университеты не найдены",

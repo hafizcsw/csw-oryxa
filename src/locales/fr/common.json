@@ -1,6 +1,8 @@
 {
   "_version": "2.1.1",
   "common": {
+    "fullscreen": "Plein écran",
+    "exitFullscreen": "Quitter le plein écran",
     "more": "plus",
     "loading": "Chargement...",
     "contactUs": "Contactez-nous",
@@ -48,6 +50,7 @@
     "scholarships": "Bourses",
     "resources": "Ressources",
     "ielts": "Préparation IELTS",
+    "languages": "Langues",
     "courses": "Cours de langue",
     "blog": "Actualités",
     "faq": "Questions fréquentes",
@@ -80,6 +83,7 @@
     "studyDestinations": "Destinations d'études",
     "findUniversity": "Trouver une université",
     "ielts": "IELTS",
+    "languages": "Langues",
     "essentials": "Essentiels étudiant",
     "myLessons": "My Lessons",
     "mySessions": "My Sessions",
@@ -1164,7 +1168,8 @@
         "accountCreatedLinked": "✅ Your account has been created and linked to your WhatsApp number. We will now take you on a quick tour of the most important items.",
         "chatLinkedAccount": "✅ Your chat has been linked to your account. We will now take you on a quick tour of the most important items.",
         "searchingFallback": "Searching for the best options for you...",
-        "thinkingFallback": "Got it — one moment..."
+        "thinkingFallback": "Got it — one moment...",
+        "aiAssistGreeting": "Bonjour, j’ai besoin d’aide pour trouver le meilleur programme d’études pour moi"
       },
       "controls": {
         "deepSearch": "Deep Search",
@@ -1175,7 +1180,9 @@
         "send": "Envoyer",
         "hideHistory": "Hide history",
         "showHistory": "Show history",
-        "newChat": "Nouveau chat"
+        "newChat": "Nouveau chat",
+        "add": "Ajouter une pièce jointe",
+        "clearSearchMode": "Effacer le mode recherche"
       },
       "status": {
         "current": "Statut actuel",
@@ -1205,6 +1212,20 @@
             "label": "Label"
           }
         }
+      },
+      "live": {
+        "title": "Session d’évaluation en direct",
+        "start": "Démarrer la session en direct",
+        "label": "Live",
+        "tooltip": "Session en direct avec vidéo"
+      },
+      "voice": {
+        "label": "Voix",
+        "labelActive": "Terminer",
+        "start": "Démarrer le chat vocal en direct",
+        "startFailed": "Impossible de démarrer le chat vocal. Vérifiez les autorisations du microphone.",
+        "stop": "Terminer le chat vocal",
+        "tooltip": "Parlez avec Oryxa par la voix"
       }
     },
     "profile": {
@@ -11562,7 +11583,7 @@
     "publishedSuccessfully": "Preuves publiées",
     "orxReadiness": "Disponibilité ORX",
     "mapOrx": "Cartographier les signaux ORX",
-    "orxMapped": "Signaux ORX cartographiés"
+    "orxMapped": "Signaux ORX cartographiés",
     "changeUniversity": "Changer",
     "universitySearchPlaceholder": "Rechercher des universités par nom...",
     "noUniversitiesFound": "Aucune université trouvée",

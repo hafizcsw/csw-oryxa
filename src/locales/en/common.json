@@ -1,6 +1,8 @@
 {
   "_version": "2.1.1",
   "common": {
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit fullscreen",
     "more": "more",
     "loading": "Loading...",
     "contactUs": "Contact us",
@@ -1457,7 +1459,8 @@
         "accountCreatedLinked": "✅ Your account has been created and linked to your WhatsApp number. We will now take you on a quick tour of the most important items.",
         "chatLinkedAccount": "✅ Your chat has been linked to your account. We will now take you on a quick tour of the most important items.",
         "searchingFallback": "Searching for the best options for you...",
-        "thinkingFallback": "Got it — one moment..."
+        "thinkingFallback": "Got it — one moment...",
+        "aiAssistGreeting": "Hi, I need help finding the best study program for me"
       },
       "controls": {
         "deepSearch": "Deep Search",
@@ -1468,7 +1471,9 @@
         "send": "Send",
         "hideHistory": "Hide history",
         "showHistory": "Show history",
-        "newChat": "New chat"
+        "newChat": "New chat",
+        "add": "Add attachment",
+        "clearSearchMode": "Clear search mode"
       },
       "status": {
         "current": "Current status",
@@ -1504,6 +1509,8 @@
         "intro": "Oryxa will run a short, structured chat in your language: background, language, quantitative reasoning (with paper held to camera) and a logical question. Ends with a preliminary impression and a recommended next step on CSW World.",
         "disclaimer": "Experimental preview. Audio and video are streamed for the session only and not stored. This is not a formal evaluation.",
         "start": "Start live session",
+        "label": "Live",
+        "tooltip": "Live session with video",
         "end": "End session",
         "connecting": "Connecting…",
         "connected": "Live",
@@ -1540,6 +1547,14 @@
           "next": "Next step",
           "notSaved": "This impression is shown once and is not saved."
         }
+      },
+      "voice": {
+        "label": "Voice",
+        "labelActive": "End",
+        "start": "Start live voice chat",
+        "startFailed": "Could not start voice chat. Check your microphone permissions.",
+        "stop": "End voice chat",
+        "tooltip": "Talk with Oryxa by voice"
       }
     },
     "profile": {
@@ -14320,7 +14335,7 @@
     "publishedSuccessfully": "Evidence published",
     "orxReadiness": "ORX Readiness",
     "mapOrx": "Map ORX Signals",
-    "orxMapped": "ORX signals mapped"
+    "orxMapped": "ORX signals mapped",
     "changeUniversity": "Change",
     "universitySearchPlaceholder": "Search universities by name...",
     "noUniversitiesFound": "No universities found",

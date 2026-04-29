@@ -50,10 +50,7 @@ export function Layout({
   const guestShortlist = useGuestAwareShortlist();
   const { count: uniCount } = useUniversityShortlistHook();
   const [showShortlistDrawer, setShowShortlistDrawer] = useState(false);
-  const {
-    t,
-    language
-  } = useLanguage();
+  const { t } = useLanguage();
   const { isStaff, role } = useStaffAuthority();
   const permissions = useTeacherPermissions(role);
   const isTeacher = isStaff && role === 'teacher';
@@ -150,7 +147,7 @@ export function Layout({
             /* Standard full nav — all buttons styled at ORX strength */
             <nav className={cn(
               "hidden lg:flex items-center gap-0.5 font-bold whitespace-nowrap [&_button]:whitespace-nowrap",
-              language === 'ru' ? "text-[12.6px]" : "text-[14px]"
+              "text-[13px] xl:text-[14px]"
             )}>
               <button
                 onClick={() => navigate('/')}
@@ -175,7 +172,7 @@ export function Layout({
               </button>
               <button onClick={() => navigate("/social")} className="px-3 py-1.5 rounded-lg text-foreground hover:text-primary hover:bg-primary/5 dark:text-foreground dark:hover:text-primary dark:hover:bg-primary/10 transition-all flex items-center gap-1 font-bold">
                 <Users className="w-3.5 h-3.5" />
-                {t("nav.community") || (t("nav.home") === "الرئيسية" ? "المجتمع" : "Community")}
+                {t("nav.community")}
               </button>
             </nav>
           ) : null}

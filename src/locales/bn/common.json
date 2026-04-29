@@ -1,6 +1,8 @@
 {
   "_version": "2.1.1",
   "common": {
+    "fullscreen": "পূর্ণ পর্দা",
+    "exitFullscreen": "পূর্ণ পর্দা বন্ধ করুন",
     "more": "আরও",
     "loading": "লোড হচ্ছে...",
     "contactUs": "যোগাযোগ করুন",
@@ -48,6 +50,7 @@
     "scholarships": "বৃত্তি",
     "resources": "রিসোর্স",
     "ielts": "IELTS প্রস্তুতি",
+    "languages": "ভাষা",
     "courses": "ভাষা কোর্স",
     "blog": "ব্লগ",
     "faq": "সাধারণ জিজ্ঞাসা",
@@ -80,6 +83,7 @@
     "studyDestinations": "পড়াশোনার গন্তব্য",
     "findUniversity": "বিশ্ববিদ্যালয় খুঁজুন",
     "ielts": "IELTS",
+    "languages": "ভাষা",
     "essentials": "শিক্ষার্থীর প্রয়োজনীয়তা",
     "myLessons": "My Lessons",
     "mySessions": "My Sessions",
@@ -436,6 +440,9 @@
       "dayAgo": "{{n}}দি আগে"
     },
     "orx": {
+    "nav": {
+      "orxRank": "ORX RANK"
+    },
       "badge": "প্রমাণ-ভিত্তিক রেটিং সিস্টেম",
       "subtitle": "ঐতিহ্যবাহী খ্যাতির পরিবর্তে ভবিষ্যত-প্রস্তুতির ওপর কেন্দ্রীভূত একটি অনন্য রেটিং সিস্টেম — তিনটি বিশ্লেষণাত্মক স্তরে যাচাইকৃত প্রমাণের ওপর ভিত্তি করে",
       "pillars": {
@@ -1164,7 +1171,8 @@
         "accountCreatedLinked": "✅ Your account has been created and linked to your WhatsApp number. We will now take you on a quick tour of the most important items.",
         "chatLinkedAccount": "✅ Your chat has been linked to your account. We will now take you on a quick tour of the most important items.",
         "searchingFallback": "Searching for the best options for you...",
-        "thinkingFallback": "Got it — one moment..."
+        "thinkingFallback": "Got it — one moment...",
+        "aiAssistGreeting": "হাই, আমার জন্য সবচেয়ে উপযুক্ত স্টাডি প্রোগ্রাম খুঁজতে সাহায্য চাই"
       },
       "controls": {
         "deepSearch": "Deep Search",
@@ -1175,7 +1183,9 @@
         "send": "পাঠান",
         "hideHistory": "Hide history",
         "showHistory": "Show history",
-        "newChat": "নতুন চ্যাট"
+        "newChat": "নতুন চ্যাট",
+        "add": "সংযুক্তি যোগ করুন",
+        "clearSearchMode": "সার্চ মোড পরিষ্কার করুন"
       },
       "status": {
         "current": "বর্তমান অবস্থা",
@@ -1205,6 +1215,20 @@
             "label": "Label"
           }
         }
+      },
+      "live": {
+        "title": "লাইভ মূল্যায়ন সেশন",
+        "start": "লাইভ সেশন শুরু করুন",
+        "label": "লাইভ",
+        "tooltip": "ভিডিওসহ লাইভ সেশন"
+      },
+      "voice": {
+        "label": "ভয়েস",
+        "labelActive": "শেষ",
+        "start": "লাইভ ভয়েস চ্যাট শুরু করুন",
+        "startFailed": "ভয়েস চ্যাট শুরু করা যায়নি। মাইক্রোফোন অনুমতি পরীক্ষা করুন।",
+        "stop": "ভয়েস চ্যাট শেষ করুন",
+        "tooltip": "Oryxa-এর সঙ্গে ভয়েসে কথা বলুন"
       }
     },
     "profile": {
@@ -9405,6 +9429,9 @@
     "status": "Status"
   },
   "orx": {
+    "nav": {
+      "orxRank": "ORX RANK"
+    },
     "evaluating": {
       "title": "Title"
     }
@@ -10556,7 +10583,7 @@
     "publishedSuccessfully": "প্রমাণ প্রকাশিত হয়েছে",
     "orxReadiness": "ORX প্রস্তুতি",
     "mapOrx": "ORX সংকেত ম্যাপ করুন",
-    "orxMapped": "ORX সংকেত ম্যাপ করা হয়েছে"
+    "orxMapped": "ORX সংকেত ম্যাপ করা হয়েছে",
     "changeUniversity": "পরিবর্তন",
     "universitySearchPlaceholder": "নাম দিয়ে বিশ্ববিদ্যালয় খুঁজুন...",
     "noUniversitiesFound": "কোনো বিশ্ববিদ্যালয় পাওয়া যায়নি",

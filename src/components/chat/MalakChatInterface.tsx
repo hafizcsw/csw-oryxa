@@ -12,6 +12,7 @@ import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
 import { useVoiceChat } from '@/hooks/useVoiceChat';
 import { useStudentTour } from '@/contexts/StudentTourContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getLanguageDirection } from '@/i18n/languages';
 import { useCRMEventExecutor } from '@/hooks/useCRMEventExecutor';
 import { useCardsQuery } from '@/hooks/useCardsQuery';  // 🆕 Cards Pipeline
 import { useACKSender } from '@/hooks/useACKSender';
@@ -157,7 +158,7 @@ export function MalakChatInterface({
   const chatCtx = useChat();
   const isCompactMobileStandalone = isMobile && !isFloating;
   const { t, language } = useLanguage();
-  const isRTL = language === 'ar';
+  const isRTL = getLanguageDirection(language) === 'rtl';
   const { role: staffRole } = useStaffAuthority();
   const isSuperAdmin = staffRole === 'super_admin';
   const isChatPaused = false; // ✅ Chat enabled for everyone
@@ -1020,10 +1021,7 @@ export function MalakChatInterface({
       
       // Auto-send greeting after a short delay
       setTimeout(() => {
-        const greeting = language === 'ar' 
-          ? 'مرحباً، أريد مساعدتك في إيجاد أفضل برنامج دراسي مناسب لي'
-          : 'Hi, I need help finding the best study program for me';
-        handleSend(greeting);
+        handleSend(t('portal.chat.messages.aiAssistGreeting'));
       }, 800);
     }
   }, []); // Run once on mount
@@ -1202,9 +1200,7 @@ export function MalakChatInterface({
     } catch (e) {
       console.error('[MalakChat] voice chat failed', e);
       toast.error(
-        t('portal.chat.voice.startFailed', {
-          defaultValue: 'Could not start voice chat. Check your microphone permissions.',
-        }),
+        t('portal.chat.voice.startFailed'),
       );
     }
   };
@@ -1282,8 +1278,8 @@ export function MalakChatInterface({
                type="button"
                onClick={() => setIsFullscreen(v => !v)}
                className="absolute top-2 right-2 z-10 h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-               aria-label={isFullscreen ? t('common.exitFullscreen', { defaultValue: 'Exit fullscreen' }) : t('common.fullscreen', { defaultValue: 'Fullscreen' })}
-               title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+               aria-label={isFullscreen ? t('common.exitFullscreen') : t('common.fullscreen')}
+               title={isFullscreen ? t('common.exitFullscreen') : t('common.fullscreen')}
              >
                {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
              </button>
@@ -1514,7 +1510,7 @@ export function MalakChatInterface({
                   ? ''
                   : isChatPaused
                     ? t('chatPause.placeholder')
-                    : (language === 'ar' ? 'اكتب رسالتك...' : 'Type your message...')
+                    : t('portal.chat.placeholders.default')
               } 
               disabled={isChatPaused}
               className={cn(
@@ -1546,8 +1542,8 @@ export function MalakChatInterface({
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    aria-label={t('portal.chat.controls.add', { defaultValue: 'Add attachment' })}
-                    title={t('portal.chat.controls.add', { defaultValue: 'Add attachment' })}
+                    aria-label={t('portal.chat.controls.add')}
+                    title={t('portal.chat.controls.add')}
                     className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
                   >
                     <Plus className="w-5 h-5" />
@@ -1567,8 +1563,8 @@ export function MalakChatInterface({
                               e.stopPropagation();
                               setSearchMode('normal');
                             }}
-                            aria-label={t('portal.chat.controls.clearSearchMode', { defaultValue: 'Clear search mode' })}
-                            title={t('portal.chat.controls.clearSearchMode', { defaultValue: 'Clear search mode' })}
+                            aria-label={t('portal.chat.controls.clearSearchMode')}
+                            title={t('portal.chat.controls.clearSearchMode')}
                             className="h-6 w-6 rounded-full flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900 text-blue-600 dark:text-blue-400"
                           >
                             <X className="w-3.5 h-3.5" />
@@ -1628,8 +1624,8 @@ export function MalakChatInterface({
                   variant="ghost"
                   onClick={() => setIsLiveOpen(true)}
                   disabled={state === 'thinking' || state === 'searching' || isGuestLocked}
-                  title={t('portal.chat.live.tooltip', { defaultValue: 'Live session with video' })}
-                  aria-label={t('portal.chat.live.start', { defaultValue: 'Start live session' })}
+                  title={t('portal.chat.live.tooltip')}
+                  aria-label={t('portal.chat.live.start')}
                   className={cn(
                     "rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 gap-1.5 px-2.5",
                     isFloating ? "h-7" : "h-8"
@@ -1637,7 +1633,7 @@ export function MalakChatInterface({
                 >
                   <Headphones className="w-4 h-4" />
                   <span className="text-xs font-medium hidden sm:inline">
-                    {t('portal.chat.live.label', { defaultValue: 'Live' })}
+                    {t('portal.chat.live.label')}
                   </span>
                 </Button>
 
@@ -1650,13 +1646,13 @@ export function MalakChatInterface({
                   disabled={state === 'thinking' || state === 'searching' || isRecording || isGuestLocked || voiceChat.status === 'requesting_token' || voiceChat.status === 'connecting'}
                   title={
                     isVoiceLive
-                      ? t('portal.chat.voice.stop', { defaultValue: 'End voice chat' })
-                      : t('portal.chat.voice.tooltip', { defaultValue: 'Talk with Oryxa by voice' })
+                      ? t('portal.chat.voice.stop')
+                      : t('portal.chat.voice.tooltip')
                   }
                   aria-label={
                     isVoiceLive
-                      ? t('portal.chat.voice.stop', { defaultValue: 'End voice chat' })
-                      : t('portal.chat.voice.start', { defaultValue: 'Start live voice chat' })
+                      ? t('portal.chat.voice.stop')
+                      : t('portal.chat.voice.start')
                   }
                   className={cn(
                     "rounded-full relative gap-1.5 transition-all",
@@ -1684,8 +1680,8 @@ export function MalakChatInterface({
                   )}
                   <span className={cn("text-xs font-semibold", !isVoiceLive && "hidden sm:inline")}>
                     {isVoiceLive
-                      ? t('portal.chat.voice.labelActive', { defaultValue: 'End' })
-                      : t('portal.chat.voice.label', { defaultValue: 'Voice' })}
+                      ? t('portal.chat.voice.labelActive')
+                      : t('portal.chat.voice.label')}
                   </span>
                 </Button>
 
@@ -1750,7 +1746,7 @@ export function MalakChatInterface({
           <DialogHeader className="px-4 py-3 border-b">
             <DialogTitle className="text-base flex items-center gap-2">
               <Radio className="w-4 h-4 text-primary" />
-              {t('portal.chat.live.title', { defaultValue: 'Live assessment session' })}
+              {t('portal.chat.live.title')}
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 min-h-0 overflow-hidden">

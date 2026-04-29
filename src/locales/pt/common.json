@@ -1,6 +1,8 @@
 {
   "_version": "2.1.1",
   "common": {
+    "fullscreen": "Tela cheia",
+    "exitFullscreen": "Sair da tela cheia",
     "more": "mais",
     "loading": "Carregando...",
     "contactUs": "Fale conosco",
@@ -48,6 +50,7 @@
     "scholarships": "Bolsas",
     "resources": "Recursos",
     "ielts": "Preparação para IELTS",
+    "languages": "Idiomas",
     "courses": "Cursos de idiomas",
     "blog": "Blogue",
     "faq": "Perguntas frequentes",
@@ -80,6 +83,7 @@
     "studyDestinations": "Destinos de estudo",
     "findUniversity": "Encontrar uma universidade",
     "ielts": "IELTS",
+    "languages": "Idiomas",
     "essentials": "Essenciais do estudante",
     "myLessons": "My Lessons",
     "mySessions": "My Sessions",
@@ -436,6 +440,9 @@
       "dayAgo": "há {{n}}d"
     },
     "orx": {
+    "nav": {
+      "orxRank": "ORX RANK"
+    },
       "badge": "Sistema de classificação baseado em evidências",
       "subtitle": "Um sistema de classificação único focado na preparação para o futuro, não na reputação tradicional — baseado em evidências verificadas em três camadas analíticas",
       "pillars": {
@@ -1164,7 +1171,8 @@
         "accountCreatedLinked": "✅ Your account has been created and linked to your WhatsApp number. We will now take you on a quick tour of the most important items.",
         "chatLinkedAccount": "✅ Your chat has been linked to your account. We will now take you on a quick tour of the most important items.",
         "searchingFallback": "Searching for the best options for you...",
-        "thinkingFallback": "Got it — one moment..."
+        "thinkingFallback": "Got it — one moment...",
+        "aiAssistGreeting": "Olá, preciso de ajuda para encontrar o melhor programa de estudos para mim"
       },
       "controls": {
         "deepSearch": "Deep Search",
@@ -1175,7 +1183,9 @@
         "send": "Enviar",
         "hideHistory": "Hide history",
         "showHistory": "Show history",
-        "newChat": "Novo chat"
+        "newChat": "Novo chat",
+        "add": "Adicionar anexo",
+        "clearSearchMode": "Limpar modo de busca"
       },
       "status": {
         "current": "Status atual",
@@ -1205,6 +1215,20 @@
             "label": "Label"
           }
         }
+      },
+      "live": {
+        "title": "Sessão de avaliação ao vivo",
+        "start": "Iniciar sessão ao vivo",
+        "label": "Ao vivo",
+        "tooltip": "Sessão ao vivo com vídeo"
+      },
+      "voice": {
+        "label": "Voz",
+        "labelActive": "Encerrar",
+        "start": "Iniciar chat de voz ao vivo",
+        "startFailed": "Não foi possível iniciar o chat de voz. Verifique as permissões do microfone.",
+        "stop": "Encerrar chat de voz",
+        "tooltip": "Fale com a Oryxa por voz"
       }
     },
     "profile": {
@@ -9405,6 +9429,9 @@
     "status": "Status"
   },
   "orx": {
+    "nav": {
+      "orxRank": "ORX RANK"
+    },
     "evaluating": {
       "title": "Title"
     }
@@ -10556,7 +10583,7 @@
     "publishedSuccessfully": "Evidências publicadas",
     "orxReadiness": "Disponibilidade ORX",
     "mapOrx": "Mapear sinais ORX",
-    "orxMapped": "Sinais ORX mapeados"
+    "orxMapped": "Sinais ORX mapeados",
     "changeUniversity": "Alterar",
     "universitySearchPlaceholder": "Pesquisar universidades por nome...",
     "noUniversitiesFound": "Nenhuma universidade encontrada",
