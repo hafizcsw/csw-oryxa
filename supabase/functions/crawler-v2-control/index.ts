@@ -17,6 +17,17 @@ const VALID_MODES = [
 
 type Scope = typeof VALID_SCOPES[number];
 type Mode = typeof VALID_MODES[number];
+type EventType = "started" | "completed" | "failed" | "warning" | "metric";
+
+const ACTIVE_ITEM_STATUSES = [
+  "queued", "website_check", "fetching", "rendering_needed", "rendering",
+  "artifact_discovery", "artifact_parsing", "extracting", "ai_extracting",
+] as const;
+
+const STUCK_ITEM_STATUSES = [
+  "website_check", "fetching", "rendering", "rendering_needed",
+  "artifact_discovery", "artifact_parsing", "extracting", "ai_extracting",
+] as const;
 
 // ── URL validation ─────────────────────────────────────────────────────────
 
@@ -47,6 +58,33 @@ function jsonResp(data: unknown, status = 200, origin: string | null = null): Re
       "Content-Type": "application/json",
       ...getCorsHeaders(origin),
     },
+  });
+}
+
+async function logControlTelemetry(
+  srv: SupabaseClient<any, any, any>,
+  p: {
+    run_id?: string | null;
+    run_item_id?: string | null;
+    stage: string;
+    event_type: EventType;
+    success?: boolean;
+    error_type?: string;
+    error_message?: string;
+    metadata?: Record<string, unknown>;
+    trace_id: string;
+  },
+): Promise<void> {
+  await srv.from("crawler_telemetry").insert({
+    run_id: p.run_id ?? null,
+    run_item_id: p.run_item_id ?? null,
+    stage: p.stage,
+    event_type: p.event_type,
+    success: p.success ?? null,
+    error_type: p.error_type ?? null,
+    error_message: p.error_message ?? null,
+    metadata: { control_action: true, ...p.metadata },
+    trace_id: p.trace_id,
   });
 }
 
@@ -103,9 +141,18 @@ Deno.serve(async (req: Request) => {
         return await handleCleanupLocks(srv, tid, origin);
       case "mark_stuck_items_failed":
         return await handleMarkStuckItemsFailed(srv, body, tid, origin);
+      case "run_selected_stage":
+        return jsonResp({
+          ok: false,
+          error: "selected_stage_execution_not_supported",
+          reason: "Crawler v2 control does not execute stages directly; invoke the scoped stage function with one run_item_id.",
+          trace_id: tid,
+        }, 400, origin);
       // ── 6: publish ────────────────────────────────────────────────────────
       case "verify_item":
         return await handleVerifyItem(srv, body, tid, origin);
+      case "preview_publish_item":
+        return await handlePreviewPublishItem(srv, body, tid, origin);
       case "publish_item":
         return await handlePublishItem(srv, body, tid, origin);
       case "get_pending_review":
@@ -560,22 +607,32 @@ async function handleCancelRun(
   const runId = body.run_id as string | undefined;
   if (!runId) return jsonResp({ ok: false, error: "run_id required", trace_id: tid }, 400, origin);
 
-  const ACTIVE = ["queued","website_check","fetching","rendering_needed","rendering",
-    "artifact_discovery","artifact_parsing","extracting","ai_extracting"];
-
-  const { error: itemErr } = await srv
+  const { data: items, error: itemErr } = await srv
     .from("crawler_run_items")
     .update({ status: "failed", failure_reason: "publish_blocked", updated_at: new Date().toISOString() })
     .eq("run_id", runId)
-    .in("status", ACTIVE);
+    .in("status", ACTIVE_ITEM_STATUSES)
+    .select("id");
 
   if (itemErr) return jsonResp({ ok: false, error: itemErr.message, trace_id: tid }, 500, origin);
 
-  await srv.from("crawler_runs").update({
+  const { data: run, error: runErr } = await srv.from("crawler_runs").update({
     status: "cancelled", completed_at: new Date().toISOString(),
-  }).eq("id", runId);
+  }).eq("id", runId).in("status", ["running", "queued", "paused"]).select("id").maybeSingle();
 
-  return jsonResp({ ok: true, run_id: runId, trace_id: tid }, 200, origin);
+  if (runErr) return jsonResp({ ok: false, error: runErr.message, trace_id: tid }, 500, origin);
+  if (!run) return jsonResp({ ok: false, error: "invalid_state_for_cancel", run_id: runId, trace_id: tid }, 409, origin);
+
+  await logControlTelemetry(srv, {
+    run_id: runId,
+    stage: "queue_control",
+    event_type: "completed",
+    success: true,
+    metadata: { action: "cancel_run", items_cancelled: items?.length ?? 0 },
+    trace_id: tid,
+  });
+
+  return jsonResp({ ok: true, run_id: runId, items_cancelled: items?.length ?? 0, trace_id: tid }, 200, origin);
 }
 
 // ── Action: pause_run (2) ─────────────────────────────────────────────────
@@ -589,7 +646,24 @@ async function handlePauseRun(
   const runId = body.run_id as string | undefined;
   if (!runId) return jsonResp({ ok: false, error: "run_id required", trace_id: tid }, 400, origin);
 
-  await srv.from("crawler_runs").update({ status: "paused" }).eq("id", runId).in("status", ["running", "queued"]);
+  const { data, error } = await srv
+    .from("crawler_runs")
+    .update({ status: "paused" })
+    .eq("id", runId)
+    .in("status", ["running", "queued"])
+    .select("id")
+    .maybeSingle();
+  if (error) return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
+  if (!data) return jsonResp({ ok: false, error: "invalid_state_for_pause", run_id: runId, trace_id: tid }, 409, origin);
+
+  await logControlTelemetry(srv, {
+    run_id: runId,
+    stage: "queue_control",
+    event_type: "completed",
+    success: true,
+    metadata: { action: "pause_run" },
+    trace_id: tid,
+  });
   return jsonResp({ ok: true, run_id: runId, trace_id: tid }, 200, origin);
 }
 
@@ -604,7 +678,24 @@ async function handleResumeRun(
   const runId = body.run_id as string | undefined;
   if (!runId) return jsonResp({ ok: false, error: "run_id required", trace_id: tid }, 400, origin);
 
-  await srv.from("crawler_runs").update({ status: "running" }).eq("id", runId).eq("status", "paused");
+  const { data, error } = await srv
+    .from("crawler_runs")
+    .update({ status: "running" })
+    .eq("id", runId)
+    .eq("status", "paused")
+    .select("id")
+    .maybeSingle();
+  if (error) return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
+  if (!data) return jsonResp({ ok: false, error: "invalid_state_for_resume", run_id: runId, trace_id: tid }, 409, origin);
+
+  await logControlTelemetry(srv, {
+    run_id: runId,
+    stage: "queue_control",
+    event_type: "completed",
+    success: true,
+    metadata: { action: "resume_run" },
+    trace_id: tid,
+  });
   return jsonResp({ ok: true, run_id: runId, trace_id: tid }, 200, origin);
 }
 
@@ -619,16 +710,28 @@ async function handleRetryFailedItem(
   const runItemId = body.run_item_id as string | undefined;
   if (!runItemId) return jsonResp({ ok: false, error: "run_item_id required", trace_id: tid }, 400, origin);
 
-  const { error } = await srv
+  const { data, error } = await srv
     .from("crawler_run_items")
     .update({
       status: "queued", stage: null, failure_reason: null, failure_detail: null,
       progress_percent: 0, updated_at: new Date().toISOString(),
     })
     .eq("id", runItemId)
-    .eq("status", "failed");
+    .eq("status", "failed")
+    .select("id,run_id");
 
   if (error) return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
+  if (!data || data.length === 0) return jsonResp({ ok: false, error: "invalid_state_for_retry", run_item_id: runItemId, trace_id: tid }, 409, origin);
+
+  await logControlTelemetry(srv, {
+    run_id: data[0].run_id as string,
+    run_item_id: runItemId,
+    stage: "queue_control",
+    event_type: "completed",
+    success: true,
+    metadata: { action: "retry_failed_item" },
+    trace_id: tid,
+  });
   return jsonResp({ ok: true, run_item_id: runItemId, trace_id: tid }, 200, origin);
 }
 
@@ -641,6 +744,15 @@ async function handleCleanupLocks(
 ): Promise<Response> {
   const { data, error } = await srv.rpc("cleanup_expired_crawler_locks");
   if (error) return jsonResp({ ok: false, error: error.message, trace_id: tid }, 500, origin);
+
+  await logControlTelemetry(srv, {
+    stage: "queue_control",
+    event_type: "completed",
+    success: true,
+    metadata: { action: "cleanup_locks", deleted: data ?? 0 },
+    trace_id: tid,
+  });
+
   return jsonResp({ ok: true, deleted: data ?? 0, trace_id: tid }, 200, origin);
 }
 
@@ -653,29 +765,55 @@ async function handleMarkStuckItemsFailed(
   origin: string | null,
 ): Promise<Response> {
   const stuckMinutes = (body.stuck_minutes as number | undefined) ?? 30;
+  const runId = body.run_id as string | undefined;
+  const runItemId = body.run_item_id as string | undefined;
+
+  if (!runId && !runItemId) {
+    return jsonResp({
+      ok: false,
+      error: "run_id or run_item_id required",
+      reason: "mark_stuck_items_failed is intentionally scoped and will not mutate all runs.",
+      trace_id: tid,
+    }, 400, origin);
+  }
+
   const cutoff = new Date(Date.now() - stuckMinutes * 60_000).toISOString();
 
-  const STUCK_STATUSES = ["website_check","fetching","rendering","rendering_needed",
-    "artifact_discovery","artifact_parsing","extracting","ai_extracting"];
-
-  const { data: stuck } = await srv
+  let query = srv
     .from("crawler_run_items")
-    .select("id")
-    .in("status", STUCK_STATUSES)
+    .select("id,run_id")
+    .in("status", STUCK_ITEM_STATUSES)
     .lt("updated_at", cutoff);
 
+  if (runItemId) query = query.eq("id", runItemId);
+  else query = query.eq("run_id", runId);
+
+  const { data: stuck, error: stuckErr } = await query;
+  if (stuckErr) return jsonResp({ ok: false, error: stuckErr.message, trace_id: tid }, 500, origin);
+
   if (!stuck || stuck.length === 0) {
-    return jsonResp({ ok: true, marked: 0, trace_id: tid }, 200, origin);
+    return jsonResp({ ok: true, marked: 0, run_id: runId ?? null, run_item_id: runItemId ?? null, trace_id: tid }, 200, origin);
   }
 
   const ids = stuck.map((i: { id: string }) => i.id);
-  await srv.from("crawler_run_items").update({
+  const { error: updateErr } = await srv.from("crawler_run_items").update({
     status: "failed", failure_reason: "timeout",
     failure_detail: `Stuck > ${stuckMinutes}min`,
     updated_at: new Date().toISOString(),
   }).in("id", ids);
+  if (updateErr) return jsonResp({ ok: false, error: updateErr.message, trace_id: tid }, 500, origin);
 
-  return jsonResp({ ok: true, marked: ids.length, trace_id: tid }, 200, origin);
+  await logControlTelemetry(srv, {
+    run_id: runId ?? (stuck[0].run_id as string),
+    run_item_id: runItemId ?? null,
+    stage: "queue_control",
+    event_type: "completed",
+    success: true,
+    metadata: { action: "mark_stuck_items_failed", marked: ids.length, stuck_minutes: stuckMinutes },
+    trace_id: tid,
+  });
+
+  return jsonResp({ ok: true, marked: ids.length, run_id: runId ?? null, run_item_id: runItemId ?? null, trace_id: tid }, 200, origin);
 }
 
 // ── Action: get_pending_review (6) ────────────────────────────────────────
@@ -737,6 +875,124 @@ async function handleVerifyItem(
   return jsonResp({ ...(data as object), trace_id: tid }, 200, origin);
 }
 
+// ── Action: preview_publish_item (6) ──────────────────────────────────────
+
+async function handlePreviewPublishItem(
+  srv: SupabaseClient<any, any, any>,
+  body: Record<string, unknown>,
+  tid: string,
+  origin: string | null,
+): Promise<Response> {
+  const runItemId = body.run_item_id as string | undefined;
+  if (!runItemId) return jsonResp({ ok: false, error: "run_item_id required", dry_run: true, trace_id: tid }, 400, origin);
+
+  const { data: item, error: itemErr } = await srv
+    .from("crawler_run_items")
+    .select("id,run_id,university_id,status,stage,progress_percent,trace_id,updated_at")
+    .eq("id", runItemId)
+    .maybeSingle();
+
+  if (itemErr) return jsonResp({ ok: false, error: itemErr.message, dry_run: true, trace_id: tid }, 500, origin);
+  if (!item) return jsonResp({ ok: false, error: "run_item_not_found", dry_run: true, trace_id: tid }, 404, origin);
+
+  if (item.status !== "verified") {
+    return jsonResp({
+      ok: false,
+      error: "invalid_status_for_publish_preview",
+      current_status: item.status,
+      required_status: "verified",
+      dry_run: true,
+      trace_id: tid,
+    }, 409, origin);
+  }
+
+  const { count: unverifiedCount, error: unverifiedErr } = await srv
+    .from("evidence_items")
+    .select("id", { count: "exact", head: true })
+    .eq("crawler_run_item_id", runItemId)
+    .in("review_status", ["pending", "needs_revision"])
+    .eq("publish_status", "unpublished");
+
+  if (unverifiedErr) return jsonResp({ ok: false, error: unverifiedErr.message, dry_run: true, trace_id: tid }, 500, origin);
+  if ((unverifiedCount ?? 0) > 0) {
+    return jsonResp({
+      ok: false,
+      error: "unverified_evidence_exists",
+      unverified_count: unverifiedCount ?? 0,
+      dry_run: true,
+      trace_id: tid,
+    }, 409, origin);
+  }
+
+  const { data: evidence, error: evidenceErr } = await srv
+    .from("evidence_items")
+    .select("id,fact_group,field_key,confidence_0_100,source_url,trace_id,created_at,updated_at")
+    .eq("crawler_run_item_id", runItemId)
+    .eq("review_status", "verified")
+    .eq("publish_status", "unpublished")
+    .limit(500);
+
+  if (evidenceErr) return jsonResp({ ok: false, error: evidenceErr.message, dry_run: true, trace_id: tid }, 500, origin);
+  const rows = evidence ?? [];
+  if (rows.length === 0) {
+    return jsonResp({
+      ok: false,
+      error: "no_verified_unpublished_evidence",
+      dry_run: true,
+      trace_id: tid,
+    }, 409, origin);
+  }
+
+  const confidences = rows
+    .map((e: { confidence_0_100: number | null }) => e.confidence_0_100)
+    .filter((v: number | null): v is number => typeof v === "number");
+  const confidenceAvg = confidences.length > 0
+    ? Math.round(confidences.reduce((sum, v) => sum + v, 0) / confidences.length)
+    : null;
+  const confidenceMin = confidences.length > 0 ? Math.min(...confidences) : null;
+  const evidenceIds = rows.map((e: { id: string }) => e.id);
+
+  return jsonResp({
+    ok: true,
+    dry_run: true,
+    run_item_id: runItemId,
+    run_id: item.run_id,
+    trace_id: tid,
+    item_trace_id: item.trace_id,
+    evidence_item_ids: evidenceIds,
+    affected_canonical_tables: [],
+    affected_operational_tables: [
+      { table: "evidence_items", fields: ["publish_status", "updated_at"] },
+      { table: "crawler_run_items", fields: ["status", "stage", "progress_percent", "completed_at", "updated_at"] },
+      { table: "publish_audit_trail", fields: ["action", "evidence_item_ids", "before_snapshot", "after_snapshot", "rollback_snapshot"] },
+    ],
+    before_snapshot_shape: {
+      run_item_status: item.status,
+      run_item_stage: item.stage,
+      run_item_progress_percent: item.progress_percent,
+      verified_unpublished_evidence_count: rows.length,
+      confidence_avg: confidenceAvg,
+      confidence_min: confidenceMin,
+    },
+    after_preview_shape: {
+      run_item_status: "published",
+      run_item_stage: "evidence_published",
+      run_item_progress_percent: 100,
+      evidence_publish_status: "published",
+      evidence_published_count: rows.length,
+    },
+    rollback_plan: {
+      action: "restore_operational_publish_state",
+      evidence_item_ids: evidenceIds,
+      evidence_publish_status: "unpublished",
+      run_item_status: item.status,
+      run_item_stage: item.stage,
+      run_item_progress_percent: item.progress_percent,
+    },
+    real_publish_rpc_called: false,
+  }, 200, origin);
+}
+
 // ── Action: publish_item (6) ──────────────────────────────────────────────
 
 async function handlePublishItem(
@@ -747,6 +1003,24 @@ async function handlePublishItem(
 ): Promise<Response> {
   const runItemId = body.run_item_id as string | undefined;
   if (!runItemId) return jsonResp({ ok: false, error: "run_item_id required", trace_id: tid }, 400, origin);
+
+  const { data: item, error: itemErr } = await srv
+    .from("crawler_run_items")
+    .select("id,status")
+    .eq("id", runItemId)
+    .maybeSingle();
+
+  if (itemErr) return jsonResp({ ok: false, error: itemErr.message, trace_id: tid }, 500, origin);
+  if (!item) return jsonResp({ ok: false, error: "run_item_not_found", trace_id: tid }, 404, origin);
+  if (item.status !== "verified") {
+    return jsonResp({
+      ok: false,
+      error: "invalid_status_for_publish",
+      current_status: item.status,
+      required_status: "verified",
+      trace_id: tid,
+    }, 409, origin);
+  }
 
   const { data, error } = await srv.rpc("rpc_v2_publish_run_item", {
     p_run_item_id:  runItemId,

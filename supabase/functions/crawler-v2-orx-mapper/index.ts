@@ -60,18 +60,18 @@ async function mapOrx(
   srv: SupabaseClient<any, any, any>,
   runItemId: string,
   tid: string,
-): Promise<{ ok: boolean; error?: string; mapped: number; orx_ingested: number }> {
+): Promise<{ ok: boolean; error?: string; mapped: number; orx_ingested: number; unmapped: number; unmapped_reasons: Record<string, number> }> {
   const t0 = Date.now();
 
   // 1. Load run item
   const { data: item, error: itemErr } = await srv
     .from("crawler_run_items")
-    .select("id,run_id,university_id,website,target_domain,trace_id")
+    .select("id,run_id,university_id,website,target_domain,trace_id,status")
     .eq("id", runItemId)
     .single();
 
   if (itemErr || !item) {
-    return { ok: false, error: "run_item_not_found", mapped: 0, orx_ingested: 0 };
+    return { ok: false, error: "run_item_not_found", mapped: 0, orx_ingested: 0, unmapped: 0, unmapped_reasons: {} };
   }
 
   const runId   = item.run_id as string;
@@ -79,6 +79,18 @@ async function mapOrx(
   const website = ((item.website as string | null) ?? "").replace(/\/$/, "");
   const domain  = ((item.target_domain as string | null) ?? "").replace(/^www\./, "");
   const traceId = (item.trace_id as string) || tid;
+  const status  = item.status as string;
+
+  if (!["evidence_created", "draft_created", "needs_review"].includes(status)) {
+    return {
+      ok: false,
+      error: "invalid_status_for_orx_mapper",
+      mapped: 0,
+      orx_ingested: 0,
+      unmapped: 0,
+      unmapped_reasons: {},
+    };
+  }
 
   await tlog(srv, {
     run_id: runId, run_item_id: runItemId, stage: "orx_mapper", event_type: "started",
@@ -104,7 +116,7 @@ async function mapOrx(
       run_id: runId, run_item_id: runItemId, stage: "orx_mapper", event_type: "completed",
       success: true, metadata: { mapped: 0, reason: "no_unmapped_evidence" }, trace_id: traceId,
     });
-    return { ok: true, mapped: 0, orx_ingested: 0 };
+    return { ok: true, mapped: 0, orx_ingested: 0, unmapped: 0, unmapped_reasons: { no_unmapped_evidence: 1 } };
   }
 
   // 3. Load active mapping rules
@@ -124,10 +136,14 @@ async function mapOrx(
   // 4. Map each evidence item
   let mapped    = 0;
   let ingested  = 0;
+  const unmappedReasons: Record<string, number> = {};
 
   for (const ev of evidence) {
     const rule = ruleMap.get(`${ev.fact_group}:${ev.field_key}`);
-    if (!rule) continue;
+    if (!rule) {
+      unmappedReasons.no_mapping_rule = (unmappedReasons.no_mapping_rule ?? 0) + 1;
+      continue;
+    }
 
     // Update evidence_items with ORX layer/family
     await srv.from("evidence_items").update({
@@ -174,14 +190,29 @@ async function mapOrx(
         orx_evidence_id: orxRow.id,
       }).eq("id", ev.id);
       ingested++;
+    } else {
+      unmappedReasons.orx_ingest_failed = (unmappedReasons.orx_ingest_failed ?? 0) + 1;
     }
   }
 
+  const unmapped = Object.values(unmappedReasons).reduce((sum, count) => sum + count, 0);
+
   await tlog(srv, {
     run_id: runId, run_item_id: runItemId, stage: "orx_mapper", event_type: "metric",
-    metadata: { mapped, ingested, evidence_total: evidence.length, rules_active: rules.length },
+    metadata: { mapped, ingested, unmapped, unmapped_reasons: unmappedReasons, evidence_total: evidence.length, rules_active: rules.length },
     trace_id: traceId,
   });
+
+  if (mapped === 0 && ingested === 0) {
+    const durationMs = Date.now() - t0;
+    await tlog(srv, {
+      run_id: runId, run_item_id: runItemId, stage: "orx_mapper", event_type: "completed",
+      duration_ms: durationMs, success: true,
+      metadata: { mapped, orx_ingested: ingested, unmapped, unmapped_reasons: unmappedReasons, safe_noop: true },
+      trace_id: traceId,
+    });
+    return { ok: true, mapped, orx_ingested: ingested, unmapped, unmapped_reasons: unmappedReasons };
+  }
 
   // 6. Update run item
   await srv.from("crawler_run_items").update({
@@ -196,10 +227,10 @@ async function mapOrx(
   await tlog(srv, {
     run_id: runId, run_item_id: runItemId, stage: "orx_mapper", event_type: "completed",
     duration_ms: durationMs, success: true,
-    metadata: { mapped, orx_ingested: ingested }, trace_id: traceId,
+    metadata: { mapped, orx_ingested: ingested, unmapped, unmapped_reasons: unmappedReasons }, trace_id: traceId,
   });
 
-  return { ok: true, mapped, orx_ingested: ingested };
+  return { ok: true, mapped, orx_ingested: ingested, unmapped, unmapped_reasons: unmappedReasons };
 }
 
 // ── Batch map by run (maps all items in a run) ─────────────────────────────
@@ -264,10 +295,12 @@ Deno.serve(async (req: Request) => {
   }
 
   if (action === "map_orx_batch") {
-    const runId = body.run_id as string | undefined;
-    if (!runId) return jsonResp({ ok: false, error: "run_id required" }, 400, origin);
-    const result = await mapOrxBatchByRun(srv, runId, tid);
-    return jsonResp({ ...result, tid }, result.ok ? 200 : 422, origin);
+    return jsonResp({
+      ok: false,
+      error: "map_orx_batch_disabled",
+      reason: "Use map_orx with one run_item_id for bounded Crawler v2 runtime proof.",
+      trace_id: tid,
+    }, 400, origin);
   }
 
   return jsonResp({ ok: false, error: `unknown action: ${action}` }, 400, origin);
